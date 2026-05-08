@@ -679,6 +679,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   text-overflow:ellipsis;
   display:-webkit-box;
   -webkit-line-clamp:2;
+  line-clamp:2;
   -webkit-box-orient:vertical;
   white-space:normal;
   word-break:break-word;
@@ -705,6 +706,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 [data-density="compact"] .routine-table td.col-name{padding:2px 6px !important}
 [data-density="compact"] .routine-table td.col-name .t-name{
   -webkit-line-clamp:1;
+  line-clamp:1;
   font-size:calc(var(--name-font) - 1px);
   line-height:1.15;
 }
@@ -720,7 +722,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   padding:1px 3px !important;
   white-space:nowrap !important;
 }
-.routine-table.row-tight td.col-name .t-name{font-size:11.5px !important;-webkit-line-clamp:1 !important}
+.routine-table.row-tight td.col-name .t-name{font-size:11.5px !important;-webkit-line-clamp:1 !important;line-clamp:1 !important}
 .routine-table.row-tight td.col-name .t-meta,
 .routine-table.row-tight td.col-name .weekly-badges{display:none !important}
 .routine-table tbody tr:hover td:not(.col-name):not(.col-sl):not(.col-break){background:rgba(15,118,110,.04)}
@@ -764,6 +766,17 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
 .h-scroll-float .h-scroll-track{height:1px}
 [data-theme="dark"] .h-scroll-float{background:rgba(15,23,42,.92);border-top-color:var(--primary)}
 [data-floating-scroll="true"] .table-wrap{padding-bottom:24px}
+/* FIX: floating scrollbar চালু থাকলে .table-wrap এর native horizontal
+   scrollbar লুকাও — না হলে দুটো scrollbar পাশাপাশি দেখা যায়। */
+[data-floating-scroll="true"] .table-wrap{
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge পুরোনো */
+}
+[data-floating-scroll="true"] .table-wrap::-webkit-scrollbar{
+  height: 0 !important;            /* WebKit (Chrome/Safari/Edge) */
+  width: 0 !important;
+  display: none !important;
+}
 /* Custom scrollbar styling for the floating bar */
 .h-scroll-float::-webkit-scrollbar{height:14px}
 .h-scroll-float::-webkit-scrollbar-track{background:rgba(0,0,0,.04)}
@@ -2775,7 +2788,78 @@ document.getElementById('loginRole').addEventListener('change', e=>{
 /* ===========================================================
    RENDERING
 =========================================================== */
+/* ---------------------------------------------------------------
+   ensureStateIntegrity — Firebase/applyRemoteState যদি ফাঁকা/ভাঙা
+   data push করে state এর জরুরি field গুলো wipe করে দেয়, তাহলে
+   render এর আগে সেগুলো default দিয়ে repair করি।
+   এর ফলে renderTable / populateBulk / renderFilters কখনোই
+   undefined property access করে crash করবে না।
+   --------------------------------------------------------------- */
+function ensureStateIntegrity(){
+  if(!state || typeof state !== 'object') return;
+  // teachers / audit array
+  if(!Array.isArray(state.teachers)) state.teachers = [];
+  if(!Array.isArray(state.audit)) state.audit = [];
+  // columns: যদি ফাঁকা হয়, default time-slot গুলো ফেরত দাও
+  if(!Array.isArray(state.columns) || state.columns.length === 0){
+    state.columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
+  }
+  state.columns.forEach(c=>{
+    if(c.locked === undefined) c.locked = false;
+    if(c.color === undefined) c.color = '';
+    if(c.width === undefined) c.width = 0;
+  });
+  // options: dropdown lists খালি হলে default ফেরত দাও
+  if(!state.options || typeof state.options !== 'object'){
+    state.options = JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
+  }
+  if(!Array.isArray(state.options.class) || state.options.class.length === 0){
+    state.options.class = DEFAULT_OPTIONS.class.slice();
+  }
+  if(!Array.isArray(state.options.subject) || state.options.subject.length === 0){
+    state.options.subject = DEFAULT_OPTIONS.subject.slice();
+  }
+  if(!Array.isArray(state.options.section) || state.options.section.length === 0){
+    state.options.section = DEFAULT_OPTIONS.section.slice();
+  }
+  // settings এ অন্তত একটা empty object থাকতে হবে
+  if(!state.settings || typeof state.settings !== 'object') state.settings = {};
+  // branding
+  if(!state.branding || typeof state.branding !== 'object'){
+    state.branding = {
+      schoolName:'লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ',
+      systemName:'রুটিন ম্যানেজমেন্ট সিস্টেম',
+      logo:'রু',
+      headerGradient:'linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%)',
+      founder:'', principal:''
+    };
+  }
+  // প্রতিটা teacher এর missing field ভর্তি কর
+  state.teachers.forEach(t=>{
+    if(t.locked === undefined) t.locked = false;
+    if(t.rowColor === undefined) t.rowColor = '';
+    if(t.rowHeight === undefined) t.rowHeight = 0;
+    if(t.weeklyAssignments === undefined || typeof t.weeklyAssignments !== 'object') t.weeklyAssignments = {};
+    if(!t.cells || typeof t.cells !== 'object') t.cells = {};
+    if(t.title === undefined) t.title = '';
+    if(t.mainSubject === undefined) t.mainSubject = '';
+    if(t.weeklyNote === undefined) t.weeklyNote = '';
+    if(t.onLeave === undefined) t.onLeave = false;
+  });
+}
+
+/* updateAILinks — পুরোনো বিল্ডে এই function call করা হয়, কিন্তু
+   কখনো define করা হয়নি বলে renderAll এর শেষে ReferenceError throw
+   হত (যা doLogin এর পরের startAutoSave/startDashTimer ইত্যাদি
+   বন্ধ করে দিত)। এটা safe no-op হিসেবে রাখা হল। */
+function updateAILinks(){
+  /* no-op: কোনো AI link-button আপডেটের প্রয়োজন এখন নেই */
+}
+
 function renderAll(){
+  // CRITICAL: render এর আগে state এর integrity নিশ্চিত কর — এতে
+  // Firebase ফাঁকা/পুরোনো data push করলেও crash হবে না।
+  ensureStateIntegrity();
   renderBranding();
   renderTable();
   renderFilters();
@@ -3219,8 +3303,12 @@ function applyFilters(){
 function renderFilters(){
   const fc = document.getElementById('filterClass');
   const fs = document.getElementById('filterSubject');
-  fc.innerHTML = '<option value="">সব শ্রেণি</option>' + state.options.class.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
-  fs.innerHTML = '<option value="">সব বিষয়</option>' + state.options.subject.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if(!fc || !fs) return;
+  const opts = (state && state.options) || {};
+  const cls = Array.isArray(opts.class) ? opts.class : [];
+  const sub = Array.isArray(opts.subject) ? opts.subject : [];
+  fc.innerHTML = '<option value="">সব শ্রেণি</option>' + cls.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  fs.innerHTML = '<option value="">সব বিষয়</option>' + sub.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
 }
 
 function populateLoginTeachers(){
@@ -3766,18 +3854,36 @@ function updateCornerLabel(which, text){
    TEACHER OPERATIONS
 =========================================================== */
 function addTeacher(){
-  if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
-  snapshot();
-  const t = makeTeacher('শিক্ষক '+toBnNum(state.teachers.length+1));
-  state.teachers.push(t);
-  saveState();
-  renderTable();
-  populateLoginTeachers();
-  populateBulk();
-  audit('শিক্ষক যোগ', t.name);
-  showToast('শিক্ষক যোগ করা হয়েছে','success');
-  // Open editor for the new teacher
-  setTimeout(()=>editTeacher(t.id), 200);
+  try {
+    console.log("🔵 addTeacher called");
+    
+    if(!canFullEdit()){
+      console.warn("❌ No permission to add teacher");
+      showToast('অনুমতি নেই','error');
+      return;
+    }
+    
+    // CRITICAL: Firebase যদি just মাত্র state ফাঁকা/ভাঙা করে দেয়,
+    // তাহলে snapshot/makeTeacher/renderTable crash করত। আগে repair করি।
+    ensureStateIntegrity();
+
+    snapshot();
+    const t = makeTeacher('শিক্ষক '+toBnNum(state.teachers.length+1));
+    state.teachers.push(t);
+    saveState();
+    renderTable();
+    populateLoginTeachers();
+    populateBulk();
+    audit('শিক্ষক যোগ', t.name);
+    showToast('শিক্ষক যোগ করা হয়েছে','success');
+    
+    setTimeout(()=>editTeacher(t.id), 200);
+    console.log("✅ Teacher added successfully");
+    
+  } catch(error) {
+    console.error("❌ Error in addTeacher:", error);
+    showToast('❌ সমস্যা: ' + error.message, 'error');
+  }
 }
 
 function editTeacher(tid){
@@ -4196,11 +4302,17 @@ function populateBulk(){
   const subSel = document.getElementById('bulkSubject');
   const secSel = document.getElementById('bulkSection');
   if(!tSel) return;
-  tSel.innerHTML = state.teachers.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
-  sSel.innerHTML = state.columns.filter(c=>c.type==='slot').map(c=>`<option value="${c.id}">${esc(c.label)}</option>`).join('');
-  cSel.innerHTML = '<option value="">— পরিবর্তন নয় —</option>' + state.options.class.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
-  subSel.innerHTML = '<option value="">— পরিবর্তন নয় —</option>' + state.options.subject.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
-  secSel.innerHTML = '<option value="">— পরিবর্তন নয় —</option>' + state.options.section.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
+  const teachers = Array.isArray(state.teachers) ? state.teachers : [];
+  const columns = Array.isArray(state.columns) ? state.columns : [];
+  const opts = (state && state.options) || {};
+  const cls = Array.isArray(opts.class) ? opts.class : [];
+  const sub = Array.isArray(opts.subject) ? opts.subject : [];
+  const sec = Array.isArray(opts.section) ? opts.section : [];
+  tSel.innerHTML = teachers.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  if(sSel) sSel.innerHTML = columns.filter(c=>c.type==='slot').map(c=>`<option value="${c.id}">${esc(c.label)}</option>`).join('');
+  if(cSel) cSel.innerHTML = '<option value="">— পরিবর্তন নয় —</option>' + cls.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
+  if(subSel) subSel.innerHTML = '<option value="">— পরিবর্তন নয় —</option>' + sub.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
+  if(secSel) secSel.innerHTML = '<option value="">— পরিবর্তন নয় —</option>' + sec.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
 }
 
 function getBulkSelection(){
