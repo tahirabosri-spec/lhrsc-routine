@@ -2133,6 +2133,46 @@ input[type="range"]::-moz-range-thumb{
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- ============================================================
+     FIREBASE SDK — Realtime Database integration
+     এই অংশটি Firebase সংযোগ স্থাপন করে
+============================================================= -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDiARR8yuPVFPyzPuqtoPR2P3U_nn58-rY",
+    authDomain: "lhrsc-routine-db.firebaseapp.com",
+    databaseURL: "https://lhrsc-routine-db-default-rtdb.firebaseio.com",
+    projectId: "lhrsc-routine-db",
+    storageBucket: "lhrsc-routine-db.firebasestorage.app",
+    messagingSenderId: "508028914938",
+    appId: "1:508028914938:web:14d026b04953280a49cd43"
+  };
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // মূল স্ক্রিপ্টে ব্যবহারের জন্য গ্লোবাল করা হলো
+    window.FB = {
+      db: db,
+      ref: ref,
+      set: set,
+      get: get,
+      onValue: onValue,
+      off: off,
+      ready: true
+    };
+    console.log('✅ Firebase সংযুক্ত হয়েছে');
+    window.dispatchEvent(new Event('firebaseReady'));
+  } catch(err) {
+    console.error('❌ Firebase সংযোগ ব্যর্থ:', err);
+    window.FB = { ready: false };
+  }
+</script>
+
 <script>
 /* ===========================================================
    GLOBAL STATE & CONSTANTS
@@ -2280,11 +2320,28 @@ let isReadOnly = false;
 /* ===========================================================
    STORAGE
 =========================================================== */
+let _firebaseSyncEnabled = true; // Firebase সিঙ্ক চালু/বন্ধ করার ফ্ল্যাগ
+let _applyingRemoteState = false; // রিমোট থেকে আপডেট আসার সময় true
+
 function saveState(){
   state.lastSaved = new Date().toISOString();
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    setSaveStatus('সব সংরক্ষিত','saved');
+
+    // Firebase এ সিঙ্ক করো (যদি ইউজার এডিট করতে পারে)
+    if(_firebaseSyncEnabled && !_applyingRemoteState && window.FB && window.FB.ready
+       && currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.role === 'teacher')){
+      setSaveStatus('☁️ ক্লাউডে সংরক্ষণ হচ্ছে...','saved');
+      window.FB.set(window.FB.ref(window.FB.db, 'routineData'), state)
+        .then(() => setSaveStatus('☁️ ক্লাউডে সংরক্ষিত','saved'))
+        .catch(e => {
+          console.error('Firebase save error:', e);
+          setSaveStatus('লোকাল সংরক্ষিত (ক্লাউড ব্যর্থ)','error');
+          showToast('☁️ ক্লাউড সংরক্ষণ ব্যর্থ — ইন্টারনেট চেক করুন','error', 3000);
+        });
+    } else {
+      setSaveStatus('সব সংরক্ষিত','saved');
+    }
   }catch(e){
     setSaveStatus('সংরক্ষণ ব্যর্থ','error');
     showToast('সংরক্ষণ ব্যর্থ — স্টোরেজ পূর্ণ?','error');
@@ -2371,6 +2428,78 @@ function setSaveStatus(text, cls){
   if(el){
     el.textContent = text;
     el.className = 'save-status ' + (cls||'');
+  }
+}
+
+/* ===========================================================
+   FIREBASE REAL-TIME SYNC
+   এই অংশটি Firebase থেকে সব ডিভাইসে রুটিন সিঙ্ক রাখে
+=========================================================== */
+let _firebaseListenerStarted = false;
+
+function startFirebaseSync(){
+  // Firebase রেডি না হলে অপেক্ষা করো
+  if(!window.FB || !window.FB.ready){
+    setTimeout(startFirebaseSync, 600);
+    return;
+  }
+  if(_firebaseListenerStarted) return;
+  _firebaseListenerStarted = true;
+
+  const dbRef = window.FB.ref(window.FB.db, 'routineData');
+
+  // রিয়েল-টাইম লিসেনার: যেকোনো ডিভাইসে পরিবর্তন হলে এটা ট্রিগার হবে
+  window.FB.onValue(dbRef, (snapshot) => {
+    const remoteData = snapshot.val();
+    if(!remoteData) {
+      // ক্লাউডে কোনো ডেটা নেই — এটাই প্রথম ব্যবহার
+      // আমাদের লোকাল ডেটা থাকলে সেটা ক্লাউডে পুশ করো
+      if(state.teachers && state.teachers.length > 0 && currentUser
+         && (currentUser.role === 'admin' || currentUser.role === 'manager')){
+        console.log('🆕 Firebase খালি — লোকাল ডেটা পুশ করা হচ্ছে');
+        saveState();
+      }
+      return;
+    }
+
+    const remoteTime = remoteData.lastSaved ? new Date(remoteData.lastSaved).getTime() : 0;
+    const localTime = state.lastSaved ? new Date(state.lastSaved).getTime() : 0;
+
+    // ক্লাউডের ডেটা যদি নতুন হয়, তাহলে সেটা প্রয়োগ করো
+    if(remoteTime > localTime){
+      applyRemoteState(remoteData);
+    }
+  }, (error) => {
+    console.error('Firebase read error:', error);
+    showToast('☁️ ক্লাউড থেকে পড়তে পারছি না — ইন্টারনেট চেক করুন','error', 3000);
+  });
+}
+
+function applyRemoteState(remoteData){
+  _applyingRemoteState = true;
+  try{
+    // সমস্ত ফিল্ড আপডেট করো (settings সহ)
+    const oldSettings = state.settings;
+    Object.keys(remoteData).forEach(k => {
+      state[k] = remoteData[k];
+    });
+    // settings deep-merge করো যাতে নতুন ডিফল্ট হারিয়ে না যায়
+    state.settings = Object.assign({}, oldSettings, remoteData.settings || {});
+
+    // লোকাল স্টোরেজে সেভ করো (Firebase সেভ ছাড়া)
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+
+    // UI রিফ্রেশ করো
+    if(currentUser && typeof renderAll === 'function'){
+      renderAll();
+      showToast('🔄 অন্য ডিভাইস থেকে আপডেট এসেছে','info', 2000);
+    } else {
+      // লগইন না করা থাকলে শুধু teacher dropdown রিফ্রেশ করো
+      if(typeof populateLoginTeachers === 'function') populateLoginTeachers();
+    }
+    setSaveStatus('☁️ ক্লাউড থেকে আপডেট','saved');
+  } finally {
+    _applyingRemoteState = false;
   }
 }
 
@@ -4652,11 +4781,24 @@ function applyColorTheme(theme){
 }
 
 function resetData(){
-  if(!confirm('⚠️ সব ডেটা মুছে ফেলবেন? এটি অপরিবর্তনীয়!')) return;
+  if(!confirm('⚠️ সব ডেটা মুছে ফেলবেন? এটি অপরিবর্তনীয়!\n\nএটি ক্লাউড (Firebase) এবং সব ডিভাইস থেকেও মুছে যাবে।')) return;
   if(!confirm('সত্যিই নিশ্চিত? শেষ সুযোগ!')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(BACKUP_KEY);
-  location.reload();
+
+  // ক্লাউড থেকেও মুছে দাও
+  if(window.FB && window.FB.ready){
+    _firebaseSyncEnabled = false; // রিসেটের সময় সিঙ্ক বন্ধ
+    window.FB.set(window.FB.ref(window.FB.db, 'routineData'), null)
+      .catch(e => console.warn('Firebase reset error:', e))
+      .finally(() => {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(BACKUP_KEY);
+        location.reload();
+      });
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(BACKUP_KEY);
+    location.reload();
+  }
 }
 
 function saveBranding(){
@@ -5182,6 +5324,9 @@ function init(){
       showToast(`⚠️ ${issues.length}টি ডেটা সমস্যা পাওয়া গেছে — Settings → অন্যান্য → "🔧 ডেটা সমস্যা চেক" দিয়ে ঠিক করুন`,'warning', 8000);
     }
   }, 2000);
+
+  // ☁️ Firebase রিয়েল-টাইম সিঙ্ক চালু করো (লগইনের আগেই, যাতে teacher dropdown আপডেট হয়)
+  startFirebaseSync();
 }
 
 document.addEventListener('DOMContentLoaded', init);
