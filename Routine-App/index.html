@@ -274,7 +274,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
    TABLE CONTAINER
 ============================================================= */
 .table-wrap{
-  overflow-x:auto;
+  
   overflow-y:visible;  /* allow page-level vertical scroll; sticky thead sticks to body */
   background:var(--bg);
   position:relative;
@@ -290,7 +290,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   font-size:12.5px;
   min-width:100%;
   border-radius:10px;
-  overflow:hidden;
+  
   box-shadow:var(--shadow-sm);
   /* CRITICAL: Fixed layout enforces strict column widths — content cannot overflow */
   table-layout:fixed;
@@ -321,9 +321,9 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   font-size:11.5px;
   position:sticky;top:var(--sticky-top, 112px);z-index:20;
   text-align:center;
-  padding:4px 4px;
+  padding:2px 4px;
   height:auto;
-  min-height:42px;
+  min-height:28px;
   border-bottom:3px solid var(--primary);
   box-shadow:0 4px 12px -2px rgba(0,0,0,.15);
 }
@@ -1470,7 +1470,7 @@ input[type="range"]::-moz-range-thumb{
 
   <!-- FAB -->
   <button class="fab dashboard-fab" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊</button>
-  <button class="fab editable-only" onclick="addTeacher()" title="শিক্ষক যোগ করুন">➕</button>
+
 
 </div>
 
