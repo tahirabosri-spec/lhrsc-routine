@@ -276,9 +276,9 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .table-wrap{
   overflow-x: auto;
   overflow-y: clip; 
-  background:var(--bg);
-  position:relative;
-  padding:10px;
+  background: var(--bg);
+  position: relative;
+  padding: 10px;
 }
 @supports (overflow-y: clip){
   .table-wrap{overflow-y:clip}
@@ -314,19 +314,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .routine-table td.col-name,
 .routine-table th.col-sl,
 .routine-table th.col-name{overflow:hidden}
-.routine-table thead th{
-  background:var(--surface-2);
-  color:var(--text);
-  font-weight:600;
-  font-size:11.5px;
-  position:sticky;top:var(--sticky-top, 112px);z-index:20;
-  text-align:center;
-  padding:2px 4px;
-  height:auto;
-  min-height:32px;
-  border-bottom:3px solid var(--primary);
-  box-shadow:0 4px 12px -2px rgba(0,0,0,.15);
-}
+
 .routine-table thead th .col-tools{
   display:flex;gap:1px;justify-content:center;margin-top:2px;
   opacity:1;transition:var(--transition);
