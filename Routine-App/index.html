@@ -12,6 +12,20 @@
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230f766e'/><text x='50%25' y='58%25' text-anchor='middle' font-size='34' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>">
 
 <style>
+
+  /* শুধুমাত্র টাইম স্লট রো (Header) এর জন্য আলাদা স্টাইল */
+#theadRow th {
+    background-color: #c9bc26 !important; /* এখানে আপনার পছন্দমতো কালার কোড দিন */
+    color: #000000 !important; /* লেখার রঙ */
+    border-bottom: 3px solid var(--primary);
+}
+
+/* বিরতি কলামের হেডার যদি আলাদা রাখতে চান */
+#theadRow th.col-break {
+    background-color: #ff8c00 !important;
+    color: #fff !important;
+}
+
 /* =============================================================
    THEME VARIABLES
 ============================================================= */
@@ -1334,6 +1348,19 @@ input[type="range"]::-moz-range-thumb{
   border-top-color:var(--warning) !important;
   border-bottom-color:var(--warning) !important;
 }
+/* শিক্ষকের নাম এবং SL কলাম স্থির না রাখার কোড */
+  .routine-table td.col-sl, 
+  .routine-table td.col-name {
+    position: relative !important;
+    left: auto !important;
+    z-index: 1 !important;
+  }
+  .routine-table th.col-sl,
+  .routine-table th.col-name {
+    position: relative !important;
+    left: auto !important;
+    z-index: 1 !important;
+  }
 </style>
 </head>
 
@@ -2937,7 +2964,7 @@ function renderTable(){
         <button class="col-tool" onclick="moveCol('${c.id}',-1)" title="বামে সরান">◀</button>
         <button class="col-tool" onclick="toggleColType('${c.id}')" title="স্লট/বিরতি">⇄</button>
         <button class="col-tool" onclick="addColAfter('${c.id}')" title="পরে যোগ">➕</button>
-        <button class="col-tool" onclick="openCustomize('col','${c.id}')" title="কাস্টম রঙ/প্রস্থ">🎨</button>
+        
         <button class="col-tool ${c.locked?'active':''}" onclick="toggleColLock('${c.id}')" title="${c.locked?'আনলক':'লক'}">${lockIcon}</button>
         <button class="col-tool" onclick="delCol('${c.id}')" title="ডিলিট">🗑</button>
         <button class="col-tool" onclick="moveCol('${c.id}',1)" title="ডানে সরান">▶</button>
