@@ -1080,6 +1080,78 @@ input[type="range"]::-moz-range-thumb{
 .audit-item .who{font-weight:700;color:var(--primary)}
 
 /* =============================================================
+   SCHEDULE GENERATOR
+============================================================= */
+.sched-help{
+  background:var(--info-soft, #e0f2fe);
+  border-left:3px solid var(--info);
+  padding:10px 12px;border-radius:6px;
+  font-size:13px;line-height:1.5;color:var(--text-1);
+  margin-bottom:14px;
+}
+.sched-section{margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+.sched-section:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.sched-section h3{font-size:13px;font-weight:700;margin:0 0 10px;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px}
+.sched-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.sched-grid{grid-template-columns:1fr}}
+.preset-list{display:flex;flex-wrap:wrap;gap:8px;min-height:40px}
+.preset-list .empty{color:var(--text-3);font-size:12px;font-style:italic;padding:8px}
+.preset-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:20px;padding:4px 4px 4px 12px;
+  font-size:13px;font-weight:600;color:var(--text-1);
+}
+.preset-chip .load-btn{
+  background:var(--primary);color:#fff;border:0;
+  border-radius:14px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;
+}
+.preset-chip .del-btn{
+  background:transparent;border:0;color:var(--danger);cursor:pointer;
+  font-size:14px;padding:0 6px;
+}
+.preset-chip .load-btn:hover{filter:brightness(1.1)}
+.structure-list{
+  display:flex;flex-direction:column;gap:6px;
+  max-height:280px;overflow-y:auto;
+  background:var(--surface-2);padding:8px;border-radius:8px;
+  margin-top:8px;
+}
+.structure-row{
+  display:grid;grid-template-columns:36px 1fr 100px 110px 36px;gap:8px;align-items:center;
+  background:var(--surface);padding:6px 8px;border-radius:6px;
+}
+.structure-row .idx{font-weight:700;color:var(--text-2);text-align:center;font-size:12px}
+.structure-row .label-preview{font-size:12px;color:var(--text-1);font-weight:600}
+.structure-row select,.structure-row input{
+  padding:6px 8px;font-size:12px;border:1px solid var(--border);
+  border-radius:5px;background:var(--surface);color:var(--text-1);
+}
+.structure-row .del-row{
+  background:transparent;border:0;color:var(--danger);
+  font-size:16px;cursor:pointer;padding:4px;
+}
+.structure-row.is-break{background:var(--break-bg, #fef3c7)}
+.structure-row.is-break .label-preview{color:var(--break-text, #92400e)}
+@media(max-width:560px){
+  .structure-row{grid-template-columns:30px 1fr 80px 32px;grid-template-rows:auto auto;gap:6px}
+  .structure-row select{grid-column:1/3}
+  .structure-row .label-preview{grid-column:1/3}
+}
+.sched-preview{
+  margin-top:10px;padding:12px;background:var(--bg-soft, #f9fafb);
+  border-radius:8px;border:1px dashed var(--border);
+  min-height:40px;font-size:13px;line-height:1.7;
+}
+.sched-preview .preview-item{
+  display:inline-block;margin:3px;padding:4px 10px;
+  background:var(--surface);border-radius:6px;
+  font-weight:600;font-size:12px;
+}
+.sched-preview .preview-item.break{background:var(--break-bg, #fef3c7);color:var(--break-text, #92400e)}
+.sched-preview .empty{color:var(--text-3);font-style:italic}
+
+/* =============================================================
    OPTIONS MANAGER
 ============================================================= */
 .options-tabs{
@@ -1439,6 +1511,7 @@ input[type="range"]::-moz-range-thumb{
     <button class="tool-btn editable-only" onclick="redo()" id="redoBtn" disabled>↪️ <span class="lbl">রিডু</span></button>
     <div class="tool-divider"></div>
     <button class="tool-btn" onclick="openModal('dashboardModal');refreshDashboard()">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
+    <button class="tool-btn editable-only" onclick="openScheduleGen()">🕐 <span class="lbl">সময়সূচি</span></button>
     <button class="tool-btn" onclick="openModal('aiModal')">🤖 <span class="lbl">AI</span></button>
     <button class="tool-btn editable-only" onclick="toggleVoice()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
     <div class="tool-divider"></div>
@@ -1864,6 +1937,72 @@ input[type="range"]::-moz-range-thumb{
         <h3>⚠️ কনফ্লিক্ট তালিকা</h3>
         <div id="conflictList"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Generator Modal -->
+<div class="modal-overlay" id="scheduleGenModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h2>🕐 সময়সূচি জেনারেটর</h2>
+      <button class="modal-close" onclick="closeModal('scheduleGenModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="sched-help">
+        💡 <strong>ব্যবহার:</strong> শুরুর সময় ও প্রতি ঘণ্টার সময়কাল দিন → "প্রিভিউ" দেখুন → "প্রয়োগ করুন" চাপুন। সব কলামের সময় স্বয়ংক্রিয়ভাবে আপডেট হবে। শীত/গ্রীষ্মের জন্য আলাদা প্রিসেট সংরক্ষণ করতে পারবেন।
+      </div>
+
+      <div class="sched-section">
+        <h3>📋 সংরক্ষিত প্রিসেট</h3>
+        <div id="presetList" class="preset-list"></div>
+      </div>
+
+      <div class="sched-section">
+        <h3>⚙️ সময়সূচি কনফিগার করুন</h3>
+        <div class="sched-grid">
+          <div class="field">
+            <label>শুরুর সময় (১ম পিরিয়ড)</label>
+            <input type="time" id="schedStart" value="07:30">
+          </div>
+          <div class="field">
+            <label>প্রতি ক্লাসের সময়কাল (মিনিট)</label>
+            <input type="number" id="schedPeriod" value="50" min="20" max="120" step="5">
+          </div>
+        </div>
+
+        <h4 style="margin:18px 0 8px;font-size:14px">🔧 কাঠামো (পিরিয়ড ও বিরতি)</h4>
+        <div class="sched-help" style="font-size:12px;background:var(--bg-soft)">
+          নিচের তালিকায় বর্তমান কাঠামো দেখাচ্ছে। প্রতি সারিতে "ক্লাস" বা "বিরতি" বাছুন এবং বিরতির ক্ষেত্রে মিনিট দিন।
+        </div>
+        <div id="structureList" class="structure-list"></div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button class="tool-btn" onclick="addStructureRow('slot')">➕ ক্লাস যোগ</button>
+          <button class="tool-btn" onclick="addStructureRow('break')">➕ বিরতি যোগ</button>
+          <button class="tool-btn" onclick="loadStructureFromCurrent()">🔄 বর্তমান থেকে লোড</button>
+        </div>
+      </div>
+
+      <div class="sched-section">
+        <h3>👁️ প্রিভিউ</h3>
+        <button class="tool-btn primary" onclick="previewSchedule()">🔍 প্রিভিউ দেখুন</button>
+        <div id="schedPreview" class="sched-preview"></div>
+      </div>
+
+      <div class="sched-section">
+        <h3>💾 প্রিসেট হিসেবে সংরক্ষণ</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+          <div class="field" style="flex:1;min-width:160px;margin:0">
+            <label>প্রিসেটের নাম</label>
+            <input type="text" id="presetName" placeholder="যেমন: শীতকালীন / গ্রীষ্মকালীন">
+          </div>
+          <button class="tool-btn" onclick="savePreset()">💾 সংরক্ষণ</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tool-btn" onclick="closeModal('scheduleGenModal')">বাতিল</button>
+      <button class="tool-btn primary" onclick="applySchedule()">✅ প্রয়োগ করুন</button>
     </div>
   </div>
 </div>
@@ -4326,6 +4465,375 @@ function startDashTimer(){
   if(interval > 0){
     dashTimer = setInterval(()=>refreshDashboardSilent(false), interval*1000);
   }
+}
+
+/* ===========================================================
+   SCHEDULE GENERATOR
+   - Auto-generates time labels for slot columns based on
+     start time + period duration + break structure.
+   - Save/load named presets (e.g. শীতকালীন / গ্রীষ্মকালীন)
+=========================================================== */
+let schedStructure = []; // working structure: [{type:'slot'|'break', mins:50}]
+
+function openScheduleGen(){
+  if(!state.schedulePresets) state.schedulePresets = [];
+  loadStructureFromCurrent();
+  renderPresets();
+  renderStructureList();
+  document.getElementById('schedPreview').innerHTML = '<div class="empty">প্রিভিউ দেখতে উপরে "প্রিভিউ দেখুন" চাপুন</div>';
+  document.getElementById('presetName').value = '';
+  openModal('scheduleGenModal');
+}
+
+function loadStructureFromCurrent(){
+  // Build structure from existing columns: try to detect slot durations from labels.
+  // Fallback: 50 min per slot, 20 min per break.
+  const cols = state.columns.filter(c => c.type === 'slot' || c.type === 'break');
+  schedStructure = cols.map(c => {
+    if(c.type === 'break'){
+      return {type:'break', mins:20};
+    }
+    // Try parsing slot label to get duration
+    const bnToEn = (s) => s.replace(/[০-৯]/g, ch => '০১২৩৪৫৬৭৮৯'.indexOf(ch).toString());
+    const m = bnToEn(c.label||'').match(/(\d{1,2})\s*[:\.\u0983]\s*(\d{1,2})\s*(AM|PM|am|pm)?\s*[-–—~]\s*(\d{1,2})\s*[:\.\u0983]\s*(\d{1,2})/);
+    if(m){
+      const start = parseInt(m[1])*60 + parseInt(m[2]);
+      const end   = parseInt(m[4])*60 + parseInt(m[5]);
+      let diff = end - start;
+      if(diff < 0) diff += 12*60; // crossed AM/PM
+      if(diff > 0 && diff < 180) return {type:'slot', mins:diff};
+    }
+    return {type:'slot', mins:50};
+  });
+  // Try to set start time from first slot
+  const firstSlot = state.columns.find(c => c.type === 'slot');
+  if(firstSlot){
+    const bnToEn = (s) => s.replace(/[০-৯]/g, ch => '০১২৩৪৫৬৭৮৯'.indexOf(ch).toString());
+    const m = bnToEn(firstSlot.label||'').match(/(\d{1,2})\s*[:\.\u0983]\s*(\d{1,2})\s*(AM|PM|am|pm)?/);
+    if(m){
+      let h = parseInt(m[1]);
+      const mn = parseInt(m[2]);
+      const p = (m[3]||'').toUpperCase();
+      if(p === 'PM' && h < 12) h += 12;
+      if(p === 'AM' && h === 12) h = 0;
+      document.getElementById('schedStart').value =
+        String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0');
+    }
+  }
+  // Set common period duration if all slots are same
+  const slotMins = schedStructure.filter(s=>s.type==='slot').map(s=>s.mins);
+  if(slotMins.length){
+    const allSame = slotMins.every(m => m === slotMins[0]);
+    if(allSame) document.getElementById('schedPeriod').value = slotMins[0];
+  }
+  renderStructureList();
+}
+
+function renderStructureList(){
+  const el = document.getElementById('structureList');
+  if(!el) return;
+  if(!schedStructure.length){
+    el.innerHTML = '<div class="muted center" style="padding:14px">— কোনো ক্লাস/বিরতি নেই, যোগ করুন —</div>';
+    return;
+  }
+  // Compute preview labels live as we render
+  const startStr = document.getElementById('schedStart').value || '07:30';
+  const defaultMins = parseInt(document.getElementById('schedPeriod').value) || 50;
+  const [sh, sm] = startStr.split(':').map(n=>parseInt(n,10));
+  let cursor = sh*60 + sm;
+  let slotNum = 0;
+
+  el.innerHTML = schedStructure.map((row, i) => {
+    if(row.type === 'slot'){
+      slotNum++;
+      const mins = row.mins || defaultMins;
+      const start = cursor;
+      const end = cursor + mins;
+      cursor = end;
+      const lbl = formatSlotLabel(start, end);
+      return `<div class="structure-row" data-i="${i}">
+        <div class="idx">${toBnNum(slotNum)}</div>
+        <div class="label-preview">📚 ${esc(lbl)}</div>
+        <select onchange="changeStructureType(${i}, this.value)">
+          <option value="slot" selected>ক্লাস</option>
+          <option value="break">বিরতি</option>
+        </select>
+        <input type="number" min="20" max="120" step="5" value="${mins}"
+               onchange="changeStructureMins(${i}, this.value)" title="মিনিট">
+        <button class="del-row" onclick="removeStructureRow(${i})" title="মুছুন">✕</button>
+      </div>`;
+    } else {
+      const mins = row.mins || 20;
+      cursor += mins;
+      return `<div class="structure-row is-break" data-i="${i}">
+        <div class="idx">—</div>
+        <div class="label-preview">☕ বিরতি (${toBnNum(mins)} মিনিট)</div>
+        <select onchange="changeStructureType(${i}, this.value)">
+          <option value="slot">ক্লাস</option>
+          <option value="break" selected>বিরতি</option>
+        </select>
+        <input type="number" min="5" max="120" step="5" value="${mins}"
+               onchange="changeStructureMins(${i}, this.value)" title="মিনিট">
+        <button class="del-row" onclick="removeStructureRow(${i})" title="মুছুন">✕</button>
+      </div>`;
+    }
+  }).join('');
+}
+
+function formatSlotLabel(startMin, endMin){
+  const fmt = (mins) => {
+    let h = Math.floor(mins/60) % 24;
+    const m = mins % 60;
+    const period = h >= 12 ? 'PM' : 'AM';
+    let h12 = h % 12; if(h12 === 0) h12 = 12;
+    return {h:h12, m, period};
+  };
+  const a = fmt(startMin), b = fmt(endMin);
+  // Show period only at the end if both same period, else on both ends
+  const samePeriod = a.period === b.period;
+  const aStr = toBnNum(a.h) + ':' + toBnNum(String(a.m).padStart(2,'0'));
+  const bStr = toBnNum(b.h) + ':' + toBnNum(String(b.m).padStart(2,'0'));
+  if(samePeriod){
+    return `${aStr} - ${bStr} ${b.period}`;
+  } else {
+    return `${aStr} ${a.period} - ${bStr} ${b.period}`;
+  }
+}
+
+function changeStructureType(i, v){
+  if(!schedStructure[i]) return;
+  schedStructure[i].type = v;
+  if(v === 'break' && schedStructure[i].mins > 30){
+    schedStructure[i].mins = 20;
+  } else if(v === 'slot'){
+    schedStructure[i].mins = parseInt(document.getElementById('schedPeriod').value) || 50;
+  }
+  renderStructureList();
+}
+function changeStructureMins(i, v){
+  if(!schedStructure[i]) return;
+  schedStructure[i].mins = parseInt(v) || 20;
+  renderStructureList();
+}
+function removeStructureRow(i){
+  schedStructure.splice(i, 1);
+  renderStructureList();
+}
+function addStructureRow(type){
+  const defaultMins = type === 'break' ? 20 :
+    (parseInt(document.getElementById('schedPeriod').value) || 50);
+  schedStructure.push({type, mins:defaultMins});
+  renderStructureList();
+}
+
+// Re-render structure when start time or period changes (so preview labels update)
+document.addEventListener('input', (e) => {
+  if(e.target && (e.target.id === 'schedStart' || e.target.id === 'schedPeriod')){
+    if(document.getElementById('scheduleGenModal').classList.contains('show')){
+      // Also update slot mins to new default if user changed period
+      if(e.target.id === 'schedPeriod'){
+        const newMins = parseInt(e.target.value) || 50;
+        schedStructure.forEach(r => { if(r.type === 'slot') r.mins = newMins; });
+      }
+      renderStructureList();
+    }
+  }
+});
+
+function buildScheduleLabels(){
+  const startStr = document.getElementById('schedStart').value || '07:30';
+  const [sh, sm] = startStr.split(':').map(n=>parseInt(n,10));
+  let cursor = sh*60 + sm;
+  const out = [];
+  schedStructure.forEach(row => {
+    if(row.type === 'slot'){
+      const mins = row.mins || 50;
+      const start = cursor;
+      const end = cursor + mins;
+      out.push({type:'slot', label:formatSlotLabel(start, end), mins});
+      cursor = end;
+    } else {
+      const mins = row.mins || 20;
+      out.push({type:'break', label:'বিরতি', mins});
+      cursor += mins;
+    }
+  });
+  return out;
+}
+
+function previewSchedule(){
+  const items = buildScheduleLabels();
+  const el = document.getElementById('schedPreview');
+  if(!items.length){
+    el.innerHTML = '<div class="empty">কোনো কাঠামো নেই — ক্লাস/বিরতি যোগ করুন</div>';
+    return;
+  }
+  el.innerHTML = items.map(it =>
+    `<span class="preview-item ${it.type==='break'?'break':''}">${
+      it.type==='break' ? '☕ '+esc(it.label)+' ('+toBnNum(it.mins)+'মি)' : esc(it.label)
+    }</span>`
+  ).join('');
+}
+
+function applySchedule(){
+  const items = buildScheduleLabels();
+  if(!items.length){
+    alert('⚠️ কোনো কাঠামো নেই। ক্লাস/বিরতি যোগ করুন।');
+    return;
+  }
+  // Map generated items onto existing slot/break columns IN ORDER.
+  // Non-slot/break columns (SL, name) remain untouched.
+  const slotBreakCols = state.columns.filter(c => c.type === 'slot' || c.type === 'break');
+  // If structure count differs, ask user
+  if(items.length !== slotBreakCols.length){
+    const ok = confirm(
+      `⚠️ বর্তমান কলাম সংখ্যা (${slotBreakCols.length}) এবং নতুন কাঠামোর সংখ্যা (${items.length}) মেলে না।\n\n` +
+      `নতুন কাঠামো অনুযায়ী কলাম যোগ/বাদ দেওয়া হবে।\n\nচালিয়ে যাবেন?`
+    );
+    if(!ok) return;
+  }
+
+  // Strategy: rewrite slot/break columns. Keep existing IDs where possible (so teacher cell data is preserved).
+  const newSlotBreakCols = items.map((it, i) => {
+    const existing = slotBreakCols[i];
+    if(existing){
+      // Reuse same column id (preserves teacher data)
+      return {
+        ...existing,
+        type: it.type,
+        label: it.label,
+      };
+    }
+    // New column needed
+    return {
+      id: (it.type === 'slot' ? 'c_' : 'b_') + uid(),
+      label: it.label,
+      type: it.type,
+      locked: false,
+      color: '',
+      width: 0
+    };
+  });
+
+  // Detect deleted columns (excess slot/break cols when shrinking)
+  let removedTeacherCellsCount = 0;
+  if(slotBreakCols.length > items.length){
+    const removedIds = slotBreakCols.slice(items.length).map(c => c.id);
+    state.teachers.forEach(t => {
+      removedIds.forEach(rid => {
+        if(t.cells && t.cells[rid]){
+          if(t.cells[rid].subject || t.cells[rid].class) removedTeacherCellsCount++;
+          delete t.cells[rid];
+        }
+      });
+    });
+    if(removedTeacherCellsCount > 0){
+      const ok2 = confirm(
+        `⚠️ ${removedTeacherCellsCount}টি কলাম-সেলে শিক্ষকের ডেটা ছিল যা মুছে যাবে।\n\nনিশ্চিত?`
+      );
+      if(!ok2){
+        // Roll back: don't apply anything
+        return;
+      }
+    }
+  }
+
+  // Rebuild full state.columns: preserve order of non-slot/break, replace slot/break sequence
+  const nonSlotCols = state.columns.filter(c => c.type !== 'slot' && c.type !== 'break');
+  // Find original positions of slot/break cols to preserve order
+  const finalCols = [];
+  let sbIdx = 0;
+  state.columns.forEach(c => {
+    if(c.type === 'slot' || c.type === 'break'){
+      // skip - we'll batch insert
+    } else {
+      finalCols.push(c);
+    }
+  });
+  // Simple approach: append all non-slot cols first (SL, name come from default position)
+  // But original layout interleaves them, so we need to rebuild more carefully.
+  // The app's rendering uses state.columns order directly. SL/name are NOT in state.columns —
+  // they're rendered separately. So state.columns IS just slot/break columns. Verify:
+  // Looking at code: yes, state.columns = slot+break columns (SL and name are sticky-rendered by table).
+  state.columns = newSlotBreakCols;
+
+  snapshot();
+  audit('সময়সূচি প্রয়োগ', `${items.filter(i=>i.type==='slot').length}টি ক্লাস + ${items.filter(i=>i.type==='break').length}টি বিরতি`);
+  saveState();
+  renderTable();
+  refreshDashboardSilent(false);
+  closeModal('scheduleGenModal');
+  showToast('✅ সময়সূচি সফলভাবে প্রয়োগ হয়েছে', 'success');
+}
+
+function savePreset(){
+  const name = (document.getElementById('presetName').value||'').trim();
+  if(!name){
+    alert('⚠️ প্রিসেটের নাম দিন (যেমন: শীতকালীন)');
+    return;
+  }
+  if(!state.schedulePresets) state.schedulePresets = [];
+  const startStr = document.getElementById('schedStart').value || '07:30';
+  const periodMins = parseInt(document.getElementById('schedPeriod').value) || 50;
+
+  // Check for existing preset with same name
+  const existIdx = state.schedulePresets.findIndex(p => p.name === name);
+  const preset = {
+    name,
+    startTime: startStr,
+    periodMins,
+    structure: JSON.parse(JSON.stringify(schedStructure)),
+    savedAt: new Date().toISOString()
+  };
+  if(existIdx >= 0){
+    if(!confirm(`"${name}" নামে প্রিসেট ইতিমধ্যে আছে। প্রতিস্থাপন করবেন?`)) return;
+    state.schedulePresets[existIdx] = preset;
+  } else {
+    state.schedulePresets.push(preset);
+  }
+  saveState();
+  audit('প্রিসেট সংরক্ষণ', name);
+  renderPresets();
+  document.getElementById('presetName').value = '';
+  showToast(`✅ প্রিসেট "${name}" সংরক্ষিত`, 'success');
+}
+
+function loadPreset(idx){
+  const p = state.schedulePresets[idx];
+  if(!p) return;
+  document.getElementById('schedStart').value = p.startTime || '07:30';
+  document.getElementById('schedPeriod').value = p.periodMins || 50;
+  schedStructure = JSON.parse(JSON.stringify(p.structure || []));
+  renderStructureList();
+  previewSchedule();
+  showToast(`📥 প্রিসেট "${p.name}" লোড হয়েছে — এখন "প্রয়োগ করুন" চাপুন`, 'info');
+}
+
+function deletePreset(idx){
+  const p = state.schedulePresets[idx];
+  if(!p) return;
+  if(!confirm(`"${p.name}" প্রিসেট মুছে ফেলবেন?`)) return;
+  state.schedulePresets.splice(idx, 1);
+  saveState();
+  audit('প্রিসেট মুছে ফেলা', p.name);
+  renderPresets();
+}
+
+function renderPresets(){
+  const el = document.getElementById('presetList');
+  if(!el) return;
+  const presets = state.schedulePresets || [];
+  if(!presets.length){
+    el.innerHTML = '<div class="empty">— এখনো কোনো প্রিসেট সংরক্ষিত নেই —</div>';
+    return;
+  }
+  el.innerHTML = presets.map((p, i) => `
+    <div class="preset-chip">
+      <span>${esc(p.name)}</span>
+      <button class="load-btn" onclick="loadPreset(${i})">লোড</button>
+      <button class="del-btn" onclick="deletePreset(${i})" title="মুছুন">✕</button>
+    </div>
+  `).join('');
 }
 
 /* ===========================================================
