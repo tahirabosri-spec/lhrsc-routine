@@ -4136,27 +4136,48 @@ function getCurrentSlot(){
   for(const c of state.columns){
     if(c.type !== 'slot') continue;
     const labelEn = bnToEn(c.label);
-    // Match patterns like "7:30 - 8:20 AM" or "07.30 - 08.20"
-    const m = labelEn.match(/(\d{1,2})\s*[:\.\u0983]\s*(\d{1,2})\s*[-–—~]\s*(\d{1,2})\s*[:\.\u0983]\s*(\d{1,2})\s*(AM|PM|am|pm)?/);
+    // Allow optional AM/PM after EITHER or BOTH times.
+    // Examples that should match:
+    //   "7:30 - 8:20 AM", "7:30 AM - 8:20 AM", "11:30 - 12:15 PM",
+    //   "11:00 AM - 12:00 PM", "07:30 - 08:20", "07.30 - 08.20"
+    const m = labelEn.match(/(\d{1,2})\s*[:\.\u0983]\s*(\d{1,2})\s*(AM|PM|am|pm)?\s*[-–—~]\s*(\d{1,2})\s*[:\.\u0983]\s*(\d{1,2})\s*(AM|PM|am|pm)?/);
     if(!m) continue;
-    let h1 = parseInt(m[1],10), m1 = parseInt(m[2],10);
-    let h2 = parseInt(m[3],10), m2 = parseInt(m[4],10);
-    const period = (m[5]||'').toUpperCase();
-    if(period === 'PM' && h1 < 12) h1 += 12;
-    if(period === 'PM' && h2 < 12) h2 += 12;
-    if(period === 'AM' && h1 === 12) h1 = 0;
-    if(period === 'AM' && h2 === 12) h2 = 0;
-    // Auto-detect AM/PM if not specified — assume daytime (e.g. "9:00" → if before noon, AM)
-    if(!period){
-      // If start hour < 6, assume PM (evening labels like "6:30 - 7:20")
-      // Use hour heuristic: if numbers ascend across 12, it's normal day; treat single-digit hours after 1pm as PM if minute > current AM logic
-      // Keep as 24h if h1 >= 13
+    const h1 = parseInt(m[1],10), mn1 = parseInt(m[2],10);
+    const h2 = parseInt(m[4],10), mn2 = parseInt(m[5],10);
+    let p1 = (m[3]||'').toUpperCase();
+    let p2 = (m[6]||'').toUpperCase();
+    // Track whether only one side originally had a period — used for the AM→PM crossover heuristic below.
+    const onlyOne = (!!p1) !== (!!p2);
+    // If only one side has period, default the other to the same period.
+    if(!p1 && p2) p1 = p2;
+    if(!p2 && p1) p2 = p1;
+
+    const apply = (h, p) => {
+      if(p === 'PM' && h < 12) return h + 12;
+      if(p === 'AM' && h === 12) return 0;
+      return h;
+    };
+    let H1 = apply(h1, p1);
+    const H2 = apply(h2, p2);
+    let start = H1*60 + mn1;
+    const end = H2*60 + mn2;
+
+    // Crossover heuristic: when only ONE period was given and applying it
+    // makes end ≤ start (e.g. "11:30 - 12:15 PM" → 23:30 → 12:15),
+    // the start time is actually in the previous half-day. Flip the start.
+    // This correctly resolves "11:30 - 12:15 PM" to 11:30 AM → 12:15 PM.
+    if(end <= start && onlyOne){
+      const flipped = (p1 === 'PM') ? 'AM' : 'PM';
+      H1 = apply(h1, flipped);
+      start = H1*60 + mn1;
     }
-    const start = h1*60 + m1;
-    const end = h2*60 + m2;
+
     // Handle wrap around midnight (rare for school)
-    if(end < start && minutes >= start) return c;
-    if(minutes >= start && minutes < end) return c;
+    if(end < start){
+      if(minutes >= start || minutes < end) return c;
+    } else {
+      if(minutes >= start && minutes < end) return c;
+    }
   }
   return null;
 }
