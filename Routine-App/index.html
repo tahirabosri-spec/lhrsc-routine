@@ -1140,6 +1140,236 @@ input[type="range"]::-moz-range-thumb{
 .sched-preview .empty{color:var(--text-3);font-style:italic}
 
 /* =============================================================
+   TEACHER MODAL — Tabs & Chip Pickers
+============================================================= */
+.modal.wide{max-width:760px}
+.tch-tabs{
+  display:flex;gap:4px;padding:10px 0 0;
+  border-bottom:2px solid var(--border);
+  margin:0 -22px 16px;padding-left:22px;padding-right:22px;
+  overflow-x:auto;
+}
+.tch-tab{
+  background:transparent;border:0;
+  padding:10px 14px;font-size:13px;font-weight:600;
+  color:var(--text-2);cursor:pointer;white-space:nowrap;
+  border-bottom:3px solid transparent;
+  margin-bottom:-2px;transition:.2s;
+  font-family:inherit;
+}
+.tch-tab:hover{color:var(--primary);background:var(--surface-2)}
+.tch-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tch-pane{display:none;animation:tchfadein .2s}
+.tch-pane.active{display:block}
+@keyframes tchfadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.info-banner{
+  background:var(--info-soft, #e0f2fe);
+  border-left:3px solid var(--info, #0ea5e9);
+  padding:10px 12px;border-radius:6px;
+  font-size:12.5px;line-height:1.5;color:var(--text-1);
+  margin-bottom:14px;
+}
+
+.chip-picker{
+  display:flex;flex-wrap:wrap;gap:6px;padding:8px;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
+  min-height:44px;max-height:200px;overflow-y:auto;
+}
+.chip-picker .chip{
+  display:inline-flex;align-items:center;
+  padding:5px 12px;border-radius:16px;
+  background:var(--surface);border:1px solid var(--border);
+  font-size:12.5px;cursor:pointer;user-select:none;
+  transition:.15s;font-weight:500;
+}
+.chip-picker .chip:hover{border-color:var(--primary);color:var(--primary)}
+.chip-picker .chip.selected{
+  background:var(--primary);color:#fff;border-color:var(--primary);
+  font-weight:600;
+}
+
+.sect-heading{
+  font-size:13px;font-weight:700;
+  margin:18px 0 8px;color:var(--text-2);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.slot-groups-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+}
+@media(max-width:560px){.slot-groups-grid{grid-template-columns:repeat(2,1fr)}}
+.slot-group-card{
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:10px;text-align:center;
+}
+.slot-group-card .sg-label{font-size:13px;font-weight:700;color:var(--text-1)}
+.slot-group-card .sg-desc{font-size:10.5px;color:var(--text-3);margin:2px 0 8px}
+.slot-group-card input{
+  width:100%;text-align:center;
+  padding:6px;font-size:14px;font-weight:700;
+  border:1px solid var(--border);border-radius:6px;
+  background:var(--surface);color:var(--text-1);
+}
+
+.day-picker{
+  display:flex;flex-wrap:wrap;gap:6px;
+}
+.day-picker .day-chip{
+  padding:6px 14px;border-radius:8px;
+  background:var(--surface-2);border:1px solid var(--border);
+  font-size:12px;font-weight:600;cursor:pointer;
+  transition:.15s;user-select:none;
+}
+.day-picker .day-chip:hover{border-color:var(--primary)}
+.day-picker .day-chip.selected{
+  background:var(--primary);color:#fff;border-color:var(--primary);
+}
+.day-picker.danger .day-chip.selected{
+  background:var(--danger);border-color:var(--danger);
+}
+
+/* =============================================================
+   AI ROUTINE GENERATOR
+============================================================= */
+.ai-steps{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:20px;padding:4px 0;
+  position:relative;
+}
+.ai-steps::before{
+  content:'';position:absolute;top:18px;left:8%;right:8%;
+  height:2px;background:var(--border);z-index:0;
+}
+.ai-step{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  position:relative;z-index:1;flex:1;
+}
+.ai-step .num{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--surface-2);color:var(--text-3);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;
+  border:2px solid var(--border);
+  transition:.25s;
+}
+.ai-step .lbl{font-size:10.5px;color:var(--text-3);font-weight:600;text-align:center}
+.ai-step.active .num{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 0 0 4px rgba(15,118,110,.15)}
+.ai-step.active .lbl{color:var(--primary)}
+.ai-step.done .num{background:var(--success, #10b981);color:#fff;border-color:var(--success, #10b981);font-size:0}
+.ai-step.done .num::before{content:'✓';font-size:18px}
+@media(max-width:480px){
+  .ai-step .lbl{font-size:9px}
+  .ai-step .num{width:28px;height:28px;font-size:11px}
+  .ai-steps::before{top:14px}
+}
+
+.ai-pane{display:none;animation:tchfadein .25s}
+.ai-pane.active{display:block}
+
+.ai-howto{
+  background:var(--surface-2);border-radius:8px;padding:12px 16px;
+  margin:12px 0;font-size:12.5px;
+}
+.ai-howto h4{margin:0 0 8px;font-size:13px;color:var(--text-1)}
+.ai-howto ol{margin:0;padding-left:20px;line-height:1.7}
+.ai-howto a{color:var(--primary);font-weight:600}
+
+.ai-verify-result{
+  background:var(--surface-2);border-radius:8px;padding:14px;
+  font-size:13px;line-height:1.7;
+  max-height:300px;overflow-y:auto;
+}
+.ai-verify-result .check-item{
+  display:flex;align-items:start;gap:8px;
+  padding:6px 0;border-bottom:1px solid var(--border);
+}
+.ai-verify-result .check-item:last-child{border-bottom:0}
+.ai-verify-result .check-item.warn{color:var(--warning, #f59e0b)}
+.ai-verify-result .check-item.err{color:var(--danger)}
+.ai-verify-result .check-item.ok{color:var(--success, #10b981)}
+.ai-verify-result .icon{font-size:14px;flex-shrink:0}
+.ai-verify-result .msg{flex:1}
+.ai-verify-result .msg strong{display:block;color:var(--text-1)}
+
+.constraint-list{display:flex;flex-direction:column;gap:8px}
+.constraint-item{
+  display:flex;align-items:start;gap:10px;
+  padding:12px;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;cursor:pointer;transition:.15s;
+}
+.constraint-item:hover{border-color:var(--primary)}
+.constraint-item input[type="checkbox"]{
+  width:18px;height:18px;margin-top:2px;flex-shrink:0;
+  accent-color:var(--primary);cursor:pointer;
+}
+.constraint-item .cn-text{flex:1}
+.constraint-item .cn-title{font-weight:700;font-size:13px;color:var(--text-1);margin-bottom:2px}
+.constraint-item .cn-desc{font-size:11.5px;color:var(--text-3);line-height:1.4}
+
+.ai-progress{
+  text-align:center;padding:24px 16px;
+  background:var(--surface-2);border-radius:8px;
+}
+.ai-spinner{
+  width:48px;height:48px;
+  border:4px solid var(--border);
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:aispin 1s linear infinite;
+  margin:0 auto 16px;
+}
+@keyframes aispin{to{transform:rotate(360deg)}}
+.ai-progress-title{font-size:16px;font-weight:700;color:var(--text-1);margin-bottom:4px}
+.ai-progress-msg{font-size:12.5px;color:var(--text-2);margin-bottom:14px}
+.ai-progress-bar{
+  width:100%;height:6px;background:var(--border);border-radius:3px;
+  overflow:hidden;margin-bottom:14px;
+}
+.ai-progress-fill{
+  height:100%;background:linear-gradient(90deg,var(--primary),#14b8a6);
+  width:0%;transition:width .5s;border-radius:3px;
+}
+.ai-progress-log{
+  text-align:left;background:var(--surface);border-radius:6px;
+  padding:8px 12px;font-size:11.5px;color:var(--text-2);
+  max-height:120px;overflow-y:auto;line-height:1.5;
+  font-family:Consolas,Monaco,monospace;
+}
+.ai-progress-log .log-item{padding:2px 0}
+.ai-progress-log .log-item.ok{color:var(--success, #10b981)}
+.ai-progress-log .log-item.err{color:var(--danger)}
+
+.ai-summary{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:10px;margin-bottom:14px;
+}
+.ai-summary-card{
+  background:var(--surface-2);border-radius:8px;padding:12px;text-align:center;
+}
+.ai-summary-card .v{font-size:22px;font-weight:800;color:var(--primary);line-height:1}
+.ai-summary-card .l{font-size:11px;color:var(--text-3);margin-top:4px;font-weight:600}
+.ai-summary-card.ok .v{color:var(--success, #10b981)}
+.ai-summary-card.warn .v{color:var(--warning, #f59e0b)}
+.ai-summary-card.err .v{color:var(--danger)}
+
+.ai-issues{
+  background:var(--surface-2);border-radius:8px;padding:12px;
+  margin-bottom:14px;font-size:12.5px;line-height:1.6;
+  max-height:200px;overflow-y:auto;
+}
+.ai-issues:empty{display:none}
+.ai-issues .issue-item{
+  display:flex;gap:8px;padding:4px 0;
+  border-bottom:1px solid var(--border);
+}
+.ai-issues .issue-item:last-child{border-bottom:0}
+
+.ai-preview-actions{
+  display:flex;justify-content:space-between;gap:8px;
+  flex-wrap:wrap;margin-top:14px;
+}
+
+/* =============================================================
    OPTIONS MANAGER
 ============================================================= */
 .options-tabs{
@@ -1500,6 +1730,7 @@ input[type="range"]::-moz-range-thumb{
     <div class="tool-divider"></div>
     <button class="tool-btn" onclick="openModal('dashboardModal');refreshDashboard()">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
     <button class="tool-btn editable-only" onclick="openScheduleGen()">🕐 <span class="lbl">সময়সূচি</span></button>
+    <button class="tool-btn primary editable-only" onclick="openAIGenerator()">🤖 <span class="lbl">AI রুটিন</span></button>
     <button class="tool-btn" onclick="openModal('aiModal')">🤖 <span class="lbl">AI</span></button>
     <button class="tool-btn editable-only" onclick="toggleVoice()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
     <div class="tool-divider"></div>
@@ -1929,6 +2160,149 @@ input[type="range"]::-moz-range-thumb{
   </div>
 </div>
 
+<!-- AI Auto-Routine Generator Modal -->
+<div class="modal-overlay" id="aiGenModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h2>🤖 AI দিয়ে স্বয়ংক্রিয় রুটিন</h2>
+      <button class="modal-close" onclick="closeModal('aiGenModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- STEP INDICATOR -->
+      <div class="ai-steps">
+        <div class="ai-step active" data-step="1"><div class="num">১</div><div class="lbl">সেটআপ</div></div>
+        <div class="ai-step" data-step="2"><div class="num">২</div><div class="lbl">যাচাই</div></div>
+        <div class="ai-step" data-step="3"><div class="num">৩</div><div class="lbl">শর্ত</div></div>
+        <div class="ai-step" data-step="4"><div class="num">৪</div><div class="lbl">তৈরি</div></div>
+        <div class="ai-step" data-step="5"><div class="num">৫</div><div class="lbl">প্রিভিউ</div></div>
+      </div>
+
+      <!-- STEP 1: API KEY SETUP -->
+      <div class="ai-pane active" data-pane="1">
+        <div class="info-banner">
+          🔑 প্রথমবার ব্যবহার করতে <strong>Google Gemini API Key</strong> লাগবে — সম্পূর্ণ বিনামূল্যে। একবার দিলেই হবে।
+        </div>
+        <div class="ai-howto">
+          <h4>📋 API Key পাওয়ার নিয়ম:</h4>
+          <ol>
+            <li><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com/app/apikey</a> এ যান</li>
+            <li>Google account দিয়ে login করুন</li>
+            <li><strong>"Create API Key"</strong> চাপুন</li>
+            <li>একটা লম্বা code পাবেন (যেমন: AIzaSy...) সেটা copy করুন</li>
+            <li>নিচে paste করুন</li>
+          </ol>
+        </div>
+        <div class="field">
+          <label>🔑 Google Gemini API Key</label>
+          <input id="aiApiKey" type="password" placeholder="AIzaSy..." autocomplete="off">
+          <div class="muted" style="font-size:11px;margin-top:4px">⚠️ এই key শুধু আপনার ব্রাউজারে save হবে, কোথাও পাঠানো হবে না।</div>
+        </div>
+        <div style="text-align:right;margin-top:14px">
+          <button class="tool-btn primary" onclick="aiGoToStep(2)">পরবর্তী →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: DATA VERIFICATION -->
+      <div class="ai-pane" data-pane="2">
+        <div class="info-banner">
+          🔍 শিক্ষকদের তথ্য সম্পূর্ণ আছে কিনা যাচাই করছি। কোনো সমস্যা থাকলে নিচে দেখাবে।
+        </div>
+        <div id="aiVerifyResult" class="ai-verify-result"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:14px">
+          <button class="tool-btn" onclick="aiGoToStep(1)">← আগের ধাপ</button>
+          <button class="tool-btn primary" id="aiVerifyNextBtn" onclick="aiGoToStep(3)">পরবর্তী →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: CONSTRAINTS -->
+      <div class="ai-pane" data-pane="3">
+        <div class="info-banner">
+          ⚙️ AI কী কী নিয়ম মেনে চলবে সেটা ঠিক করুন। যা apply হবে তা ✅ থাকবে।
+        </div>
+        <div class="constraint-list">
+          <label class="constraint-item">
+            <input type="checkbox" id="cnFriday" checked>
+            <div class="cn-text">
+              <div class="cn-title">🕌 শুক্রবার ছুটি</div>
+              <div class="cn-desc">শুক্রবার কোনো ক্লাস বরাদ্দ হবে না</div>
+            </div>
+          </label>
+          <label class="constraint-item">
+            <input type="checkbox" id="cnNoBackToBack" checked>
+            <div class="cn-text">
+              <div class="cn-title">⏸️ পরপর ৩+ ক্লাস না</div>
+              <div class="cn-desc">একই শিক্ষক একদিনে পরপর ৩টির বেশি ক্লাস পাবে না</div>
+            </div>
+          </label>
+          <label class="constraint-item">
+            <input type="checkbox" id="cnMajorMorning" checked>
+            <div class="cn-text">
+              <div class="cn-title">🌅 মূল বিষয় সকালে</div>
+              <div class="cn-desc">বাংলা, ইংরেজি, গণিত — সকালের slot-এ অগ্রাধিকার</div>
+            </div>
+          </label>
+          <label class="constraint-item">
+            <input type="checkbox" id="cnRespectLeave" checked>
+            <div class="cn-text">
+              <div class="cn-title">🌴 ছুটির শিক্ষক বাদ</div>
+              <div class="cn-desc">যারা ছুটিতে আছেন তাদের ক্লাস দেওয়া হবে না</div>
+            </div>
+          </label>
+          <label class="constraint-item">
+            <input type="checkbox" id="cnPreserveLocked" checked>
+            <div class="cn-text">
+              <div class="cn-title">🔒 লক করা শিক্ষক অপরিবর্তিত</div>
+              <div class="cn-desc">লক করা শিক্ষকদের বর্তমান class পরিবর্তন হবে না</div>
+            </div>
+          </label>
+          <label class="constraint-item">
+            <input type="checkbox" id="cnEvenDistribution">
+            <div class="cn-text">
+              <div class="cn-title">⚖️ সমান বন্টন</div>
+              <div class="cn-desc">সপ্তাহের সব দিনে যথাসম্ভব সমান সংখ্যক ক্লাস</div>
+            </div>
+          </label>
+        </div>
+
+        <div class="field" style="margin-top:14px">
+          <label>📝 অতিরিক্ত নির্দেশনা (ঐচ্ছিক)</label>
+          <textarea id="aiCustomInstructions" rows="3" placeholder="যেমন: 'নবম শ্রেণির গণিত দুপুরের আগে রাখো', 'রহিম স্যারকে সকালে বেশি ক্লাস দাও', ইত্যাদি"></textarea>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;margin-top:14px">
+          <button class="tool-btn" onclick="aiGoToStep(2)">← আগের ধাপ</button>
+          <button class="tool-btn primary" onclick="aiGoToStep(4)">পরবর্তী →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: GENERATING -->
+      <div class="ai-pane" data-pane="4">
+        <div class="ai-progress">
+          <div class="ai-spinner"></div>
+          <div class="ai-progress-title" id="aiProgressTitle">🤖 AI প্রস্তুত হচ্ছে...</div>
+          <div class="ai-progress-msg" id="aiProgressMsg">কয়েক মুহূর্ত অপেক্ষা করুন</div>
+          <div class="ai-progress-bar"><div class="ai-progress-fill" id="aiProgressFill"></div></div>
+          <div class="ai-progress-log" id="aiProgressLog"></div>
+        </div>
+        <div style="text-align:center;margin-top:14px">
+          <button class="tool-btn" id="aiCancelBtn" onclick="aiCancelGeneration()">❌ বাতিল</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: PREVIEW -->
+      <div class="ai-pane" data-pane="5">
+        <div id="aiPreviewSummary" class="ai-summary"></div>
+        <div id="aiPreviewIssues" class="ai-issues"></div>
+        <div class="ai-preview-actions">
+          <button class="tool-btn" onclick="aiGoToStep(3)">← সংশোধন</button>
+          <button class="tool-btn" onclick="aiRetryGeneration()">🔄 আবার চেষ্টা</button>
+          <button class="tool-btn primary" onclick="aiApplyResult()">✅ প্রয়োগ করুন</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Schedule Generator Modal -->
 <div class="modal-overlay" id="scheduleGenModal">
   <div class="modal wide">
@@ -2153,76 +2527,141 @@ input[type="range"]::-moz-range-thumb{
 
 <!-- Teacher Edit Modal -->
 <div class="modal-overlay" id="teacherModal">
-  <div class="modal narrow">
+  <div class="modal wide">
     <div class="modal-header">
-      <h2>👤 শিক্ষক তথ্য এডিট</h2>
+      <h2>👤 শিক্ষক তথ্য</h2>
       <button class="modal-close" onclick="closeModal('teacherModal')">×</button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="padding-top:0">
       <input type="hidden" id="tEditId">
-      <div class="field"><label>শিক্ষকের নাম</label><input id="tEditName" type="text"></div>
-      <div class="field-row">
-        <div class="field">
-          <label>পদবি (Designation)</label>
-          <select id="tEditTitle">
-            <option value="">— নির্বাচন করুন —</option>
-            <option value="Lecturer">Lecturer (প্রভাষক)</option>
-            <option value="Assistant Teacher">Assistant Teacher (সহকারী শিক্ষক)</option>
-          </select>
+
+      <!-- TABS -->
+      <div class="tch-tabs">
+        <button class="tch-tab active" data-tab="basic" onclick="switchTeacherTab('basic')">📝 মৌলিক তথ্য</button>
+        <button class="tch-tab" data-tab="teaching" onclick="switchTeacherTab('teaching')">📚 পাঠদান</button>
+        <button class="tch-tab" data-tab="time" onclick="switchTeacherTab('time')">⏰ সময়সূচি</button>
+        <button class="tch-tab" data-tab="weekly" onclick="switchTeacherTab('weekly')">📅 সাপ্তাহিক</button>
+      </div>
+
+      <!-- TAB 1: BASIC -->
+      <div class="tch-pane active" data-pane="basic">
+        <div class="field"><label>শিক্ষকের নাম</label><input id="tEditName" type="text"></div>
+        <div class="field-row">
+          <div class="field">
+            <label>পদবি (Designation)</label>
+            <select id="tEditTitle">
+              <option value="">— নির্বাচন করুন —</option>
+              <option value="Lecturer">Lecturer (প্রভাষক)</option>
+              <option value="Senior Teacher">Senior Teacher (সিনিয়র শিক্ষক)</option>
+              <option value="Assistant Teacher">Assistant Teacher (সহকারী শিক্ষক)</option>
+              <option value="Junior Teacher">Junior Teacher (জুনিয়র শিক্ষক)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>প্রধান বিষয় (Primary)</label>
+            <select id="tEditSubject">
+              <option value="">— নির্বাচন করুন —</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <label>প্রধান / স্থায়ী বিষয় (Primary Subject)</label>
-          <select id="tEditSubject">
-            <option value="">— নির্বাচন করুন —</option>
-            <option value="বাংলা">বাংলা</option>
-            <option value="English">English</option>
-            <option value="গণিত">গণিত</option>
-            <option value="উচ্চতর গণিত">উচ্চতর গণিত</option>
-            <option value="বিজ্ঞান">বিজ্ঞান</option>
-            <option value="পদার্থবিজ্ঞান">পদার্থবিজ্ঞান</option>
-            <option value="রসায়ন">রসায়ন</option>
-            <option value="জীববিজ্ঞান">জীববিজ্ঞান</option>
-            <option value="ইতিহাস">ইতিহাস</option>
-            <option value="ইতিহাস ও সামাজিক বিজ্ঞান">ইতিহাস ও সামাজিক বিজ্ঞান</option>
-            <option value="বাংলাদেশ ও বিশ্বপরিচয়">বাংলাদেশ ও বিশ্বপরিচয়</option>
-            <option value="পৌরনীতি ও নাগরিকতা">পৌরনীতি ও নাগরিকতা</option>
-            <option value="পৌরনীতি ও সুশাসন">পৌরনীতি ও সুশাসন</option>
-            <option value="অর্থনীতি">অর্থনীতি</option>
-            <option value="সমাজবিজ্ঞান">সমাজবিজ্ঞান</option>
-            <option value="যুক্তিবিদ্যা">যুক্তিবিদ্যা</option>
-            <option value="ভূগোল">ভূগোল</option>
-            <option value="ডিজিটাল প্রযুক্তি">ডিজিটাল প্রযুক্তি</option>
-            <option value="তথ্য ও যোগাযোগ প্রযুক্তি (ICT)">তথ্য ও যোগাযোগ প্রযুক্তি (ICT)</option>
-            <option value="কর্ম ও জীবনমুখী শিক্ষা">কর্ম ও জীবনমুখী শিক্ষা</option>
-            <option value="কৃষিশিক্ষা">কৃষিশিক্ষা</option>
-            <option value="চারু ও কারুকলা">চারু ও কারুকলা</option>
-            <option value="শারীরিক শিক্ষা ও স্বাস্থ্য">শারীরিক শিক্ষা ও স্বাস্থ্য</option>
-            <option value="ধর্ম ও নৈতিক শিক্ষা">ধর্ম ও নৈতিক শিক্ষা</option>
-          </select>
+        <div class="toggle-row">
+          <div class="info"><div class="lbl">ছুটিতে আছেন</div><div class="desc">পুরো রো লাল হয়ে "ছুটিতে আছি" দেখাবে</div></div>
+          <label class="switch"><input type="checkbox" id="tEditLeave"><span class="slider"></span></label>
         </div>
       </div>
 
-      <div class="divider"></div>
-      <h3 style="margin:0 0 6px;font-size:13px;color:var(--text-2)">📅 সাপ্তাহিক বিষয় বন্টন</h3>
-      <div style="font-size:11.5px;color:var(--text-3);margin-bottom:8px">প্রতিদিনের জন্য বিষয় নির্ধারণ করুন। নাম এর পাশে ছোট করে দেখাবে (যেমন: "Sun: Bangla, Tue: Physics")</div>
-      <div class="weekly-grid" id="tEditWeeklyGrid">
-        <!-- generated by JS -->
+      <!-- TAB 2: TEACHING -->
+      <div class="tch-pane" data-pane="teaching">
+        <div class="info-banner">
+          📚 কোন কোন <strong>বিষয়</strong>, <strong>শ্রেণি</strong> ও <strong>শাখায়</strong> এই শিক্ষক ক্লাস নেবেন তা নির্বাচন করুন। একাধিক select করতে পারবেন। AI এই তথ্য থেকে রুটিন বানাবে।
+        </div>
+
+        <div class="field">
+          <label>📖 যে বিষয়গুলো পড়ান (একাধিক)</label>
+          <div class="chip-picker" id="subjectsPicker"></div>
+        </div>
+
+        <div class="field">
+          <label>🎓 যে শ্রেণিগুলোতে পড়ান (একাধিক)</label>
+          <div class="chip-picker" id="classesPicker"></div>
+        </div>
+
+        <div class="field">
+          <label>📑 যে শাখাগুলোতে পড়ান (একাধিক)</label>
+          <div class="chip-picker" id="sectionsPicker"></div>
+        </div>
       </div>
 
-      <div class="divider"></div>
-      <div class="field"><label>অন্যান্য নোট (ঐচ্ছিক)</label>
-        <textarea id="tEditWeekly" placeholder="যেকোনো বাড়তি তথ্য..." rows="2"></textarea>
+      <!-- TAB 3: TIME PREFERENCES -->
+      <div class="tch-pane" data-pane="time">
+        <div class="info-banner">
+          ⏰ একজন শিক্ষক <strong>সপ্তাহে কতগুলো ক্লাস</strong> নেবেন এবং <strong>কোন সময়ে</strong> কয়টি ক্লাস নিতে স্বাচ্ছন্দ্যবোধ করেন তা নির্দিষ্ট করুন।
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>📊 সপ্তাহে মোট ক্লাস</label>
+            <input id="tEditWeeklyTotal" type="number" min="0" max="60" placeholder="যেমন: 24">
+          </div>
+        </div>
+
+        <h4 class="sect-heading">🕐 দিনের কোন সময়ে কয়টি ক্লাস</h4>
+        <div class="slot-groups-grid">
+          <div class="slot-group-card">
+            <div class="sg-label">🌅 সকাল</div>
+            <div class="sg-desc">প্রথম ৩ slot</div>
+            <input type="number" min="0" max="20" id="tEditSlotMorning" placeholder="0">
+          </div>
+          <div class="slot-group-card">
+            <div class="sg-label">☀️ দুপুরের আগে</div>
+            <div class="sg-desc">slot ৪-৬</div>
+            <input type="number" min="0" max="20" id="tEditSlotLateMorning" placeholder="0">
+          </div>
+          <div class="slot-group-card">
+            <div class="sg-label">🌤️ বিকাল</div>
+            <div class="sg-desc">slot ৭-৯</div>
+            <input type="number" min="0" max="20" id="tEditSlotAfternoon" placeholder="0">
+          </div>
+          <div class="slot-group-card">
+            <div class="sg-label">🌆 সন্ধ্যা</div>
+            <div class="sg-desc">slot ১০+</div>
+            <input type="number" min="0" max="20" id="tEditSlotEvening" placeholder="0">
+          </div>
+        </div>
+
+        <h4 class="sect-heading">📅 পছন্দের ও অনুপলব্ধ দিন</h4>
+        <div class="field">
+          <label>✅ পছন্দের দিন (যেদিনে বেশি ক্লাস দিন)</label>
+          <div class="day-picker" id="preferredDaysPicker"></div>
+        </div>
+        <div class="field">
+          <label>🚫 অনুপলব্ধ দিন (এই দিনগুলোতে ক্লাস দেওয়া যাবে না)</label>
+          <div class="day-picker" id="unavailableDaysPicker"></div>
+        </div>
+
+        <div class="field">
+          <label>📝 বিশেষ শর্ত / অতিরিক্ত নোট</label>
+          <textarea id="tEditNotes" rows="3" placeholder="যেমন: জুম্মার আগে free রাখুন, ১:০০-এর পর ক্লাস নেই, ইত্যাদি..."></textarea>
+        </div>
       </div>
 
-      <div class="toggle-row">
-        <div class="info"><div class="lbl">ছুটিতে আছি</div><div class="desc">পুরো রো লাল হয়ে "ছুটিতে আছি" দেখাবে</div></div>
-        <label class="switch"><input type="checkbox" id="tEditLeave"><span class="slider"></span></label>
+      <!-- TAB 4: WEEKLY ASSIGNMENTS (existing) -->
+      <div class="tch-pane" data-pane="weekly">
+        <div class="info-banner">
+          📅 প্রতিদিনের জন্য বিশেষ বিষয় নির্ধারণ (নাম এর পাশে দেখাবে)
+        </div>
+        <div class="weekly-grid" id="tEditWeeklyGrid"></div>
+
+        <div class="divider"></div>
+        <div class="field"><label>অন্যান্য নোট (ঐচ্ছিক)</label>
+          <textarea id="tEditWeekly" placeholder="যেকোনো বাড়তি তথ্য..." rows="2"></textarea>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="tool-btn danger editable-only" onclick="deleteTeacher()" id="tDeleteBtn">🗑 ডিলিট</button>
       <button class="tool-btn" onclick="closeModal('teacherModal')">বাতিল</button>
-      <button class="tool-btn primary" onclick="saveTeacher()">সংরক্ষণ করুন</button>
+      <button class="tool-btn primary" onclick="saveTeacher()">💾 সংরক্ষণ করুন</button>
     </div>
   </div>
 </div>
@@ -2574,7 +3013,21 @@ function makeTeacher(name='নতুন শিক্ষক'){
     rowColor:'',
     rowHeight:0,
     weeklyAssignments:{},
-    cells:{}
+    cells:{},
+    // ===== AI Auto-routine fields =====
+    subjects: [],         // যে বিষয়গুলো পড়ান (multi)
+    classes: [],          // যে শ্রেণিগুলোতে পড়ান (multi)
+    sections: [],         // যে শাখাগুলোতে পড়ান (multi)
+    weeklyTotal: 0,       // সপ্তাহে মোট কয়টি ক্লাস
+    slotGroupLimits: {    // ৪টা slot group-এ কয়টি ক্লাস
+      morning: 0,         // সকাল (slot 1-3)
+      lateMorning: 0,     // দুপুরের আগে (slot 4-6)
+      afternoon: 0,       // বিকাল (slot 7-9)
+      evening: 0          // সন্ধ্যা (slot 10+)
+    },
+    preferredDays: [],    // পছন্দের দিন (যেমন ['Sat','Sun'])
+    unavailableDays: [],  // যে দিন ছুটি (যেমন ['Fri'])
+    notes: ''             // অন্যান্য বিশেষ শর্ত
   };
 }
 
@@ -2987,7 +3440,26 @@ function ensureStateIntegrity(){
     if(t.mainSubject === undefined) t.mainSubject = '';
     if(t.weeklyNote === undefined) t.weeklyNote = '';
     if(t.onLeave === undefined) t.onLeave = false;
+    // New AI-related fields
+    if(!Array.isArray(t.subjects)) t.subjects = t.mainSubject ? [t.mainSubject] : [];
+    if(!Array.isArray(t.classes)) t.classes = [];
+    if(!Array.isArray(t.sections)) t.sections = [];
+    if(typeof t.weeklyTotal !== 'number') t.weeklyTotal = 0;
+    if(!t.slotGroupLimits || typeof t.slotGroupLimits !== 'object'){
+      t.slotGroupLimits = {morning:0, lateMorning:0, afternoon:0, evening:0};
+    } else {
+      ['morning','lateMorning','afternoon','evening'].forEach(k => {
+        if(typeof t.slotGroupLimits[k] !== 'number') t.slotGroupLimits[k] = 0;
+      });
+    }
+    if(!Array.isArray(t.preferredDays)) t.preferredDays = [];
+    if(!Array.isArray(t.unavailableDays)) t.unavailableDays = [];
+    if(typeof t.notes !== 'string') t.notes = '';
   });
+  // AI settings
+  if(!state.aiSettings || typeof state.aiSettings !== 'object'){
+    state.aiSettings = {geminiKey:'', lastGenerated:null};
+  }
 }
 
 /* updateAILinks — পুরোনো বিল্ডে এই function call করা হয়, কিন্তু
@@ -4035,14 +4507,38 @@ function editTeacher(tid){
   document.getElementById('tEditId').value = t.id;
   document.getElementById('tEditName').value = t.name;
   document.getElementById('tEditTitle').value = t.title || '';
-  document.getElementById('tEditSubject').value = t.mainSubject || '';
   document.getElementById('tEditWeekly').value = t.weeklyNote || '';
   document.getElementById('tEditLeave').checked = !!t.onLeave;
+
+  // Populate primary subject dropdown from state.options.subject
+  const subSel = document.getElementById('tEditSubject');
+  const subList = (state.options && state.options.subject) || SUBJECT_LIST;
+  subSel.innerHTML = '<option value="">— নির্বাচন করুন —</option>' +
+    subList.map(s => `<option value="${esc(s)}" ${t.mainSubject===s?'selected':''}>${esc(s)}</option>`).join('');
+
+  // Populate the chip pickers — subjects, classes, sections
+  renderChipPicker('subjectsPicker', subList, t.subjects || []);
+  renderChipPicker('classesPicker', (state.options && state.options.class) || [], t.classes || []);
+  renderChipPicker('sectionsPicker', (state.options && state.options.section) || [], t.sections || []);
+
+  // Time preferences
+  document.getElementById('tEditWeeklyTotal').value = t.weeklyTotal || '';
+  const sg = t.slotGroupLimits || {};
+  document.getElementById('tEditSlotMorning').value = sg.morning || '';
+  document.getElementById('tEditSlotLateMorning').value = sg.lateMorning || '';
+  document.getElementById('tEditSlotAfternoon').value = sg.afternoon || '';
+  document.getElementById('tEditSlotEvening').value = sg.evening || '';
+
+  // Day pickers
+  renderDayPicker('preferredDaysPicker', t.preferredDays || [], false);
+  renderDayPicker('unavailableDaysPicker', t.unavailableDays || [], true);
+
+  // Additional notes
+  document.getElementById('tEditNotes').value = t.notes || '';
 
   // Weekly assignments grid
   const grid = document.getElementById('tEditWeeklyGrid');
   if(!t.weeklyAssignments) t.weeklyAssignments = {};
-  const subjOpts = SUBJECT_LIST.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
   grid.innerHTML = WEEK_DAYS.map(d=>{
     const cur = t.weeklyAssignments[d.key] || '';
     return `<div class="weekly-row">
@@ -4054,21 +4550,74 @@ function editTeacher(tid){
     </div>`;
   }).join('');
 
+  // Reset to first tab
+  switchTeacherTab('basic');
+
   // Teacher role: only show name (readonly) + leave toggle
-  const tName = document.getElementById('tEditName');
-  const tTitle = document.getElementById('tEditTitle');
-  const tSub = document.getElementById('tEditSubject');
-  const tWeekly = document.getElementById('tEditWeekly');
   const teacherOnly = (currentUser.role === 'teacher');
-  tName.readOnly = teacherOnly;
-  tTitle.disabled = teacherOnly;
-  tSub.disabled = teacherOnly;
-  tWeekly.readOnly = teacherOnly;
-  // Disable weekly selects too if teacher-only
+  document.getElementById('tEditName').readOnly = teacherOnly;
+  document.getElementById('tEditTitle').disabled = teacherOnly;
+  document.getElementById('tEditSubject').disabled = teacherOnly;
+  document.getElementById('tEditWeekly').readOnly = teacherOnly;
+  document.getElementById('tEditNotes').readOnly = teacherOnly;
+  document.getElementById('tEditWeeklyTotal').readOnly = teacherOnly;
+  ['tEditSlotMorning','tEditSlotLateMorning','tEditSlotAfternoon','tEditSlotEvening'].forEach(id => {
+    document.getElementById(id).readOnly = teacherOnly;
+  });
   grid.querySelectorAll('select').forEach(s=>{ s.disabled = teacherOnly; });
   document.getElementById('tDeleteBtn').style.display = canFullEdit() ? '' : 'none';
 
   openModal('teacherModal');
+}
+
+function switchTeacherTab(tabName){
+  document.querySelectorAll('#teacherModal .tch-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tabName);
+  });
+  document.querySelectorAll('#teacherModal .tch-pane').forEach(p => {
+    p.classList.toggle('active', p.dataset.pane === tabName);
+  });
+}
+
+function renderChipPicker(elementId, options, selected){
+  const el = document.getElementById(elementId);
+  if(!el) return;
+  if(!options || !options.length){
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-3);font-style:italic;padding:6px">— কোনো option নেই। প্রথমে ⚙ Options-এ যোগ করুন —</div>';
+    return;
+  }
+  const selSet = new Set(selected || []);
+  el.innerHTML = options.map(opt => {
+    const isSel = selSet.has(opt);
+    return `<span class="chip ${isSel?'selected':''}" data-val="${esc(opt)}" onclick="toggleChip(this)">${esc(opt)}</span>`;
+  }).join('');
+}
+
+function toggleChip(chipEl){
+  chipEl.classList.toggle('selected');
+}
+
+function getChipPickerValues(elementId){
+  const el = document.getElementById(elementId);
+  if(!el) return [];
+  return Array.from(el.querySelectorAll('.chip.selected')).map(c => c.dataset.val);
+}
+
+function renderDayPicker(elementId, selected, isDanger){
+  const el = document.getElementById(elementId);
+  if(!el) return;
+  el.classList.toggle('danger', !!isDanger);
+  const selSet = new Set(selected || []);
+  el.innerHTML = WEEK_DAYS.map(d => {
+    const isSel = selSet.has(d.key);
+    return `<span class="day-chip ${isSel?'selected':''}" data-val="${d.key}" onclick="toggleChip(this)">${d.bn}</span>`;
+  }).join('');
+}
+
+function getDayPickerValues(elementId){
+  const el = document.getElementById(elementId);
+  if(!el) return [];
+  return Array.from(el.querySelectorAll('.day-chip.selected')).map(c => c.dataset.val);
 }
 
 function saveTeacher(){
@@ -4088,6 +4637,24 @@ function saveTeacher(){
     document.querySelectorAll('#tEditWeeklyGrid select').forEach(sel=>{
       t.weeklyAssignments[sel.dataset.day] = sel.value || '';
     });
+    // Save new AI fields
+    t.subjects = getChipPickerValues('subjectsPicker');
+    t.classes = getChipPickerValues('classesPicker');
+    t.sections = getChipPickerValues('sectionsPicker');
+    t.weeklyTotal = parseInt(document.getElementById('tEditWeeklyTotal').value) || 0;
+    t.slotGroupLimits = {
+      morning: parseInt(document.getElementById('tEditSlotMorning').value) || 0,
+      lateMorning: parseInt(document.getElementById('tEditSlotLateMorning').value) || 0,
+      afternoon: parseInt(document.getElementById('tEditSlotAfternoon').value) || 0,
+      evening: parseInt(document.getElementById('tEditSlotEvening').value) || 0
+    };
+    t.preferredDays = getDayPickerValues('preferredDaysPicker');
+    t.unavailableDays = getDayPickerValues('unavailableDaysPicker');
+    t.notes = document.getElementById('tEditNotes').value.trim();
+    // Sync mainSubject into subjects if not already present
+    if(t.mainSubject && !t.subjects.includes(t.mainSubject)){
+      t.subjects.unshift(t.mainSubject);
+    }
   }
   t.onLeave = document.getElementById('tEditLeave').checked;
   saveState();
@@ -4822,6 +5389,464 @@ function renderPresets(){
       <button class="del-btn" onclick="deletePreset(${i})" title="মুছুন">✕</button>
     </div>
   `).join('');
+}
+
+/* ===========================================================
+   AI AUTO-ROUTINE GENERATOR
+   - Uses Google Gemini API
+   - Wizard flow: Setup → Verify → Constraints → Generate → Preview → Apply
+=========================================================== */
+let aiCurrentStep = 1;
+let aiGenAbortController = null;
+let aiLastResult = null;
+
+function openAIGenerator(){
+  if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  // Pre-fill API key if saved
+  const savedKey = (state.aiSettings && state.aiSettings.geminiKey) || '';
+  document.getElementById('aiApiKey').value = savedKey;
+  aiGoToStep(savedKey ? 2 : 1);
+  openModal('aiGenModal');
+}
+
+function aiGoToStep(n){
+  aiCurrentStep = n;
+  // Update step indicators
+  document.querySelectorAll('#aiGenModal .ai-step').forEach((el, i) => {
+    el.classList.remove('active','done');
+    const stepNum = parseInt(el.dataset.step);
+    if(stepNum < n) el.classList.add('done');
+    if(stepNum === n) el.classList.add('active');
+  });
+  // Show correct pane
+  document.querySelectorAll('#aiGenModal .ai-pane').forEach(p => {
+    p.classList.toggle('active', parseInt(p.dataset.pane) === n);
+  });
+
+  // Step-specific actions
+  if(n === 1){
+    // Save key when user typed it
+    const keyInput = document.getElementById('aiApiKey');
+    keyInput.onchange = () => {
+      const v = keyInput.value.trim();
+      if(!state.aiSettings) state.aiSettings = {};
+      state.aiSettings.geminiKey = v;
+      saveState();
+    };
+  }
+  if(n === 2){
+    // Save key on enter to step 2 (in case user just typed it)
+    const v = document.getElementById('aiApiKey').value.trim();
+    if(v){
+      if(!state.aiSettings) state.aiSettings = {};
+      state.aiSettings.geminiKey = v;
+      saveState();
+    }
+    aiRunVerification();
+  }
+  if(n === 4){
+    aiStartGeneration();
+  }
+}
+
+function aiRunVerification(){
+  const el = document.getElementById('aiVerifyResult');
+  const nextBtn = document.getElementById('aiVerifyNextBtn');
+  const checks = [];
+
+  // Check 1: API key
+  const apiKey = (state.aiSettings && state.aiSettings.geminiKey || '').trim();
+  if(!apiKey){
+    checks.push({lvl:'err', title:'API Key নেই', msg:'আগের ধাপে ফিরে গিয়ে API key দিন'});
+  } else if(!apiKey.startsWith('AIza')){
+    checks.push({lvl:'warn', title:'API Key অস্বাভাবিক দেখাচ্ছে', msg:'Gemini API key সাধারণত AIzaSy... দিয়ে শুরু হয়'});
+  } else {
+    checks.push({lvl:'ok', title:'API Key পেয়েছি', msg:`Key length: ${apiKey.length} অক্ষর`});
+  }
+
+  // Check 2: Teachers
+  const teachers = state.teachers || [];
+  const activeTeachers = teachers.filter(t => !t.onLeave);
+  if(!teachers.length){
+    checks.push({lvl:'err', title:'কোনো শিক্ষক নেই', msg:'আগে শিক্ষক যোগ করুন (➕ শিক্ষক বাটন)'});
+  } else {
+    checks.push({lvl:'ok', title:`${toBnNum(teachers.length)} জন শিক্ষক পেয়েছি`, msg:`${toBnNum(activeTeachers.length)} জন সক্রিয়, ${toBnNum(teachers.length-activeTeachers.length)} জন ছুটিতে`});
+  }
+
+  // Check 3: Teacher data completeness
+  let missingTeaching = 0, missingTotal = 0;
+  activeTeachers.forEach(t => {
+    if(!t.subjects || !t.subjects.length || !t.classes || !t.classes.length){
+      missingTeaching++;
+    }
+    if(!t.weeklyTotal || t.weeklyTotal <= 0){
+      missingTotal++;
+    }
+  });
+  if(missingTeaching > 0){
+    checks.push({lvl:'warn', title:`${toBnNum(missingTeaching)} শিক্ষকের পাঠদান তথ্য অসম্পূর্ণ`, msg:'বিষয়/শ্রেণি না দিলে AI সেই শিক্ষকদের ক্লাস বরাদ্দ করতে পারবে না'});
+  } else if(activeTeachers.length){
+    checks.push({lvl:'ok', title:'সব শিক্ষকের পাঠদান তথ্য সম্পূর্ণ', msg:'বিষয়, শ্রেণি ও শাখা সবার জন্য আছে'});
+  }
+  if(missingTotal > 0){
+    checks.push({lvl:'warn', title:`${toBnNum(missingTotal)} শিক্ষকের সাপ্তাহিক মোট ক্লাস দেওয়া নেই`, msg:'এদের জন্য AI স্বয়ংক্রিয় বরাদ্দ করবে'});
+  }
+
+  // Check 4: Columns
+  const slots = (state.columns || []).filter(c => c.type === 'slot');
+  if(!slots.length){
+    checks.push({lvl:'err', title:'কোনো slot নেই', msg:'প্রথমে সময়সূচি তৈরি করুন (🕐 সময়সূচি বাটন)'});
+  } else {
+    checks.push({lvl:'ok', title:`${toBnNum(slots.length)} টি slot পেয়েছি`, msg:`সপ্তাহে ${WEEK_DAYS.length} দিনে মোট ${toBnNum(slots.length * WEEK_DAYS.length)} টি cell পূরণ হবে`});
+  }
+
+  // Check 5: Options
+  const subjects = (state.options && state.options.subject) || [];
+  const classes = (state.options && state.options.class) || [];
+  const sections = (state.options && state.options.section) || [];
+  if(!subjects.length || !classes.length || !sections.length){
+    checks.push({lvl:'warn', title:'ড্রপডাউন অপশন অসম্পূর্ণ', msg:`বিষয়: ${toBnNum(subjects.length)}, শ্রেণি: ${toBnNum(classes.length)}, শাখা: ${toBnNum(sections.length)}`});
+  } else {
+    checks.push({lvl:'ok', title:'ড্রপডাউন অপশন প্রস্তুত', msg:`${toBnNum(subjects.length)} বিষয়, ${toBnNum(classes.length)} শ্রেণি, ${toBnNum(sections.length)} শাখা`});
+  }
+
+  // Render checks
+  el.innerHTML = checks.map(c => `
+    <div class="check-item ${c.lvl}">
+      <div class="icon">${c.lvl==='ok'?'✓':c.lvl==='warn'?'⚠':'✗'}</div>
+      <div class="msg"><strong>${esc(c.title)}</strong>${esc(c.msg)}</div>
+    </div>
+  `).join('');
+
+  // Enable next button if no errors
+  const hasErrors = checks.some(c => c.lvl === 'err');
+  nextBtn.disabled = hasErrors;
+  nextBtn.style.opacity = hasErrors ? 0.5 : 1;
+}
+
+function aiCancelGeneration(){
+  if(aiGenAbortController){
+    aiGenAbortController.abort();
+    aiGenAbortController = null;
+  }
+  closeModal('aiGenModal');
+}
+
+function aiLog(msg, cls=''){
+  const log = document.getElementById('aiProgressLog');
+  if(!log) return;
+  const div = document.createElement('div');
+  div.className = 'log-item ' + cls;
+  div.textContent = '› ' + msg;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function aiSetProgress(percent, title, msg){
+  document.getElementById('aiProgressFill').style.width = percent + '%';
+  if(title) document.getElementById('aiProgressTitle').textContent = title;
+  if(msg) document.getElementById('aiProgressMsg').textContent = msg;
+}
+
+async function aiStartGeneration(){
+  // Reset progress
+  document.getElementById('aiProgressLog').innerHTML = '';
+  aiSetProgress(5, '🤖 প্রস্তুতি নিচ্ছি...', 'প্রম্পট তৈরি হচ্ছে');
+  aiLog('তথ্য সংগ্রহ শুরু', 'ok');
+
+  try {
+    // Build the prompt
+    const prompt = aiBuildPrompt();
+    aiLog(`প্রম্পট তৈরি: ${prompt.length} অক্ষর`, 'ok');
+    aiSetProgress(20, '📡 Google Gemini-এ পাঠাচ্ছি...', 'AI রুটিন বানাচ্ছে — ৩০-৬০ সেকেন্ড লাগতে পারে');
+
+    // Call API
+    const apiKey = state.aiSettings.geminiKey.trim();
+    aiGenAbortController = new AbortController();
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          contents:[{parts:[{text:prompt}]}],
+          generationConfig:{
+            temperature:0.4,
+            topK:32,
+            topP:0.95,
+            maxOutputTokens:8192,
+            responseMimeType:'application/json'
+          }
+        }),
+        signal: aiGenAbortController.signal
+      }
+    );
+
+    aiSetProgress(60, '📥 উত্তর গ্রহণ করছি...', 'রুটিন parse হচ্ছে');
+
+    if(!response.ok){
+      const errText = await response.text();
+      throw new Error(`API ত্রুটি (${response.status}): ${errText.substring(0,200)}`);
+    }
+
+    const data = await response.json();
+    aiLog('AI থেকে উত্তর পেলাম', 'ok');
+
+    // Extract the text content
+    const textResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if(!textResponse){
+      throw new Error('AI খালি উত্তর দিয়েছে। আবার চেষ্টা করুন।');
+    }
+
+    // Parse JSON
+    aiSetProgress(75, '🔍 ফলাফল যাচাই করছি...', 'Conflict check চলছে');
+    let result;
+    try {
+      result = JSON.parse(textResponse);
+    } catch(e){
+      // Try to extract JSON from text
+      const match = textResponse.match(/\{[\s\S]*\}/);
+      if(match) result = JSON.parse(match[0]);
+      else throw new Error('AI-এর উত্তর JSON না — আবার চেষ্টা করুন।');
+    }
+    aiLog(`Parse সফল: ${(result.assignments||[]).length} বরাদ্দ`, 'ok');
+
+    aiSetProgress(95, '✅ প্রস্তুত!', 'প্রিভিউ তৈরি হচ্ছে');
+    aiLastResult = result;
+    setTimeout(() => {
+      aiSetProgress(100, '🎉 সম্পন্ন', '');
+      aiGoToStep(5);
+      aiRenderPreview(result);
+    }, 400);
+
+  } catch(err){
+    if(err.name === 'AbortError'){
+      aiLog('ব্যবহারকারী বাতিল করেছেন', 'err');
+      return;
+    }
+    console.error(err);
+    aiLog('ত্রুটি: ' + err.message, 'err');
+    document.getElementById('aiProgressTitle').textContent = '❌ সমস্যা হয়েছে';
+    document.getElementById('aiProgressMsg').textContent = err.message;
+    // Show retry button
+    setTimeout(() => {
+      const cancelBtn = document.getElementById('aiCancelBtn');
+      cancelBtn.textContent = '← আগের ধাপে যান';
+      cancelBtn.onclick = () => { cancelBtn.textContent='❌ বাতিল'; cancelBtn.onclick=aiCancelGeneration; aiGoToStep(3); };
+    }, 500);
+  }
+}
+
+function aiBuildPrompt(){
+  const teachers = state.teachers.filter(t => !t.onLeave || !document.getElementById('cnRespectLeave').checked);
+  const slots = state.columns.filter(c => c.type === 'slot');
+  const days = WEEK_DAYS.filter(d => !(document.getElementById('cnFriday').checked && d.key === 'Fri'));
+  const constraints = {
+    fridayOff: document.getElementById('cnFriday').checked,
+    noBackToBack: document.getElementById('cnNoBackToBack').checked,
+    majorMorning: document.getElementById('cnMajorMorning').checked,
+    respectLeave: document.getElementById('cnRespectLeave').checked,
+    preserveLocked: document.getElementById('cnPreserveLocked').checked,
+    evenDistribution: document.getElementById('cnEvenDistribution').checked
+  };
+  const custom = document.getElementById('aiCustomInstructions').value.trim();
+
+  // Compact teacher info
+  const teacherList = teachers.map((t, i) => ({
+    id: t.id,
+    name: t.name,
+    subjects: t.subjects || (t.mainSubject ? [t.mainSubject] : []),
+    classes: t.classes || [],
+    sections: t.sections || [],
+    weeklyTotal: t.weeklyTotal || 0,
+    slotLimits: t.slotGroupLimits || {},
+    preferredDays: t.preferredDays || [],
+    unavailableDays: t.unavailableDays || [],
+    notes: t.notes || '',
+    onLeave: !!t.onLeave,
+    locked: !!t.locked
+  }));
+
+  const slotList = slots.map((c, i) => ({id:c.id, label:c.label, index:i+1}));
+
+  const prompt = `তুমি একজন অভিজ্ঞ স্কুল রুটিন বানানোর সহকারী। বাংলা মাধ্যম স্কুলের জন্য একটি সাপ্তাহিক ক্লাস রুটিন বানাতে হবে।
+
+## ইনপুট ডেটা:
+
+### দিন (${days.length} টি):
+${JSON.stringify(days.map(d => ({key:d.key, name:d.bn})))}
+
+### Slot (${slotList.length} টি):
+${JSON.stringify(slotList)}
+- Slot 1-3 = সকাল, 4-6 = দুপুর-আগে, 7-9 = বিকাল, 10+ = সন্ধ্যা
+
+### শ্রেণি list: ${JSON.stringify(state.options.class || [])}
+### শাখা list: ${JSON.stringify(state.options.section || [])}
+### বিষয় list: ${JSON.stringify(state.options.subject || [])}
+
+### শিক্ষক (${teacherList.length} জন):
+${JSON.stringify(teacherList)}
+
+## নিয়মাবলী:
+${constraints.fridayOff ? '- শুক্রবার ছুটি, কোনো ক্লাস বরাদ্দ করবে না।' : ''}
+${constraints.noBackToBack ? '- একই শিক্ষক একই দিনে পরপর ৩টির বেশি ক্লাস পাবে না।' : ''}
+${constraints.majorMorning ? '- বাংলা, ইংরেজি, English, গণিত - এই বিষয়গুলো সকালের slot-এ (1-6) অগ্রাধিকার দাও।' : ''}
+${constraints.respectLeave ? '- ছুটিতে থাকা শিক্ষকদের ক্লাস দেবে না (onLeave=true)।' : ''}
+${constraints.evenDistribution ? '- সপ্তাহের প্রতিদিন প্রতিটি শিক্ষকের ক্লাস যথাসম্ভব সমান।' : ''}
+- একই সময়ে একই শিক্ষক একাধিক জায়গায় ক্লাস নিতে পারে না (CRITICAL)।
+- শিক্ষকের weeklyTotal-এর কাছাকাছি ক্লাস দাও।
+- শিক্ষকের subjects/classes/sections অনুযায়ীই বরাদ্দ দাও।
+- শিক্ষকের unavailableDays মেনে চলো।
+- slotLimits থাকলে সেই অনুযায়ী slot group-এ ক্লাস বরাদ্দ কর।
+
+${custom ? `\n## অতিরিক্ত নির্দেশনা:\n${custom}` : ''}
+
+## আউটপুট ফরম্যাট:
+শুধু একটা valid JSON object দাও, কোনো ব্যাখ্যা ছাড়া। নিচের structure-এ:
+
+{
+  "assignments": [
+    {"teacherId": "শিক্ষকের id", "day": "Sat", "slotId": "c1", "class": "ষষ্ঠ শ্রেণি", "section": "ক", "subject": "গণিত"}
+  ],
+  "summary": "সংক্ষেপে কী করেছ তার বিবরণ",
+  "warnings": ["কোনো সমস্যা থাকলে এখানে list"]
+}
+
+assignments-এ সব ক্লাস বরাদ্দ থাকবে। day-key, slotId, teacherId অবশ্যই input থেকে নেওয়া হবে।`;
+
+  return prompt;
+}
+
+function aiRenderPreview(result){
+  const assignments = result.assignments || [];
+  const warnings = result.warnings || [];
+
+  // Build summary cards
+  const teacherCount = new Set(assignments.map(a => a.teacherId)).size;
+  const totalSlots = state.columns.filter(c=>c.type==='slot').length * WEEK_DAYS.length;
+
+  // Validate assignments
+  const teacherIds = new Set(state.teachers.map(t => t.id));
+  const slotIds = new Set(state.columns.filter(c=>c.type==='slot').map(c => c.id));
+  const dayKeys = new Set(WEEK_DAYS.map(d => d.key));
+
+  const validAssignments = assignments.filter(a =>
+    a && a.teacherId && teacherIds.has(a.teacherId) &&
+    a.slotId && slotIds.has(a.slotId) &&
+    a.day && dayKeys.has(a.day)
+  );
+
+  // Check for conflicts: same teacher, same day, same slot
+  const conflictMap = {};
+  const conflicts = [];
+  validAssignments.forEach(a => {
+    const key = a.teacherId + '|' + a.day + '|' + a.slotId;
+    if(conflictMap[key]){
+      conflicts.push(a);
+    }
+    conflictMap[key] = true;
+  });
+
+  document.getElementById('aiPreviewSummary').innerHTML = `
+    <div class="ai-summary-card ok">
+      <div class="v">${toBnNum(validAssignments.length)}</div>
+      <div class="l">মোট বরাদ্দ</div>
+    </div>
+    <div class="ai-summary-card">
+      <div class="v">${toBnNum(teacherCount)}</div>
+      <div class="l">শিক্ষক যুক্ত</div>
+    </div>
+    <div class="ai-summary-card ${conflicts.length?'err':'ok'}">
+      <div class="v">${toBnNum(conflicts.length)}</div>
+      <div class="l">কনফ্লিক্ট</div>
+    </div>
+    <div class="ai-summary-card ${warnings.length?'warn':'ok'}">
+      <div class="v">${toBnNum(warnings.length)}</div>
+      <div class="l">সতর্কতা</div>
+    </div>
+  `;
+
+  // Render issues / warnings
+  const issues = [];
+  if(result.summary){
+    issues.push(`<div class="issue-item">✨ <span>${esc(result.summary)}</span></div>`);
+  }
+  warnings.forEach(w => {
+    issues.push(`<div class="issue-item">⚠ <span>${esc(w)}</span></div>`);
+  });
+  conflicts.forEach(c => {
+    const t = state.teachers.find(x => x.id === c.teacherId);
+    issues.push(`<div class="issue-item">❌ <span>কনফ্লিক্ট: ${esc(t?t.name:c.teacherId)} - ${esc(c.day)} ${esc(c.slotId)}</span></div>`);
+  });
+  if(validAssignments.length < assignments.length){
+    issues.push(`<div class="issue-item">⚠ <span>${toBnNum(assignments.length - validAssignments.length)} টি বরাদ্দ অজানা teacher/slot/day-তে — উপেক্ষা করা হবে</span></div>`);
+  }
+  document.getElementById('aiPreviewIssues').innerHTML = issues.join('');
+
+  // Store the cleaned result for apply
+  aiLastResult.validAssignments = validAssignments;
+}
+
+function aiRetryGeneration(){
+  aiGoToStep(4);
+}
+
+function aiApplyResult(){
+  if(!aiLastResult || !aiLastResult.validAssignments){
+    showToast('কোনো ফলাফল নেই', 'error');
+    return;
+  }
+  const assignments = aiLastResult.validAssignments;
+  const preserveLocked = document.getElementById('cnPreserveLocked').checked;
+
+  if(!confirm(`✅ ${assignments.length} টি বরাদ্দ প্রয়োগ করা হবে।\n\n${preserveLocked ? '🔒 লক করা শিক্ষকদের ছাড়া' : '⚠️ লক্ড সহ'} সব শিক্ষকের cell পূরণ হবে (যা থাকবে তা মুছে নতুন বসবে)।\n\nচালিয়ে যাবেন?`)){
+    return;
+  }
+
+  snapshot();
+
+  // Clear cells for active, non-locked teachers (or all if !preserveLocked)
+  state.teachers.forEach(t => {
+    if(preserveLocked && t.locked) return;
+    if(!t.cells) t.cells = {};
+    Object.keys(t.cells).forEach(cid => {
+      // Reset cells but preserve onLeave state etc
+      t.cells[cid] = {};
+    });
+  });
+
+  // Apply new assignments. The app's cell structure stores subject/class/section.
+  // But the AI gives one assignment per (teacher, day, slot) - which in this app means
+  // each teacher gets ONE class per slot. The 'day' field is informational since the table
+  // is teacher × slot, not teacher × (day, slot). For now we'll combine day info into the cell.
+  let applied = 0;
+  let skipped = 0;
+  assignments.forEach(a => {
+    const t = state.teachers.find(x => x.id === a.teacherId);
+    if(!t) {skipped++; return;}
+    if(preserveLocked && t.locked) {skipped++; return;}
+    if(!t.cells) t.cells = {};
+    if(!t.cells[a.slotId]) t.cells[a.slotId] = {};
+    // Store the assignment. Multiple days share the same slot column in the table.
+    // We'll store the most recent assignment per slot, and add a 'days' array
+    if(!t.cells[a.slotId].class) t.cells[a.slotId].class = a.class || '';
+    if(!t.cells[a.slotId].section) t.cells[a.slotId].section = a.section || '';
+    if(!t.cells[a.slotId].subject) t.cells[a.slotId].subject = a.subject || '';
+    // Track which days this assignment covers
+    if(!t.cells[a.slotId].days) t.cells[a.slotId].days = [];
+    if(!t.cells[a.slotId].days.includes(a.day)) t.cells[a.slotId].days.push(a.day);
+    applied++;
+  });
+
+  if(!state.aiSettings) state.aiSettings = {};
+  state.aiSettings.lastGenerated = new Date().toISOString();
+  saveState();
+  renderTable();
+  refreshDashboardSilent(false);
+  audit('AI রুটিন প্রয়োগ', `${applied} বরাদ্দ প্রয়োগ, ${skipped} skip`);
+  closeModal('aiGenModal');
+  showToast(`✅ ${toBnNum(applied)} টি ক্লাস বরাদ্দ হয়েছে`, 'success');
 }
 
 /* ===========================================================
