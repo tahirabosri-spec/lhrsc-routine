@@ -1651,9 +1651,9 @@ input[type="range"]::-moz-range-thumb{
     left: auto !important;
     z-index: 1 !important;
   }
+.header-is-locked .col-tools button:not([onclick="toggleHeaderLock()"]) { display: none !important; }
 </style>
 </head>
-
 <body data-theme="light" data-density="normal">
 
 <!-- ============================================
@@ -1731,7 +1731,6 @@ input[type="range"]::-moz-range-thumb{
     <button class="tool-btn" onclick="openModal('dashboardModal');refreshDashboard()">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
     <button class="tool-btn editable-only" onclick="openScheduleGen()">🕐 <span class="lbl">সময়সূচি</span></button>
     <button class="tool-btn primary editable-only" onclick="openAIGenerator()">🤖 <span class="lbl">AI রুটিন</span></button>
-    <button class="tool-btn" onclick="openModal('aiModal')">🤖 <span class="lbl">AI</span></button>
     <button class="tool-btn editable-only" onclick="toggleVoice()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
     <div class="tool-divider"></div>
     <button class="tool-btn editable-only" onclick="openModal('optionsModal')">📝 <span class="lbl">অপশন</span></button>
@@ -3164,7 +3163,16 @@ function audit(action, details){
   });
   if(state.audit.length > 500) state.audit = state.audit.slice(-500);
 }
-
+function toggleHeaderLock(){
+  if(!canFullEdit()) return;
+  snapshot();
+  state.settings.headerLocked = !state.settings.headerLocked;
+  saveState();
+  renderTable();
+  const isLocked = state.settings.headerLocked;
+  audit(`সব কলাম ${isLocked?'লক':'আনলক'}`, '');
+  showToast(`${isLocked?'🔒':'🔓'} সব কলাম ${isLocked?'লক':'আনলক'} করা হয়েছে`,'info');
+}
 function renderAudit(){
   const list = document.getElementById('auditList');
   if(!state.audit.length){
@@ -3500,8 +3508,8 @@ function renderTable(){
   // Header
   const tr = document.getElementById('theadRow');
   const ss = state.settings;
-  const slLocked = !!ss.slLocked;
-  const nameLocked = !!ss.nameLocked;
+  const headerLocked = !!ss.headerLocked; const slLocked = headerLocked;
+  const nameLocked = headerLocked;
   const swapped = !!ss.slNameSwapped;
   const slLabel = ss.slLabel || 'SL';
   const nameLabel = ss.nameLabel || 'শিক্ষকের নাম';
@@ -3523,9 +3531,8 @@ function renderTable(){
       <div class="col-label" contenteditable="${canEditCorner && !slLocked}" onblur="updateCornerLabel('sl',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(slLabel)}</div>
     </div>
     ${canEditCorner ? `<div class="col-tools">
-      <button class="col-tool" onclick="openCustomize('sl',null)" title="রঙ/স্টাইল">🎨</button>
       <button class="col-tool" onclick="swapSLName()" title="SL ↔ নাম অদলবদল">⇄</button>
-      <button class="col-tool ${slLocked?'active':''}" onclick="toggleCornerLock('sl')" title="${slLocked?'আনলক':'লক'}">${slLocked?'🔒':'🔓'}</button>
+      <button class="col-tool ${slLocked?'active':''}" onclick="toggleHeaderLock()" title="${slLocked?'আনলক':'লক'}">${slLocked?'🔒':'🔓'}</button>
     </div>` : ''}
   </th>`;
 
@@ -3537,17 +3544,17 @@ function renderTable(){
     ${canEditCorner ? `<div class="col-tools">
       <button class="col-tool" onclick="openCustomize('name',null)" title="রঙ/স্টাইল/প্রস্থ">🎨</button>
       <button class="col-tool" onclick="swapSLName()" title="SL ↔ নাম অদলবদল">⇄</button>
-      <button class="col-tool ${nameLocked?'active':''}" onclick="toggleCornerLock('name')" title="${nameLocked?'আনলক':'লক'}">${nameLocked?'🔒':'🔓'}</button>
+      <button class="col-tool ${nameLocked?'active':''}" style="display:none;" title="${nameLocked?'আনলক':'লক'}">${nameLocked?'🔒':'🔓'}</button>
     </div>` : ''}
   </th>`;
 
   let html = swapped ? (nameHeaderHtml + slHeaderHtml) : (slHeaderHtml + nameHeaderHtml);
   state.columns.forEach((c, idx)=>{
     const breakCls = c.type==='break'?' col-break':'';
-    const lockedCls = c.locked?' col-locked':'';
+    const lockedCls = headerLocked?' col-locked':'';
     const lockIcon = c.locked?'🔒':'🔓';
     // Label edit requires explicit double-click to prevent accidental edits while clicking near cells
-    const canEditCol = canFullEdit() && !isReadOnly && !c.locked;
+    const canEditCol = canFullEdit() && !isReadOnly && !headerLocked;
     const isColDraggable = canFullEdit() && !c.locked && !isReadOnly;
     // Per-column inline style for color & width
     const colStyles = [];
@@ -3556,15 +3563,13 @@ function renderTable(){
     const colStyleAttr = colStyles.length ? ` style="${colStyles.join(';')}"` : '';
     html += `<th class="${breakCls}${lockedCls}" data-cid="${c.id}" draggable="${isColDraggable}"${colStyleAttr}>
       <div class="col-header-inner">
-        ${canFullEdit() && !isReadOnly ? '<span class="col-handle" title="ধরে টেনে কলাম সরান" draggable="false">≡</span>' : ''}
         <div class="col-label" data-cid="${c.id}" ${canEditCol?`ondblclick="enableColLabelEdit(this,'${c.id}')" title="ডাবল-ক্লিক করে এডিট"`:''} draggable="false">${esc(c.label)}</div>
       </div>
       <div class="col-tools">
         <button class="col-tool" onclick="moveCol('${c.id}',-1)" title="বামে সরান">◀</button>
         <button class="col-tool" onclick="toggleColType('${c.id}')" title="স্লট/বিরতি">⇄</button>
         <button class="col-tool" onclick="addColAfter('${c.id}')" title="পরে যোগ">➕</button>
-        
-        <button class="col-tool ${c.locked?'active':''}" onclick="toggleColLock('${c.id}')" title="${c.locked?'আনলক':'লক'}">${lockIcon}</button>
+        <button class="col-tool ${c.locked?'active':''}" style="display:none;" title="${c.locked?'আনলক':'লক'}">${lockIcon}</button>
         <button class="col-tool" onclick="delCol('${c.id}')" title="ডিলিট">🗑</button>
         <button class="col-tool" onclick="moveCol('${c.id}',1)" title="ডানে সরান">▶</button>
       </div>
@@ -5563,7 +5568,6 @@ async function aiStartGeneration(){
     // Call API
     const apiKey = state.aiSettings.geminiKey.trim();
     aiGenAbortController = new AbortController();
-
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
