@@ -1652,6 +1652,87 @@ input[type="range"]::-moz-range-thumb{
     z-index: 1 !important;
   }
 .header-is-locked .col-tools button:not([onclick="toggleHeaderLock()"]) { display: none !important; }
+
+/* === Req #1: Master Lock — when header row is locked, disable click/edit/drag on entire row === */
+.header-is-locked .col-label{
+  pointer-events: none !important;
+  user-select: none !important;
+}
+.header-is-locked .col-tools{ pointer-events: none !important; }
+.header-is-locked .col-tools button[onclick="toggleHeaderLock()"]{ pointer-events: auto !important; }
+.header-is-locked th{ cursor: not-allowed !important; }
+.header-is-locked th[draggable]{ -webkit-user-drag: none; user-drag: none; }
+
+/* === Req #5: Dashboard — show mobile beside teacher name with tel: link === */
+.teacher-item .nm{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.teacher-item .tel-link{
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--info);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--info-soft);
+  transition: var(--transition);
+}
+.teacher-item .tel-link:hover{ background: var(--info); color: #fff; }
+[data-theme="dark"] .teacher-item .tel-link{ background: rgba(2,132,199,0.2); }
+
+/* === Req #5: Free/Busy teacher names — larger font in dashboard === */
+.teacher-item.free .nm-text,
+.teacher-item.busy .nm-text{
+  font-size: 16px;
+  font-weight: 700;
+}
+.teacher-item.leave .nm-text{
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* === Req #5: Leave teacher — show their classes list === */
+.teacher-item.leave .leave-classes{
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--warning);
+  background: rgba(217,119,6,0.08);
+  border-left: 2px solid var(--warning);
+  border-radius: 4px;
+  font-size: 11.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.teacher-item.leave .leave-classes strong{ color: var(--warning); }
+[data-theme="dark"] .teacher-item.leave .leave-classes{ background: rgba(217,119,6,0.15); }
+
+/* === Req #6: Leave indicator on teacher name cell (when schedule remains visible for proxy) === */
+.routine-table td.col-name .leave-badge{
+  display: inline-block;
+  margin-top: 4px;
+  padding: 3px 8px;
+  background: #1e3a8a;
+  color: #fff !important;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+  animation: leavePulse 2.4s ease-in-out infinite;
+}
+.routine-table tr[data-tid].is-on-leave td:not(.col-sl):not(.col-name):not(.col-break){
+  background-image: repeating-linear-gradient(45deg,
+    transparent, transparent 8px,
+    rgba(30,58,138,0.05) 8px, rgba(30,58,138,0.05) 16px) !important;
+}
+
+/* === Req #2: Hide row-paint (custom color/height) — defensive fallback === */
+.row-paint{ display: none !important; }
 </style>
 </head>
 <body data-theme="light" data-density="normal">
@@ -2102,6 +2183,32 @@ input[type="range"]::-moz-range-thumb{
 
       <!-- Danger tab -->
       <div class="set-tab" data-tab="danger" style="display:none">
+        <!-- Req #7: পাসওয়ার্ড পরিবর্তন (admin only) -->
+        <div id="setPasswordSection">
+          <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🔐 পাসওয়ার্ড পরিবর্তন</h3>
+          <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">অ্যাডমিন / ম্যানেজার পাসওয়ার্ড পরিবর্তন করুন। নতুন পাসওয়ার্ড এই ব্রাউজারে সংরক্ষিত হবে।</div>
+          <div class="field">
+            <label>কোন অ্যাকাউন্ট?</label>
+            <select id="pwTarget">
+              <option value="admin">অ্যাডমিন</option>
+              <option value="manager">ম্যানেজার</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>পুরাতন পাসওয়ার্ড</label>
+            <input id="pwOld" type="password" autocomplete="current-password" placeholder="••••">
+          </div>
+          <div class="field">
+            <label>নতুন পাসওয়ার্ড (কমপক্ষে ৪ অক্ষর)</label>
+            <input id="pwNew" type="password" autocomplete="new-password" placeholder="••••">
+          </div>
+          <div class="field">
+            <label>নতুন পাসওয়ার্ড আবার লিখুন</label>
+            <input id="pwNew2" type="password" autocomplete="new-password" placeholder="••••">
+          </div>
+          <button class="tool-btn primary" style="width:100%" onclick="changePassword()">🔐 পাসওয়ার্ড পরিবর্তন করুন</button>
+          <div class="divider"></div>
+        </div>
         <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🔧 ডেটা মেরামত</h3>
         <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">কলাম label এ যদি ভুলে শ্রেণির নাম (যেমন "দশম শ্রেণি") চলে যায়, এটা auto-detect করে time format এ ফিরিয়ে আনে।</div>
         <button class="tool-btn" style="width:100%;background:var(--info);color:#fff" onclick="showRepairDialog()">🔧 ডেটা সমস্যা চেক ও ঠিক করো</button>
@@ -2179,10 +2286,21 @@ input[type="range"]::-moz-range-thumb{
       <!-- STEP 1: API KEY SETUP -->
       <div class="ai-pane active" data-pane="1">
         <div class="info-banner">
-          🔑 প্রথমবার ব্যবহার করতে <strong>Google Gemini API Key</strong> লাগবে — সম্পূর্ণ বিনামূল্যে। একবার দিলেই হবে।
+          🤖 কোন AI দিয়ে রুটিন বানাবেন তা নির্বাচন করুন। নির্বাচিত AI-এর API Key লাগবে (একবার দিলেই হবে)।
         </div>
-        <div class="ai-howto">
-          <h4>📋 API Key পাওয়ার নিয়ম:</h4>
+        <!-- Req #3: AI Provider Dropdown — Gemini / Claude / Perplexity / ChatGPT -->
+        <div class="field">
+          <label>🤖 AI প্রোভাইডার নির্বাচন করুন</label>
+          <select id="aiProvider" onchange="aiProviderChanged()">
+            <option value="gemini">Google Gemini (বিনামূল্যে)</option>
+            <option value="anthropic">Anthropic Claude</option>
+            <option value="openai">OpenAI ChatGPT</option>
+            <option value="perplexity">Perplexity</option>
+          </select>
+          <div class="muted" style="font-size:11px;margin-top:4px">✨ নির্বাচিত AI স্বয়ংক্রিয় রুটিন তৈরি ও ভয়েস কমান্ডের জন্য ব্যবহার হবে।</div>
+        </div>
+        <div class="ai-howto" id="aiHowtoGemini">
+          <h4>📋 Gemini API Key পাওয়ার নিয়ম:</h4>
           <ol>
             <li><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com/app/apikey</a> এ যান</li>
             <li>Google account দিয়ে login করুন</li>
@@ -2191,8 +2309,29 @@ input[type="range"]::-moz-range-thumb{
             <li>নিচে paste করুন</li>
           </ol>
         </div>
+        <div class="ai-howto" id="aiHowtoAnthropic" style="display:none">
+          <h4>📋 Claude API Key পাওয়ার নিয়ম:</h4>
+          <ol>
+            <li><a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com/settings/keys</a> এ যান</li>
+            <li><strong>"Create Key"</strong> চাপুন এবং key copy করুন (sk-ant-...)</li>
+          </ol>
+        </div>
+        <div class="ai-howto" id="aiHowtoOpenai" style="display:none">
+          <h4>📋 OpenAI API Key পাওয়ার নিয়ম:</h4>
+          <ol>
+            <li><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a> এ যান</li>
+            <li><strong>"Create new secret key"</strong> চাপুন এবং copy করুন (sk-...)</li>
+          </ol>
+        </div>
+        <div class="ai-howto" id="aiHowtoPerplexity" style="display:none">
+          <h4>📋 Perplexity API Key পাওয়ার নিয়ম:</h4>
+          <ol>
+            <li><a href="https://www.perplexity.ai/settings/api" target="_blank" rel="noopener">perplexity.ai/settings/api</a> এ যান</li>
+            <li>API Key generate করুন (pplx-...)</li>
+          </ol>
+        </div>
         <div class="field">
-          <label>🔑 Google Gemini API Key</label>
+          <label id="aiApiKeyLabel">🔑 Google Gemini API Key</label>
           <input id="aiApiKey" type="password" placeholder="AIzaSy..." autocomplete="off">
           <div class="muted" style="font-size:11px;margin-top:4px">⚠️ এই key শুধু আপনার ব্রাউজারে save হবে, কোথাও পাঠানো হবে না।</div>
         </div>
@@ -2563,8 +2702,19 @@ input[type="range"]::-moz-range-thumb{
             </select>
           </div>
         </div>
+        <!-- Req #4: ২টি Mobile নম্বর ফিল্ড -->
+        <div class="field-row">
+          <div class="field">
+            <label>📱 মোবাইল ১</label>
+            <input id="tEditMobile1" type="tel" inputmode="tel" placeholder="01XXXXXXXXX" autocomplete="tel">
+          </div>
+          <div class="field">
+            <label>📱 মোবাইল ২</label>
+            <input id="tEditMobile2" type="tel" inputmode="tel" placeholder="01XXXXXXXXX" autocomplete="tel">
+          </div>
+        </div>
         <div class="toggle-row">
-          <div class="info"><div class="lbl">ছুটিতে আছেন</div><div class="desc">পুরো রো লাল হয়ে "ছুটিতে আছি" দেখাবে</div></div>
+          <div class="info"><div class="lbl">ছুটিতে আছেন</div><div class="desc">নাম এর পাশে ব্যাজ দেখাবে — ক্লাস তালিকা দৃশ্যমান থাকবে (প্রক্সির জন্য)</div></div>
           <label class="switch"><input type="checkbox" id="tEditLeave"><span class="slider"></span></label>
         </div>
       </div>
@@ -2966,6 +3116,9 @@ function loadState(){
         if(t.rowColor === undefined) t.rowColor = '';
         if(t.rowHeight === undefined) t.rowHeight = 0;
         if(t.weeklyAssignments === undefined) t.weeklyAssignments = {};
+        // Req #4: Backfill mobile fields for existing teachers
+        if(t.mobile1 === undefined) t.mobile1 = '';
+        if(t.mobile2 === undefined) t.mobile2 = '';
       });
       // Migrate v1.1: bump up old small slot widths and large row heights
       const ss = state.settings;
@@ -3006,6 +3159,8 @@ function makeTeacher(name='নতুন শিক্ষক'){
     name,
     title:'',
     mainSubject:'',
+    mobile1:'',           // Req #4: প্রাথমিক মোবাইল
+    mobile2:'',           // Req #4: বিকল্প মোবাইল
     weeklyNote:'',
     onLeave:false,
     locked:false,
@@ -3309,6 +3464,55 @@ const USERS = {
   manager: {password:'1234', role:'manager', name:'ম্যানেজার'}
 };
 
+// Req #7: Override passwords from localStorage (if user has changed them)
+(function applyPasswordOverrides(){
+  try{
+    const raw = localStorage.getItem('routinePasswords');
+    if(!raw) return;
+    const stored = JSON.parse(raw);
+    if(stored && typeof stored === 'object'){
+      if(stored.admin && USERS.admin) USERS.admin.password = String(stored.admin);
+      if(stored.manager && USERS.manager) USERS.manager.password = String(stored.manager);
+    }
+  }catch(e){ /* ignore */ }
+})();
+
+// Req #7: Change admin/manager password (only admin can use this)
+function changePassword(){
+  if(!currentUser || currentUser.role !== 'admin'){
+    showToast('শুধু অ্যাডমিন পাসওয়ার্ড পরিবর্তন করতে পারেন','error');
+    return;
+  }
+  const target = document.getElementById('pwTarget').value;
+  const oldPw  = document.getElementById('pwOld').value;
+  const newPw  = document.getElementById('pwNew').value;
+  const newPw2 = document.getElementById('pwNew2').value;
+  if(!USERS[target]){
+    showToast('অজানা অ্যাকাউন্ট','error'); return;
+  }
+  if(USERS[target].password !== oldPw){
+    showToast('❌ পুরাতন পাসওয়ার্ড ভুল','error'); return;
+  }
+  if(!newPw || newPw.length < 4){
+    showToast('নতুন পাসওয়ার্ড কমপক্ষে ৪ অক্ষর হতে হবে','warning'); return;
+  }
+  if(newPw !== newPw2){
+    showToast('দুটি নতুন পাসওয়ার্ড মেলেনি','warning'); return;
+  }
+  // Update in-memory USERS and persist to localStorage
+  USERS[target].password = newPw;
+  let stored = {};
+  try{ stored = JSON.parse(localStorage.getItem('routinePasswords')||'{}'); }catch(e){ stored = {}; }
+  stored[target] = newPw;
+  try{ localStorage.setItem('routinePasswords', JSON.stringify(stored)); }catch(e){}
+  // Clear the fields
+  document.getElementById('pwOld').value = '';
+  document.getElementById('pwNew').value = '';
+  document.getElementById('pwNew2').value = '';
+  audit('পাসওয়ার্ড পরিবর্তন', target);
+  showToast('✅ পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে','success');
+}
+
 function doLogin(){
   const role = document.getElementById('loginRole').value;
   const errEl = document.getElementById('loginError');
@@ -3531,8 +3735,7 @@ function renderTable(){
       <div class="col-label" contenteditable="${canEditCorner && !slLocked}" onblur="updateCornerLabel('sl',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(slLabel)}</div>
     </div>
     ${canEditCorner ? `<div class="col-tools">
-      <button class="col-tool" onclick="swapSLName()" title="SL ↔ নাম অদলবদল">⇄</button>
-      <button class="col-tool ${slLocked?'active':''}" onclick="toggleHeaderLock()" title="${slLocked?'আনলক':'লক'}">${slLocked?'🔒':'🔓'}</button>
+      <button class="col-tool ${slLocked?'active':''}" onclick="toggleHeaderLock()" title="${slLocked?'পুরো রো আনলক':'পুরো রো লক'}">${slLocked?'🔒':'🔓'}</button>
     </div>` : ''}
   </th>`;
 
@@ -3541,11 +3744,6 @@ function renderTable(){
     <div class="col-header-inner">
       <div class="col-label" contenteditable="${canEditCorner && !nameLocked}" onblur="updateCornerLabel('name',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(nameLabel)}</div>
     </div>
-    ${canEditCorner ? `<div class="col-tools">
-      <button class="col-tool" onclick="openCustomize('name',null)" title="রঙ/স্টাইল/প্রস্থ">🎨</button>
-      <button class="col-tool" onclick="swapSLName()" title="SL ↔ নাম অদলবদল">⇄</button>
-      <button class="col-tool ${nameLocked?'active':''}" style="display:none;" title="${nameLocked?'আনলক':'লক'}">${nameLocked?'🔒':'🔓'}</button>
-    </div>` : ''}
   </th>`;
 
   let html = swapped ? (nameHeaderHtml + slHeaderHtml) : (slHeaderHtml + nameHeaderHtml);
@@ -3555,27 +3753,26 @@ function renderTable(){
     const lockIcon = c.locked?'🔒':'🔓';
     // Label edit requires explicit double-click to prevent accidental edits while clicking near cells
     const canEditCol = canFullEdit() && !isReadOnly && !headerLocked;
-    const isColDraggable = canFullEdit() && !c.locked && !isReadOnly;
+    // Req #1: টাইম ড্র্যাগ সম্পূর্ণ বন্ধ — columns are never draggable
+    const isColDraggable = false;
     // Per-column inline style for color & width
     const colStyles = [];
     if(c.color) colStyles.push(`background:${c.color}!important`);
     if(c.width && c.width > 0) colStyles.push(`width:${c.width}px;min-width:${c.width}px;max-width:${c.width}px`);
     const colStyleAttr = colStyles.length ? ` style="${colStyles.join(';')}"` : '';
-    html += `<th class="${breakCls}${lockedCls}" data-cid="${c.id}" draggable="${isColDraggable}"${colStyleAttr}>
+    html += `<th class="${breakCls}${lockedCls}" data-cid="${c.id}" draggable="false"${colStyleAttr}>
       <div class="col-header-inner">
         <div class="col-label" data-cid="${c.id}" ${canEditCol?`ondblclick="enableColLabelEdit(this,'${c.id}')" title="ডাবল-ক্লিক করে এডিট"`:''} draggable="false">${esc(c.label)}</div>
       </div>
-      <div class="col-tools">
-        <button class="col-tool" onclick="moveCol('${c.id}',-1)" title="বামে সরান">◀</button>
-        <button class="col-tool" onclick="toggleColType('${c.id}')" title="স্লট/বিরতি">⇄</button>
+      ${canEditCol ? `<div class="col-tools">
         <button class="col-tool" onclick="addColAfter('${c.id}')" title="পরে যোগ">➕</button>
-        <button class="col-tool ${c.locked?'active':''}" style="display:none;" title="${c.locked?'আনলক':'লক'}">${lockIcon}</button>
         <button class="col-tool" onclick="delCol('${c.id}')" title="ডিলিট">🗑</button>
-        <button class="col-tool" onclick="moveCol('${c.id}',1)" title="ডানে সরান">▶</button>
-      </div>
+      </div>` : ''}
     </th>`;
   });
   tr.innerHTML = html;
+  // Req #1: Master Lock — apply class to thead row to disable click/edit/drag when locked
+  tr.classList.toggle('header-is-locked', !!headerLocked);
 
   // Body
   const tb = document.getElementById('tbody');
@@ -3592,7 +3789,6 @@ function renderTable(){
     const rowControls = canFullEdit() ? `
       <div class="row-controls">
         <span class="row-handle" title="ধরে টেনে স্থান পরিবর্তন">≡</span>
-        <span class="row-paint" onclick="event.stopPropagation();openCustomize('row','${t.id}')" title="কাস্টম রঙ/উচ্চতা">🎨</span>
         <span class="row-lock ${teacherLocked?'is-locked':''}" onclick="event.stopPropagation();toggleTeacherLock('${t.id}')" title="${teacherLocked?'আনলক':'লক'}">${teacherLocked?'🔒':'🔓'}</span>
       </div>` : '';
     // Per-row inline style for color & height
@@ -3610,7 +3806,7 @@ function renderTable(){
     const isDraggable = canFullEdit() && !teacherLocked;
     const slBgStyle = rowBg ? ` style="background:${rowBg}!important"` : '';
     const nameBgStyle = rowBg ? ` style="background:${rowBg}!important;color:#111827!important"` : '';
-    body += `<tr class="teacher-row-class" data-tid="${t.id}" data-row="class" draggable="${isDraggable}"${trStyle}>`;
+    body += `<tr class="teacher-row-class${t.onLeave?' is-on-leave':''}" data-tid="${t.id}" data-row="class" draggable="${isDraggable}"${trStyle}>`;
     // Build SL and Name body cells with applied custom colors (row color > custom > default)
     const slBgFinal = rowBg || ss.slCustomBg || '';
     const slTextFinal = ss.slCustomText || '';
@@ -3635,10 +3831,13 @@ function renderTable(){
       <div class="sl-num">${toBnNum(slIdx)}</div>
       ${rowControls}
     </td>`;
-    const nameCellHtml = `<td class="col-name${teacherLocked?' is-locked':''}" rowspan="3"${nameBodyStyle} onclick="${teacherCanEdit?`editTeacher('${t.id}')`:''}">
+    // Req #6: Leave badge in name cell — schedule cells stay visible for proxy assignment
+    const leaveBadgeHtml = t.onLeave ? `<div class="leave-badge" title="ছুটিতে আছেন — প্রক্সির জন্য ক্লাস তালিকা দৃশ্যমান">${esc(leaveText)}</div>` : '';
+    const nameCellHtml = `<td class="col-name${teacherLocked?' is-locked':''}${t.onLeave?' is-on-leave':''}" rowspan="3"${nameBodyStyle} onclick="${teacherCanEdit?`editTeacher('${t.id}')`:''}">
       <div class="t-name">${esc(t.name)}</div>
       ${t.title?`<div class="t-meta">${esc(t.title)}</div>`:''}
       ${t.mainSubject?`<div class="t-meta">📚 ${esc(t.mainSubject)}</div>`:''}
+      ${leaveBadgeHtml}
       ${renderWeeklyBadges(t)}
     </td>`;
     body += swapped ? (nameCellHtml + slCellHtml) : (slCellHtml + nameCellHtml);
@@ -3664,22 +3863,20 @@ function renderTable(){
       const conflict = conflicts.has(t.id+'_'+c.id);
       const cellEditable = teacherCanEdit && !c.locked;
       const lockedCellCls = teacherLocked ? ' is-locked' : '';
-      if(t.onLeave){
-        body += `<td class="is-leave${lockedCellCls}" rowspan="3"${styleAttr}><div class="cell-content">${esc(leaveText)}</div></td>`;
-      } else {
-        // Class cell — show value or just dropdown arrow icon (NO "Free" text here)
-        const classVal = cell.class ? esc(cell.class) : '<span class="cell-arrow" title="ক্লিক করে শ্রেণি নির্বাচন">▾</span>';
-        const classCls = cell.class ? '' : 'is-empty-arrow';
-        body += `<td class="cell-class${lockedCellCls} ${conflict?'has-conflict':''} ${isFree?'is-free':''} ${classCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="class"${styleAttr}>
-          <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','class')`:''}">
-            <span class="row-label">শ্রেণি</span>${classVal}
-          </div></td>`;
-      }
+      // Req #6: Always render the class cell (even when onLeave) — schedule stays visible for proxy assignment.
+      // Class cell — show value or just dropdown arrow icon (NO "Free" text here)
+      const classVal = cell.class ? esc(cell.class) : '<span class="cell-arrow" title="ক্লিক করে শ্রেণি নির্বাচন">▾</span>';
+      const classCls = cell.class ? '' : 'is-empty-arrow';
+      body += `<td class="cell-class${lockedCellCls} ${conflict?'has-conflict':''} ${isFree?'is-free':''} ${classCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="class"${styleAttr}>
+        <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','class')`:''}">
+          <span class="row-label">শ্রেণি</span>${classVal}
+        </div></td>`;
     });
     body += `</tr>`;
 
     // Row 2: Subject (middle) — shows "Free" prominently when class+section empty
-    if(!t.onLeave){
+    // Req #6: Always render rows 2 & 3 (even when onLeave) — schedule visible for proxy
+    {
       body += `<tr data-tid="${t.id}" data-row="subject"${trStyle}>`;
       state.columns.forEach(c=>{
         if(c.type==='break') return; // rowspan covers
@@ -3708,7 +3905,7 @@ function renderTable(){
       body += `</tr>`;
 
       // Row 3: Section — show value or dropdown arrow icon (NO "Free" text)
-      body += `<tr class="teacher-row-section" data-tid="${t.id}" data-row="section"${trStyle}>`;
+      body += `<tr class="teacher-row-section${t.onLeave?' is-on-leave':''}" data-tid="${t.id}" data-row="section"${trStyle}>`;
       state.columns.forEach(c=>{
         if(c.type==='break') return;
         const cell = (t.cells[c.id]||{});
@@ -3729,10 +3926,6 @@ function renderTable(){
           </div></td>`;
       });
       body += `</tr>`;
-    } else {
-      // For onLeave: rows 2 & 3 still need to exist for rowspan="3" to extend properly
-      // Use zero-height empty rows (NOT display:none which breaks rowspan in some browsers)
-      body += `<tr class="leave-spacer" data-tid="${t.id}"></tr><tr class="leave-spacer" data-tid="${t.id}"></tr>`;
     }
   });
   tb.innerHTML = body;
@@ -4514,6 +4707,9 @@ function editTeacher(tid){
   document.getElementById('tEditTitle').value = t.title || '';
   document.getElementById('tEditWeekly').value = t.weeklyNote || '';
   document.getElementById('tEditLeave').checked = !!t.onLeave;
+  // Req #4: load mobile numbers
+  document.getElementById('tEditMobile1').value = t.mobile1 || '';
+  document.getElementById('tEditMobile2').value = t.mobile2 || '';
 
   // Populate primary subject dropdown from state.options.subject
   const subSel = document.getElementById('tEditSubject');
@@ -4566,6 +4762,9 @@ function editTeacher(tid){
   document.getElementById('tEditWeekly').readOnly = teacherOnly;
   document.getElementById('tEditNotes').readOnly = teacherOnly;
   document.getElementById('tEditWeeklyTotal').readOnly = teacherOnly;
+  // Req #4: mobile fields readonly for teacher role
+  document.getElementById('tEditMobile1').readOnly = teacherOnly;
+  document.getElementById('tEditMobile2').readOnly = teacherOnly;
   ['tEditSlotMorning','tEditSlotLateMorning','tEditSlotAfternoon','tEditSlotEvening'].forEach(id => {
     document.getElementById(id).readOnly = teacherOnly;
   });
@@ -4637,6 +4836,9 @@ function saveTeacher(){
     t.title = document.getElementById('tEditTitle').value.trim();
     t.mainSubject = document.getElementById('tEditSubject').value.trim();
     t.weeklyNote = document.getElementById('tEditWeekly').value.trim();
+    // Req #4: Save mobile numbers (digits/+/- only, trimmed)
+    t.mobile1 = (document.getElementById('tEditMobile1').value || '').trim();
+    t.mobile2 = (document.getElementById('tEditMobile2').value || '').trim();
     // Save weekly assignments
     if(!t.weeklyAssignments) t.weeklyAssignments = {};
     document.querySelectorAll('#tEditWeeklyGrid select').forEach(sel=>{
@@ -4928,6 +5130,31 @@ function refreshDashboardSilent(force){
   `;
   document.getElementById('dashCards').innerHTML = cardsHtml;
 
+  // Req #5: Helper — render tel: link(s) for a teacher's mobile number(s)
+  const telLinksHtml = (t) => {
+    const nums = [t.mobile1, t.mobile2].filter(n => n && String(n).trim());
+    if(!nums.length) return '';
+    return nums.map(n => {
+      const clean = String(n).replace(/[^\d+]/g,'');
+      return `<a class="tel-link" href="tel:${esc(clean)}" onclick="event.stopPropagation()" title="কল করুন">📞 ${esc(n)}</a>`;
+    }).join('');
+  };
+  // Req #5: Helper — render the assigned classes for a leave teacher (so a proxy can be planned)
+  const leaveClassesHtml = (t) => {
+    const slots = state.columns.filter(c => c.type === 'slot');
+    const assigned = [];
+    slots.forEach(c => {
+      const cell = t.cells[c.id] || {};
+      if(cell.class && cell.subject && cell.subject !== 'Free'){
+        const parts = [esc(c.label||''), esc(cell.class||''), esc(cell.subject||'')];
+        if(cell.section) parts.push(esc(cell.section));
+        assigned.push(parts.filter(Boolean).join(' • '));
+      }
+    });
+    if(!assigned.length) return '<div class="leave-classes"><strong>কোনো ক্লাস বরাদ্দ নেই</strong></div>';
+    return `<div class="leave-classes"><strong>📚 যেসব ক্লাস কাভার করতে হবে (${toBnNum(assigned.length)}):</strong><br>${assigned.join('<br>')}</div>`;
+  };
+
   // Free teachers list
   const freeListEl = document.getElementById('freeTeachers');
   if(!curSlot){
@@ -4935,7 +5162,7 @@ function refreshDashboardSilent(force){
   } else {
     freeListEl.innerHTML = free.length ? free.map(t => `
       <div class="teacher-item free">
-        <div class="nm">${esc(t.name)}</div>
+        <div class="nm"><span class="nm-text">${esc(t.name)}</span>${telLinksHtml(t)}</div>
         <div class="ds">মোট ক্লাস: ${toBnNum(countTeacherClasses(t))} ${t.title?' • '+esc(t.title):''}</div>
       </div>`).join('') : '<div class="muted center">— সব শিক্ষক ব্যস্ত —</div>';
   }
@@ -4947,15 +5174,16 @@ function refreshDashboardSilent(force){
   } else {
     busyListEl.innerHTML = busy.length ? busy.map(({t,cell}) => `
       <div class="teacher-item busy">
-        <div class="nm">${esc(t.name)}</div>
+        <div class="nm"><span class="nm-text">${esc(t.name)}</span>${telLinksHtml(t)}</div>
         <div class="ds">${esc(cell.subject)} • ${esc(cell.class||'')} ${cell.section?'• '+esc(cell.section):''} • মোট: ${toBnNum(countTeacherClasses(t))}</div>
       </div>`).join('') : '<div class="muted center">— এখন কেউ ক্লাসে নেই —</div>';
   }
 
   document.getElementById('leaveTeachers').innerHTML = leave.length ? leave.map(t => `
     <div class="teacher-item leave">
-      <div class="nm">${esc(t.name)}</div>
-      <div class="ds">🌙 ছুটিতে</div>
+      <div class="nm"><span class="nm-text">${esc(t.name)}</span>${telLinksHtml(t)}</div>
+      <div class="ds">🌙 ছুটিতে ${t.title?' • '+esc(t.title):''}</div>
+      ${leaveClassesHtml(t)}
     </div>`).join('') : '<div class="muted center">— কেউ ছুটিতে নেই —</div>';
 
   // Slot summary — show all slots with free/busy counts
@@ -5407,11 +5635,58 @@ let aiLastResult = null;
 
 function openAIGenerator(){
   if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
-  // Pre-fill API key if saved
-  const savedKey = (state.aiSettings && state.aiSettings.geminiKey) || '';
-  document.getElementById('aiApiKey').value = savedKey;
+  // Req #3: Init provider dropdown — use saved provider, fall back to gemini
+  if(!state.aiSettings) state.aiSettings = {};
+  const provider = state.aiSettings.provider || 'gemini';
+  const provSel = document.getElementById('aiProvider');
+  if(provSel) provSel.value = provider;
+  aiProviderChanged();  // updates label, howto sections and prefills the key field
+  // Move to verification if we already have a key for this provider
+  const savedKey = aiGetProviderKey(provider);
   aiGoToStep(savedKey ? 2 : 1);
   openModal('aiGenModal');
+}
+
+// Req #3: Provider helpers
+function aiGetProviderKey(provider){
+  if(!state.aiSettings) state.aiSettings = {};
+  const map = {gemini:'geminiKey', anthropic:'anthropicKey', openai:'openaiKey', perplexity:'perplexityKey'};
+  return (state.aiSettings[map[provider]] || '').trim();
+}
+function aiSetProviderKey(provider, value){
+  if(!state.aiSettings) state.aiSettings = {};
+  const map = {gemini:'geminiKey', anthropic:'anthropicKey', openai:'openaiKey', perplexity:'perplexityKey'};
+  state.aiSettings[map[provider]] = value;
+}
+function aiProviderChanged(){
+  const provSel = document.getElementById('aiProvider');
+  if(!provSel) return;
+  const provider = provSel.value || 'gemini';
+  if(!state.aiSettings) state.aiSettings = {};
+  state.aiSettings.provider = provider;
+  saveState();
+  // Update label
+  const labels = {
+    gemini: '🔑 Google Gemini API Key',
+    anthropic: '🔑 Anthropic Claude API Key',
+    openai: '🔑 OpenAI ChatGPT API Key',
+    perplexity: '🔑 Perplexity API Key'
+  };
+  const placeholders = {
+    gemini: 'AIzaSy...', anthropic: 'sk-ant-...', openai: 'sk-...', perplexity: 'pplx-...'
+  };
+  const lbl = document.getElementById('aiApiKeyLabel');
+  const inp = document.getElementById('aiApiKey');
+  if(lbl) lbl.textContent = labels[provider] || labels.gemini;
+  if(inp){
+    inp.placeholder = placeholders[provider] || '';
+    inp.value = aiGetProviderKey(provider);
+  }
+  // Show only the matching howto block
+  ['Gemini','Anthropic','Openai','Perplexity'].forEach(k => {
+    const el = document.getElementById('aiHowto'+k);
+    if(el) el.style.display = (k.toLowerCase() === provider) ? '' : 'none';
+  });
 }
 
 function aiGoToStep(n){
@@ -5430,21 +5705,21 @@ function aiGoToStep(n){
 
   // Step-specific actions
   if(n === 1){
-    // Save key when user typed it
+    // Req #3: Save key for the *currently selected* provider when user types it
     const keyInput = document.getElementById('aiApiKey');
     keyInput.onchange = () => {
       const v = keyInput.value.trim();
-      if(!state.aiSettings) state.aiSettings = {};
-      state.aiSettings.geminiKey = v;
+      const provider = (state.aiSettings && state.aiSettings.provider) || 'gemini';
+      aiSetProviderKey(provider, v);
       saveState();
     };
   }
   if(n === 2){
-    // Save key on enter to step 2 (in case user just typed it)
+    // Req #3: Save key on enter to step 2 for the active provider
+    const provider = (state.aiSettings && state.aiSettings.provider) || 'gemini';
     const v = document.getElementById('aiApiKey').value.trim();
     if(v){
-      if(!state.aiSettings) state.aiSettings = {};
-      state.aiSettings.geminiKey = v;
+      aiSetProviderKey(provider, v);
       saveState();
     }
     aiRunVerification();
@@ -5459,14 +5734,17 @@ function aiRunVerification(){
   const nextBtn = document.getElementById('aiVerifyNextBtn');
   const checks = [];
 
-  // Check 1: API key
-  const apiKey = (state.aiSettings && state.aiSettings.geminiKey || '').trim();
+  // Req #3: Check 1: API key for the selected provider
+  const provider = (state.aiSettings && state.aiSettings.provider) || 'gemini';
+  const apiKey = aiGetProviderKey(provider);
+  const prefixMap = {gemini:'AIza', anthropic:'sk-ant-', openai:'sk-', perplexity:'pplx-'};
+  const providerLabels = {gemini:'Gemini', anthropic:'Claude', openai:'ChatGPT', perplexity:'Perplexity'};
   if(!apiKey){
     checks.push({lvl:'err', title:'API Key নেই', msg:'আগের ধাপে ফিরে গিয়ে API key দিন'});
-  } else if(!apiKey.startsWith('AIza')){
-    checks.push({lvl:'warn', title:'API Key অস্বাভাবিক দেখাচ্ছে', msg:'Gemini API key সাধারণত AIzaSy... দিয়ে শুরু হয়'});
+  } else if(prefixMap[provider] && !apiKey.startsWith(prefixMap[provider])){
+    checks.push({lvl:'warn', title:'API Key অস্বাভাবিক দেখাচ্ছে', msg:`${providerLabels[provider]} API key সাধারণত ${prefixMap[provider]}... দিয়ে শুরু হয়`});
   } else {
-    checks.push({lvl:'ok', title:'API Key পেয়েছি', msg:`Key length: ${apiKey.length} অক্ষর`});
+    checks.push({lvl:'ok', title:`API Key পেয়েছি (${providerLabels[provider]||provider})`, msg:`Key length: ${apiKey.length} অক্ষর`});
   }
 
   // Check 2: Teachers
@@ -5559,46 +5837,119 @@ async function aiStartGeneration(){
   aiSetProgress(5, '🤖 প্রস্তুতি নিচ্ছি...', 'প্রম্পট তৈরি হচ্ছে');
   aiLog('তথ্য সংগ্রহ শুরু', 'ok');
 
+  // Req #3: Choose provider
+  const provider = (state.aiSettings && state.aiSettings.provider) || 'gemini';
+  const providerLabels = {gemini:'Google Gemini', anthropic:'Anthropic Claude', openai:'OpenAI ChatGPT', perplexity:'Perplexity'};
+
   try {
     // Build the prompt
     const prompt = aiBuildPrompt();
     aiLog(`প্রম্পট তৈরি: ${prompt.length} অক্ষর`, 'ok');
-    aiSetProgress(20, '📡 Google Gemini-এ পাঠাচ্ছি...', 'AI রুটিন বানাচ্ছে — ৩০-৬০ সেকেন্ড লাগতে পারে');
+    aiSetProgress(20, `📡 ${providerLabels[provider]}-এ পাঠাচ্ছি...`, 'AI রুটিন বানাচ্ছে — ৩০-৬০ সেকেন্ড লাগতে পারে');
 
-    // Call API
-    const apiKey = state.aiSettings.geminiKey.trim();
+    // Req #3: Call API based on provider
+    const apiKey = aiGetProviderKey(provider);
+    if(!apiKey) throw new Error('API Key নেই — Step 1-এ ফিরে key দিন');
     aiGenAbortController = new AbortController();
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
+    let textResponse = '';
+
+    if(provider === 'gemini'){
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+        {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            contents:[{parts:[{text:prompt}]}],
+            generationConfig:{
+              temperature:0.4, topK:32, topP:0.95,
+              maxOutputTokens:8192, responseMimeType:'application/json'
+            }
+          }),
+          signal: aiGenAbortController.signal
+        }
+      );
+      aiSetProgress(60, '📥 উত্তর গ্রহণ করছি...', 'রুটিন parse হচ্ছে');
+      if(!response.ok){
+        const errText = await response.text();
+        throw new Error(`API ত্রুটি (${response.status}): ${errText.substring(0,200)}`);
+      }
+      const data = await response.json();
+      textResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    } else if(provider === 'anthropic'){
+      const model = (state.settings && state.settings.anthropicModel) || 'claude-haiku-4-5-20251001';
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
         body: JSON.stringify({
-          contents:[{parts:[{text:prompt}]}],
-          generationConfig:{
-            temperature:0.4,
-            topK:32,
-            topP:0.95,
-            maxOutputTokens:8192,
-            responseMimeType:'application/json'
-          }
+          model, max_tokens: 4096,
+          messages:[{role:'user', content: prompt + '\n\nশুধু JSON output দিন, অন্য কোনো text না।'}]
         }),
         signal: aiGenAbortController.signal
+      });
+      aiSetProgress(60, '📥 উত্তর গ্রহণ করছি...', 'রুটিন parse হচ্ছে');
+      if(!response.ok){
+        const errText = await response.text();
+        throw new Error(`API ত্রুটি (${response.status}): ${errText.substring(0,200)}`);
       }
-    );
-
-    aiSetProgress(60, '📥 উত্তর গ্রহণ করছি...', 'রুটিন parse হচ্ছে');
-
-    if(!response.ok){
-      const errText = await response.text();
-      throw new Error(`API ত্রুটি (${response.status}): ${errText.substring(0,200)}`);
+      const data = await response.json();
+      const parts = Array.isArray(data?.content) ? data.content : [];
+      textResponse = parts.map(p => p.text || '').filter(Boolean).join('\n');
+    } else if(provider === 'openai'){
+      const model = (state.settings && state.settings.openaiModel) || 'gpt-4o-mini';
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization': 'Bearer '+apiKey
+        },
+        body: JSON.stringify({
+          model, temperature: 0.4,
+          response_format: {type:'json_object'},
+          messages:[{role:'user', content: prompt + '\n\nReturn ONLY valid JSON. No prose, no markdown fences.'}]
+        }),
+        signal: aiGenAbortController.signal
+      });
+      aiSetProgress(60, '📥 উত্তর গ্রহণ করছি...', 'রুটিন parse হচ্ছে');
+      if(!response.ok){
+        const errText = await response.text();
+        throw new Error(`API ত্রুটি (${response.status}): ${errText.substring(0,200)}`);
+      }
+      const data = await response.json();
+      textResponse = data?.choices?.[0]?.message?.content || '';
+    } else if(provider === 'perplexity'){
+      const model = (state.settings && state.settings.perplexityModel) || 'sonar';
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization': 'Bearer '+apiKey
+        },
+        body: JSON.stringify({
+          model, temperature: 0.4,
+          messages:[{role:'user', content: prompt + '\n\nReturn ONLY valid JSON. No prose, no markdown fences.'}]
+        }),
+        signal: aiGenAbortController.signal
+      });
+      aiSetProgress(60, '📥 উত্তর গ্রহণ করছি...', 'রুটিন parse হচ্ছে');
+      if(!response.ok){
+        const errText = await response.text();
+        throw new Error(`API ত্রুটি (${response.status}): ${errText.substring(0,200)}`);
+      }
+      const data = await response.json();
+      textResponse = data?.choices?.[0]?.message?.content || '';
+    } else {
+      throw new Error('অজানা প্রোভাইডার: '+provider);
     }
 
-    const data = await response.json();
     aiLog('AI থেকে উত্তর পেলাম', 'ok');
 
     // Extract the text content
-    const textResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if(!textResponse){
       throw new Error('AI খালি উত্তর দিয়েছে। আবার চেষ্টা করুন।');
     }
@@ -5961,6 +6312,11 @@ function switchSetTab(tab){
   const idMap = {display:'stTabDisplay', size:'stTabSize', color:'stTabColor', text:'stTabText', feature:'stTabFeature', ai:'stTabAI', save:'stTabSave', danger:'stTabDanger'};
   const btn = document.getElementById(idMap[tab]);
   if(btn){btn.setAttribute('data-active','true');btn.classList.add('primary')}
+  // Req #7: Password change section only visible to admin
+  const pwSec = document.getElementById('setPasswordSection');
+  if(pwSec){
+    pwSec.style.display = (currentUser && currentUser.role === 'admin') ? '' : 'none';
+  }
 }
 
 function renderOptionList(){
