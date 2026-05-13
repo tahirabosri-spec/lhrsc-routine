@@ -1733,6 +1733,59 @@ input[type="range"]::-moz-range-thumb{
 
 /* === Req #2: Hide row-paint (custom color/height) — defensive fallback === */
 .row-paint{ display: none !important; }
+/* =============================================================
+   মোবাইল ভিউ ফিক্স (হেডার ও টুলবার) - নতুন আপডেট
+============================================================= */
+@media(max-width:768px){
+  /* ১. হেডার ফিক্স: স্কুলের নাম এক লাইনে রাখা */
+  .app-header { 
+    padding: 8px 10px !important; 
+    gap: 8px !important; 
+  }
+  .brand { 
+    flex: 1 !important; 
+    min-width: 0 !important; 
+  }
+  .brand-text h1 {
+    font-size: 14px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .brand-text .sub {
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .user-chip { 
+    max-width: 45% !important; 
+  }
+  
+  /* ২. টুলবার ফিক্স: বাটনগুলো এক লাইনে স্ক্রল করার ব্যবস্থা */
+  .toolbar {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding: 8px 5px !important;
+    gap: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important; /* ফায়ারফক্সের জন্য */
+  }
+  .toolbar::-webkit-scrollbar { 
+    display: none !important; /* ক্রোম/সাফারির জন্য */ 
+  }
+  
+  /* বাটনগুলো যাতে চ্যাপ্টা না হয়ে যায় */
+  .tool-btn, .search-box, .filter-select {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+  
+  /* জায়গা বাঁচাতে লেখার বদলে শুধু আইকন দেখানো */
+  .tool-btn .lbl {
+    display: none !important;
+  }
+}
 </style>
 </head>
 <body data-theme="light" data-density="normal">
@@ -1768,10 +1821,6 @@ input[type="range"]::-moz-range-thumb{
     </div>
     <button class="login-btn" onclick="doLogin()">প্রবেশ করুন</button>
     <div class="login-error" id="loginError"></div>
-    <div class="login-hint">
-      <strong>ডিফল্ট:</strong> অ্যাডমিন → admin / 1234 — ম্যানেজার → manager / 1234<br>
-      <strong>ভিউয়ার ও শিক্ষক:</strong> পাসওয়ার্ড দরকার নেই
-    </div>
   </div>
 </div>
 
@@ -3460,8 +3509,8 @@ document.addEventListener('keydown',e=>{
    AUTHENTICATION & ROLES
 =========================================================== */
 const USERS = {
-  admin: {password:'1234', role:'admin', name:'অ্যাডমিন'},
-  manager: {password:'1234', role:'manager', name:'ম্যানেজার'}
+  admin: {password:'lhrsc', role:'admin', name:'অ্যাডমিন'},
+  manager: {password:'lhrsc', role:'manager', name:'ম্যানেজার'}
 };
 
 // Req #7: Override passwords from localStorage (if user has changed them)
@@ -3734,9 +3783,6 @@ function renderTable(){
     <div class="col-header-inner">
       <div class="col-label" contenteditable="${canEditCorner && !slLocked}" onblur="updateCornerLabel('sl',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${esc(slLabel)}</div>
     </div>
-    ${canEditCorner ? `<div class="col-tools">
-      <button class="col-tool ${slLocked?'active':''}" onclick="toggleHeaderLock()" title="${slLocked?'পুরো রো আনলক':'পুরো রো লক'}">${slLocked?'🔒':'🔓'}</button>
-    </div>` : ''}
   </th>`;
 
   // Build Name header HTML
@@ -3764,10 +3810,6 @@ function renderTable(){
       <div class="col-header-inner">
         <div class="col-label" data-cid="${c.id}" ${canEditCol?`ondblclick="enableColLabelEdit(this,'${c.id}')" title="ডাবল-ক্লিক করে এডিট"`:''} draggable="false">${esc(c.label)}</div>
       </div>
-      ${canEditCol ? `<div class="col-tools">
-        <button class="col-tool" onclick="addColAfter('${c.id}')" title="পরে যোগ">➕</button>
-        <button class="col-tool" onclick="delCol('${c.id}')" title="ডিলিট">🗑</button>
-      </div>` : ''}
     </th>`;
   });
   tr.innerHTML = html;
