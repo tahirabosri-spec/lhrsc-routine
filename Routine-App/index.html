@@ -12,11 +12,167 @@
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230f766e'/><text x='50%25' y='58%25' text-anchor='middle' font-size='34' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>">
 
 <style>
+  /* =============================================================
+   ROLE-BASED VISIBILITY  (replaces removed Master Lock block)
+============================================================= */
+/* Teacher-only buttons */
+body:not([data-role="teacher"]) .teacher-only { display: none !important; }
+/* Admin/Manager-only buttons */
+body[data-role="teacher"] .admin-mgr-only { display: none !important; }
+body:not([data-role="admin"]):not([data-role="manager"]) .admin-mgr-only { display: none !important; }
 
-  /* শুধুমাত্র টাইম স্লট রো (Header) এর জন্য আলাদা স্টাইল */
+/* =============================================================
+   NOTIFICATION SYSTEM STYLES
+============================================================= */
+.notif-btn { position: relative; }
+.notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(220,38,38,.4);
+  font-family: var(--font-en);
+  line-height: 1;
+}
+.notif-badge.blinking {
+  animation: badgeBlink 1s ease-in-out infinite;
+}
+@keyframes badgeBlink {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 2px #fff, 0 0 0 0   rgba(220,38,38,.7); }
+  50%      { transform: scale(1.18); box-shadow: 0 0 0 2px #fff, 0 0 0 10px rgba(220,38,38,0);  }
+}
+
+/* New-request row highlight (auto-fades over ~4s) */
+@keyframes rowHighlightFade {
+  0%   { background: #fde047 !important; box-shadow: inset 0 0 0 3px #eab308; }
+  60%  { background: #fef9c3 !important; box-shadow: inset 0 0 0 2px #facc15; }
+  100% { background: transparent;        box-shadow: none; }
+}
+.row-highlight-new { animation: rowHighlightFade 4s ease-out forwards; }
+
+/* Toast popup variant for leave-request alerts (very prominent) */
+.toast.leave-alert {
+  background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%) !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+  border-left: 4px solid #fef08a !important;
+  box-shadow: 0 8px 24px rgba(220,38,38,.4) !important;
+  padding: 14px 18px !important;
+}
+
+/* Notification panel (dropdown) */
+.notif-panel {
+  position: fixed;
+  top: 110px;
+  right: 16px;
+  width: min(420px, calc(100vw - 32px));
+  max-height: 70vh;
+  background: var(--surface);
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.25);
+  z-index: 9000;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.notif-panel.show { display: flex; }
+.notif-panel-header {
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  color: #fff;
+  font-weight: 900;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.notif-panel-header button {
+  background: rgba(255,255,255,.2);
+  color: #fff;
+  border: none;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 900;
+}
+.notif-panel-body { flex: 1; overflow-y: auto; padding: 8px; }
+.notif-empty {
+  padding: 30px 16px; text-align: center;
+  color: var(--text-3); font-weight: 700;
+}
+.req-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.req-card.pending  { border-left: 4px solid #f59e0b; }
+.req-card.approved { border-left: 4px solid #16a34a; opacity: .85; }
+.req-card.rejected { border-left: 4px solid #dc2626; opacity: .85; }
+.req-card-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.req-name { font-weight: 900; font-size: 14.5px; color: var(--text); }
+.req-status-badge {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+.req-status-badge.pending  { background: #fef3c7; color: #92400e; }
+.req-status-badge.approved { background: #dcfce7; color: #166534; }
+.req-status-badge.rejected { background: #fee2e2; color: #991b1b; }
+.req-meta   { font-size: 12.5px; color: var(--text-2); margin: 4px 0; font-weight: 700; }
+.req-reason { font-size: 13px; color: var(--text); margin: 6px 0; font-weight: 600; }
+.req-actions { display: flex; gap: 6px; margin-top: 10px; }
+.req-actions button {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 7px;
+  border: none;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform .12s, box-shadow .12s;
+}
+.req-actions .btn-approve { background: #16a34a; color: #fff; }
+.req-actions .btn-reject  { background: #dc2626; color: #fff; }
+.req-actions button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+
+/* Live dashboard — bolder & clearer text per Req #3 */
+#dashboardModal .dash-card .num,
+#dashboardModal .dash-card .lbl,
+#dashboardModal .dash-section h3,
+#dashboardModal .teacher-item,
+#dashboardModal #dashTime,
+#dashboardModal #dashSlot,
+#dashboardModal .slot-summary-grid > * { font-weight: 800 !important; }
+#dashboardModal .dash-section h3 { font-size: 15.5px !important; letter-spacing: .2px; }
+#dashboardModal .dash-card .num  { font-size: 28px !important; font-weight: 900 !important; }
+#dashboardModal .dash-card .lbl  { font-size: 13px !important; }
+#dashboardModal .teacher-item    { font-size: 13.5px !important; }
+
+/* শুধুমাত্র টাইম স্লট রো (Header) এর জন্য আলাদা স্টাইল */
 #theadRow th {
-    background-color: #c9bc26 !important; /* এখানে আপনার পছন্দমতো কালার কোড দিন */
-    color: #000000 !important; /* লেখার রঙ */
+    background-color: #c9bc26 !important;
+    color: #000000 !important;
     border-bottom: 3px solid var(--primary);
 }
 
@@ -1528,21 +1684,13 @@ input[type="range"]::-moz-range-thumb{
 .print-header{display:none}
 
 /* =============================================================
-   VIEW-ONLY MODE
+   VIEW-ONLY MODE  (now applies to Teacher role)
 ============================================================= */
 [data-readonly="true"] .tool-btn.editable-only{display:none}
 [data-readonly="true"] .icon-btn.editable-only{display:none}
 [data-readonly="true"] .col-tools{display:none !important}
 [data-readonly="true"] .col-handle{display:none !important}
 [data-readonly="true"] .cell-content{cursor:default}
-.viewer-banner{
-  background:var(--info-soft);color:var(--info);
-  padding:6px 14px;font-size:12px;
-  text-align:center;border-bottom:1px solid var(--info);
-  display:none;
-  font-weight:600;
-}
-[data-readonly="true"] .viewer-banner{display:block}
 
 /* Misc helpers */
 .hidden{display:none !important}
@@ -1786,6 +1934,182 @@ input[type="range"]::-moz-range-thumb{
     display: none !important;
   }
 }
+
+/* =============================================================
+   🔔 NOTIFICATION SYSTEM — Leave Request alerts
+============================================================= */
+body[data-role="teacher"] .admin-mgr-only{display:none !important}
+body[data-role="admin"] .teacher-only,
+body[data-role="manager"] .teacher-only{display:none !important}
+
+.tool-btn.notif-btn{position:relative;font-weight:700}
+.notif-badge{
+  position:absolute; top:-6px; right:-6px;
+  min-width:20px; height:20px; padding:0 6px;
+  background:var(--danger); color:#fff;
+  border-radius:99px; font-size:11.5px; font-weight:900;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(220,38,38,.45);
+  letter-spacing:.3px; border:2px solid var(--surface);
+  animation:badgeBlink 1.1s ease-in-out infinite;
+  font-family:var(--font-en);
+}
+@keyframes badgeBlink{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(220,38,38,.55)}
+  50%{transform:scale(1.15);box-shadow:0 0 0 8px rgba(220,38,38,0)}
+}
+
+.notif-toast{
+  position:fixed; top:80px; right:20px;
+  min-width:280px; max-width:380px;
+  background:linear-gradient(135deg,#0f766e 0%,#0d9488 100%);
+  color:#fff; padding:14px 18px;
+  border-radius:14px;
+  box-shadow:0 14px 36px rgba(0,0,0,.28),0 0 0 1px rgba(255,255,255,.12) inset;
+  font-family:var(--font-bn); font-weight:700;
+  z-index:99999; cursor:pointer;
+  animation:notifSlideIn .35s cubic-bezier(.2,.7,.3,1);
+  border-left:5px solid #fbbf24;
+}
+.notif-toast .nt-title{font-size:14px;font-weight:900;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.notif-toast .nt-body{font-size:13.5px;font-weight:700;line-height:1.4;opacity:.97}
+.notif-toast .nt-hint{font-size:11px;font-weight:600;margin-top:6px;opacity:.85}
+.notif-toast:hover{transform:translateX(-4px);transition:.2s}
+@keyframes notifSlideIn{
+  from{opacity:0;transform:translateX(100%)}
+  to{opacity:1;transform:translateX(0)}
+}
+@keyframes notifSlideOut{
+  from{opacity:1;transform:translateX(0)}
+  to{opacity:0;transform:translateX(100%)}
+}
+
+.notif-panel{
+  position:fixed; top:70px; right:14px;
+  width:min(420px, calc(100vw - 28px));
+  max-height:calc(100vh - 100px);
+  background:var(--surface);
+  border:1px solid var(--border-strong);
+  border-radius:16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.28),0 0 0 1px rgba(0,0,0,.04);
+  z-index:9999;
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+  font-family:var(--font-bn);
+}
+.notif-panel.show{display:flex;animation:notifSlideIn .25s ease-out}
+.notif-panel-head{
+  padding:14px 16px; background:var(--header-bg); color:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+  font-weight:900; font-size:15px;
+}
+.notif-panel-head .np-close{
+  background:rgba(255,255,255,.18); border:none; color:#fff;
+  width:28px;height:28px; border-radius:8px;
+  cursor:pointer; font-size:18px; font-weight:700;
+}
+.notif-panel-head .np-close:hover{background:rgba(255,255,255,.32)}
+.notif-panel-tabs{
+  display:flex; border-bottom:1px solid var(--border);
+  background:var(--surface-2);
+}
+.notif-panel-tabs .np-tab{
+  flex:1; padding:10px 8px; background:none; border:none;
+  font-family:var(--font-bn); font-weight:700; font-size:13px;
+  color:var(--text-2); cursor:pointer;
+  border-bottom:3px solid transparent;
+  transition:var(--transition);
+}
+.notif-panel-tabs .np-tab.active{
+  color:var(--primary);
+  border-bottom-color:var(--primary);
+  background:var(--surface);
+}
+.notif-panel-list{
+  flex:1; overflow-y:auto; padding:10px 12px;
+  display:flex; flex-direction:column; gap:10px;
+}
+.notif-empty{
+  padding:32px 16px; text-align:center;
+  color:var(--text-3); font-weight:600; font-size:13.5px;
+}
+
+.req-card{
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px 14px;
+  display:flex; flex-direction:column; gap:8px;
+  position:relative;
+  font-family:var(--font-bn);
+  transition:var(--transition);
+}
+.req-card.is-new{
+  animation:reqHighlight 2.5s ease-out;
+  border-color:var(--accent);
+}
+@keyframes reqHighlight{
+  0%{background:#fef08a;box-shadow:0 0 0 3px rgba(245,158,11,.4)}
+  60%{background:#fef9c3}
+  100%{background:var(--surface-2)}
+}
+.req-card .rc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.req-card .rc-name{font-weight:900;font-size:14.5px;color:var(--text)}
+.req-card .rc-time{font-size:11px;color:var(--text-3);font-weight:600;white-space:nowrap}
+.req-card .rc-dates{
+  font-size:13px;font-weight:700;color:var(--text);
+  background:rgba(15,118,110,.08);
+  padding:5px 9px;border-radius:7px;
+  display:inline-block;width:fit-content;
+}
+.req-card .rc-reason{font-size:13px;color:var(--text-2);font-weight:600;line-height:1.45}
+.req-card .rc-status{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11.5px;font-weight:900;
+  padding:3px 9px;border-radius:99px;
+  width:fit-content;letter-spacing:.3px;
+}
+.req-card .rc-status.pending{background:#fef3c7;color:#92400e}
+.req-card .rc-status.approved{background:var(--success-soft);color:var(--success)}
+.req-card .rc-status.rejected{background:var(--danger-soft);color:var(--danger)}
+[data-theme="dark"] .req-card .rc-status.pending{background:rgba(245,158,11,.2);color:#fbbf24}
+.req-card .rc-actions{display:flex;gap:8px;margin-top:4px}
+.req-card .rc-btn{
+  flex:1;padding:8px 10px;border-radius:8px;border:none;cursor:pointer;
+  font-family:var(--font-bn);font-weight:800;font-size:13px;
+  transition:var(--transition);
+}
+.req-card .rc-btn.approve{background:var(--success);color:#fff}
+.req-card .rc-btn.approve:hover{background:#15803d;transform:translateY(-1px)}
+.req-card .rc-btn.reject{background:var(--danger);color:#fff}
+.req-card .rc-btn.reject:hover{background:#b91c1c;transform:translateY(-1px)}
+.req-card .rc-decided-by{font-size:11px;font-weight:600;color:var(--text-3);font-style:italic}
+
+.leave-balance-bar{
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-hover) 100%);
+  color:#fff; padding:14px 18px;
+  border-radius:12px; margin-bottom:14px;
+  display:flex;justify-content:space-around;align-items:center;
+  flex-wrap:wrap;gap:10px;
+  font-family:var(--font-bn);
+}
+.leave-balance-bar .lb-item{text-align:center}
+.leave-balance-bar .lb-num{font-size:26px;font-weight:900;line-height:1;display:block;font-family:var(--font-en)}
+.leave-balance-bar .lb-lbl{font-size:11.5px;font-weight:700;opacity:.92;margin-top:3px;display:block}
+.leave-balance-bar .lb-divider{width:1px;height:36px;background:rgba(255,255,255,.3)}
+
+.dash-card .num,
+.dash-card .lbl{font-weight:900 !important}
+.dash-section h3{font-weight:900 !important}
+.teacher-item{font-weight:700}
+.teacher-item.leave .nm-text,
+.teacher-item.leave .leave-classes strong{font-weight:900}
+.slot-summary-grid > div{font-weight:700}
+#dashTime, #dashSlot{font-weight:900}
+
+.toast-container{z-index:99999}
+.toast{font-weight:700}
 </style>
 </head>
 <body data-theme="light" data-density="normal">
@@ -1804,7 +2128,6 @@ input[type="range"]::-moz-range-thumb{
         <option value="admin">অ্যাডমিন (সম্পূর্ণ নিয়ন্ত্রণ)</option>
         <option value="manager">ম্যানেজার (এডিট অ্যাক্সেস)</option>
         <option value="teacher">শিক্ষক (নিজস্ব রো)</option>
-        <option value="viewer">ভিউয়ার (শুধু দেখা)</option>
       </select>
     </div>
     <div class="field" id="usernameField">
@@ -1829,8 +2152,6 @@ input[type="range"]::-moz-range-thumb{
 ============================================ -->
 <div id="appRoot" style="display:none;flex:1;flex-direction:column;min-height:100vh">
 
-  <div class="viewer-banner">📖 শুধুমাত্র দেখার মোড — কোনো এডিট সম্ভব নয়</div>
-
   <!-- HEADER -->
   <header class="app-header">
     <div class="brand">
@@ -1853,12 +2174,28 @@ input[type="range"]::-moz-range-thumb{
   </header>
 
   <!-- TOOLBAR -->
-  <div class="toolbar">
+
+<div class="toolbar">
+    <!-- 🔔 Notification Bell — Admin/Manager only -->
+    <button class="tool-btn notif-btn admin-mgr-only" id="notifBellBtn" onclick="toggleNotifPanel()" title="ছুটির আবেদন নোটিফিকেশন">
+      <span class="icon">🔔</span> <span class="lbl">নোটিফিকেশন</span>
+      <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+    </button>
+    <!-- 📝 Apply for Leave — Teacher only -->
+    <button class="tool-btn teacher-only" id="applyLeaveBtn" onclick="openLeaveApplyModal()" title="ছুটির আবেদন করুন">
+      <span class="icon">📝</span> <span class="lbl">ছুটির আবেদন</span>
+    </button>
+    <!-- 📜 My Applications — Teacher only -->
+    <button class="tool-btn teacher-only" id="myLeavesBtn" onclick="openMyLeavesModal()" title="আমার আবেদনসমূহ">
+      <span class="icon">📜</span> <span class="lbl">আমার আবেদন</span>
+      <span class="notif-badge" id="teacherUpdateBadge" style="display:none">0</span>
+    </button>
+    <div class="tool-divider"></div>
     <button class="tool-btn editable-only" onclick="addTeacher()">➕ <span class="lbl">শিক্ষক</span></button>
     <button class="tool-btn editable-only" onclick="undo()" id="undoBtn" disabled>↩️ <span class="lbl">আনডু</span></button>
     <button class="tool-btn editable-only" onclick="redo()" id="redoBtn" disabled>↪️ <span class="lbl">রিডু</span></button>
     <div class="tool-divider"></div>
-    <button class="tool-btn" onclick="openModal('dashboardModal');refreshDashboard()">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
+    <button class="tool-btn admin-mgr-only" onclick="openModal('dashboardModal');refreshDashboard()">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
     <button class="tool-btn editable-only" onclick="openScheduleGen()">🕐 <span class="lbl">সময়সূচি</span></button>
     <button class="tool-btn primary editable-only" onclick="openAIGenerator()">🤖 <span class="lbl">AI রুটিন</span></button>
     <button class="tool-btn editable-only" onclick="toggleVoice()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
@@ -1874,12 +2211,12 @@ input[type="range"]::-moz-range-thumb{
     <button class="tool-btn" onclick="window.print()">🖨 <span class="lbl">প্রিন্ট</span></button>
     <button class="tool-btn editable-only" onclick="shareView()">🔗 <span class="lbl">শেয়ার</span></button>
     <div class="tool-divider"></div>
-    <div class="search-box">
+    <div class="search-box admin-mgr-only">
       🔍 <input type="text" id="searchInput" placeholder="খুঁজুন..." oninput="applyFilters()">
     </div>
-    <select class="filter-select" id="filterClass" onchange="applyFilters()"><option value="">সব শ্রেণি</option></select>
-    <select class="filter-select" id="filterSubject" onchange="applyFilters()"><option value="">সব বিষয়</option></select>
-    <select class="filter-select" id="filterStatus" onchange="applyFilters()">
+    <select class="filter-select admin-mgr-only" id="filterClass" onchange="applyFilters()"><option value="">সব শ্রেণি</option></select>
+    <select class="filter-select admin-mgr-only" id="filterSubject" onchange="applyFilters()"><option value="">সব বিষয়</option></select>
+    <select class="filter-select admin-mgr-only" id="filterStatus" onchange="applyFilters()">
       <option value="">সব স্ট্যাটাস</option>
       <option value="free">শুধু ফ্রি</option>
       <option value="busy">শুধু ব্যস্ত</option>
@@ -1905,7 +2242,7 @@ input[type="range"]::-moz-range-thumb{
   <div class="h-scroll-float" id="hScrollFloat"><div class="h-scroll-track" id="hScrollTrack"></div></div>
 
   <!-- FAB -->
-  <button class="fab dashboard-fab" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊</button>
+  <button class="fab dashboard-fab admin-mgr-only" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊</button>
 
 
 </div>
@@ -2922,6 +3259,86 @@ input[type="range"]::-moz-range-thumb{
   </div>
 </div>
 
+<!-- ============================================
+     🔔 LEAVE APPLY MODAL (Teacher)
+============================================ -->
+<div class="modal-overlay" id="leaveApplyModal">
+  <div class="modal narrow">
+    <div class="modal-header">
+      <h2>📝 ছুটির আবেদন</h2>
+      <button class="modal-close" onclick="closeModal('leaveApplyModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-banner" style="font-weight:700">
+        আপনার আবেদন প্রিন্সিপাল/ম্যানেজারের কাছে পাঠানো হবে। অনুমোদন বা বাতিল হলে আপনি এই অ্যাপেই জানতে পারবেন।
+      </div>
+      <div class="field">
+        <label style="font-weight:700">ছুটির ধরন</label>
+        <select id="laType">
+          <option value="casual">নৈমিত্তিক (Casual)</option>
+          <option value="sick">অসুস্থতাজনিত (Sick)</option>
+          <option value="emergency">জরুরি (Emergency)</option>
+          <option value="personal">ব্যক্তিগত (Personal)</option>
+          <option value="other">অন্যান্য</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label style="font-weight:700">শুরু তারিখ</label>
+          <input id="laFrom" type="date">
+        </div>
+        <div class="field">
+          <label style="font-weight:700">শেষ তারিখ</label>
+          <input id="laTo" type="date">
+        </div>
+      </div>
+      <div class="field">
+        <label style="font-weight:700">কারণ লিখুন</label>
+        <textarea id="laReason" rows="4" placeholder="ছুটির কারণ বিস্তারিত লিখুন..." style="font-family:var(--font-bn);font-weight:600"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tool-btn" onclick="closeModal('leaveApplyModal')">বাতিল</button>
+      <button class="tool-btn primary" onclick="submitLeaveApplication()">📤 আবেদন পাঠান</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     📜 MY LEAVES MODAL (Teacher)
+============================================ -->
+<div class="modal-overlay" id="myLeavesModal">
+  <div class="modal narrow">
+    <div class="modal-header">
+      <h2>📜 আমার আবেদনসমূহ</h2>
+      <button class="modal-close" onclick="closeModal('myLeavesModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="leave-balance-bar" id="myLeaveBalance"></div>
+      <div id="myLeavesList" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="tool-btn primary" onclick="openLeaveApplyModal();closeModal('myLeavesModal')">➕ নতুন আবেদন</button>
+      <button class="tool-btn" onclick="closeModal('myLeavesModal')">বন্ধ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     🔔 NOTIFICATION PANEL (Admin / Manager)
+============================================ -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-panel-head">
+    <span>🔔 ছুটির আবেদন</span>
+    <button class="np-close" onclick="closeNotifPanel()">×</button>
+  </div>
+  <div class="notif-panel-tabs">
+    <button class="np-tab active" data-np-tab="pending" onclick="switchNotifTab('pending')">পেন্ডিং <span id="npPendingCount"></span></button>
+    <button class="np-tab" data-np-tab="all" onclick="switchNotifTab('all')">সব</button>
+  </div>
+  <div class="notif-panel-list" id="notifPanelList"></div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
@@ -3095,6 +3512,9 @@ let state = {
     breakText: 'বিরতি'
   },
   audit: [],
+  requests: [],
+  /* ছুটির আবেদন (Leave applications) */
+  requests: [],
   lastSaved: null
 };
 
@@ -3154,6 +3574,8 @@ function loadState(){
       if(!state.options) state.options = JSON.parse(JSON.stringify(DEFAULT_OPTIONS));
       if(!state.teachers) state.teachers = [];
       if(!state.audit) state.audit = [];
+      if(!state.requests || !Array.isArray(state.requests)) state.requests = [];
+      if(!Array.isArray(state.requests)) state.requests = [];
       // Migrate: add new fields with defaults
       state.columns.forEach(c=>{
         if(c.locked === undefined) c.locked = false;
@@ -3304,6 +3726,15 @@ function applyRemoteState(remoteData){
     if(currentUser && typeof renderAll === 'function'){
       renderAll();
       showToast('🔄 অন্য ডিভাইস থেকে আপডেট এসেছে','info', 2000);
+      // 🔔 also refresh notification UI in case requests changed on another device
+      try{
+        if(currentUser.role === 'admin' || currentUser.role === 'manager'){
+          pollNewRequestsForAdmin();
+          if(document.getElementById('notifPanel').classList.contains('show')) renderNotifPanel();
+        } else if(currentUser.role === 'teacher'){
+          pollDecisionsForTeacher();
+        }
+      }catch(_){}
     } else {
       // লগইন না করা থাকলে শুধু teacher dropdown রিফ্রেশ করো
       if(typeof populateLoginTeachers === 'function') populateLoginTeachers();
@@ -3583,7 +4014,9 @@ function doLogin(){
     if(!t){errEl.textContent='শিক্ষক পাওয়া যায়নি';errEl.classList.add('show');return}
     currentUser = {name:t.name, role:'teacher', teacherId:tid};
   } else {
-    currentUser = {name:'ভিউয়ার', role:'viewer'};
+    errEl.textContent = '❌ সঠিক ভূমিকা নির্বাচন করুন';
+    errEl.classList.add('show');
+    return;
   }
 
   audit('লগইন', currentUser.name + ' (' + currentUser.role + ')');
@@ -3594,6 +4027,8 @@ function doLogin(){
   startAutoSave();
   startDashTimer();
   scheduleHourlyBackup();
+  // 🔔 Notification system kick-off
+  initNotificationSystem();
   showToast('✅ স্বাগতম, ' + currentUser.name + '!', 'success');
 }
 
@@ -3601,36 +4036,44 @@ function logout(){
   if(!confirm('লগআউট করতে চান?')) return;
   audit('লগআউট', currentUser.name);
   saveState();
+  // 🔔 stop notification polling
+  stopNotificationSystem();
   currentUser = null;
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('loginPass').value = '';
   document.getElementById('loginError').classList.remove('show');
 }
+/* ===========================================================
+   PERMISSION & ROLE HELPERS  (Master Lock system removed)
+=========================================================== */
+// Stub kept for any leftover legacy reference; the feature is fully removed.
+function toggleMasterLock(){ /* no-op: feature removed */ }
 
 function applyRolePermissions(){
   const role = currentUser.role;
-  // Update UI based on role
   document.getElementById('userChipName').textContent = currentUser.name;
-  const roleNames = {admin:'অ্যাডমিন', manager:'ম্যানেজার', teacher:'শিক্ষক', viewer:'ভিউয়ার'};
-  document.getElementById('userChipRole').textContent = roleNames[role];
+  const roleNames = {admin:'অ্যাডমিন', manager:'ম্যানেজার', teacher:'শিক্ষক'};
+  document.getElementById('userChipRole').textContent = roleNames[role] || role;
 
-  isReadOnly = (role === 'viewer');
+  // Teacher = read-only editing for the routine (can still toggle own leave / apply for leave)
+  isReadOnly = (role === 'teacher');
   document.body.setAttribute('data-readonly', isReadOnly);
-
-  // Teacher can only edit their own onLeave toggle
-  // We handle this in the cell click handler & teacher edit modal
+  document.body.setAttribute('data-role', role);
 }
 
-function canEdit(){return currentUser && currentUser.role !== 'viewer'}
-function canFullEdit(){return currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager')}
+function canEdit(){ return !!currentUser && currentUser.role !== 'teacher'; }
+function canFullEdit(){
+  if(!currentUser) return false;
+  return (currentUser.role === 'admin' || currentUser.role === 'manager');
+}
+
 function canEditTeacher(tid){
   if(!currentUser) return false;
   if(canFullEdit()) return true;
   if(currentUser.role === 'teacher' && currentUser.teacherId === tid) return true;
   return false;
 }
-
 /* Pre-populate login UI based on role */
 document.getElementById('loginRole').addEventListener('change', e=>{
   const r = e.target.value;
@@ -3653,9 +4096,10 @@ document.getElementById('loginRole').addEventListener('change', e=>{
    --------------------------------------------------------------- */
 function ensureStateIntegrity(){
   if(!state || typeof state !== 'object') return;
-  // teachers / audit array
+  // teachers / audit / requests array
   if(!Array.isArray(state.teachers)) state.teachers = [];
   if(!Array.isArray(state.audit)) state.audit = [];
+  if(!Array.isArray(state.requests)) state.requests = [];
   // columns: যদি ফাঁকা হয়, default time-slot গুলো ফেরত দাও
   if(!Array.isArray(state.columns) || state.columns.length === 0){
     state.columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
@@ -3743,6 +4187,13 @@ function renderAll(){
   applySettings();
   updateHistButtons();
   updateAILinks();
+  // 🔔 keep notification badges in sync after every render
+  try{
+    if(currentUser){
+      if(currentUser.role === 'admin' || currentUser.role === 'manager') updateNotifBadge();
+      else if(currentUser.role === 'teacher') updateTeacherBadge();
+    }
+  }catch(_){}
 }
 
 function renderBranding(){
@@ -3823,14 +4274,20 @@ function renderTable(){
   const leaveText = state.settings.leaveText || '🌙 ছুটিতে আছি';
   const breakText = state.settings.breakText || 'বিরতি';
   let body = '';
-  state.teachers.forEach((t, ti)=>{
-    const slIdx = ti+1;
+  // 🔒 Teacher role: only render their own row (hide everyone else)
+  const teachersToRender = (currentUser && currentUser.role === 'teacher' && currentUser.teacherId)
+    ? state.teachers.filter(x => x.id === currentUser.teacherId)
+    : state.teachers;
+  teachersToRender.forEach((t, ti)=>{
+    // Preserve the *real* SL index from the master list, not the filtered one
+    const realIdx = state.teachers.findIndex(x => x.id === t.id);
+    const slIdx = (realIdx >= 0 ? realIdx : ti) + 1;
     const teacherCanEdit = canEditTeacher(t.id) && !isReadOnly && !t.locked;
     const teacherLocked = t.locked;
     const lockBtn = canFullEdit() ? `<span class="t-lock" onclick="event.stopPropagation();toggleTeacherLock('${t.id}')" title="${teacherLocked?'আনলক করুন':'লক করুন'}">${teacherLocked?'🔒':'🔓'}</span>` : '';
     const rowControls = canFullEdit() ? `
       <div class="row-controls">
-        <span class="row-handle" title="ধরে টেনে স্থান পরিবর্তন">≡</span>
+        <span class="row-handle" draggable="${!teacherLocked}" data-handle-tid="${t.id}" title="ধরে টেনে স্থান পরিবর্তন">≡</span>
         <span class="row-lock ${teacherLocked?'is-locked':''}" onclick="event.stopPropagation();toggleTeacherLock('${t.id}')" title="${teacherLocked?'আনলক':'লক'}">${teacherLocked?'🔒':'🔓'}</span>
       </div>` : '';
     // Per-row inline style for color & height
@@ -3981,43 +4438,62 @@ function renderTable(){
 function setupDragDrop(){
   if(!canFullEdit()) return;
 
-  // ROW drag-drop — entire teacher block (3 sub-rows) treated as one unit
-  const rows = document.querySelectorAll('#tbody tr.teacher-row-class[draggable="true"]');
+  // ROW drag-drop — entire teacher block (3 sub-rows) treated as one unit.
+  // Two valid drag sources are supported:
+  //   1. The ≡ row-handle inside the SL cell  (draggable="true" on the span)
+  //   2. The first sub-row tr itself          (legacy fallback)
+  // Both call the same start/end logic via _beginRowDrag().
   let dragRowId = null;
+
+  const _beginRowDrag = (tid, e) => {
+    dragRowId = tid;
+    document.querySelectorAll(`#tbody tr[data-tid="${tid}"]`).forEach(r => r.classList.add('dragging'));
+    try { e.dataTransfer.effectAllowed = 'move'; } catch(_){}
+    try { e.dataTransfer.setData('text/plain', 'row:'+tid); } catch(_){}
+    try {
+      const dragImage = document.createElement('div');
+      dragImage.className = 'drag-ghost';
+      const t = state.teachers.find(x=>x.id===tid);
+      dragImage.innerHTML = `📋 <strong>${t?esc(t.name):'শিক্ষক'}</strong> সরানো হচ্ছে...`;
+      dragImage.style.cssText = 'position:absolute;top:-9999px;left:-9999px;background:var(--primary);color:#fff;padding:8px 14px;border-radius:8px;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.3);font-family:var(--font-bn)';
+      document.body.appendChild(dragImage);
+      e.dataTransfer.setDragImage(dragImage, 0, 0);
+      setTimeout(()=>{ try{ document.body.removeChild(dragImage); }catch(_){} }, 0);
+    } catch(_){}
+  };
+
+  const _endRowDrag = () => {
+    document.querySelectorAll('#tbody tr.dragging').forEach(r => r.classList.remove('dragging'));
+    document.querySelectorAll('.drag-over-block').forEach(el => el.classList.remove('drag-over-block'));
+    dragRowId = null;
+  };
+
+  // 1) Wire each row-handle (≡) as its own drag source — this is what the SL-column user actually grabs.
+  document.querySelectorAll('#tbody .row-handle[draggable="true"]').forEach(h => {
+    h.addEventListener('dragstart', e => {
+      const tid = h.dataset.handleTid;
+      if(!tid) return;
+      e.stopPropagation();
+      _beginRowDrag(tid, e);
+    });
+    h.addEventListener('dragend', _endRowDrag);
+  });
+
+  // 2) Also leave the original tr-level drag working (legacy fallback)
+  const rows = document.querySelectorAll('#tbody tr.teacher-row-class[draggable="true"]');
   rows.forEach(row=>{
     row.addEventListener('dragstart', e=>{
-      dragRowId = row.dataset.tid;
-      // Mark ALL 3 sub-rows of this teacher block as dragging
-      document.querySelectorAll(`#tbody tr[data-tid="${dragRowId}"]`).forEach(r => r.classList.add('dragging'));
-      e.dataTransfer.effectAllowed = 'move';
-      try{ e.dataTransfer.setData('text/plain', 'row:'+dragRowId); }catch(_){}
-      // Custom drag image: use the row block to make it clearer
-      try {
-        const dragImage = document.createElement('div');
-        dragImage.className = 'drag-ghost';
-        const t = state.teachers.find(x=>x.id===dragRowId);
-        dragImage.innerHTML = `📋 <strong>${t?esc(t.name):'শিক্ষক'}</strong> সরানো হচ্ছে...`;
-        dragImage.style.cssText = 'position:absolute;top:-9999px;background:var(--primary);color:#fff;padding:8px 14px;border-radius:8px;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.3);font-family:var(--font-bn)';
-        document.body.appendChild(dragImage);
-        e.dataTransfer.setDragImage(dragImage, 0, 0);
-        setTimeout(()=>{document.body.removeChild(dragImage)}, 0);
-      } catch(_){}
+      if(dragRowId) return; // handle already started it
+      _beginRowDrag(row.dataset.tid, e);
     });
-    row.addEventListener('dragend', e=>{
-      // Remove dragging class from ALL sub-rows of all teachers
-      document.querySelectorAll('#tbody tr.dragging').forEach(r => r.classList.remove('dragging'));
-      document.querySelectorAll('.drag-over-block').forEach(el => el.classList.remove('drag-over-block'));
-      dragRowId = null;
-    });
+    row.addEventListener('dragend', _endRowDrag);
     row.addEventListener('dragover', e=>{
       if(!dragRowId || row.dataset.tid === dragRowId) return;
       e.preventDefault();
-      // Highlight ALL 3 sub-rows of the target teacher
       document.querySelectorAll('.drag-over-block').forEach(el => el.classList.remove('drag-over-block'));
       document.querySelectorAll(`#tbody tr[data-tid="${row.dataset.tid}"]`).forEach(r => r.classList.add('drag-over-block'));
     });
     row.addEventListener('dragleave', e=>{
-      // Only remove if leaving the entire block (not moving within it)
       const tid = row.dataset.tid;
       const target = e.relatedTarget;
       if(!target || !target.closest || !target.closest(`tr[data-tid="${tid}"]`)){
@@ -4031,7 +4507,7 @@ function setupDragDrop(){
     });
   });
 
-  // Also let the OTHER 2 sub-rows (subject + section) accept drag-over, so dropping anywhere on the teacher block works
+  // 3) Also let the OTHER 2 sub-rows (subject + section) accept drag-over, so dropping anywhere on the teacher block works
   const allTeacherSubRows = document.querySelectorAll('#tbody tr[data-tid]:not(.teacher-row-class)');
   allTeacherSubRows.forEach(row=>{
     row.addEventListener('dragover', e=>{
@@ -6498,13 +6974,7 @@ function shareView(){
 }
 
 function checkViewerMode(){
-  const params = new URLSearchParams(location.search);
-  if(params.get('view') === '1'){
-    // Auto-login as viewer
-    document.getElementById('loginRole').value = 'viewer';
-    document.getElementById('loginRole').dispatchEvent(new Event('change'));
-    setTimeout(()=>doLogin(), 100);
-  }
+  // Viewer role removed — function kept as no-op for backward compatibility.
 }
 
 /* ===========================================================
@@ -6616,7 +7086,10 @@ function applySettings(){
   if(setDark) setDark.checked = s.theme === 'dark';
 
   // Refresh floating scrollbar
+  // (Master Lock feature removed — no UI update needed here.)
+  document.body.removeAttribute('data-master-lock');
   setTimeout(syncFloatingScroll, 50);
+
 }
 
 function readSetting(id, type, fallback){
@@ -7358,6 +7831,396 @@ function setupPWA(){
     }catch(e){}
   }
 }
+
+/* ===========================================================
+   🔔 LEAVE-REQUEST NOTIFICATION SYSTEM
+   - Teachers submit requests; admin/manager get real-time alerts.
+   - Backed by state.requests array + localStorage (and Firebase sync).
+=========================================================== */
+
+// 1-second beep (sine wave, low-volume) — kept tiny.
+const NOTIF_BEEP_BASE64 = 'data:audio/wav;base64,UklGRiQEAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAEAAAAAGImtkhoY2hMnkjmL+EJxOCBu1WfPpFwk7yljL+f3DH8oRSEKR8z+S/0HOH//Nv0vRyutqxHsdC4suXSCe0ihjBeMz4l5wxk7XLOSrYrqDmlj7HoyznoMQqGJpAvYCRGEHj4XOJpzMu7eLO7tBLBg9YH8RIM4iSILRwlYg49+L7iAc4xvrK1RbZ7v9TR0Oqr/8gQwBOaCJsCcvbe5GjQsr+Btoy0NLqyxKfYDvE7Bccd/yfsLkkv0Sj1IO0R6QHa9XPnmtdLynC9hbeftBe60sNyzbDcQO5XAFkVxiZQNVA8/D2NPDIyKx+5DJD9b/M37bbq6+1g87X3HfreAEAGFgilC7QQchOMFhMa5BvBHbAfdSGwI7EmHCozL98zZjk8PsZASUEpQDM/iD6ZPV4+Az+OPVA+jD0iPb09xz/uQbJDXkSGRfBExUWAR81HzkijRwhJsUgxRiZGUUayQ1ZAYj17OuI3xTZNNRczDjBlLb8oViTSHl4apxd0FQQVOhUkFNkSdRDjCx0HtwOK/53/o/4t/HD52PSL7nLpW+nE6XfqUetf6XLnEemq6X3nQuiU6efqAekN6obrkOzC7XfvWPDj7y/y+vMq+CD/4QPOByYNgRDlEKwSNxnQHs8mqi43Mtw0EzYQNcw03DUaNVw3+TtfPVdAyECfQXVB+T75PJ8/E0LRQq8/uTtFOZ40FjFHL9ws/SkUKvAlBSU7Ja4kIidcKK0p1ymRJxIqJSk5JzMnUSP/HFAUyApLAxr8YPNl7vXtsel76vfsxupV7HXvUu1y6+jntOPS4cffmd6N3vbcWNgC07/QYsxWyZTKzcrhyOTHHscDxiHF6sQ1xVbHb8vfzz/SqdXC2VLfYuef7PvxiPXX97/3uvc497T2ifaC9ZP1KvUx8j7vrer95+/me+UV5HnjxONb45XiQ+Aq3Q/cBdtj2RPYbtoX3WLgYuTH5gnpw+xV8PryjvVZ95X4N/lt+xz/CgKEBkkLLg7wEpUVgxlIHRkfRyHcIvcjJiQDJrokvCM6JsglEibKJZ8mWiZNJaUlISQyJYUkSiWvJTglECVTJSglsCJWIRMfwx2HHjAdtBwGGyMb9hl2GTcZeRf5FUkUYRMtElkRDhB8DhMNcwumCXkH6QQ8AlIArv6S/dT8dPvf+L/2NPVT9Mvz+/IM8u/wYO/y7THsiur+5/PlieN64aLfBd5n3HfaWdgI1nDTjND8zL3JfsZyxNDD2sM3xN7DvsRWxXjGdsg=';
+
+let notifPollTimer = null;
+let notifLastSeenIds = new Set();   // for admin/manager polling
+let notifLastDecisionStamp = 0;     // for teacher polling of approval/rejection
+let notifBeepCache = null;
+let notifPanelTab = 'pending';
+
+function getBeepAudio(){
+  if(!notifBeepCache){
+    try{ notifBeepCache = new Audio(NOTIF_BEEP_BASE64); notifBeepCache.volume = 0.55; }catch(_){ notifBeepCache = null; }
+  }
+  return notifBeepCache;
+}
+
+function ensureRequestsArray(){
+  if(!state.requests || !Array.isArray(state.requests)) state.requests = [];
+}
+
+function newReqId(){ return 'req_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+
+function fmtTime(ts){
+  try{
+    const d = new Date(ts);
+    return d.toLocaleString('bn-BD', {dateStyle:'short', timeStyle:'short'});
+  }catch(_){ return ''; }
+}
+
+/* ---- TEACHER: submit leave application ---- */
+function openLeaveApplyModal(){
+  if(!currentUser || currentUser.role !== 'teacher'){
+    showToast('শুধু শিক্ষকরা ছুটির আবেদন করতে পারবেন','warning');
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('laFrom').value = today;
+  document.getElementById('laTo').value = today;
+  document.getElementById('laReason').value = '';
+  document.getElementById('laType').value = 'casual';
+  openModal('leaveApplyModal');
+}
+
+function submitLeaveApplication(){
+  if(!currentUser || currentUser.role !== 'teacher') return;
+  const type = document.getElementById('laType').value;
+  const from = document.getElementById('laFrom').value;
+  const to   = document.getElementById('laTo').value;
+  const reason = document.getElementById('laReason').value.trim();
+
+  if(!from || !to){ showToast('তারিখ নির্বাচন করুন','warning'); return; }
+  if(new Date(from) > new Date(to)){ showToast('শেষ তারিখ শুরুর তারিখের আগে হতে পারবে না','warning'); return; }
+  if(!reason || reason.length < 3){ showToast('ছুটির কারণ লিখুন (কমপক্ষে ৩ অক্ষর)','warning'); return; }
+
+  ensureRequestsArray();
+  const req = {
+    id: newReqId(),
+    teacherId: currentUser.teacherId,
+    teacherName: currentUser.name,
+    type, from, to, reason,
+    status: 'pending',          // pending | approved | rejected
+    createdAt: Date.now(),
+    decidedAt: null,
+    decidedBy: null,
+    teacherNotified: false,     // becomes true after teacher has seen the decision toast
+    note: ''
+  };
+  state.requests.push(req);
+  saveState();
+  audit('ছুটির আবেদন', `${currentUser.name} — ${from} থেকে ${to}`);
+  closeModal('leaveApplyModal');
+  showToast('✅ আপনার আবেদন পাঠানো হয়েছে','success');
+}
+
+/* ---- TEACHER: My Applications view ---- */
+function openMyLeavesModal(){
+  if(!currentUser || currentUser.role !== 'teacher') return;
+  ensureRequestsArray();
+  const mine = state.requests.filter(r => r.teacherId === currentUser.teacherId)
+                             .sort((a,b)=>b.createdAt - a.createdAt);
+  const pending = mine.filter(r=>r.status==='pending').length;
+  const approved = mine.filter(r=>r.status==='approved').length;
+  const rejected = mine.filter(r=>r.status==='rejected').length;
+
+  document.getElementById('myLeaveBalance').innerHTML = `
+    <div class="lb-item"><span class="lb-num">${toBnNum(mine.length)}</span><span class="lb-lbl">মোট আবেদন</span></div>
+    <div class="lb-divider"></div>
+    <div class="lb-item"><span class="lb-num">${toBnNum(pending)}</span><span class="lb-lbl">পেন্ডিং</span></div>
+    <div class="lb-divider"></div>
+    <div class="lb-item"><span class="lb-num">${toBnNum(approved)}</span><span class="lb-lbl">অনুমোদিত</span></div>
+    <div class="lb-divider"></div>
+    <div class="lb-item"><span class="lb-num">${toBnNum(rejected)}</span><span class="lb-lbl">বাতিল</span></div>
+  `;
+
+  const list = document.getElementById('myLeavesList');
+  if(!mine.length){
+    list.innerHTML = '<div class="notif-empty">এখনও কোনো আবেদন করা হয়নি</div>';
+  } else {
+    list.innerHTML = mine.map(r => renderReqCard(r, /*forAdmin=*/false)).join('');
+  }
+
+  // Mark all decisions as seen by the teacher
+  let changed = false;
+  state.requests.forEach(r => {
+    if(r.teacherId === currentUser.teacherId && r.status !== 'pending' && !r.teacherNotified){
+      r.teacherNotified = true; changed = true;
+    }
+  });
+  if(changed){ saveState(); updateTeacherBadge(); }
+
+  openModal('myLeavesModal');
+}
+
+/* ---- ADMIN/MANAGER: Notification Panel ---- */
+function toggleNotifPanel(){
+  const p = document.getElementById('notifPanel');
+  if(p.classList.contains('show')){ closeNotifPanel(); } else { openNotifPanel(); }
+}
+function openNotifPanel(){
+  document.getElementById('notifPanel').classList.add('show');
+  renderNotifPanel();
+}
+function closeNotifPanel(){
+  document.getElementById('notifPanel').classList.remove('show');
+}
+function switchNotifTab(tab){
+  notifPanelTab = tab;
+  document.querySelectorAll('#notifPanel .np-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.npTab === tab);
+  });
+  renderNotifPanel();
+}
+
+function renderNotifPanel(){
+  ensureRequestsArray();
+  const list = document.getElementById('notifPanelList');
+  let items = state.requests.slice().sort((a,b)=>b.createdAt - a.createdAt);
+  if(notifPanelTab === 'pending') items = items.filter(r => r.status === 'pending');
+
+  if(!items.length){
+    list.innerHTML = '<div class="notif-empty">' + (notifPanelTab==='pending' ? 'কোনো পেন্ডিং আবেদন নেই' : 'এখনও কোনো আবেদন আসেনি') + '</div>';
+  } else {
+    list.innerHTML = items.map(r => renderReqCard(r, /*forAdmin=*/true)).join('');
+  }
+  const pendingTotal = state.requests.filter(r=>r.status==='pending').length;
+  const pc = document.getElementById('npPendingCount');
+  if(pc) pc.textContent = pendingTotal ? '(' + toBnNum(pendingTotal) + ')' : '';
+}
+
+function renderReqCard(r, forAdmin){
+  const typeBn = {casual:'নৈমিত্তিক', sick:'অসুস্থতা', emergency:'জরুরি', personal:'ব্যক্তিগত', other:'অন্যান্য'}[r.type] || r.type;
+  const statusLbl = {pending:'⏳ পেন্ডিং', approved:'✅ অনুমোদিত', rejected:'❌ বাতিল'}[r.status];
+  const dateRange = (r.from === r.to) ? r.from : `${r.from} → ${r.to}`;
+  const actions = forAdmin && r.status === 'pending' ? `
+    <div class="rc-actions">
+      <button class="rc-btn approve" onclick="decideRequest('${r.id}','approved')">✅ অনুমোদন</button>
+      <button class="rc-btn reject" onclick="decideRequest('${r.id}','rejected')">❌ বাতিল</button>
+    </div>` : '';
+  const decidedBy = r.decidedBy ? `<div class="rc-decided-by">${r.status==='approved'?'অনুমোদন':'বাতিল'} করেছেন: ${esc(r.decidedBy)} — ${fmtTime(r.decidedAt)}</div>` : '';
+  return `
+    <div class="req-card" data-req-id="${r.id}">
+      <div class="rc-head">
+        <div>
+          <div class="rc-name">${esc(r.teacherName)}</div>
+          <span class="rc-status ${r.status}">${statusLbl}</span>
+        </div>
+        <div class="rc-time">${fmtTime(r.createdAt)}</div>
+      </div>
+      <div class="rc-dates">📅 ${esc(dateRange)} • ${esc(typeBn)}</div>
+      <div class="rc-reason">${esc(r.reason)}</div>
+      ${decidedBy}
+      ${actions}
+    </div>`;
+}
+
+function decideRequest(reqId, decision){
+  if(!canFullEdit()) return;
+  ensureRequestsArray();
+  const r = state.requests.find(x => x.id === reqId);
+  if(!r || r.status !== 'pending') return;
+  if(!confirm(`আপনি কি নিশ্চিত যে এই আবেদনটি ${decision==='approved'?'অনুমোদন':'বাতিল'} করতে চান?`)) return;
+  r.status = decision;
+  r.decidedAt = Date.now();
+  r.decidedBy = currentUser.name;
+  r.teacherNotified = false;
+
+  // If approved, also set the teacher's onLeave flag for visibility on the routine
+  if(decision === 'approved'){
+    const t = state.teachers.find(x => x.id === r.teacherId);
+    if(t){ t.onLeave = true; }
+  }
+
+  saveState();
+  renderAll();
+  audit('আবেদন ' + (decision==='approved'?'অনুমোদন':'বাতিল'), `${r.teacherName} — ${r.from} থেকে ${r.to}`);
+  showToast(`${decision==='approved'?'✅ অনুমোদিত':'❌ বাতিল'} হয়েছে`, decision==='approved'?'success':'info');
+  renderNotifPanel();
+  updateNotifBadge();
+}
+
+/* ---- Polling + Alert Mechanisms ---- */
+function initNotificationSystem(){
+  ensureRequestsArray();
+  if(!currentUser) return;
+
+  // Request browser notification permission once
+  try{
+    if('Notification' in window && Notification.permission === 'default'){
+      Notification.requestPermission().catch(()=>{});
+    }
+  }catch(_){}
+
+  // Seed last-seen set with currently-known pending request ids so we don't alert for old ones on first load
+  if(currentUser.role === 'admin' || currentUser.role === 'manager'){
+    notifLastSeenIds = new Set(state.requests.filter(r=>r.status==='pending').map(r=>r.id));
+    updateNotifBadge();
+    // Poll every 5 seconds
+    if(notifPollTimer) clearInterval(notifPollTimer);
+    notifPollTimer = setInterval(pollNewRequestsForAdmin, 5000);
+  } else if(currentUser.role === 'teacher'){
+    notifLastDecisionStamp = Date.now();
+    updateTeacherBadge();
+    if(notifPollTimer) clearInterval(notifPollTimer);
+    notifPollTimer = setInterval(pollDecisionsForTeacher, 5000);
+    // Also show any pending unseen decisions right away (offline approvals etc.)
+    setTimeout(pollDecisionsForTeacher, 800);
+  }
+}
+
+function stopNotificationSystem(){
+  if(notifPollTimer){ clearInterval(notifPollTimer); notifPollTimer = null; }
+  notifLastSeenIds = new Set();
+}
+
+function pollNewRequestsForAdmin(){
+  ensureRequestsArray();
+  if(!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) return;
+  const pending = state.requests.filter(r => r.status === 'pending');
+  const fresh = pending.filter(r => !notifLastSeenIds.has(r.id));
+  if(fresh.length){
+    fresh.forEach(r => {
+      notifLastSeenIds.add(r.id);
+      fireNewRequestAlert(r);
+    });
+    updateNotifBadge();
+    if(document.getElementById('notifPanel').classList.contains('show')){
+      renderNotifPanel();
+      // Auto-scroll to and highlight the newest one
+      setTimeout(()=>{
+        const newest = fresh[fresh.length-1];
+        const el = document.querySelector(`#notifPanel .req-card[data-req-id="${newest.id}"]`);
+        if(el){
+          el.classList.add('is-new');
+          el.scrollIntoView({behavior:'smooth', block:'center'});
+        }
+      }, 100);
+    }
+  } else {
+    updateNotifBadge();
+  }
+}
+
+function pollDecisionsForTeacher(){
+  ensureRequestsArray();
+  if(!currentUser || currentUser.role !== 'teacher') return;
+  const mine = state.requests.filter(r =>
+    r.teacherId === currentUser.teacherId &&
+    r.status !== 'pending' &&
+    !r.teacherNotified
+  );
+  mine.forEach(r => {
+    fireDecisionToastForTeacher(r);
+    r.teacherNotified = true;
+  });
+  if(mine.length){ saveState(); }
+  updateTeacherBadge();
+}
+
+function updateNotifBadge(){
+  ensureRequestsArray();
+  const badge = document.getElementById('notifBadge');
+  if(!badge) return;
+  const n = state.requests.filter(r => r.status === 'pending').length;
+  if(n > 0){
+    badge.style.display = 'flex';
+    badge.textContent = toBnNum(n);
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function updateTeacherBadge(){
+  ensureRequestsArray();
+  const badge = document.getElementById('teacherUpdateBadge');
+  if(!badge || !currentUser || currentUser.role !== 'teacher') return;
+  const n = state.requests.filter(r =>
+    r.teacherId === currentUser.teacherId &&
+    r.status !== 'pending' &&
+    !r.teacherNotified
+  ).length;
+  if(n > 0){
+    badge.style.display = 'flex';
+    badge.textContent = toBnNum(n);
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function fireNewRequestAlert(req){
+  // 1. Custom Toast popup (richer than the standard one)
+  showNotifToast({
+    title: '🔔 নতুন ছুটির আবেদন!',
+    body: `${req.teacherName} থেকে`,
+    hint: 'বিস্তারিত দেখতে ক্লিক করুন',
+    onClick: () => { openNotifPanel(); }
+  });
+  // 2. Beep
+  try{
+    const a = getBeepAudio();
+    if(a){ a.currentTime = 0; a.play().catch(()=>{}); }
+  }catch(_){}
+  // 3. Vibrate (mobile)
+  try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(_){}
+  // 4. Browser Notification (desktop)
+  try{
+    if('Notification' in window && Notification.permission === 'granted'){
+      const n = new Notification('নতুন ছুটির আবেদন', {
+        body: `${req.teacherName} — ${req.from}${req.from===req.to?'':' → '+req.to}`,
+        icon: 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 64 64\'><rect width=\'64\' height=\'64\' rx=\'12\' fill=\'%230f766e\'/><text x=\'50%25\' y=\'62%25\' text-anchor=\'middle\' font-size=\'40\' fill=\'white\' font-family=\'sans-serif\' font-weight=\'700\'>🔔</text></svg>',
+        tag: 'leave-req-' + req.id
+      });
+      n.onclick = () => { window.focus(); openNotifPanel(); n.close(); };
+    }
+  }catch(_){}
+}
+
+function fireDecisionToastForTeacher(req){
+  const ok = req.status === 'approved';
+  showNotifToast({
+    title: ok ? '✅ আপনার আবেদন অনুমোদিত' : '❌ আপনার আবেদন বাতিল',
+    body: `${req.from}${req.from===req.to?'':' → '+req.to}`,
+    hint: req.decidedBy ? `${ok?'অনুমোদন':'বাতিল'} করেছেন: ${req.decidedBy}` : '',
+    onClick: () => { openMyLeavesModal(); }
+  });
+  try{
+    const a = getBeepAudio();
+    if(a){ a.currentTime = 0; a.play().catch(()=>{}); }
+  }catch(_){}
+  try{ if(navigator.vibrate) navigator.vibrate([150,80,150]); }catch(_){}
+}
+
+function showNotifToast({title, body, hint, onClick}){
+  // Stack multiple toasts vertically
+  const existing = document.querySelectorAll('.notif-toast').length;
+  const t = document.createElement('div');
+  t.className = 'notif-toast';
+  t.style.top = (80 + existing * 92) + 'px';
+  t.innerHTML = `
+    <div class="nt-title">${title}</div>
+    <div class="nt-body">${esc(body || '')}</div>
+    ${hint ? `<div class="nt-hint">${esc(hint)}</div>` : ''}
+  `;
+  if(typeof onClick === 'function'){
+    t.addEventListener('click', () => { try{ onClick(); }catch(_){}; dismiss(); });
+  }
+  document.body.appendChild(t);
+
+  function dismiss(){
+    t.style.animation = 'notifSlideOut .25s ease-in forwards';
+    setTimeout(()=>{ try{ t.remove(); }catch(_){} }, 280);
+  }
+  setTimeout(dismiss, 6500);
+}
+
+/* Close panel when clicking outside */
+document.addEventListener('click', (e) => {
+  const p = document.getElementById('notifPanel');
+  const bell = document.getElementById('notifBellBtn');
+  if(!p || !p.classList.contains('show')) return;
+  if(p.contains(e.target)) return;
+  if(bell && bell.contains(e.target)) return;
+  p.classList.remove('show');
+});
 
 /* ===========================================================
    INITIALIZATION
