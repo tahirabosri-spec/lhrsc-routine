@@ -441,6 +441,68 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .save-status.saved{color:var(--success)}
 
 /* =============================================================
+   TOOL MENU DROPDOWN  (consolidated toolbar actions — "আরও" button)
+============================================================= */
+.tool-menu-wrapper{position:relative;display:inline-flex}
+.tool-menu-btn{cursor:pointer}
+.tool-menu-btn .caret{font-size:10px;opacity:.7;margin-left:2px;transition:transform .2s}
+.tool-menu-btn[aria-expanded="true"] .caret{transform:rotate(180deg)}
+.tool-menu-btn[aria-expanded="true"]{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+.tool-menu-panel{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  min-width:260px;
+  max-width:min(320px, calc(100vw - 24px));
+  background:var(--surface);
+  border:2px solid var(--primary);
+  border-radius:12px;
+  box-shadow:0 16px 40px rgba(0,0,0,.22);
+  z-index:1000;
+  padding:10px;
+  display:none;
+  flex-direction:column;
+  gap:4px;
+  max-height:70vh;
+  overflow-y:auto;
+  animation:menuSlideDown .18s ease-out;
+}
+.tool-menu-panel.show{display:flex}
+@keyframes menuSlideDown{
+  from{opacity:0;transform:translateY(-6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.tool-menu-panel .tool-btn{
+  justify-content:flex-start;
+  width:100%;
+  padding:9px 12px;
+  border-radius:8px;
+  font-size:13.5px;
+  font-weight:600;
+  text-align:left;
+}
+.tool-menu-panel .tool-btn .lbl{display:inline !important}
+.tool-menu-panel .tool-divider{
+  width:100%;
+  height:1px;
+  margin:4px 0;
+  background:var(--border);
+}
+.tool-menu-panel-header{
+  font-size:11.5px;
+  font-weight:800;
+  color:var(--text-3);
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  padding:4px 10px 6px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:4px;
+}
+/* If both editable-only buttons and admin-mgr-only buttons are hidden for current role,
+   the dropdown could become empty. CSS :has() hides the trigger button itself in that case. */
+.tool-menu-wrapper:has(.tool-menu-panel:empty) .tool-menu-btn{display:none}
+
+/* =============================================================
    TABLE CONTAINER
 ============================================================= */
 .table-wrap{
@@ -2421,35 +2483,45 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <span class="icon">📜</span> <span class="lbl">আমার আবেদন</span>
       <span class="notif-badge" id="teacherUpdateBadge" style="display:none">0</span>
     </button>
-    <!-- 🔐 Change own Password — Teacher only -->
-    <button class="tool-btn teacher-only" id="teacherPwBtn" onclick="openPasswordSettings()" title="নিজের পাসওয়ার্ড পরিবর্তন করুন">
-      <span class="icon">🔐</span> <span class="lbl">পাসওয়ার্ড</span>
-    </button>
     <!-- 🌙 On-Leave list — সবার জন্য দৃশ্যমান, count badge সহ -->
     <button class="tool-btn leave-btn" id="leaveListBtn" onclick="openLeaveListModal()" title="ছুটিতে থাকা শিক্ষকদের তালিকা">
       <span class="icon">🌙</span> <span class="lbl">ছুটি</span>
       <span class="leave-count-badge" id="leaveCountBadge" style="display:none">0</span>
     </button>
-    <div class="tool-divider"></div>
-    <button class="tool-btn editable-only" onclick="addTeacher()">➕ <span class="lbl">শিক্ষক</span></button>
-    <button class="tool-btn editable-only" onclick="undo()" id="undoBtn" disabled>↩️ <span class="lbl">আনডু</span></button>
-    <button class="tool-btn editable-only" onclick="redo()" id="redoBtn" disabled>↪️ <span class="lbl">রিডু</span></button>
-    <div class="tool-divider"></div>
-    <button class="tool-btn admin-mgr-only" onclick="openModal('dashboardModal');refreshDashboard()">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
-    <button class="tool-btn editable-only" onclick="openScheduleGen()">🕐 <span class="lbl">সময়সূচি</span></button>
-    <button class="tool-btn primary editable-only" onclick="openAIGenerator()">🤖 <span class="lbl">AI রুটিন</span></button>
-    <button class="tool-btn editable-only" onclick="toggleVoice()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
-    <div class="tool-divider"></div>
-    <button class="tool-btn editable-only" onclick="openModal('optionsModal')">📝 <span class="lbl">অপশন</span></button>
-    <button class="tool-btn editable-only" onclick="openModal('bulkModal')">✂️ <span class="lbl">বাল্ক</span></button>
-    <button class="tool-btn" onclick="openModal('auditModal');renderAudit()">📜 <span class="lbl">অডিট লগ</span></button>
-    <div class="tool-divider"></div>
-    <button class="tool-btn editable-only" onclick="exportJSON()">⬇ JSON</button>
-    <button class="tool-btn editable-only" onclick="exportCSV()">⬇ CSV</button>
-    <button class="tool-btn editable-only" onclick="document.getElementById('importFile').click()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
-    <input type="file" id="importFile" style="display:none" accept=".json,.csv" onchange="handleImport(event)">
-    <button class="tool-btn" onclick="window.print()">🖨 <span class="lbl">প্রিন্ট</span></button>
-    <button class="tool-btn editable-only" onclick="shareView()">🔗 <span class="lbl">শেয়ার</span></button>
+    <!-- 📊 Live Dashboard — Admin/Manager only -->
+    <button class="tool-btn admin-mgr-only" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
+
+    <!-- ⋮ আরও — Consolidated dropdown for all secondary actions -->
+    <div class="tool-menu-wrapper">
+      <button class="tool-btn tool-menu-btn" id="toolMenuBtn" onclick="toggleToolMenu(event)" aria-expanded="false" aria-haspopup="true" title="আরও অপশন">
+        <span class="icon">⋮</span> <span class="lbl">আরও</span> <span class="caret">▾</span>
+      </button>
+      <div class="tool-menu-panel" id="toolMenuPanel" role="menu">
+        <!-- 🔐 Change own Password — Teacher only -->
+        <button class="tool-btn teacher-only" id="teacherPwBtn" onclick="openPasswordSettings();closeToolMenu()" title="নিজের পাসওয়ার্ড পরিবর্তন করুন">
+          <span class="icon">🔐</span> <span class="lbl">পাসওয়ার্ড</span>
+        </button>
+        <button class="tool-btn editable-only" onclick="addTeacher();closeToolMenu()">➕ <span class="lbl">শিক্ষক যোগ করুন</span></button>
+        <button class="tool-btn editable-only" onclick="undo();closeToolMenu()" id="undoBtn" disabled>↩️ <span class="lbl">আনডু</span></button>
+        <button class="tool-btn editable-only" onclick="redo();closeToolMenu()" id="redoBtn" disabled>↪️ <span class="lbl">রিডু</span></button>
+        <div class="tool-divider"></div>
+        <button class="tool-btn editable-only" onclick="openScheduleGen();closeToolMenu()">🕐 <span class="lbl">সময়সূচি</span></button>
+        <button class="tool-btn primary editable-only" onclick="openAIGenerator();closeToolMenu()">🤖 <span class="lbl">AI রুটিন</span></button>
+        <button class="tool-btn editable-only" onclick="toggleVoice();closeToolMenu()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
+        <div class="tool-divider"></div>
+        <button class="tool-btn editable-only" onclick="openModal('optionsModal');closeToolMenu()">📝 <span class="lbl">অপশন</span></button>
+        <button class="tool-btn editable-only" onclick="openModal('bulkModal');closeToolMenu()">✂️ <span class="lbl">বাল্ক এডিট</span></button>
+        <button class="tool-btn" onclick="openModal('auditModal');renderAudit();closeToolMenu()">📜 <span class="lbl">অডিট লগ</span></button>
+        <div class="tool-divider"></div>
+        <button class="tool-btn editable-only" onclick="exportJSON();closeToolMenu()">⬇ <span class="lbl">JSON এক্সপোর্ট</span></button>
+        <button class="tool-btn editable-only" onclick="exportCSV();closeToolMenu()">⬇ <span class="lbl">CSV এক্সপোর্ট</span></button>
+        <button class="tool-btn editable-only" onclick="document.getElementById('importFile').click();closeToolMenu()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
+        <input type="file" id="importFile" style="display:none" accept=".json,.csv" onchange="handleImport(event)">
+        <button class="tool-btn" onclick="window.print();closeToolMenu()">🖨 <span class="lbl">প্রিন্ট</span></button>
+        <button class="tool-btn editable-only" onclick="shareView();closeToolMenu()">🔗 <span class="lbl">শেয়ার</span></button>
+      </div>
+    </div>
+
     <div class="tool-divider"></div>
     <div class="search-box admin-mgr-only">
       🔍 <input type="text" id="searchInput" placeholder="খুঁজুন..." oninput="applyFilters()">
@@ -8850,6 +8922,41 @@ document.addEventListener('click', (e) => {
   if(p.contains(e.target)) return;
   if(bell && bell.contains(e.target)) return;
   p.classList.remove('show');
+});
+
+/* ===========================================================
+   TOOL MENU DROPDOWN (consolidated "আরও" button)
+=========================================================== */
+function toggleToolMenu(e){
+  if(e){ e.stopPropagation(); }
+  const panel = document.getElementById('toolMenuPanel');
+  const btn = document.getElementById('toolMenuBtn');
+  if(!panel || !btn) return;
+  const willShow = !panel.classList.contains('show');
+  panel.classList.toggle('show', willShow);
+  btn.setAttribute('aria-expanded', willShow ? 'true' : 'false');
+}
+function closeToolMenu(){
+  const panel = document.getElementById('toolMenuPanel');
+  const btn = document.getElementById('toolMenuBtn');
+  if(panel) panel.classList.remove('show');
+  if(btn) btn.setAttribute('aria-expanded','false');
+}
+/* Close tool menu when clicking outside */
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('toolMenuPanel');
+  const btn = document.getElementById('toolMenuBtn');
+  if(!panel || !panel.classList.contains('show')) return;
+  if(panel.contains(e.target)) return;
+  if(btn && btn.contains(e.target)) return;
+  closeToolMenu();
+});
+/* Close tool menu on Escape */
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    const panel = document.getElementById('toolMenuPanel');
+    if(panel && panel.classList.contains('show')) closeToolMenu();
+  }
 });
 
 /* ===========================================================
