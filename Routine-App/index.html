@@ -2134,13 +2134,13 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <label>ব্যবহারকারীর নাম</label>
       <input id="loginUser" type="text" autocomplete="username" placeholder="admin">
     </div>
+    <div class="field" id="teacherSelectField" style="display:none">
+      <label>শিক্ষক নির্বাচন করুন</label>
+      <select id="loginTeacher" onchange="document.getElementById('loginPass').value=''"></select>
+    </div>
     <div class="field" id="passwordField">
       <label>পাসওয়ার্ড</label>
       <input id="loginPass" type="password" autocomplete="current-password" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <div class="field" id="teacherSelectField" style="display:none">
-      <label>শিক্ষক নির্বাচন করুন</label>
-      <select id="loginTeacher"></select>
     </div>
     <button class="login-btn" onclick="doLogin()">প্রবেশ করুন</button>
     <div class="login-error" id="loginError"></div>
@@ -2189,6 +2189,10 @@ body[data-role="manager"] .teacher-only{display:none !important}
     <button class="tool-btn teacher-only" id="myLeavesBtn" onclick="openMyLeavesModal()" title="আমার আবেদনসমূহ">
       <span class="icon">📜</span> <span class="lbl">আমার আবেদন</span>
       <span class="notif-badge" id="teacherUpdateBadge" style="display:none">0</span>
+    </button>
+    <!-- 🔐 Change own Password — Teacher only -->
+    <button class="tool-btn teacher-only" id="teacherPwBtn" onclick="openPasswordSettings()" title="নিজের পাসওয়ার্ড পরিবর্তন করুন">
+      <span class="icon">🔐</span> <span class="lbl">পাসওয়ার্ড</span>
     </button>
     <div class="tool-divider"></div>
     <button class="tool-btn editable-only" onclick="addTeacher()">➕ <span class="lbl">শিক্ষক</span></button>
@@ -2313,13 +2317,13 @@ body[data-role="manager"] .teacher-only{display:none !important}
     <div class="modal-body">
       <!-- Tabs -->
       <div style="display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--border);margin-bottom:14px">
-        <button class="tool-btn" onclick="switchSetTab('display')" id="stTabDisplay" data-active="true">🎨 প্রদর্শন</button>
-        <button class="tool-btn" onclick="switchSetTab('size')" id="stTabSize">📏 আকার</button>
-        <button class="tool-btn" onclick="switchSetTab('color')" id="stTabColor">🎨 রঙ</button>
-        <button class="tool-btn" onclick="switchSetTab('text')" id="stTabText">📝 টেক্সট</button>
-        <button class="tool-btn" onclick="switchSetTab('feature')" id="stTabFeature">⚡ ফিচার</button>
-        <button class="tool-btn" onclick="switchSetTab('ai')" id="stTabAI">🤖 AI কী</button>
-        <button class="tool-btn" onclick="switchSetTab('save')" id="stTabSave">💾 সেভ/ব্যাকআপ</button>
+        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('display')" id="stTabDisplay" data-active="true">🎨 প্রদর্শন</button>
+        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('size')" id="stTabSize">📏 আকার</button>
+        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('color')" id="stTabColor">🎨 রঙ</button>
+        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('text')" id="stTabText">📝 টেক্সট</button>
+        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('feature')" id="stTabFeature">⚡ ফিচার</button>
+        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('ai')" id="stTabAI">🤖 AI কী</button>
+        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('save')" id="stTabSave">💾 সেভ/ব্যাকআপ</button>
         <button class="tool-btn" onclick="switchSetTab('danger')" id="stTabDanger">🚨 অন্যান্য</button>
       </div>
 
@@ -2569,16 +2573,13 @@ body[data-role="manager"] .teacher-only{display:none !important}
 
       <!-- Danger tab -->
       <div class="set-tab" data-tab="danger" style="display:none">
-        <!-- Req #7: পাসওয়ার্ড পরিবর্তন (admin only) -->
+        <!-- পাসওয়ার্ড পরিবর্তন — যেকোনো লগইন করা ইউজার (admin / manager / teacher) নিজের পাসওয়ার্ড পরিবর্তন করতে পারে -->
         <div id="setPasswordSection">
           <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🔐 পাসওয়ার্ড পরিবর্তন</h3>
-          <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">অ্যাডমিন / ম্যানেজার পাসওয়ার্ড পরিবর্তন করুন। নতুন পাসওয়ার্ড এই ব্রাউজারে সংরক্ষিত হবে।</div>
+          <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">আপনি যে অ্যাকাউন্ট দিয়ে লগইন করেছেন, তার পাসওয়ার্ড এখানে পরিবর্তন করুন। নতুন পাসওয়ার্ড সংরক্ষিত হবে।</div>
           <div class="field">
-            <label>কোন অ্যাকাউন্ট?</label>
-            <select id="pwTarget">
-              <option value="admin">অ্যাডমিন</option>
-              <option value="manager">ম্যানেজার</option>
-            </select>
+            <label>অ্যাকাউন্ট</label>
+            <input id="pwAccountLabel" type="text" value="—" readonly style="background:var(--surface-2);font-weight:800">
           </div>
           <div class="field">
             <label>পুরাতন পাসওয়ার্ড</label>
@@ -2595,22 +2596,25 @@ body[data-role="manager"] .teacher-only{display:none !important}
           <button class="tool-btn primary" style="width:100%" onclick="changePassword()">🔐 পাসওয়ার্ড পরিবর্তন করুন</button>
           <div class="divider"></div>
         </div>
-        <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🔧 ডেটা মেরামত</h3>
-        <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">কলাম label এ যদি ভুলে শ্রেণির নাম (যেমন "দশম শ্রেণি") চলে যায়, এটা auto-detect করে time format এ ফিরিয়ে আনে।</div>
-        <button class="tool-btn" style="width:100%;background:var(--info);color:#fff" onclick="showRepairDialog()">🔧 ডেটা সমস্যা চেক ও ঠিক করো</button>
-        <div class="divider"></div>
-        <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">সেটিংস রিসেট</h3>
-        <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">শুধু সেটিংস ডিফল্টে ফিরবে — শিক্ষক ও রুটিনের ডেটা নিরাপদ থাকবে।</div>
-        <button class="tool-btn" style="width:100%" onclick="resetSettings()">🔄 সেটিংস ডিফল্টে ফেরাও</button>
-        <div class="divider"></div>
-        <h3 style="margin:0 0 8px;font-size:12px;color:var(--danger);text-transform:uppercase">বিপজ্জনক জোন</h3>
-        <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">এটি শিক্ষক, রুটিন, সেটিংস — সব মুছে ফেলবে। অপরিবর্তনীয়!</div>
-        <button class="tool-btn danger" style="width:100%" onclick="resetData()">🗑️ সব ডেটা রিসেট করুন</button>
+        <!-- ডেটা মেরামত / রিসেট — শুধুমাত্র অ্যাডমিন ও ম্যানেজারের জন্য -->
+        <div class="admin-mgr-only">
+          <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🔧 ডেটা মেরামত</h3>
+          <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">কলাম label এ যদি ভুলে শ্রেণির নাম (যেমন "দশম শ্রেণি") চলে যায়, এটা auto-detect করে time format এ ফিরিয়ে আনে।</div>
+          <button class="tool-btn" style="width:100%;background:var(--info);color:#fff" onclick="showRepairDialog()">🔧 ডেটা সমস্যা চেক ও ঠিক করো</button>
+          <div class="divider"></div>
+          <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">সেটিংস রিসেট</h3>
+          <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">শুধু সেটিংস ডিফল্টে ফিরবে — শিক্ষক ও রুটিনের ডেটা নিরাপদ থাকবে।</div>
+          <button class="tool-btn" style="width:100%" onclick="resetSettings()">🔄 সেটিংস ডিফল্টে ফেরাও</button>
+          <div class="divider"></div>
+          <h3 style="margin:0 0 8px;font-size:12px;color:var(--danger);text-transform:uppercase">বিপজ্জনক জোন</h3>
+          <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">এটি শিক্ষক, রুটিন, সেটিংস — সব মুছে ফেলবে। অপরিবর্তনীয়!</div>
+          <button class="tool-btn danger" style="width:100%" onclick="resetData()">🗑️ সব ডেটা রিসেট করুন</button>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="tool-btn" onclick="closeModal('settingsModal')">বন্ধ</button>
-      <button class="tool-btn primary" onclick="saveSettings()">💾 সংরক্ষণ করুন</button>
+      <button class="tool-btn primary admin-mgr-only" onclick="saveSettings()">💾 সংরক্ষণ করুন</button>
     </div>
   </div>
 </div>
@@ -3098,6 +3102,11 @@ body[data-role="manager"] .teacher-only{display:none !important}
             <label>📱 মোবাইল ২</label>
             <input id="tEditMobile2" type="tel" inputmode="tel" placeholder="01XXXXXXXXX" autocomplete="tel">
           </div>
+        </div>
+        <!-- শিক্ষকের লগইন পাসওয়ার্ড — শুধু অ্যাডমিন/ম্যানেজার রিসেট করতে পারে -->
+        <div class="field admin-mgr-only" id="tEditPasswordField">
+          <label>🔐 শিক্ষকের লগইন পাসওয়ার্ড (রিসেট করতে নতুন মান দিন)</label>
+          <input id="tEditPassword" type="text" placeholder="খালি রাখলে অপরিবর্তিত থাকবে" autocomplete="off">
         </div>
         <div class="toggle-row">
           <div class="info"><div class="lbl">ছুটিতে আছেন</div><div class="desc">নাম এর পাশে ব্যাজ দেখাবে — ক্লাস তালিকা দৃশ্যমান থাকবে (প্রক্সির জন্য)</div></div>
@@ -3590,6 +3599,8 @@ function loadState(){
         // Req #4: Backfill mobile fields for existing teachers
         if(t.mobile1 === undefined) t.mobile1 = '';
         if(t.mobile2 === undefined) t.mobile2 = '';
+        // ডিফল্ট লগইন পাসওয়ার্ড (পুরোনো শিক্ষকদের জন্য)
+        if(t.password === undefined || t.password === null || t.password === '') t.password = '1234';
       });
       // Migrate v1.1: bump up old small slot widths and large row heights
       const ss = state.settings;
@@ -3628,6 +3639,7 @@ function makeTeacher(name='নতুন শিক্ষক'){
   return {
     id: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
     name,
+    password: '1234',    // ডিফল্ট শিক্ষক লগইন পাসওয়ার্ড
     title:'',
     mainSubject:'',
     mobile1:'',           // Req #4: প্রাথমিক মোবাইল
@@ -3718,6 +3730,9 @@ function applyRemoteState(remoteData){
     });
     // settings deep-merge করো যাতে নতুন ডিফল্ট হারিয়ে না যায়
     state.settings = Object.assign({}, oldSettings, remoteData.settings || {});
+
+    // রিমোট ডেটায় missing ফিল্ড (যেমন teacher.password) ভর্তি করো
+    if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity();
 
     // লোকাল স্টোরেজে সেভ করো (Firebase সেভ ছাড়া)
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
@@ -3957,20 +3972,45 @@ const USERS = {
   }catch(e){ /* ignore */ }
 })();
 
-// Req #7: Change admin/manager password (only admin can use this)
+// পাসওয়ার্ড পরিবর্তন — বর্তমানে লগইন করা ইউজারের (admin / manager / teacher) নিজের পাসওয়ার্ড পরিবর্তন করে
 function changePassword(){
-  if(!currentUser || currentUser.role !== 'admin'){
-    showToast('শুধু অ্যাডমিন পাসওয়ার্ড পরিবর্তন করতে পারেন','error');
+  if(!currentUser){
+    showToast('আগে লগইন করুন','error');
     return;
   }
-  const target = document.getElementById('pwTarget').value;
   const oldPw  = document.getElementById('pwOld').value;
   const newPw  = document.getElementById('pwNew').value;
   const newPw2 = document.getElementById('pwNew2').value;
-  if(!USERS[target]){
-    showToast('অজানা অ্যাকাউন্ট','error'); return;
+
+  // বর্তমান ইউজার অনুযায়ী টার্গেট নির্ধারণ
+  let getCurrentPw, applyNewPw, label;
+  if(currentUser.role === 'admin' || currentUser.role === 'manager'){
+    const key = currentUser.username || currentUser.role;
+    if(!USERS[key]){ showToast('অজানা অ্যাকাউন্ট','error'); return; }
+    label = USERS[key].name;
+    getCurrentPw = () => String(USERS[key].password);
+    applyNewPw = (pw) => {
+      USERS[key].password = pw;
+      let stored = {};
+      try{ stored = JSON.parse(localStorage.getItem('routinePasswords')||'{}'); }catch(e){ stored = {}; }
+      stored[key] = pw;
+      try{ localStorage.setItem('routinePasswords', JSON.stringify(stored)); }catch(e){}
+    };
+  } else if(currentUser.role === 'teacher'){
+    const t = state.teachers.find(x => x.id === currentUser.teacherId);
+    if(!t){ showToast('শিক্ষক পাওয়া যায়নি','error'); return; }
+    label = t.name;
+    getCurrentPw = () => (t.password != null && t.password !== '') ? String(t.password) : '1234';
+    applyNewPw = (pw) => {
+      t.password = pw;
+      saveState();   // state.teachers → localStorage (+ Firebase) এ সংরক্ষিত হয়
+    };
+  } else {
+    showToast('অজানা ভূমিকা','error');
+    return;
   }
-  if(USERS[target].password !== oldPw){
+
+  if(getCurrentPw() !== oldPw){
     showToast('❌ পুরাতন পাসওয়ার্ড ভুল','error'); return;
   }
   if(!newPw || newPw.length < 4){
@@ -3979,18 +4019,22 @@ function changePassword(){
   if(newPw !== newPw2){
     showToast('দুটি নতুন পাসওয়ার্ড মেলেনি','warning'); return;
   }
-  // Update in-memory USERS and persist to localStorage
-  USERS[target].password = newPw;
-  let stored = {};
-  try{ stored = JSON.parse(localStorage.getItem('routinePasswords')||'{}'); }catch(e){ stored = {}; }
-  stored[target] = newPw;
-  try{ localStorage.setItem('routinePasswords', JSON.stringify(stored)); }catch(e){}
-  // Clear the fields
+
+  // পরিবর্তন প্রয়োগ ও সংরক্ষণ করো
+  applyNewPw(newPw);
+
+  // ফিল্ড পরিষ্কার করো
   document.getElementById('pwOld').value = '';
   document.getElementById('pwNew').value = '';
   document.getElementById('pwNew2').value = '';
-  audit('পাসওয়ার্ড পরিবর্তন', target);
+  audit('পাসওয়ার্ড পরিবর্তন', label);
   showToast('✅ পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে','success');
+}
+
+// সেটিংস মোডাল খুলে সরাসরি পাসওয়ার্ড সেকশনে নিয়ে যায় (শিক্ষকের জন্য)
+function openPasswordSettings(){
+  openModal('settingsModal');
+  switchSetTab('danger');
 }
 
 function doLogin(){
@@ -4012,6 +4056,14 @@ function doLogin(){
     if(!tid){errEl.textContent='শিক্ষক নির্বাচন করুন';errEl.classList.add('show');return}
     const t = state.teachers.find(x=>x.id===tid);
     if(!t){errEl.textContent='শিক্ষক পাওয়া যায়নি';errEl.classList.add('show');return}
+    // শিক্ষক লগইন পাসওয়ার্ড যাচাই — পাসওয়ার্ড ছাড়া লগইন হবে না
+    const p = document.getElementById('loginPass').value;
+    const expectedPw = (t.password != null && t.password !== '') ? String(t.password) : '1234';
+    if(p !== expectedPw){
+      errEl.textContent = '❌ ভুল পাসওয়ার্ড';
+      errEl.classList.add('show');
+      return;
+    }
     currentUser = {name:t.name, role:'teacher', teacherId:tid};
   } else {
     errEl.textContent = '❌ সঠিক ভূমিকা নির্বাচন করুন';
@@ -4078,8 +4130,10 @@ function canEditTeacher(tid){
 document.getElementById('loginRole').addEventListener('change', e=>{
   const r = e.target.value;
   document.getElementById('usernameField').style.display = (r==='admin'||r==='manager')?'block':'none';
-  document.getElementById('passwordField').style.display = (r==='admin'||r==='manager')?'block':'none';
   document.getElementById('teacherSelectField').style.display = (r==='teacher')?'block':'none';
+  // পাসওয়ার্ড সব ভূমিকার জন্য দরকার (অ্যাডমিন / ম্যানেজার / শিক্ষক)
+  document.getElementById('passwordField').style.display = 'block';
+  document.getElementById('loginPass').value = '';
   if(r === 'admin') document.getElementById('loginUser').value = 'admin';
   if(r === 'manager') document.getElementById('loginUser').value = 'manager';
 });
@@ -4160,6 +4214,8 @@ function ensureStateIntegrity(){
     if(!Array.isArray(t.preferredDays)) t.preferredDays = [];
     if(!Array.isArray(t.unavailableDays)) t.unavailableDays = [];
     if(typeof t.notes !== 'string') t.notes = '';
+    // ডিফল্ট লগইন পাসওয়ার্ড — Firebase/remote থেকে আসা শিক্ষকদের জন্যও নিশ্চিত করো
+    if(t.password === undefined || t.password === null || t.password === '') t.password = '1234';
   });
   // AI settings
   if(!state.aiSettings || typeof state.aiSettings !== 'object'){
@@ -4435,95 +4491,13 @@ function renderTable(){
   syncFloatingScroll();
 }
 
+/* প্রতিটি teacher block-এ ৩টি <tr> থাকে এবং SL/Name/বিরতি সেলে rowspan="3" ব্যবহৃত।
+   drag চলাকালীন কোন শিক্ষককে সরানো হচ্ছে তা module-scope ভেরিয়েবলে রাখা হয় —
+   table re-render হলেও মান হারায় না। */
+let _rowDragTid = null;
+
 function setupDragDrop(){
-  if(!canFullEdit()) return;
-
-  // ROW drag-drop — entire teacher block (3 sub-rows) treated as one unit.
-  // Two valid drag sources are supported:
-  //   1. The ≡ row-handle inside the SL cell  (draggable="true" on the span)
-  //   2. The first sub-row tr itself          (legacy fallback)
-  // Both call the same start/end logic via _beginRowDrag().
-  let dragRowId = null;
-
-  const _beginRowDrag = (tid, e) => {
-    dragRowId = tid;
-    document.querySelectorAll(`#tbody tr[data-tid="${tid}"]`).forEach(r => r.classList.add('dragging'));
-    try { e.dataTransfer.effectAllowed = 'move'; } catch(_){}
-    try { e.dataTransfer.setData('text/plain', 'row:'+tid); } catch(_){}
-    try {
-      const dragImage = document.createElement('div');
-      dragImage.className = 'drag-ghost';
-      const t = state.teachers.find(x=>x.id===tid);
-      dragImage.innerHTML = `📋 <strong>${t?esc(t.name):'শিক্ষক'}</strong> সরানো হচ্ছে...`;
-      dragImage.style.cssText = 'position:absolute;top:-9999px;left:-9999px;background:var(--primary);color:#fff;padding:8px 14px;border-radius:8px;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.3);font-family:var(--font-bn)';
-      document.body.appendChild(dragImage);
-      e.dataTransfer.setDragImage(dragImage, 0, 0);
-      setTimeout(()=>{ try{ document.body.removeChild(dragImage); }catch(_){} }, 0);
-    } catch(_){}
-  };
-
-  const _endRowDrag = () => {
-    document.querySelectorAll('#tbody tr.dragging').forEach(r => r.classList.remove('dragging'));
-    document.querySelectorAll('.drag-over-block').forEach(el => el.classList.remove('drag-over-block'));
-    dragRowId = null;
-  };
-
-  // 1) Wire each row-handle (≡) as its own drag source — this is what the SL-column user actually grabs.
-  document.querySelectorAll('#tbody .row-handle[draggable="true"]').forEach(h => {
-    h.addEventListener('dragstart', e => {
-      const tid = h.dataset.handleTid;
-      if(!tid) return;
-      e.stopPropagation();
-      _beginRowDrag(tid, e);
-    });
-    h.addEventListener('dragend', _endRowDrag);
-  });
-
-  // 2) Also leave the original tr-level drag working (legacy fallback)
-  const rows = document.querySelectorAll('#tbody tr.teacher-row-class[draggable="true"]');
-  rows.forEach(row=>{
-    row.addEventListener('dragstart', e=>{
-      if(dragRowId) return; // handle already started it
-      _beginRowDrag(row.dataset.tid, e);
-    });
-    row.addEventListener('dragend', _endRowDrag);
-    row.addEventListener('dragover', e=>{
-      if(!dragRowId || row.dataset.tid === dragRowId) return;
-      e.preventDefault();
-      document.querySelectorAll('.drag-over-block').forEach(el => el.classList.remove('drag-over-block'));
-      document.querySelectorAll(`#tbody tr[data-tid="${row.dataset.tid}"]`).forEach(r => r.classList.add('drag-over-block'));
-    });
-    row.addEventListener('dragleave', e=>{
-      const tid = row.dataset.tid;
-      const target = e.relatedTarget;
-      if(!target || !target.closest || !target.closest(`tr[data-tid="${tid}"]`)){
-        document.querySelectorAll(`#tbody tr[data-tid="${tid}"]`).forEach(r => r.classList.remove('drag-over-block'));
-      }
-    });
-    row.addEventListener('drop', e=>{
-      e.preventDefault();
-      if(!dragRowId || row.dataset.tid === dragRowId) return;
-      reorderTeacher(dragRowId, row.dataset.tid);
-    });
-  });
-
-  // 3) Also let the OTHER 2 sub-rows (subject + section) accept drag-over, so dropping anywhere on the teacher block works
-  const allTeacherSubRows = document.querySelectorAll('#tbody tr[data-tid]:not(.teacher-row-class)');
-  allTeacherSubRows.forEach(row=>{
-    row.addEventListener('dragover', e=>{
-      if(!dragRowId || row.dataset.tid === dragRowId) return;
-      e.preventDefault();
-      document.querySelectorAll('.drag-over-block').forEach(el => el.classList.remove('drag-over-block'));
-      document.querySelectorAll(`#tbody tr[data-tid="${row.dataset.tid}"]`).forEach(r => r.classList.add('drag-over-block'));
-    });
-    row.addEventListener('drop', e=>{
-      e.preventDefault();
-      if(!dragRowId || row.dataset.tid === dragRowId) return;
-      reorderTeacher(dragRowId, row.dataset.tid);
-    });
-  });
-
-  // COLUMN drag-drop
+  // ---- COLUMN drag-drop (Req #1 অনুযায়ী কলাম draggable নয়; compatibility-র জন্য রাখা) ----
   const cols = document.querySelectorAll('#theadRow th[data-cid][draggable="true"]');
   let dragColId = null;
   cols.forEach(th=>{
@@ -4550,6 +4524,95 @@ function setupDragDrop(){
       reorderColumn(dragColId, th.dataset.cid);
     });
   });
+
+  // ---- ROW drag-drop — #tbody এ event delegation, listener একবারই বাঁধা হয় ----
+  // delegation ব্যবহার করায় প্রতিবার renderTable() চললেও নতুন listener বাঁধতে হয় না।
+  // event-target থেকে closest('[data-tid]') দিয়ে সঠিক teacher block (৩টি tr একসাথে) শনাক্ত হয়।
+  const tb = document.getElementById('tbody');
+  if(!tb || tb.dataset.rowDragBound === '1') return;
+  tb.dataset.rowDragBound = '1';
+
+  // event target থেকে teacher id বের করো — যেকোনো sub-row বা rowspan সেল (SL/Name/বিরতি) থেকে কাজ করে
+  const tidFromEvent = (e) => {
+    const el = (e.target && e.target.closest) ? e.target.closest('#tbody [data-tid]') : null;
+    return el ? el.dataset.tid : null;
+  };
+  const clearDragVisuals = () => {
+    document.querySelectorAll('#tbody tr.dragging').forEach(r => r.classList.remove('dragging'));
+    document.querySelectorAll('#tbody tr.drag-over-block').forEach(r => r.classList.remove('drag-over-block'));
+  };
+
+  // DRAGSTART — বৈধ উৎস: SL সেলের ≡ row-handle, অথবা teacher-row-class সারি (legacy fallback)
+  tb.addEventListener('dragstart', (e) => {
+    if(!canFullEdit()){ return; }
+    let tid = null;
+    const handle = (e.target && e.target.closest) ? e.target.closest('.row-handle') : null;
+    if(handle){
+      tid = handle.dataset.handleTid
+            || (handle.closest('[data-tid]') && handle.closest('[data-tid]').dataset.tid);
+    } else {
+      const row = (e.target && e.target.closest) ? e.target.closest('tr.teacher-row-class[draggable="true"]') : null;
+      if(row) tid = row.dataset.tid;
+    }
+    if(!tid){ return; }
+    const t = state.teachers.find(x => x.id === tid);
+    if(!t){ return; }
+    if(t.locked){
+      e.preventDefault();
+      showToast('🔒 এই শিক্ষক লক করা — আগে আনলক করুন','warning');
+      return;
+    }
+    _rowDragTid = tid;
+    document.querySelectorAll(`#tbody tr[data-tid="${tid}"]`).forEach(r => r.classList.add('dragging'));
+    try{ e.dataTransfer.effectAllowed = 'move'; }catch(_){}
+    try{ e.dataTransfer.setData('text/plain', 'row:' + tid); }catch(_){}
+    try{
+      const ghost = document.createElement('div');
+      ghost.className = 'drag-ghost';
+      ghost.innerHTML = `📋 <strong>${esc(t.name)}</strong> সরানো হচ্ছে...`;
+      ghost.style.cssText = 'position:absolute;top:-9999px;left:-9999px;background:var(--primary);color:#fff;padding:8px 14px;border-radius:8px;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.3);font-family:var(--font-bn)';
+      document.body.appendChild(ghost);
+      e.dataTransfer.setDragImage(ghost, 0, 0);
+      setTimeout(()=>{ try{ document.body.removeChild(ghost); }catch(_){} }, 0);
+    }catch(_){}
+  });
+
+  // DRAGOVER — কার্সরের নিচের পুরো teacher block (৩টি tr) হাইলাইট করো
+  tb.addEventListener('dragover', (e) => {
+    if(!_rowDragTid) return;
+    const tid = tidFromEvent(e);
+    if(!tid || tid === _rowDragTid) return;
+    e.preventDefault();
+    try{ e.dataTransfer.dropEffect = 'move'; }catch(_){}
+    document.querySelectorAll('#tbody tr.drag-over-block').forEach(r => r.classList.remove('drag-over-block'));
+    document.querySelectorAll(`#tbody tr[data-tid="${tid}"]`).forEach(r => r.classList.add('drag-over-block'));
+  });
+
+  // DRAGLEAVE — tbody থেকে কার্সর বেরোলে হাইলাইট মুছে দাও
+  tb.addEventListener('dragleave', (e) => {
+    if(!_rowDragTid) return;
+    if(!tb.contains(e.relatedTarget)){
+      document.querySelectorAll('#tbody tr.drag-over-block').forEach(r => r.classList.remove('drag-over-block'));
+    }
+  });
+
+  // DROP — drop target teacher block শনাক্ত করে reorder করো
+  tb.addEventListener('drop', (e) => {
+    if(!_rowDragTid) return;
+    const tid = tidFromEvent(e);
+    e.preventDefault();
+    const fromId = _rowDragTid;
+    clearDragVisuals();
+    _rowDragTid = null;
+    if(!tid || tid === fromId) return;
+    reorderTeacher(fromId, tid);
+  });
+
+  // DRAGEND — drag শেষ/বাতিল হলে সব visual state পরিষ্কার করো
+  tb.addEventListener('dragend', () => {
+    clearDragVisuals();
+    _rowDragTid = null;
+  });
 }
 
 function reorderColumn(fromId, toId){
@@ -4568,16 +4631,20 @@ function reorderColumn(fromId, toId){
 }
 
 function reorderTeacher(fromId, toId){
+  if(!canFullEdit()){ showToast('আপনার রো সরানোর অনুমতি নেই','warning'); return; }
+  if(!fromId || !toId || fromId === toId) return;
   const fromIdx = state.teachers.findIndex(t=>t.id===fromId);
   const toIdx = state.teachers.findIndex(t=>t.id===toId);
   if(fromIdx<0 || toIdx<0) return;
   if(state.teachers[fromIdx].locked){showToast('🔒 এই শিক্ষক লক করা — আগে আনলক করুন','warning');return}
   if(state.teachers[toIdx].locked){showToast('🔒 লক্ষ্য শিক্ষক লক করা — সরানো যাবে না','warning');return}
   snapshot();
+  // state.teachers অ্যারে আপডেট — fromId কে toId এর অবস্থানে সরাও
   const [moved] = state.teachers.splice(fromIdx, 1);
-  state.teachers.splice(toIdx, 0, moved);
-  saveState();
-  renderTable();
+  const newToIdx = state.teachers.findIndex(t=>t.id===toId);
+  state.teachers.splice(newToIdx, 0, moved);
+  saveState();        // localStorage (+ Firebase) এ সংরক্ষণ
+  renderTable();      // টেবিল পুনরায় রেন্ডার
   audit('শিক্ষক সরানো', `${moved.name} নতুন অবস্থানে`);
   showToast('✅ শিক্ষক সরানো হয়েছে','success');
 }
@@ -5228,6 +5295,13 @@ function editTeacher(tid){
   // Req #4: load mobile numbers
   document.getElementById('tEditMobile1').value = t.mobile1 || '';
   document.getElementById('tEditMobile2').value = t.mobile2 || '';
+  // শিক্ষকের লগইন পাসওয়ার্ড — অ্যাডমিন/ম্যানেজারের জন্য বর্তমান মান দেখাও
+  const tEditPw = document.getElementById('tEditPassword');
+  if(tEditPw){
+    tEditPw.value = (currentUser && currentUser.role !== 'teacher')
+      ? ((t.password != null && t.password !== '') ? String(t.password) : '1234')
+      : '';
+  }
 
   // Populate primary subject dropdown from state.options.subject
   const subSel = document.getElementById('tEditSubject');
@@ -5357,6 +5431,20 @@ function saveTeacher(){
     // Req #4: Save mobile numbers (digits/+/- only, trimmed)
     t.mobile1 = (document.getElementById('tEditMobile1').value || '').trim();
     t.mobile2 = (document.getElementById('tEditMobile2').value || '').trim();
+    // শিক্ষকের লগইন পাসওয়ার্ড — খালি না হলে আপডেট করো (অ্যাডমিন/ম্যানেজার)
+    const pwInput = document.getElementById('tEditPassword');
+    if(pwInput){
+      const newTPw = (pwInput.value || '').trim();
+      if(newTPw !== ''){
+        if(newTPw.length < 4){
+          showToast('শিক্ষকের পাসওয়ার্ড কমপক্ষে ৪ অক্ষর হতে হবে — অপরিবর্তিত রাখা হলো','warning');
+        } else {
+          t.password = newTPw;
+        }
+      }
+    }
+    // পাসওয়ার্ড ফিল্ড কখনো খালি থাকলে ডিফল্ট নিশ্চিত করো
+    if(t.password === undefined || t.password === null || t.password === '') t.password = '1234';
     // Save weekly assignments
     if(!t.weeklyAssignments) t.weeklyAssignments = {};
     document.querySelectorAll('#tEditWeeklyGrid select').forEach(sel=>{
@@ -6830,10 +6918,20 @@ function switchSetTab(tab){
   const idMap = {display:'stTabDisplay', size:'stTabSize', color:'stTabColor', text:'stTabText', feature:'stTabFeature', ai:'stTabAI', save:'stTabSave', danger:'stTabDanger'};
   const btn = document.getElementById(idMap[tab]);
   if(btn){btn.setAttribute('data-active','true');btn.classList.add('primary')}
-  // Req #7: Password change section only visible to admin
+  // পাসওয়ার্ড পরিবর্তন সেকশন — যেকোনো লগইন করা ইউজার (admin/manager/teacher) নিজের পাসওয়ার্ড পরিবর্তন করতে পারে
   const pwSec = document.getElementById('setPasswordSection');
   if(pwSec){
-    pwSec.style.display = (currentUser && currentUser.role === 'admin') ? '' : 'none';
+    pwSec.style.display = currentUser ? '' : 'none';
+  }
+  // বর্তমান অ্যাকাউন্টের নাম দেখাও
+  const pwLabel = document.getElementById('pwAccountLabel');
+  if(pwLabel){
+    if(currentUser){
+      const rNames = {admin:'অ্যাডমিন', manager:'ম্যানেজার', teacher:'শিক্ষক'};
+      pwLabel.value = currentUser.name + ' (' + (rNames[currentUser.role] || currentUser.role) + ')';
+    } else {
+      pwLabel.value = '—';
+    }
   }
 }
 
