@@ -502,6 +502,21 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
    the dropdown could become empty. CSS :has() hides the trigger button itself in that case. */
 .tool-menu-wrapper:has(.tool-menu-panel:empty) .tool-menu-btn{display:none}
 
+/* 📱 MOBILE: টুলবার overflow-x:auto এর কারণে absolute panel clip হয়ে যায়।
+   তাই মোবাইলে position:fixed করে viewport এর সাপেক্ষে আঁটকাই —
+   exact top/left JS দিয়ে বাটনের নিচে compute করা হয়। */
+@media(max-width:768px){
+  .tool-menu-panel{
+    position:fixed !important;
+    right:auto !important;
+    width:min(300px, calc(100vw - 16px)) !important;
+    max-width:none !important;
+    max-height:min(70vh, calc(100vh - 140px)) !important;
+    z-index:9500 !important; /* notif-panel(9000) এর উপরে / table sticky cell এর উপরে */
+    box-shadow:0 16px 40px rgba(0,0,0,.32) !important;
+  }
+}
+
 /* =============================================================
    TABLE CONTAINER
 ============================================================= */
@@ -8927,12 +8942,41 @@ document.addEventListener('click', (e) => {
 /* ===========================================================
    TOOL MENU DROPDOWN (consolidated "আরও" button)
 =========================================================== */
+function positionToolMenuMobile(){
+  // Compute & set fixed-position coords so the panel appears below the "আরও" button,
+  // right-aligned with it, but never spilling off-screen.
+  const panel = document.getElementById('toolMenuPanel');
+  const btn = document.getElementById('toolMenuBtn');
+  if(!panel || !btn) return;
+  const rect = btn.getBoundingClientRect();
+  const panelWidth = Math.min(300, window.innerWidth - 16);
+  let leftPos = rect.right - panelWidth;            // align right edges
+  if(leftPos < 8) leftPos = 8;                       // keep 8px from left
+  if(leftPos + panelWidth > window.innerWidth - 8){  // keep 8px from right
+    leftPos = window.innerWidth - panelWidth - 8;
+  }
+  panel.style.top  = (rect.bottom + 8) + 'px';
+  panel.style.left = leftPos + 'px';
+  panel.style.right = 'auto';
+}
+
 function toggleToolMenu(e){
   if(e){ e.stopPropagation(); }
   const panel = document.getElementById('toolMenuPanel');
   const btn = document.getElementById('toolMenuBtn');
   if(!panel || !btn) return;
   const willShow = !panel.classList.contains('show');
+  if(willShow){
+    if(window.innerWidth <= 768){
+      // Mobile → position:fixed needs explicit top/left
+      positionToolMenuMobile();
+    } else {
+      // Desktop → let CSS rules govern (position:absolute, top/right etc)
+      panel.style.top = '';
+      panel.style.left = '';
+      panel.style.right = '';
+    }
+  }
   panel.classList.toggle('show', willShow);
   btn.setAttribute('aria-expanded', willShow ? 'true' : 'false');
 }
@@ -8956,6 +9000,21 @@ document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape'){
     const panel = document.getElementById('toolMenuPanel');
     if(panel && panel.classList.contains('show')) closeToolMenu();
+  }
+});
+/* On mobile, the panel is position:fixed with JS-computed top.
+   If user scrolls page or rotates / resizes window while open,
+   reposition so the panel keeps tracking the "আরও" button. */
+window.addEventListener('scroll', () => {
+  const panel = document.getElementById('toolMenuPanel');
+  if(panel && panel.classList.contains('show') && window.innerWidth <= 768){
+    positionToolMenuMobile();
+  }
+}, {passive:true});
+window.addEventListener('resize', () => {
+  const panel = document.getElementById('toolMenuPanel');
+  if(panel && panel.classList.contains('show') && window.innerWidth <= 768){
+    positionToolMenuMobile();
   }
 });
 
