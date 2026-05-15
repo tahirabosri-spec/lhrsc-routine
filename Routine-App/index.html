@@ -586,8 +586,9 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 }
 .routine-table td.col-name .t-lock:hover{background:rgba(255,255,255,.35)}
 
-/* Visible row controls in SL column: drag handle + lock toggle */
-.routine-table td.col-sl{position:relative}
+/* Visible row controls in SL column: drag handle + lock toggle.
+   NOTE: position:sticky বজায় রাখা হয়েছে (আগে relative দিয়ে override হয়ে যাচ্ছিল)। */
+.routine-table td.col-sl{position:sticky}
 .routine-table td.col-sl .sl-num{
   font-size:var(--name-font);
   font-weight:800;
@@ -671,6 +672,22 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   transition:var(--transition);
 }
 .routine-table td.col-sl .row-paint:hover{background:#fff;transform:scale(1.1)}
+/* শিক্ষকের নিজের পাসওয়ার্ড পরিবর্তন বাটন (নিজের রো-তে দৃশ্যমান) */
+.routine-table td.col-sl .row-pass{
+  cursor:pointer;
+  font-size:14px;
+  line-height:1;
+  background:rgba(255,255,255,.7);
+  border:1px solid var(--primary);
+  border-radius:4px;
+  padding:1px 5px;
+  transition:var(--transition);
+}
+.routine-table td.col-sl .row-pass:hover{
+  background:var(--primary);
+  box-shadow:0 2px 8px rgba(15,118,110,.3);
+  transform:scale(1.1);
+}
 /* Locked teacher row — entire row gets visual lock indicator */
 .routine-table tr[data-tid] td.is-locked,
 .routine-table tr[draggable="false"] td{
@@ -678,7 +695,13 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   position:relative;
 }
 
+/* read-only (শিক্ষক) মোডে admin/manager row-controls লুকানো থাকে,
+   কিন্তু শিক্ষকের নিজের পাসওয়ার্ড কন্ট্রোল দৃশ্যমান থাকবে */
 [data-readonly="true"] .row-controls{display:none}
+[data-readonly="true"] .row-controls.row-controls-teacher{display:flex}
+.routine-table td.col-sl .row-controls.row-controls-teacher{
+  display:flex;flex-direction:column;gap:3px;align-items:center;margin-top:2px;
+}
 
 /* Compact mode: smaller controls */
 [data-density="compact"] .routine-table td.col-sl .row-handle,
@@ -1718,6 +1741,8 @@ input[type="range"]::-moz-range-thumb{
   border-color:var(--warning) !important;
 }
 .routine-table tbody tr.dragging *{cursor:grabbing !important;pointer-events:none}
+/* row-handle টি drag চলাকালীনও pointer-events ধরে রাখে — না হলে Chrome drag বাতিল করে */
+.routine-table tbody tr.dragging .row-handle{pointer-events:auto !important}
 
 /* Drop target: ALL 3 sub-rows of target teacher get highlighted */
 .routine-table tbody tr.drag-over-block{
@@ -3210,6 +3235,40 @@ body[data-role="manager"] .teacher-only{display:none !important}
   </div>
 </div>
 
+<!-- শিক্ষকের নিজস্ব পাসওয়ার্ড পরিবর্তন মোডাল (নিজের রো থেকে খোলা যায়) -->
+<div class="modal-overlay" id="teacherPwModal">
+  <div class="modal narrow">
+    <div class="modal-header">
+      <h2>🔐 আমার পাসওয়ার্ড পরিবর্তন</h2>
+      <button class="modal-close" onclick="closeModal('teacherPwModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="tPwModalTid">
+      <div style="font-size:12.5px;color:var(--text-2);margin-bottom:12px">আপনি যে শিক্ষক অ্যাকাউন্ট দিয়ে লগইন করেছেন, তার লগইন পাসওয়ার্ড এখানে পরিবর্তন করুন। পরিবর্তন সংরক্ষিত হবে।</div>
+      <div class="field">
+        <label>অ্যাকাউন্ট</label>
+        <input id="tPwModalName" type="text" value="—" readonly style="background:var(--surface-2);font-weight:800">
+      </div>
+      <div class="field">
+        <label>পুরাতন পাসওয়ার্ড</label>
+        <input id="tPwModalOld" type="password" autocomplete="current-password" placeholder="••••">
+      </div>
+      <div class="field">
+        <label>নতুন পাসওয়ার্ড (কমপক্ষে ৪ অক্ষর)</label>
+        <input id="tPwModalNew" type="password" autocomplete="new-password" placeholder="••••">
+      </div>
+      <div class="field">
+        <label>নতুন পাসওয়ার্ড আবার লিখুন</label>
+        <input id="tPwModalNew2" type="password" autocomplete="new-password" placeholder="••••" onkeydown="if(event.key==='Enter')submitTeacherPasswordModal()">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tool-btn" onclick="closeModal('teacherPwModal')">বাতিল</button>
+      <button class="tool-btn primary" onclick="submitTeacherPasswordModal()">🔐 পাসওয়ার্ড পরিবর্তন করুন</button>
+    </div>
+  </div>
+</div>
+
 <!-- Customize Row/Column Modal -->
 <div class="modal-overlay" id="customizeModal">
   <div class="modal narrow">
@@ -4037,6 +4096,66 @@ function openPasswordSettings(){
   switchSetTab('danger');
 }
 
+// শিক্ষক নিজের রো থেকে নিজের পাসওয়ার্ড পরিবর্তন মোডাল খোলে
+function openTeacherPasswordModal(tid){
+  if(!currentUser || currentUser.role !== 'teacher'){
+    showToast('শুধু লগইন করা শিক্ষক নিজের পাসওয়ার্ড পরিবর্তন করতে পারেন','error');
+    return;
+  }
+  // নিরাপত্তা: শিক্ষক শুধু নিজের রো থেকেই খুলতে পারবে
+  if(currentUser.teacherId !== tid){
+    showToast('আপনি শুধু নিজের পাসওয়ার্ড পরিবর্তন করতে পারবেন','error');
+    return;
+  }
+  const t = state.teachers.find(x => x.id === tid);
+  if(!t){ showToast('শিক্ষক পাওয়া যায়নি','error'); return; }
+  document.getElementById('tPwModalTid').value = tid;
+  document.getElementById('tPwModalName').value = t.name;
+  document.getElementById('tPwModalOld').value = '';
+  document.getElementById('tPwModalNew').value = '';
+  document.getElementById('tPwModalNew2').value = '';
+  openModal('teacherPwModal');
+  setTimeout(()=>{ try{ document.getElementById('tPwModalOld').focus(); }catch(_){} }, 100);
+}
+
+// শিক্ষকের নিজস্ব পাসওয়ার্ড পরিবর্তন মোডাল submit — state.teachers এ সংরক্ষণ
+function submitTeacherPasswordModal(){
+  if(!currentUser || currentUser.role !== 'teacher'){
+    showToast('অনুমতি নেই','error'); return;
+  }
+  const tid = document.getElementById('tPwModalTid').value;
+  if(currentUser.teacherId !== tid){
+    showToast('আপনি শুধু নিজের পাসওয়ার্ড পরিবর্তন করতে পারবেন','error'); return;
+  }
+  const t = state.teachers.find(x => x.id === tid);
+  if(!t){ showToast('শিক্ষক পাওয়া যায়নি','error'); return; }
+
+  const oldPw  = document.getElementById('tPwModalOld').value;
+  const newPw  = document.getElementById('tPwModalNew').value;
+  const newPw2 = document.getElementById('tPwModalNew2').value;
+  const currentPw = (t.password != null && t.password !== '') ? String(t.password) : '1234';
+
+  if(currentPw !== oldPw){
+    showToast('❌ পুরাতন পাসওয়ার্ড ভুল','error'); return;
+  }
+  if(!newPw || newPw.length < 4){
+    showToast('নতুন পাসওয়ার্ড কমপক্ষে ৪ অক্ষর হতে হবে','warning'); return;
+  }
+  if(newPw !== newPw2){
+    showToast('দুটি নতুন পাসওয়ার্ড মেলেনি','warning'); return;
+  }
+
+  // পরিবর্তন প্রয়োগ ও সংরক্ষণ (localStorage + Firebase)
+  t.password = newPw;
+  saveState();
+  document.getElementById('tPwModalOld').value = '';
+  document.getElementById('tPwModalNew').value = '';
+  document.getElementById('tPwModalNew2').value = '';
+  closeModal('teacherPwModal');
+  audit('পাসওয়ার্ড পরিবর্তন', t.name + ' (নিজে)');
+  showToast('✅ আপনার পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে','success');
+}
+
 function doLogin(){
   const role = document.getElementById('loginRole').value;
   const errEl = document.getElementById('loginError');
@@ -4346,6 +4465,12 @@ function renderTable(){
         <span class="row-handle" draggable="${!teacherLocked}" data-handle-tid="${t.id}" title="ধরে টেনে স্থান পরিবর্তন">≡</span>
         <span class="row-lock ${teacherLocked?'is-locked':''}" onclick="event.stopPropagation();toggleTeacherLock('${t.id}')" title="${teacherLocked?'আনলক':'লক'}">${teacherLocked?'🔒':'🔓'}</span>
       </div>` : '';
+    // শিক্ষক নিজের রো থেকেই নিজের পাসওয়ার্ড পরিবর্তন করতে পারবে
+    const isOwnTeacherRow = currentUser && currentUser.role === 'teacher' && currentUser.teacherId === t.id;
+    const teacherRowControls = isOwnTeacherRow ? `
+      <div class="row-controls row-controls-teacher">
+        <span class="row-pass" onclick="event.stopPropagation();openTeacherPasswordModal('${t.id}')" title="নিজের পাসওয়ার্ড পরিবর্তন করুন">🔐</span>
+      </div>` : '';
     // Per-row inline style for color & height
     const rowH = (t.rowHeight && t.rowHeight > 0) ? t.rowHeight : 0;
     const rowHeightStyle = rowH > 0 ? `height:${rowH}px;min-height:${rowH}px;` : '';
@@ -4385,6 +4510,7 @@ function renderTable(){
     const slCellHtml = `<td class="col-sl${teacherLocked?' is-locked':''}" rowspan="3"${slBodyStyle}>
       <div class="sl-num">${toBnNum(slIdx)}</div>
       ${rowControls}
+      ${teacherRowControls}
     </td>`;
     // Req #6: Leave badge in name cell — schedule cells stay visible for proxy assignment
     const leaveBadgeHtml = t.onLeave ? `<div class="leave-badge" title="ছুটিতে আছেন — প্রক্সির জন্য ক্লাস তালিকা দৃশ্যমান">${esc(leaveText)}</div>` : '';
@@ -4563,7 +4689,6 @@ function setupDragDrop(){
       return;
     }
     _rowDragTid = tid;
-    document.querySelectorAll(`#tbody tr[data-tid="${tid}"]`).forEach(r => r.classList.add('dragging'));
     try{ e.dataTransfer.effectAllowed = 'move'; }catch(_){}
     try{ e.dataTransfer.setData('text/plain', 'row:' + tid); }catch(_){}
     try{
@@ -4575,6 +4700,13 @@ function setupDragDrop(){
       e.dataTransfer.setDragImage(ghost, 0, 0);
       setTimeout(()=>{ try{ document.body.removeChild(ghost); }catch(_){} }, 0);
     }catch(_){}
+    // গুরুত্বপূর্ণ: .dragging ক্লাস সঙ্গে সঙ্গে যোগ করলে CSS এর pointer-events:none
+    // dragstart-এর মধ্যেই handle-এ লাগে এবং Chrome drag operation বাতিল করে দেয়।
+    // তাই ক্লাসটি পরের frame-এ যোগ করি — ততক্ষণে browser drag ক্যাপচার করে ফেলে।
+    requestAnimationFrame(() => {
+      if(_rowDragTid !== tid) return;
+      document.querySelectorAll(`#tbody tr[data-tid="${tid}"]`).forEach(r => r.classList.add('dragging'));
+    });
   });
 
   // DRAGOVER — কার্সরের নিচের পুরো teacher block (৩টি tr) হাইলাইট করো
@@ -4639,12 +4771,17 @@ function reorderTeacher(fromId, toId){
   if(state.teachers[fromIdx].locked){showToast('🔒 এই শিক্ষক লক করা — আগে আনলক করুন','warning');return}
   if(state.teachers[toIdx].locked){showToast('🔒 লক্ষ্য শিক্ষক লক করা — সরানো যাবে না','warning');return}
   snapshot();
-  // state.teachers অ্যারে আপডেট — fromId কে toId এর অবস্থানে সরাও
+  // state.teachers অ্যারে আপডেট — fromId কে toId এর অবস্থানে বসাও।
+  // উপরে → নিচে টানলে target এর পরে, নিচে → উপরে টানলে target এর আগে বসে।
   const [moved] = state.teachers.splice(fromIdx, 1);
-  const newToIdx = state.teachers.findIndex(t=>t.id===toId);
-  state.teachers.splice(newToIdx, 0, moved);
+  // splice এর পর index shift হয়; target এর নতুন index বের করে সেখানে বসাই।
+  let insertIdx = state.teachers.findIndex(t=>t.id===toId);
+  if(insertIdx < 0) insertIdx = state.teachers.length;
+  else if(fromIdx < toIdx) insertIdx += 1;   // forward drag → target এর পরে
+  state.teachers.splice(insertIdx, 0, moved);
   saveState();        // localStorage (+ Firebase) এ সংরক্ষণ
   renderTable();      // টেবিল পুনরায় রেন্ডার
+  if(typeof populateLoginTeachers === 'function') populateLoginTeachers();
   audit('শিক্ষক সরানো', `${moved.name} নতুন অবস্থানে`);
   showToast('✅ শিক্ষক সরানো হয়েছে','success');
 }
