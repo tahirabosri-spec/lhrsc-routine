@@ -1061,8 +1061,6 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
   animation:fadeIn .2s;
 }
 .modal-overlay.show{display:flex}
-/* কাস্টমাইজ মডাল সেটিংস মডালের উপরে দেখাবে (সেটিংস খোলা থাকলেও) */
-#customizeModal{z-index:1100}
 .modal{
   background:var(--surface);
   border-radius:16px;
@@ -2850,31 +2848,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
           <button class="tool-btn" type="button" onclick="applyColorTheme('rainbow')">🌈 রংধনু</button>
           <button class="tool-btn" type="button" onclick="applyColorTheme('clear')">🚫 সব মুছে দাও</button>
         </div>
-        <div class="divider"></div>
-        <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🎨 আলাদা অংশের রঙ ও আকার</h3>
-        <div style="font-size:11.5px;color:var(--text-3);margin-bottom:10px">যে অংশের রঙ/আকার বদলাতে চান সেটি বেছে নিয়ে বাটনে ক্লিক করুন — একটি কাস্টমাইজ উইন্ডো খুলবে (রঙ, সাইজ, প্রিসেট সহ)।</div>
-
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-          <button class="tool-btn" type="button" onclick="openCustomize('sl')" style="flex:1;min-width:140px">🎨 SL কলামের রঙ</button>
-          <button class="tool-btn" type="button" onclick="openCustomize('name')" style="flex:1;min-width:140px">🎨 নাম কলামের রঙ ও প্রস্থ</button>
-        </div>
-
-        <div class="field">
-          <label>⏱ সময়/বিরতি কলাম বেছে নিন — তারপর রঙ পরিবর্তন করুন</label>
-          <div style="display:flex;gap:6px;align-items:center">
-            <select id="colorColSelect" style="flex:1"></select>
-            <button class="tool-btn primary" type="button" onclick="customizeSelectedCol()" style="white-space:nowrap">🎨 রঙ/আকার</button>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>👤 শিক্ষকের রো বেছে নিন — তারপর রঙ পরিবর্তন করুন</label>
-          <div style="display:flex;gap:6px;align-items:center">
-            <select id="colorRowSelect" style="flex:1"></select>
-            <button class="tool-btn primary" type="button" onclick="customizeSelectedRow()" style="white-space:nowrap">🎨 রঙ/উচ্চতা</button>
-          </div>
-        </div>
-        <div style="font-size:11px;color:var(--text-3);padding:6px 8px;background:var(--surface-2);border-radius:6px">💡 প্রতিটি কলাম, রো, SL ও নাম কলামের রঙ এখান থেকেই আলাদা করে পরিবর্তন করা যাবে — শিক্ষক বা কলাম লক করা থাকলেও কাজ করবে।</div>
+        <div style="font-size:11px;color:var(--text-3);padding:6px 8px;background:var(--surface-2);border-radius:6px">💡 প্রতিটা কলামে আলাদা করেও 🎨 আইকন দিয়ে রঙ দিতে পারবেন।</div>
       </div>
 
       <!-- Text tab -->
@@ -2887,15 +2861,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
 
       <!-- Feature tab -->
       <div class="set-tab" data-tab="feature" style="display:none">
-        <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🔒 রুটিন সুরক্ষা</h3>
-        <div class="toggle-row" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px;border-left:4px solid var(--warning)">
-          <div class="info">
-            <div class="lbl">🔒 রুটিন লক</div>
-            <div class="desc">চালু করলে প্রত্যেক স্যারের রুটিন লক হয়ে থাকবে — এলোমেলো ক্লিক পড়লেও মেইন রুটিন, শিক্ষক বা কলাম পরিবর্তন হবে না। ছুটি, লাইভ ড্যাশবোর্ড, নোটিফিকেশন ও রঙ পরিবর্তন — সব চালু থাকবে।</div>
-          </div>
-          <label class="switch"><input type="checkbox" id="setRoutineLock" onchange="quickToggleRoutineLock(this.checked)"><span class="slider"></span></label>
-        </div>
-        <div class="divider"></div>
         <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">ফিচার চালু/বন্ধ</h3>
         <div class="toggle-row">
           <div class="info"><div class="lbl">নোটিফিকেশন</div><div class="desc">পরিবর্তনে টোস্ট দেখাবে</div></div>
@@ -4025,9 +3990,6 @@ let state = {
     slLabel: 'SL',
     nameLabel: 'শিক্ষকের নাম',
     slNameSwapped: false,
-    /* 🔒 রুটিন লক — চালু থাকলে রুটিনের কোনো সেল/শিক্ষক/কলাম এডিট হবে না (এলোমেলো ক্লিকে রুটিন বদলাবে না)।
-       তবে ছুটি, ড্যাশবোর্ড, নোটিফিকেশন, রঙ পরিবর্তন — সব চালু থাকবে। */
-    routineLocked: false,
     /* AI automation */
     aiAutoCopy: true,
     /* AI API keys */
@@ -4463,7 +4425,6 @@ function showToast(msg, type='info', dur=2800){
 function openModal(id){
   document.getElementById(id).classList.add('show');
   if(id === 'aiModal' && typeof updateAIKeyStatus === 'function') updateAIKeyStatus();
-  if(id === 'settingsModal' && typeof populateColorTargets === 'function') populateColorTargets();
 }
 function closeModal(id){document.getElementById(id).classList.remove('show')}
 document.querySelectorAll('.modal-overlay').forEach(o=>{
@@ -4807,67 +4768,6 @@ function canEditTeacher(tid){
   if(currentUser.role === 'teacher' && currentUser.teacherId === tid) return true;
   return false;
 }
-
-/* ===========================================================
-   🔒 রুটিন লক — পুরো রুটিন (সব শিক্ষকের সেল/নাম/কলাম) সুরক্ষিত
-   এলোমেলো ক্লিকে মেইন রুটিন পরিবর্তন হবে না।
-   ছুটি, ড্যাশবোর্ড, নোটিফিকেশন, রঙ পরিবর্তন — সব চালু থাকবে।
-=========================================================== */
-function isRoutineLocked(){
-  return !!(state && state.settings && state.settings.routineLocked);
-}
-/* এডিট-টাইপ ফাংশনের শুরুতে কল করা হয় — লক থাকলে true রিটার্ন করে ও বার্তা দেখায় */
-function routineLockGuard(){
-  if(isRoutineLocked()){
-    showToast('🔒 রুটিন লক করা আছে — সেটিংস → ⚡ ফিচার থেকে আনলক করুন','warning');
-    return true;
-  }
-  return false;
-}
-/* সেটিংস টগল থেকে সরাসরি লক/আনলক — সাথে সাথে কার্যকর হয় */
-function quickToggleRoutineLock(on){
-  state.settings.routineLocked = !!on;
-  saveState();
-  applySettings();
-  renderTable();
-  audit(on?'রুটিন লক':'রুটিন আনলক', '');
-  showToast(on?'🔒 রুটিন লক করা হয়েছে — এলোমেলো ক্লিকে রুটিন বদলাবে না':'🔓 রুটিন আনলক করা হয়েছে','info');
-}
-
-/* ===========================================================
-   🎨 সেটিংস থেকে আলাদা অংশের রঙ — কলাম/রো ড্রপডাউন পূরণ
-=========================================================== */
-function populateColorTargets(){
-  const colSel = document.getElementById('colorColSelect');
-  const rowSel = document.getElementById('colorRowSelect');
-  if(colSel){
-    const prev = colSel.value;
-    colSel.innerHTML = (state.columns||[]).map(c=>{
-      const tag = c.type==='break' ? '⏸ বিরতি' : '⏱ সময়';
-      const dot = c.color ? ' ●' : '';
-      return `<option value="${c.id}">${tag} — ${esc(c.label)}${dot}</option>`;
-    }).join('');
-    if(prev) colSel.value = prev;
-  }
-  if(rowSel){
-    const prev = rowSel.value;
-    rowSel.innerHTML = (state.teachers||[]).map((t,i)=>{
-      const dot = t.rowColor ? ' ●' : '';
-      return `<option value="${t.id}">${toBnNum(i+1)}. ${esc(t.name)}${dot}</option>`;
-    }).join('');
-    if(prev) rowSel.value = prev;
-  }
-}
-function customizeSelectedCol(){
-  const sel = document.getElementById('colorColSelect');
-  if(!sel || !sel.value){ showToast('আগে একটি কলাম বেছে নিন','warning'); return; }
-  openCustomize('col', sel.value);
-}
-function customizeSelectedRow(){
-  const sel = document.getElementById('colorRowSelect');
-  if(!sel || !sel.value){ showToast('আগে একজন শিক্ষক বেছে নিন','warning'); return; }
-  openCustomize('row', sel.value);
-}
 /* Pre-populate login UI based on role */
 document.getElementById('loginRole').addEventListener('change', e=>{
   const r = e.target.value;
@@ -5090,14 +4990,12 @@ function renderTable(){
     // Preserve the *real* SL index from the master list, not the filtered one
     const realIdx = state.teachers.findIndex(x => x.id === t.id);
     const slIdx = (realIdx >= 0 ? realIdx : ti) + 1;
-    // 🔒 রুটিন লক চালু থাকলে কোনো সেল/নাম এডিট করা যাবে না (রঙ পরিবর্তন আলাদা — সেটিংস থেকে চলবে)
-    const routineLocked = isRoutineLocked();
-    const teacherCanEdit = canEditTeacher(t.id) && !isReadOnly && !t.locked && !routineLocked;
+    const teacherCanEdit = canEditTeacher(t.id) && !isReadOnly && !t.locked;
     const teacherLocked = t.locked;
     const lockBtn = canFullEdit() ? `<span class="t-lock" onclick="event.stopPropagation();toggleTeacherLock('${t.id}')" title="${teacherLocked?'আনলক করুন':'লক করুন'}">${teacherLocked?'🔒':'🔓'}</span>` : '';
     const rowControls = canFullEdit() ? `
       <div class="row-controls">
-        <span class="row-handle" draggable="${!teacherLocked && !routineLocked}" data-handle-tid="${t.id}" title="ধরে টেনে স্থান পরিবর্তন">≡</span>
+        <span class="row-handle" draggable="${!teacherLocked}" data-handle-tid="${t.id}" title="ধরে টেনে স্থান পরিবর্তন">≡</span>
         <span class="row-lock ${teacherLocked?'is-locked':''}" onclick="event.stopPropagation();toggleTeacherLock('${t.id}')" title="${teacherLocked?'আনলক':'লক'}">${teacherLocked?'🔒':'🔓'}</span>
       </div>` : '';
     // শিক্ষক নিজের রো থেকেই নিজের পাসওয়ার্ড পরিবর্তন করতে পারবে
@@ -5118,7 +5016,7 @@ function renderTable(){
     if(ti>0) body += `<tr class="teacher-block-divider"><td colspan="${state.columns.length+2}"></td></tr>`;
 
     // Row 1: Class
-    const isDraggable = canFullEdit() && !teacherLocked && !routineLocked;
+    const isDraggable = canFullEdit() && !teacherLocked;
     const slBgStyle = rowBg ? ` style="background:${rowBg}!important"` : '';
     const nameBgStyle = rowBg ? ` style="background:${rowBg}!important;color:#111827!important"` : '';
     body += `<tr class="teacher-row-class${t.onLeave?' is-on-leave':''}" data-tid="${t.id}" data-row="class" draggable="${isDraggable}"${trStyle}>`;
@@ -5517,7 +5415,6 @@ function enableColLabelEdit(el, cid){
   const c = state.columns.find(x=>x.id===cid);
   if(!c || c.locked) return;
   if(!canFullEdit()) return;
-  if(routineLockGuard()) return;
   el.contentEditable = 'true';
   el.style.outline = '2px solid var(--warning)';
   el.style.background = 'rgba(255,255,255,.95)';
@@ -5604,7 +5501,6 @@ function showRepairDialog(){
 }
 function moveCol(cid, dir){
   if(!canFullEdit()) return;
-  if(routineLockGuard()) return;
   const i = state.columns.findIndex(c=>c.id===cid);
   const j = i + dir;
   if(i<0 || j<0 || j>=state.columns.length) return;
@@ -5618,7 +5514,6 @@ function moveCol(cid, dir){
 }
 function toggleColType(cid){
   if(!canFullEdit()) return;
-  if(routineLockGuard()) return;
   const c = state.columns.find(x=>x.id===cid);
   if(!c) return;
   if(c.locked){showToast('এই কলামটি লক করা','warning');return}
@@ -5631,7 +5526,6 @@ function toggleColType(cid){
 }
 function addColAfter(cid){
   if(!canFullEdit()) return;
-  if(routineLockGuard()) return;
   const i = state.columns.findIndex(c=>c.id===cid);
   if(i<0) return;
   snapshot();
@@ -5642,7 +5536,6 @@ function addColAfter(cid){
 }
 function delCol(cid){
   if(!canFullEdit()) return;
-  if(routineLockGuard()) return;
   const c = state.columns.find(x=>x.id===cid);
   if(c && c.locked){showToast('লক করা কলাম ডিলিট করা যাবে না','warning');return}
   if(!confirm('এই কলামটি ডিলিট করবেন? এর সব ডেটা মুছে যাবে।')) return;
@@ -5656,7 +5549,6 @@ function delCol(cid){
 }
 function toggleColLock(cid){
   if(!canFullEdit()) return;
-  if(routineLockGuard()) return;
   const c = state.columns.find(x=>x.id===cid);
   if(!c) return;
   snapshot();
@@ -5668,7 +5560,6 @@ function toggleColLock(cid){
 }
 function toggleTeacherLock(tid){
   if(!canFullEdit()) return;
-  if(routineLockGuard()) return;
   const t = state.teachers.find(x=>x.id===tid);
   if(!t) return;
   snapshot();
@@ -5949,7 +5840,6 @@ function saveCustomization(){
   saveState();
   renderTable();
   closeModal('customizeModal');
-  if(typeof populateColorTargets==='function') populateColorTargets();
   showToast('✅ সংরক্ষিত! পরিবর্তন সাথে সাথেই দেখা যাবে','success');
 }
 
@@ -6067,7 +5957,6 @@ function addTeacher(){
 
 function editTeacher(tid){
   if(!canEditTeacher(tid)){showToast('অনুমতি নেই','error');return}
-  if(routineLockGuard()) return;
   const t = state.teachers.find(x=>x.id===tid);
   if(!t) return;
   document.getElementById('tEditId').value = t.id;
@@ -6289,7 +6178,6 @@ function deleteTeacher(){
 =========================================================== */
 function openCellEditor(tid, cid, field){
   if(!canEditTeacher(tid)){showToast('অনুমতি নেই','error');return}
-  if(routineLockGuard()) return;
   if(currentUser.role === 'teacher' && !canFullEdit()){
     showToast('শিক্ষক শুধু "ছুটিতে আছি" টগল করতে পারেন','warning');
     return;
@@ -7789,7 +7677,6 @@ function switchSetTab(tab){
   const idMap = {display:'stTabDisplay', size:'stTabSize', color:'stTabColor', text:'stTabText', feature:'stTabFeature', ai:'stTabAI', save:'stTabSave', danger:'stTabDanger'};
   const btn = document.getElementById(idMap[tab]);
   if(btn){btn.setAttribute('data-active','true');btn.classList.add('primary')}
-  if(tab==='color' && typeof populateColorTargets==='function') populateColorTargets();
   // পাসওয়ার্ড পরিবর্তন সেকশন — যেকোনো লগইন করা ইউজার (admin/manager/teacher) নিজের পাসওয়ার্ড পরিবর্তন করতে পারে
   const pwSec = document.getElementById('setPasswordSection');
   if(pwSec){
@@ -7959,7 +7846,6 @@ function applySettings(){
   document.body.dataset.coltools = s.alwaysShowColTools ? 'always' : 'hover';
   document.body.dataset.boldImp = !!s.boldImportant;
   document.body.dataset.slNameSwapped = !!s.slNameSwapped;
-  document.body.dataset.routineLocked = !!s.routineLocked;
 
   // Apply CSS variables for sizing
   const root = document.documentElement;
@@ -8023,7 +7909,6 @@ function applySettings(){
     setShowRowLabel: 'showRowLabels', setFloatScroll: 'floatingScrollbar',
     setBoldImp: 'boldImportant', setVoice: 'voiceEnabled', setAI: 'aiEnabled',
     setColTools: 'alwaysShowColTools',
-    setRoutineLock: 'routineLocked',
     setRowH: 'rowHeight', setCellFont: 'cellFontSize', setClassFont: 'classFontSize',
     setSubjectFont: 'subjectFontSize', setSectionFont: 'sectionFontSize',
     setNameFont: 'nameFontSize', setNameColW: 'nameColWidth', setCellPad: 'cellPadding',
@@ -8090,7 +7975,6 @@ function saveSettings(){
   s.voiceEnabled = readSetting('setVoice','bool',true);
   s.aiEnabled = readSetting('setAI','bool',true);
   s.alwaysShowColTools = readSetting('setColTools','bool',false);
-  s.routineLocked = readSetting('setRoutineLock','bool',false);
   s.rowHeight = readSetting('setRowH','int',38);
   s.cellFontSize = readSetting('setCellFont','int',14);
   s.classFontSize = readSetting('setClassFont','int',18);
@@ -8167,8 +8051,7 @@ function resetSettings(){
     freeText: 'Free', leaveText: '🌙 ছুটিতে আছি', breakText: 'বিরতি',
     slLocked: false, nameLocked: false,
     slCustomBg: '', slCustomText: '', nameCustomBg: '', nameCustomText: '',
-    slLabel: 'SL', nameLabel: 'শিক্ষকের নাম', slNameSwapped: false,
-    routineLocked: false
+    slLabel: 'SL', nameLabel: 'শিক্ষকের নাম', slNameSwapped: false
   };
   state.settings = Object.assign({}, defaults, keepKeys);
   saveState();
