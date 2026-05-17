@@ -12,6 +12,25 @@
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230f766e'/><text x='50%25' y='58%25' text-anchor='middle' font-size='34' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>">
 
 <style>
+  /* টেবিলের বক্সটির একটি নির্দিষ্ট উচ্চতা দিয়ে এটিকে স্ক্রোলযোগ্য করা হলো */
+.table-wrap {
+  max-height: calc(100vh - 130px) !important;
+  overflow-y: auto !important;
+}
+
+/* এবার হেডারটিকে বক্সের ওপরে আটকে রাখা হলো */
+#theadRow th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 80 !important;
+  box-shadow: 0px 3px 6px rgba(0,0,0,0.15) !important;
+}
+
+/* বাম পাশের 'SL' এবং 'শিক্ষকের নাম' এর হেডার যেনো স্ক্রোল করার সময় নিচে না হারায় */
+#theadRow th.col-sl, 
+#theadRow th.col-name {
+  z-index: 90 !important;
+}
   /* =============================================================
    ROLE-BASED VISIBILITY  (replaces removed Master Lock block)
 ============================================================= */
@@ -2498,22 +2517,15 @@ body[data-role="manager"] .teacher-only{display:none !important}
   flex-wrap:wrap;gap:10px;
   font-family:var(--font-bn);
 }
-.leave-balance-bar .lb-item{text-align:center}
-.leave-balance-bar .lb-num{font-size:26px;font-weight:900;line-height:1;display:block;font-family:var(--font-en)}
-.leave-balance-bar .lb-lbl{font-size:11.5px;font-weight:700;opacity:.92;margin-top:3px;display:block}
-.leave-balance-bar .lb-divider{width:1px;height:36px;background:rgba(255,255,255,.3)}
-
-.dash-card .num,
-.dash-card .lbl{font-weight:900 !important}
-.dash-section h3{font-weight:900 !important}
-.teacher-item{font-weight:700}
-.teacher-item.leave .nm-text,
-.teacher-item.leave .leave-classes strong{font-weight:900}
-.slot-summary-grid > div{font-weight:700}
-#dashTime, #dashSlot{font-weight:900}
-
-.toast-container{z-index:99999}
-.toast{font-weight:700}
+/* শুধুমাত্র Sl(1), নাম(2), সময়(3) ও বিরতি(4) কলাম যেন অতিরিক্ত জায়গা না নেয় */
+table th:nth-child(1), table td:nth-child(1),
+table th:nth-child(2), table td:nth-child(2),
+table th:nth-child(3), table td:nth-child(3),
+table th:nth-child(4), table td:nth-child(4) {
+    width: 1px !important;
+    white-space: nowrap !important;
+}
+</style>
 </style>
 </head>
 <body data-theme="light" data-density="normal">
