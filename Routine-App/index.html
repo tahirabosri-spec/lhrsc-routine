@@ -12,6 +12,13 @@
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230f766e'/><text x='50%25' y='58%25' text-anchor='middle' font-size='34' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>">
 
 <style>
+  /* অ্যাপ হেডার এবং টুলবারের পাওয়ার টাইম হেডারের চেয়ে বাড়িয়ে দেওয়া হলো */
+.app-header {
+    z-index: 160 !important;
+}
+.toolbar {
+    z-index: 150 !important;
+}
 /* ১. টেবিলের চারপাশের সব ধরনের ফাঁকা জায়গা (Gap) পুরোপুরি বন্ধ করা হলো */
 .table-wrap {
   overflow-x: auto !important;
@@ -52,9 +59,15 @@ body:not([data-role="teacher"]) .teacher-only { display: none !important; }
 body[data-role="teacher"] .admin-mgr-only { display: none !important; }
 body:not([data-role="admin"]):not([data-role="manager"]) .admin-mgr-only { display: none !important; }
 /* রুটিনের কলাম ওভারল্যাপ ঠেকানোর স্থায়ী সমাধান */
-th, td, .time-header, .cell {
-    min-width: 110px !important;    /* কলামটি কখনোই ১১০ পিক্সেলের চেয়ে ছোট হবে না */
-    white-space: nowrap !important; /* লেখা ভেঙে অন্য কলামের ভেতর ঢুকবে না */
+.routine-table thead th:not(.col-sl):not(.col-name):not(.col-break),
+.routine-table tbody td:not(.col-sl):not(.col-name):not(.col-break) {
+    white-space: nowrap !important; /* time column: text won't wrap */
+    word-break: keep-all !important;
+}
+.routine-table .col-sl,
+.routine-table .col-name,
+.routine-table .col-break {
+    white-space: nowrap !important;
     word-break: keep-all !important;
 }
 
@@ -271,6 +284,7 @@ th, td, .time-header, .cell {
   --subject-font:14.5px;
   --section-font:12.5px;
   --name-font:13.5px;
+  --sl-col-w:54px;
   --name-col-w:160px;
   --slot-col-w:auto;
   --slot-col-min:90px;
@@ -665,8 +679,8 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .col-tool:hover{background:#fff;color:var(--primary)}
 .col-tool.active{background:var(--warning);color:#fff;border-color:var(--warning)}
 .routine-table th.col-break{background:var(--break-bg);color:var(--break-text);width:var(--break-col-w);min-width:var(--break-col-min)}
-.routine-table th.col-sl{background:var(--sl-bg);color:var(--sl-text);min-width:54px;width:54px}
-.routine-table th.col-name{background:var(--name-bg);color:var(--name-text);min-width:var(--name-col-w);width:var(--name-col-w);left:54px}
+.routine-table th.col-sl{background:var(--sl-bg);color:var(--sl-text);min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w)}
+.routine-table th.col-name{background:var(--name-bg);color:var(--name-text);min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);left:var(--sl-col-w)}
 .routine-table th.sticky-left{position:sticky;z-index:25;left:0}
 /* When SL/Name are swapped, Name is at left:0 and SL is after Name */
 [data-sl-name-swapped="true"] .routine-table th.col-name{left:0}
@@ -692,8 +706,8 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .routine-table tbody td:not(.col-sl):not(.col-name):not(.col-break){
   min-width:var(--slot-col-min);
 }
-.routine-table td.col-sl{background:var(--sl-bg);color:var(--sl-text);text-align:center;font-weight:700;position:sticky;left:0;z-index:5;min-width:54px;width:54px;font-size:var(--name-font);padding:4px 3px}
-.routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:54px;z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);padding:4px 8px;cursor:pointer}
+.routine-table td.col-sl{background:var(--sl-bg);color:var(--sl-text);text-align:center;font-weight:700;position:sticky;left:0;z-index:5;min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w);font-size:var(--name-font);padding:4px 3px}
+.routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:var(--sl-col-w);z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);padding:4px 8px;cursor:pointer}
 .routine-table td.col-name .t-name{font-weight:700;font-size:var(--name-font);line-height:1.25}
 .routine-table td.col-name .t-meta{font-size:calc(var(--name-font) - 3px);opacity:.85;margin-top:2px;line-height:1.2}
 .routine-table td.col-name .t-lock{
@@ -1782,8 +1796,8 @@ input[type="range"]::-moz-range-thumb{
   .modal-header h2{font-size:14px}
   .routine-table{font-size:11px}
   .routine-table thead th{font-size:10.5px;padding:6px 4px;min-height:56px}
-  .routine-table th.col-name,.routine-table td.col-name{min-width:120px;width:130px;left:54px}
-  .routine-table th.col-name{left:54px !important}
+  .routine-table th.col-name,.routine-table td.col-name{left:var(--sl-col-w)}
+  .routine-table th.col-name{left:var(--sl-col-w) !important}
   .routine-table td.col-name .t-name{font-size:12px}
   .routine-table td.col-name .t-meta{font-size:9.5px}
   .routine-table td.col-sl .row-handle,.routine-table td.col-sl .row-lock{font-size:11px;padding:0 3px}
@@ -2530,12 +2544,38 @@ body[data-role="manager"] .teacher-only{display:none !important}
   font-family:var(--font-bn);
 }
 /* শুধুমাত্র Sl(1), নাম(2), সময়(3) ও বিরতি(4) কলাম যেন অতিরিক্ত জায়গা না নেয় */
-table th:nth-child(1), table td:nth-child(1),
-table th:nth-child(2), table td:nth-child(2),
-table th:nth-child(3), table td:nth-child(3),
-table th:nth-child(4), table td:nth-child(4) {
-    width: 1px !important;
-    white-space: nowrap !important;
+/* prev "width:1px !important" rule removed - it conflicted with master sizing */
+
+/* Master Size Control - slider row styles */
+.ms-row{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 0;border-bottom:1px dashed var(--border);
+}
+.ms-row:last-of-type{border-bottom:none}
+.ms-label{
+  flex:0 0 38%;font-size:12.5px;font-weight:700;color:var(--text);
+  line-height:1.3;
+}
+.ms-label .ms-hint{
+  display:block;font-size:10px;font-weight:600;color:var(--text-3);margin-top:1px;
+}
+.ms-ctrl{
+  flex:1;display:flex;align-items:center;gap:8px;min-width:0;
+}
+.ms-ctrl input[type=range]{
+  flex:1;min-width:60px;height:28px;cursor:pointer;accent-color:var(--primary);
+}
+.ms-ctrl input[type=number]{
+  width:62px;flex:0 0 62px;text-align:center;font-weight:800;
+  font-size:13px;padding:6px 4px;border:1px solid var(--border-strong);
+  border-radius:7px;background:var(--surface);color:var(--text);
+}
+.ms-ctrl .ms-unit{
+  font-size:11px;color:var(--text-3);font-weight:700;flex:0 0 auto;
+}
+@media(max-width:560px){
+  .ms-row{flex-direction:column;align-items:stretch;gap:5px}
+  .ms-label{flex:none}
 }
 </style>
 </style>
@@ -2802,6 +2842,85 @@ table th:nth-child(4), table td:nth-child(4) {
 
       <!-- Size tab -->
       <div class="set-tab" data-tab="size" style="display:none">
+
+        <!-- ============================================================
+             🎛️ মাস্টার আকার নিয়ন্ত্রণ — সব কলাম ও রো একসাথে ছোট/বড়
+        ============================================================= -->
+        <div style="border:2px solid var(--primary);border-radius:12px;padding:14px;margin-bottom:18px;background:var(--surface-2)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:18px">🎛️</span>
+            <h3 style="margin:0;font-size:14px;color:var(--primary);font-weight:900">মাস্টার আকার নিয়ন্ত্রণ</h3>
+          </div>
+          <div style="font-size:11.5px;color:var(--text-2);margin-bottom:12px;line-height:1.6">
+            স্লাইডার সরালেই টেবিল <strong>সাথে সাথে</strong> বদলাবে (লাইভ প্রিভিউ)। SL ও বিরতি কলাম ছোট করে সময় কলামে বেশি জায়গা দিন।
+          </div>
+
+          <!-- দ্রুত প্রিসেট -->
+          <div style="font-size:11px;color:var(--text-3);font-weight:700;margin-bottom:5px">⚡ দ্রুত প্রিসেট</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+            <button class="tool-btn" type="button" onclick="applyMasterPreset('compact')" style="flex:1;min-width:120px">📦 সর্বোচ্চ জায়গা</button>
+            <button class="tool-btn" type="button" onclick="applyMasterPreset('balanced')" style="flex:1;min-width:120px">⚖️ সুষম (ডিফল্ট)</button>
+            <button class="tool-btn" type="button" onclick="applyMasterPreset('large')" style="flex:1;min-width:120px">🔍 বড় ও স্পষ্ট</button>
+          </div>
+
+          <!-- SL কলাম -->
+          <div class="ms-row">
+            <div class="ms-label">🔢 SL কলাম প্রস্থ <span class="ms-hint">(ছোট করলে জায়গা বাঁচে)</span></div>
+            <div class="ms-ctrl">
+              <input type="range" id="msSlW" min="30" max="140" step="1" oninput="msSync('Sl', this.value)">
+              <input type="number" id="msSlWNum" min="30" max="140" oninput="msSync('Sl', this.value, true)">
+              <span class="ms-unit">px</span>
+            </div>
+          </div>
+
+          <!-- নাম কলাম -->
+          <div class="ms-row">
+            <div class="ms-label">👤 শিক্ষকের নাম কলাম প্রস্থ</div>
+            <div class="ms-ctrl">
+              <input type="range" id="msNameW" min="100" max="320" step="2" oninput="msSync('Name', this.value)">
+              <input type="number" id="msNameWNum" min="100" max="320" oninput="msSync('Name', this.value, true)">
+              <span class="ms-unit">px</span>
+            </div>
+          </div>
+
+          <!-- সময় কলাম -->
+          <div class="ms-row">
+            <div class="ms-label">⏱ সময় কলাম প্রস্থ <span class="ms-hint">(বড় করলে রুটিন স্পষ্ট)</span></div>
+            <div class="ms-ctrl">
+              <input type="range" id="msSlotW" min="70" max="320" step="2" oninput="msSync('Slot', this.value)">
+              <input type="number" id="msSlotWNum" min="70" max="320" oninput="msSync('Slot', this.value, true)">
+              <span class="ms-unit">px</span>
+            </div>
+          </div>
+
+          <!-- বিরতি কলাম -->
+          <div class="ms-row">
+            <div class="ms-label">☕ বিরতি কলাম প্রস্থ <span class="ms-hint">(ছোট করলে জায়গা বাঁচে)</span></div>
+            <div class="ms-ctrl">
+              <input type="range" id="msBreakW" min="40" max="200" step="2" oninput="msSync('Break', this.value)">
+              <input type="number" id="msBreakWNum" min="40" max="200" oninput="msSync('Break', this.value, true)">
+              <span class="ms-unit">px</span>
+            </div>
+          </div>
+
+          <!-- রো উচ্চতা -->
+          <div class="ms-row">
+            <div class="ms-label">↕️ রো উচ্চতা</div>
+            <div class="ms-ctrl">
+              <input type="range" id="msRowH" min="22" max="90" step="1" oninput="msSync('Row', this.value)">
+              <input type="number" id="msRowHNum" min="22" max="90" oninput="msSync('Row', this.value, true)">
+              <span class="ms-unit">px</span>
+            </div>
+          </div>
+
+          <div style="font-size:11px;color:var(--success);font-weight:700;text-align:center;margin:8px 0 12px">✅ লাইভ প্রিভিউ চালু — পরিবর্তন এখনই টেবিলে দেখা যাচ্ছে</div>
+
+          <div style="display:flex;gap:8px">
+            <button class="tool-btn danger" type="button" onclick="resetMasterSize()" style="flex:1">↺ ডিফল্টে ফেরাও</button>
+            <button class="tool-btn primary" type="button" onclick="saveMasterSize()" style="flex:2">💾 প্রয়োগ ও সংরক্ষণ</button>
+          </div>
+        </div>
+
         <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">ফন্ট সাইজ (px)</h3>
         <div class="field-row">
           <div class="field"><label>সেল সাধারণ</label><input type="number" id="setCellFont" min="9" max="24"></div>
@@ -3995,6 +4114,7 @@ let state = {
     rowHeight: 38,
     cellPadding: 6,
     nameColWidth: 168,
+    slColWidth: 54,
     slotColWidth: 140,
     slotColMinWidth: 110,
     breakColWidth: 70,
@@ -7712,6 +7832,8 @@ function switchSetTab(tab){
   const idMap = {display:'stTabDisplay', size:'stTabSize', color:'stTabColor', text:'stTabText', feature:'stTabFeature', ai:'stTabAI', save:'stTabSave', danger:'stTabDanger'};
   const btn = document.getElementById(idMap[tab]);
   if(btn){btn.setAttribute('data-active','true');btn.classList.add('primary')}
+  // 🎛️ আকার ট্যাব খুললে মাস্টার স্লাইডারগুলো বর্তমান মান দিয়ে আপডেট করো
+  if(tab === 'size'){ try{ syncMasterSizeSliders(); }catch(_){} }
   // পাসওয়ার্ড পরিবর্তন সেকশন — যেকোনো লগইন করা ইউজার (admin/manager/teacher) নিজের পাসওয়ার্ড পরিবর্তন করতে পারে
   const pwSec = document.getElementById('setPasswordSection');
   if(pwSec){
@@ -7870,6 +7992,141 @@ function checkViewerMode(){
 }
 
 /* ===========================================================
+   🎛️ MASTER SIZE CONTROL — single powerful column/row resizer
+   লাইভ প্রিভিউ: স্লাইডার সরালেই CSS ভেরিয়েবল সরাসরি বদলে যায়।
+   "প্রয়োগ ও সংরক্ষণ"-এ state-এ লেখা হয় ও স্থায়ী হয়।
+=========================================================== */
+const MASTER_SIZE_DEFAULTS = { Sl:54, Name:168, Slot:140, Break:70, Row:38 };
+const MASTER_SIZE_PRESETS = {
+  compact:  { Sl:38, Name:130, Slot:90,  Break:46, Row:28 },
+  balanced: { Sl:54, Name:168, Slot:140, Break:70, Row:38 },
+  large:    { Sl:64, Name:220, Slot:200, Break:95, Row:56 }
+};
+const MASTER_SIZE_BOUNDS = {
+  Sl:{min:30,max:140}, Name:{min:100,max:320}, Slot:{min:70,max:320},
+  Break:{min:40,max:200}, Row:{min:22,max:90}
+};
+
+/* Apply one value to the live CSS variables (no state write) */
+function msApplyVar(which, v){
+  const root = document.documentElement;
+  if(which === 'Sl')        root.style.setProperty('--sl-col-w', v + 'px');
+  else if(which === 'Name') root.style.setProperty('--name-col-w', v + 'px');
+  else if(which === 'Slot'){ root.style.setProperty('--slot-col-w', v + 'px');
+                              root.style.setProperty('--slot-col-min', v + 'px'); }
+  else if(which === 'Break'){ root.style.setProperty('--break-col-w', v + 'px');
+                               root.style.setProperty('--break-col-min', v + 'px'); }
+  else if(which === 'Row'){ root.style.setProperty('--row-h', v + 'px');
+    const tbl = document.getElementById('routineTable');
+    if(tbl){ v < 32 ? tbl.classList.add('row-tight') : tbl.classList.remove('row-tight'); }
+  }
+}
+
+/* Slider / number changed → clamp, mirror the twin input, live-preview */
+function msSync(which, raw, fromNum){
+  const b = MASTER_SIZE_BOUNDS[which]; if(!b) return;
+  let v = parseInt(raw, 10);
+  if(isNaN(v)) return;
+  v = Math.max(b.min, Math.min(b.max, v));
+  const sId = which==='Row' ? 'msRowH'    : 'ms'+which+'W';
+  const nId = which==='Row' ? 'msRowHNum' : 'ms'+which+'WNum';
+  const sEl = document.getElementById(sId);
+  const nEl = document.getElementById(nId);
+  if(sEl) sEl.value = v;
+  // mirror to the number box unless the user is actively typing in it
+  if(nEl && !(fromNum && document.activeElement === nEl)) nEl.value = v;
+  msApplyVar(which, v);
+}
+
+/* Read current effective values from state (fallback to defaults) */
+function msCurrentValues(){
+  const s = state.settings || {};
+  return {
+    Sl:    s.slColWidth   > 0 ? s.slColWidth   : MASTER_SIZE_DEFAULTS.Sl,
+    Name:  s.nameColWidth > 0 ? s.nameColWidth : MASTER_SIZE_DEFAULTS.Name,
+    Slot:  s.slotColWidth > 0 ? s.slotColWidth : MASTER_SIZE_DEFAULTS.Slot,
+    Break: s.breakColWidth> 0 ? s.breakColWidth: MASTER_SIZE_DEFAULTS.Break,
+    Row:   s.rowHeight    > 0 ? s.rowHeight    : MASTER_SIZE_DEFAULTS.Row
+  };
+}
+
+/* Populate sliders + number inputs from state — call when Size tab opens */
+function syncMasterSizeSliders(){
+  const vals = msCurrentValues();
+  [['Sl','msSlW','msSlWNum'],['Name','msNameW','msNameWNum'],
+   ['Slot','msSlotW','msSlotWNum'],['Break','msBreakW','msBreakWNum'],
+   ['Row','msRowH','msRowHNum']].forEach(([k,sId,nId])=>{
+    const b = MASTER_SIZE_BOUNDS[k];
+    let v = Math.max(b.min, Math.min(b.max, vals[k]));
+    const sEl=document.getElementById(sId), nEl=document.getElementById(nId);
+    if(sEl) sEl.value=v;
+    if(nEl) nEl.value=v;
+  });
+}
+
+/* Quick preset → set all sliders + live preview */
+function applyMasterPreset(mode){
+  const p = MASTER_SIZE_PRESETS[mode]; if(!p) return;
+  Object.keys(p).forEach(k=>{
+    const sId = k==='Row' ? 'msRowH'    : 'ms'+k+'W';
+    const nId = k==='Row' ? 'msRowHNum' : 'ms'+k+'WNum';
+    const sEl=document.getElementById(sId), nEl=document.getElementById(nId);
+    if(sEl) sEl.value=p[k];
+    if(nEl) nEl.value=p[k];
+    msApplyVar(k, p[k]);
+  });
+  const names={compact:'📦 সর্বোচ্চ জায়গা',balanced:'⚖️ সুষম',large:'🔍 বড় ও স্পষ্ট'};
+  showToast((names[mode]||'প্রিসেট')+' প্রিভিউ — সংরক্ষণ করতে "প্রয়োগ ও সংরক্ষণ" চাপুন','info',2200);
+}
+
+/* Read a slider value safely */
+function msRead(which){
+  const id = which==='Row' ? 'msRowH' : 'ms'+which+'W';
+  const el = document.getElementById(id);
+  const b = MASTER_SIZE_BOUNDS[which];
+  let v = el ? parseInt(el.value,10) : NaN;
+  if(isNaN(v)) v = MASTER_SIZE_DEFAULTS[which];
+  return Math.max(b.min, Math.min(b.max, v));
+}
+
+/* Commit to state + persist + full re-render */
+function saveMasterSize(){
+  if(typeof canFullEdit==='function' && !canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(typeof snapshot==='function') snapshot();
+  const s = state.settings;
+  s.slColWidth     = msRead('Sl');
+  s.nameColWidth   = msRead('Name');
+  s.slotColWidth   = msRead('Slot');
+  s.slotColMinWidth= msRead('Slot');     // keep min = width so it never collapses
+  s.breakColWidth  = msRead('Break');
+  s.rowHeight      = msRead('Row');
+  saveState();
+  applySettings();
+  renderTable();
+  if(typeof audit==='function') audit('মাস্টার আকার আপডেট',
+    `SL:${s.slColWidth} নাম:${s.nameColWidth} সময়:${s.slotColWidth} বিরতি:${s.breakColWidth} রো:${s.rowHeight}`);
+  showToast('✅ আকার সংরক্ষিত — সব ডিভাইসে কার্যকর','success');
+}
+
+/* Reset all five back to defaults */
+function resetMasterSize(){
+  if(!confirm('সব কলাম ও রো-এর আকার ডিফল্টে ফিরিয়ে আনবেন?')) return;
+  if(typeof snapshot==='function') snapshot();
+  const s = state.settings;
+  s.slColWidth     = MASTER_SIZE_DEFAULTS.Sl;
+  s.nameColWidth   = MASTER_SIZE_DEFAULTS.Name;
+  s.slotColWidth   = MASTER_SIZE_DEFAULTS.Slot;
+  s.slotColMinWidth= MASTER_SIZE_DEFAULTS.Slot;
+  s.breakColWidth  = MASTER_SIZE_DEFAULTS.Break;
+  s.rowHeight      = MASTER_SIZE_DEFAULTS.Row;
+  saveState();
+  applySettings();
+  renderTable();
+  syncMasterSizeSliders();
+  showToast('↺ আকার ডিফল্টে ফিরিয়ে আনা হয়েছে','info');
+}
+
+/* ===========================================================
    SETTINGS
 =========================================================== */
 function applySettings(){
@@ -7884,9 +8141,10 @@ function applySettings(){
 
   // Apply CSS variables for sizing
   const root = document.documentElement;
-  // Row height: enforce compact default — old large values get bumped down
+  // Row height: master control allows 22–90px; only clamp absurd values
   let rowH = (s.rowHeight || 38);
-  if(rowH > 50) rowH = 38;
+  if(rowH < 22) rowH = 22;
+  if(rowH > 90) rowH = 90;
   root.style.setProperty('--row-h', rowH+'px');
   // Auto-tighten table when rows are very short
   const tbl = document.getElementById('routineTable');
@@ -7901,13 +8159,19 @@ function applySettings(){
   root.style.setProperty('--section-font', (s.sectionFontSize||13)+'px');
   root.style.setProperty('--name-font', (s.nameFontSize||14)+'px');
   root.style.setProperty('--name-col-w', (s.nameColWidth||160)+'px');
-  // Slot column width: if 0 or unset => auto, else fixed px
-  // ENFORCE minimum 110px even if user has older smaller saved value
+  // SL কলামের প্রস্থ (মাস্টার আকার নিয়ন্ত্রণ)
+  let slColW = (s.slColWidth || 54);
+  if(slColW < 30) slColW = 30;
+  if(slColW > 140) slColW = 140;
+  root.style.setProperty('--sl-col-w', slColW + 'px');
+  // Slot column width: master control governs this fully (70–320px)
   let slotW = (s.slotColWidth || 0);
-  if(slotW > 0 && slotW < 110) slotW = 140; // auto-bump older saves
+  if(slotW > 0 && slotW < 60) slotW = 140; // only fix absurdly tiny old saves
   root.style.setProperty('--slot-col-w', slotW > 0 ? slotW + 'px' : '140px');
   let slotMin = (s.slotColMinWidth || 90);
-  if(slotMin < 100) slotMin = 110;
+  if(slotMin < 50) slotMin = 70;
+  // never let min exceed the chosen width (would prevent shrinking)
+  if(slotW > 0 && slotMin > slotW) slotMin = slotW;
   root.style.setProperty('--slot-col-min', slotMin + 'px');
   const breakW = (s.breakColWidth || 0);
   root.style.setProperty('--break-col-w', breakW > 0 ? breakW + 'px' : 'auto');
@@ -7947,6 +8211,7 @@ function applySettings(){
     setRowH: 'rowHeight', setCellFont: 'cellFontSize', setClassFont: 'classFontSize',
     setSubjectFont: 'subjectFontSize', setSectionFont: 'sectionFontSize',
     setNameFont: 'nameFontSize', setNameColW: 'nameColWidth', setCellPad: 'cellPadding',
+    setSlColW: 'slColWidth',
     setSlotColW: 'slotColWidth', setSlotColMinW: 'slotColMinWidth', setBreakColW: 'breakColWidth',
     setColorPrimary: 'colorPrimary', setColorSlBg: 'colorSlBg', setColorSlText: 'colorSlText',
     setColorNameBg: 'colorNameBg', setColorNameText: 'colorNameText',
@@ -7982,6 +8247,8 @@ function applySettings(){
   document.body.removeAttribute('data-master-lock');
   setTimeout(syncFloatingScroll, 50);
 
+  // 🎛️ মাস্টার আকার স্লাইডারগুলো বর্তমান মান অনুযায়ী আপডেট রাখো
+  try{ if(typeof syncMasterSizeSliders === 'function') syncMasterSizeSliders(); }catch(_){}
 }
 
 function readSetting(id, type, fallback){
@@ -8017,6 +8284,12 @@ function saveSettings(){
   s.sectionFontSize = readSetting('setSectionFont','int',14);
   s.nameFontSize = readSetting('setNameFont','int',15);
   s.nameColWidth = readSetting('setNameColW','int',168);
+  // SL কলাম প্রস্থ — মাস্টার প্যানেল থেকে নিয়ন্ত্রিত; এখানে ইনপুট না থাকলে আগের মান রাখো
+  if(document.getElementById('setSlColW')){
+    s.slColWidth = readSetting('setSlColW','int',54);
+  } else if(!s.slColWidth || s.slColWidth <= 0){
+    s.slColWidth = 54;
+  }
   // Slot/Break column widths (0 or empty = auto)
   const slotW = document.getElementById('setSlotColW');
   s.slotColWidth = slotW && slotW.value !== '' ? parseInt(slotW.value)||0 : 0;
@@ -8077,7 +8350,7 @@ function resetSettings(){
     notifications: true, conflictAlerts: true, auditEnabled: true, pwaHint: true,
     dashRefresh: 60, cellFontSize: 14, classFontSize: 18, subjectFontSize: 17,
     sectionFontSize: 14, nameFontSize: 15, rowHeight: 38, cellPadding: 6, nameColWidth: 168,
-    slotColWidth: 140, slotColMinWidth: 110, breakColWidth: 70,
+    slColWidth: 54, slotColWidth: 140, slotColMinWidth: 110, breakColWidth: 70,
     colorPrimary: '#0f766e', colorSlBg: '#bbf7d0', colorSlText: '#14532d',
     colorNameBg: '#0f766e', colorNameText: '#ffffff', colorBreakBg: '#dbeafe',
     colorBreakText: '#1e3a8a', colorFreeBg: '#fee2e2', colorFreeText: '#991b1b',
@@ -9183,6 +9456,36 @@ document.addEventListener('click', (e) => {
 /* ===========================================================
    TOOL MENU DROPDOWN (consolidated "আরও" button)
 =========================================================== */
+/* 🛠️ STACKING-CONTEXT FIX:
+   .toolbar { position:sticky; z-index:45 } একটি stacking context তৈরি করে।
+   ফলে এর ভেতরের প্যানেলের z-index:9500 কাজ করে না — টাইম হেডার
+   (#theadRow th, z-index:100) প্যানেলের উপরে চলে আসে।
+   সমাধান: মোবাইলে প্যানেলটি খোলার সময় <body>-তে সরিয়ে নিই (portal),
+   বন্ধ করার সময় আবার আগের জায়গায় ফিরিয়ে দিই — মূল স্ট্রাকচার অক্ষত থাকে। */
+function _portalToolMenuOut(){
+  const panel = document.getElementById('toolMenuPanel');
+  if(!panel) return;
+  if(panel.parentElement !== document.body){
+    panel.dataset.portaled = '1';
+    document.body.appendChild(panel);
+  }
+}
+function _restoreToolMenuHome(){
+  const panel = document.getElementById('toolMenuPanel');
+  if(!panel) return;
+  if(panel.dataset.portaled === '1'){
+    const wrap = document.querySelector('.tool-menu-wrapper');
+    if(wrap && panel.parentElement !== wrap){
+      wrap.appendChild(panel);            // আগের জায়গায় (button-এর পরে) ফেরত
+    }
+    delete panel.dataset.portaled;
+    // portal থেকে ফেরার পর inline coords মুছে দাও (desktop CSS আবার কার্যকর হবে)
+    panel.style.top = '';
+    panel.style.left = '';
+    panel.style.right = '';
+  }
+}
+
 function positionToolMenuMobile(){
   // Compute & set fixed-position coords so the panel appears below the "আরও" button,
   // right-aligned with it, but never spilling off-screen.
@@ -9209,10 +9512,13 @@ function toggleToolMenu(e){
   const willShow = !panel.classList.contains('show');
   if(willShow){
     if(window.innerWidth <= 768){
-      // Mobile → position:fixed needs explicit top/left
+      // Mobile → প্যানেলকে body-তে সরিয়ে toolbar এর stacking context থেকে বের করি
+      _portalToolMenuOut();
+      // position:fixed needs explicit top/left
       positionToolMenuMobile();
     } else {
-      // Desktop → let CSS rules govern (position:absolute, top/right etc)
+      // Desktop → CSS rules govern (position:absolute relative to wrapper)
+      _restoreToolMenuHome();
       panel.style.top = '';
       panel.style.left = '';
       panel.style.right = '';
@@ -9224,7 +9530,10 @@ function toggleToolMenu(e){
 function closeToolMenu(){
   const panel = document.getElementById('toolMenuPanel');
   const btn = document.getElementById('toolMenuBtn');
-  if(panel) panel.classList.remove('show');
+  if(panel){
+    panel.classList.remove('show');
+    _restoreToolMenuHome();   // বন্ধ হলে আগের জায়গায় ফিরিয়ে দাও
+  }
   if(btn) btn.setAttribute('aria-expanded','false');
 }
 /* Close tool menu when clicking outside */
