@@ -12,24 +12,36 @@
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230f766e'/><text x='50%25' y='58%25' text-anchor='middle' font-size='34' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>">
 
 <style>
-/* টেবিলের বক্সটির একটি নির্দিষ্ট উচ্চতা দিয়ে এটিকে স্ক্রোলযোগ্য করা হলো */
+/* ১. টেবিলের চারপাশের সব ধরনের ফাঁকা জায়গা (Gap) পুরোপুরি বন্ধ করা হলো */
 .table-wrap {
-  max-height: calc(100vh - 130px) !important;
+  overflow-x: auto !important;
   overflow-y: auto !important;
+  max-height: calc(100vh - 114px) !important; /* পুরো স্ক্রিন জুড়ে টেবিলটি দেখাবে */
+  padding: 0 !important; /* চারপাশের বাড়তি ফাঁকা জায়গা দূর করবে */
+  margin: 0 !important;
 }
 
-/* এবার হেডারটিকে বক্সের ওপরে আটকে রাখা হলো */
+/* ২. টেবিলের গোল কোণাগুলো সোজা করা হলো, যাতে ওপরের হেডারের সাথে নিখুঁতভাবে মিশে যায় */
+.routine-table {
+  margin: 0 !important;
+  border-radius: 0 !important; 
+  border-spacing: 0 !important;
+}
+
+/* ৩. টাইম টেবিলের হেডার একদম ওপরে আটকে রাখা হলো */
 #theadRow th {
   position: sticky !important;
-  top: 0 !important;
-  z-index: 80 !important;
-  box-shadow: 0px 3px 6px rgba(0,0,0,0.15) !important;
+  top: 0 !important; /* একদম ওপরে আটকে থাকবে, কোনো গ্যাপ থাকবে না */
+  z-index: 100 !important;
+  background-color: #0f766e !important;
+  color: white !important;
+  box-shadow: 0px 4px 6px rgba(0,0,0,0.15) !important; /* নিচে সুন্দর একটি ছায়া তৈরি হবে */
 }
 
 /* বাম পাশের 'SL' এবং 'শিক্ষকের নাম' এর হেডার যেনো স্ক্রোল করার সময় নিচে না হারায় */
 #theadRow th.col-sl, 
 #theadRow th.col-name {
-  z-index: 90 !important;
+  z-index: 110 !important; /* এটি অন্যান্য হেডারের উপরে ভাসিয়ে রাখবে */
 }
   /* =============================================================
    ROLE-BASED VISIBILITY  (replaces removed Master Lock block)
