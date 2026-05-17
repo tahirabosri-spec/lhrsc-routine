@@ -321,6 +321,269 @@ body:not([data-role="admin"]):not([data-role="manager"]) .admin-mgr-only { displ
   --header-bg:linear-gradient(135deg,#0f172a 0%,#134e4a 60%,#115e59 100%);
   --shadow:0 4px 12px rgba(0,0,0,.4);
   --shadow-lg:0 12px 32px rgba(0,0,0,.5);
+  /* Eye-care neon accents (Prompt 3) */
+  --neon:#22d3ee;
+  --neon-soft:rgba(34,211,238,.16);
+}
+/* Dark — eye-care time header (no pure black/white) */
+body[data-theme="dark"] #theadRow th{
+  background-color:#0e7490 !important; color:#e0f2fe !important;
+  border-bottom:3px solid #22d3ee !important;
+}
+body[data-theme="dark"] #theadRow th.col-break{
+  background-color:#b45309 !important; color:#fff7ed !important;
+}
+
+/* =============================================================
+   THEME 1 — Minimalist & Corporate (Light)
+============================================================= */
+[data-theme="minimal"]{
+  --bg:#f1f5f9;
+  --bg-2:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#f8fafc;
+  --border:#e2e8f0;
+  --border-strong:#cbd5e1;
+  --text:#0f172a;
+  --text-2:#475569;
+  --text-3:#94a3b8;
+  --primary:#1e3a8a;
+  --primary-hover:#1e40af;
+  --primary-soft:#dbeafe;
+  --accent:#2563eb;
+  --break-bg:#eef2ff;
+  --break-text:#1e3a8a;
+  --sl-bg:#e2e8f0;
+  --sl-text:#1e293b;
+  --name-bg:#1e3a8a;
+  --name-text:#ffffff;
+  --free-bg:#f1f5f9;
+  --free-text:#64748b;
+  --header-bg:linear-gradient(135deg,#1e3a8a 0%,#1e40af 100%);
+  --shadow:0 1px 2px rgba(15,23,42,.06);
+  --shadow-lg:0 8px 24px rgba(15,23,42,.10);
+  --row-tint:rgba(30,58,138,.035);
+  --col-line:#e2e8f0;
+}
+body[data-theme="minimal"] #theadRow th{
+  background-color:#1e3a8a !important; color:#ffffff !important;
+  border-bottom:2px solid #1e40af !important;
+}
+body[data-theme="minimal"] #theadRow th.col-break{
+  background-color:#475569 !important; color:#fff !important;
+}
+
+/* =============================================================
+   THEME 2 — Calming Nature & Teal
+============================================================= */
+[data-theme="nature"]{
+  --bg:#ecfdf5;
+  --bg-2:#f0fdf4;
+  --surface:#f7fdf9;
+  --surface-2:#ecfdf5;
+  --border:#bbf7d0;
+  --border-strong:#86efac;
+  --text:#14342b;
+  --text-2:#166534;
+  --text-3:#4d7c5f;
+  --primary:#0f766e;
+  --primary-hover:#115e59;
+  --primary-soft:#ccfbf1;
+  --accent:#10b981;
+  --break-bg:#d1fae5;
+  --break-text:#065f46;
+  --sl-bg:#bbf7d0;
+  --sl-text:#14532d;
+  --name-bg:#0f766e;
+  --name-text:#ffffff;
+  --free-bg:#fef2f2;
+  --free-text:#b91c1c;
+  --header-bg:linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%);
+  --shadow:0 2px 6px rgba(15,118,110,.10);
+  --shadow-lg:0 10px 28px rgba(15,118,110,.18);
+  --row-tint:rgba(16,185,129,.06);
+  --col-line:#bbf7d0;
+}
+body[data-theme="nature"] #theadRow th{
+  background-color:#0f766e !important; color:#ffffff !important;
+  border-bottom:3px solid #14b8a6 !important;
+}
+body[data-theme="nature"] #theadRow th.col-break{
+  background-color:#047857 !important; color:#ecfdf5 !important;
+}
+
+/* =============================================================
+   THEME 3 — Soft Pastel Academic
+============================================================= */
+[data-theme="pastel"]{
+  --bg:#f7f7fb;
+  --bg-2:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#f5f3ff;
+  --border:#e5e7f5;
+  --border-strong:#cbd5e1;
+  --text:#334155;
+  --text-2:#475569;
+  --text-3:#94a3b8;
+  --primary:#7c8ce0;
+  --primary-hover:#6366f1;
+  --primary-soft:#e0e7ff;
+  --accent:#a78bfa;
+  --break-bg:#fae8ff;
+  --break-text:#6b21a8;
+  --sl-bg:#dbeafe;
+  --sl-text:#1e3a8a;
+  --name-bg:#8b9be8;
+  --name-text:#ffffff;
+  --free-bg:#fdf2f8;
+  --free-text:#9d174d;
+  --header-bg:linear-gradient(135deg,#a5b4fc 0%,#c4b5fd 50%,#a7f3d0 100%);
+  --shadow:0 2px 8px rgba(124,140,224,.12);
+  --shadow-lg:0 10px 28px rgba(124,140,224,.20);
+  --row-tint:rgba(167,139,250,.05);
+  --col-line:#e5e7f5;
+}
+body[data-theme="pastel"] #theadRow th{
+  background-color:#8b9be8 !important; color:#ffffff !important;
+  border-bottom:3px solid #a7f3d0 !important;
+}
+body[data-theme="pastel"] #theadRow th.col-break{
+  background-color:#c084fc !important; color:#ffffff !important;
+}
+/* Soft section colour-coding (baby-blue / mint / lavender) */
+body[data-theme="pastel"] .routine-table .teacher-row-class td:not(.col-sl):not(.col-name):not(.col-break){background:rgba(191,219,254,.28) !important}
+body[data-theme="pastel"] .routine-table .teacher-row-subject td:not(.col-sl):not(.col-name):not(.col-break){background:rgba(187,247,208,.26) !important}
+body[data-theme="pastel"] .routine-table .teacher-row-section td:not(.col-sl):not(.col-name):not(.col-break){background:rgba(221,214,254,.30) !important}
+
+/* =============================================================
+   THEME 4 — High Contrast & Accessible
+============================================================= */
+[data-theme="contrast"]{
+  --bg:#ffffff;
+  --bg-2:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#ffffff;
+  --border:#475569;
+  --border-strong:#1e293b;
+  --text:#000000;
+  --text-2:#1e293b;
+  --text-3:#334155;
+  --primary:#000000;
+  --primary-hover:#1e293b;
+  --primary-soft:#fde047;
+  --accent:#b45309;
+  --break-bg:#fde047;
+  --break-text:#000000;
+  --sl-bg:#000000;
+  --sl-text:#ffffff;
+  --name-bg:#000000;
+  --name-text:#ffffff;
+  --free-bg:#fecaca;
+  --free-text:#7f1d1d;
+  --header-bg:linear-gradient(135deg,#000000 0%,#1e293b 100%);
+  --shadow:0 0 0 1px #475569;
+  --shadow-lg:0 4px 0 #1e293b;
+  --col-line:#475569;
+}
+body[data-theme="contrast"] #theadRow th{
+  background-color:#000000 !important; color:#ffffff !important;
+  border-bottom:3px solid #000000 !important;
+}
+body[data-theme="contrast"] #theadRow th.col-break{
+  background-color:#b45309 !important; color:#ffffff !important;
+}
+body[data-theme="contrast"] .routine-table th,
+body[data-theme="contrast"] .routine-table td{
+  border:1px solid #475569 !important;
+}
+body[data-theme="contrast"] .routine-table td .cell-content:hover{
+  background:#fde047 !important; color:#000 !important;
+}
+body[data-theme="contrast"] .routine-table td.is-free,
+body[data-theme="contrast"] .routine-table td.has-conflict{
+  background:#fecaca !important;
+}
+
+/* =============================================================
+   SHARED THEME CLARITY — crisp rows & columns for every theme
+   (also keeps each teacher block readable while the routine is locked)
+============================================================= */
+body[data-theme="minimal"] .routine-table tbody td,
+body[data-theme="nature"]  .routine-table tbody td,
+body[data-theme="pastel"]  .routine-table tbody td{
+  border-right:1px solid var(--col-line) !important;
+}
+/* Gentle zebra striping per teacher block (every other teacher) */
+body[data-theme="minimal"] .routine-table tbody tr.teacher-row-class:nth-of-type(6n+4) td:not(.col-sl):not(.col-name):not(.col-break),
+body[data-theme="minimal"] .routine-table tbody tr.teacher-row-subject:nth-of-type(6n+5) td:not(.col-sl):not(.col-name):not(.col-break),
+body[data-theme="minimal"] .routine-table tbody tr.teacher-row-section:nth-of-type(6n+6) td:not(.col-sl):not(.col-name):not(.col-break){
+  background:var(--row-tint) !important;
+}
+/* Soft crosshair-style hover for editable cells */
+body[data-theme="minimal"] .routine-table td .cell-content:hover,
+body[data-theme="nature"]  .routine-table td .cell-content:hover{
+  background:var(--primary-soft) !important;
+  box-shadow:inset 0 0 0 1px var(--primary);
+}
+
+/* =============================================================
+   ROUTINE LOCK — protects routine data from accidental clicks.
+   IMPORTANT: locking must NOT change the theme or hide any data.
+   The routine stays exactly as normal & fully readable; the only
+   difference is that cells/handles can no longer be edited.
+============================================================= */
+/* Cells no longer look clickable (but text/colours stay 100% normal) */
+body[data-routine-lock="true"] .routine-table td .cell-content{
+  cursor:default !important;
+}
+body[data-routine-lock="true"] .routine-table td.col-name{cursor:default !important}
+/* No edit-hint hover while locked (prevents "looks clickable" confusion).
+   Use transparent so the theme's own cell background shows through unchanged. */
+body[data-routine-lock="true"] .routine-table td .cell-content:hover{
+  background:transparent !important;
+  box-shadow:none !important;
+}
+/* Hide only the edit handles/tools — data, colours & layout untouched */
+body[data-routine-lock="true"] .row-handle,
+body[data-routine-lock="true"] .col-handle,
+body[data-routine-lock="true"] .col-tools{display:none !important}
+/* Lock indicator chip — position:fixed so it takes NO document flow space.
+   The routine table & theme are therefore completely unaffected and stay
+   exactly as normal & fully visible whether locked or not. */
+.routine-lock-chip{
+  display:none;
+  position:fixed;
+  left:14px;
+  bottom:54px;
+  z-index:60;
+  align-items:center;
+  gap:7px;
+  background:linear-gradient(135deg,#b45309,#d97706);
+  color:#fff;
+  font-weight:800;
+  font-size:12.5px;
+  padding:7px 13px;
+  border-radius:999px;
+  letter-spacing:.2px;
+  box-shadow:0 4px 14px rgba(180,83,9,.4);
+  pointer-events:none;
+  user-select:none;
+}
+body[data-routine-lock="true"] .routine-lock-chip{display:inline-flex}
+.routine-lock-chip .rlc-dot{
+  width:8px;height:8px;border-radius:50%;background:#fde047;
+  box-shadow:0 0 0 3px rgba(253,224,71,.35);
+  animation:rlcPulse 1.6s ease-in-out infinite;
+}
+@keyframes rlcPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.25);opacity:.6}}
+@media print{ .routine-lock-chip{display:none !important} }
+/* Lock toggle button states in the tool menu */
+#routineLockBtn[data-locked="true"]{
+  background:#fef3c7 !important;color:#92400e !important;
+  border-color:#f59e0b !important;font-weight:800;
+}
+[data-theme="dark"] #routineLockBtn[data-locked="true"]{
+  background:rgba(245,158,11,.22) !important;color:#fbbf24 !important;
 }
 
 /* Compact mode */
@@ -2684,6 +2947,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <button class="tool-btn editable-only" onclick="openScheduleGen();closeToolMenu()">🕐 <span class="lbl">সময়সূচি</span></button>
         <button class="tool-btn primary editable-only" onclick="openAIGenerator();closeToolMenu()">🤖 <span class="lbl">AI রুটিন</span></button>
         <button class="tool-btn editable-only" onclick="toggleVoice();closeToolMenu()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
+        <button class="tool-btn editable-only" id="routineLockBtn" data-locked="false" onclick="toggleRoutineLock();closeToolMenu()" title="রুটিন লক/আনলক — এলোমেলো ক্লিক থেকে সুরক্ষা">🔓 <span class="lbl">রুটিন লক</span></button>
         <div class="tool-divider"></div>
         <button class="tool-btn editable-only" onclick="openModal('optionsModal');closeToolMenu()">📝 <span class="lbl">অপশন</span></button>
         <button class="tool-btn editable-only" onclick="openModal('bulkModal');closeToolMenu()">✂️ <span class="lbl">বাল্ক এডিট</span></button>
@@ -2731,6 +2995,12 @@ body[data-role="manager"] .teacher-only{display:none !important}
 
   <!-- FAB -->
   <button class="fab dashboard-fab admin-mgr-only" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊</button>
+
+  <!-- Routine-lock indicator (position:fixed — takes ZERO layout space,
+       so the routine & theme stay exactly normal and fully visible) -->
+  <div class="routine-lock-chip" id="routineLockChip" title="রুটিন লক করা আছে — এলোমেলো ক্লিকে তথ্য বদলাবে না">
+    <span class="rlc-dot"></span><span>🔒 রুটিন লক</span>
+  </div>
 
 
 </div>
@@ -2815,8 +3085,20 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <div class="set-tab" data-tab="display">
         <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">থিম</h3>
         <div class="toggle-row">
-          <div class="info"><div class="lbl">ডার্ক মোড</div><div class="desc">ডার্ক থিম চালু/বন্ধ</div></div>
-          <label class="switch"><input type="checkbox" id="setDark" onchange="toggleDark()"><span class="slider"></span></label>
+          <div class="info"><div class="lbl">থিম নির্বাচন</div><div class="desc">পুরো অ্যাপের চেহারা ও রঙ পরিবর্তন করুন</div></div>
+          <select id="setThemeSelect" onchange="setThemeChoice(this.value)" style="min-width:190px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface-2);font-weight:700">
+            <option value="light">☀️ ডিফল্ট (লাইট)</option>
+            <option value="minimal">🏢 মিনিমাল ও কর্পোরেট</option>
+            <option value="nature">🌿 প্রকৃতি ও টিল</option>
+            <option value="pastel">🎨 সফট পেস্টেল</option>
+            <option value="dark">🌙 ডার্ক (আই-কেয়ার)</option>
+            <option value="contrast">🔲 হাই কনট্রাস্ট</option>
+          </select>
+        </div>
+        <input type="checkbox" id="setDark" style="display:none">
+        <div class="toggle-row">
+          <div class="info"><div class="lbl">🔒 রুটিন লক (এলোমেলো ক্লিক থেকে সুরক্ষা)</div><div class="desc">চালু থাকলে শিক্ষকদের শ্রেণি/বিষয়/শাখা সেল এডিট হবে না। নোটিফিকেশন, ছুটি, ড্যাশবোর্ড ইত্যাদি স্বাভাবিক চলবে।</div></div>
+          <label class="switch"><input type="checkbox" id="setRoutineLock" onchange="toggleRoutineLock(this.checked)"><span class="slider"></span></label>
         </div>
         <div class="toggle-row">
           <div class="info"><div class="lbl">কম্প্যাক্ট মোড</div><div class="desc">ছোট রো হাইট, বেশি ডেটা</div></div>
@@ -4097,6 +4379,7 @@ let state = {
   teachers: [],
   settings: {
     theme: 'light',
+    routineLock: false,
     compact: false,
     autoSaveInterval: 30,
     backupFrequency: 'hourly',
@@ -5070,7 +5353,7 @@ function renderTable(){
   const swapped = !!ss.slNameSwapped;
   const slLabel = ss.slLabel || 'SL';
   const nameLabel = ss.nameLabel || 'শিক্ষকের নাম';
-  const canEditCorner = canFullEdit() && !isReadOnly;
+  const canEditCorner = canFullEdit() && !isReadOnly && !routineLocked();
 
   // Inline style overrides for SL/Name
   const slStyleArr = [];
@@ -5102,7 +5385,7 @@ function renderTable(){
     const lockedCls = headerLocked?' col-locked':'';
     const lockIcon = c.locked?'🔒':'🔓';
     // Label edit requires explicit double-click to prevent accidental edits while clicking near cells
-    const canEditCol = canFullEdit() && !isReadOnly && !headerLocked;
+    const canEditCol = canFullEdit() && !isReadOnly && !headerLocked && !routineLocked();
     // Req #1: টাইম ড্র্যাগ সম্পূর্ণ বন্ধ — columns are never draggable
     const isColDraggable = false;
     // Per-column inline style for color & width
@@ -5145,7 +5428,7 @@ function renderTable(){
     // Preserve the *real* SL index from the master list, not the filtered one
     const realIdx = state.teachers.findIndex(x => x.id === t.id);
     const slIdx = (realIdx >= 0 ? realIdx : ti) + 1;
-    const teacherCanEdit = canEditTeacher(t.id) && !isReadOnly && !t.locked;
+    const teacherCanEdit = canEditTeacher(t.id) && !isReadOnly && !t.locked && !routineLocked();
     const teacherLocked = t.locked;
     const lockBtn = canFullEdit() ? `<span class="t-lock" onclick="event.stopPropagation();toggleTeacherLock('${t.id}')" title="${teacherLocked?'আনলক করুন':'লক করুন'}">${teacherLocked?'🔒':'🔓'}</span>` : '';
     const rowControls = canFullEdit() ? `
@@ -5171,6 +5454,10 @@ function renderTable(){
     if(ti>0) body += `<tr class="teacher-block-divider"><td colspan="${state.columns.length+2}"></td></tr>`;
 
     // Row 1: Class
+    // NOTE: do NOT factor routineLock into draggable here — setting
+    // draggable="false" triggers a pre-existing row-lock background rule
+    // that hides the white name/SL text. Routine-lock blocks the actual
+    // drag inside the dragstart handler instead (keeps everything visible).
     const isDraggable = canFullEdit() && !teacherLocked;
     const slBgStyle = rowBg ? ` style="background:${rowBg}!important"` : '';
     const nameBgStyle = rowBg ? ` style="background:${rowBg}!important;color:#111827!important"` : '';
@@ -5361,6 +5648,11 @@ function setupDragDrop(){
   // DRAGSTART — বৈধ উৎস: SL সেলের ≡ row-handle, অথবা teacher-row-class সারি (legacy fallback)
   tb.addEventListener('dragstart', (e) => {
     if(!canFullEdit()){ return; }
+    if(routineLocked()){
+      e.preventDefault();
+      showToast('🔒 রুটিন লক করা আছে — আনলক করে সরান','warning',2000);
+      return;
+    }
     let tid = null;
     const handle = (e.target && e.target.closest) ? e.target.closest('.row-handle') : null;
     if(handle){
@@ -5567,6 +5859,7 @@ function updateColLabel(cid, label){
 
 /* Enable column label edit on double-click — prevents accidental edits */
 function enableColLabelEdit(el, cid){
+  if(routineLocked()){showToast('🔒 রুটিন লক করা আছে','warning',1800);return}
   const c = state.columns.find(x=>x.id===cid);
   if(!c || c.locked) return;
   if(!canFullEdit()) return;
@@ -6064,6 +6357,7 @@ function swapSLName(){
 
 function updateCornerLabel(which, text){
   if(!canFullEdit()) return;
+  if(routineLocked()){ renderTable(); return; }
   text = (text||'').trim();
   if(!text) text = which === 'sl' ? 'SL' : 'শিক্ষকের নাম';
   const key = which === 'sl' ? 'slLabel' : 'nameLabel';
@@ -6111,6 +6405,7 @@ function addTeacher(){
 }
 
 function editTeacher(tid){
+  if(routineLocked() && canFullEdit()){showToast('🔒 রুটিন লক করা আছে — আনলক করে এডিট করুন','warning',2200);return}
   if(!canEditTeacher(tid)){showToast('অনুমতি নেই','error');return}
   const t = state.teachers.find(x=>x.id===tid);
   if(!t) return;
@@ -6332,6 +6627,7 @@ function deleteTeacher(){
    CELL EDITOR
 =========================================================== */
 function openCellEditor(tid, cid, field){
+  if(routineLocked()){showToast('🔒 রুটিন লক করা আছে — আনলক করে এডিট করুন','warning',2200);return}
   if(!canEditTeacher(tid)){showToast('অনুমতি নেই','error');return}
   if(currentUser.role === 'teacher' && !canFullEdit()){
     showToast('শিক্ষক শুধু "ছুটিতে আছি" টগল করতে পারেন','warning');
@@ -8131,7 +8427,8 @@ function resetMasterSize(){
 =========================================================== */
 function applySettings(){
   const s = state.settings;
-  document.body.dataset.theme = s.theme;
+  document.body.dataset.theme = s.theme || 'light';
+  document.body.dataset.routineLock = routineLocked() ? 'true' : 'false';
   document.body.dataset.density = s.compact ? 'compact' : 'normal';
   document.body.dataset.showRowlabel = !!s.showRowLabels;
   document.body.dataset.floatingScroll = !!s.floatingScrollbar;
@@ -8177,8 +8474,10 @@ function applySettings(){
   root.style.setProperty('--break-col-w', breakW > 0 ? breakW + 'px' : 'auto');
   root.style.setProperty('--break-col-min', (breakW > 0 ? breakW : 60) + 'px');
 
-  // Apply CSS variables for colors (only in light mode; dark theme keeps its own)
-  if(s.theme !== 'dark'){
+  // Custom colours apply ONLY in the default light theme.
+  // Named themes (minimal/nature/pastel/dark/contrast) keep their own palette
+  // so switching themes never breaks the routine's look.
+  if(!s.theme || s.theme === 'light'){
     root.style.setProperty('--primary', s.colorPrimary||'#0f766e');
     root.style.setProperty('--sl-bg', s.colorSlBg||'#bbf7d0');
     root.style.setProperty('--sl-text', s.colorSlText||'#14532d');
@@ -8238,9 +8537,21 @@ function applySettings(){
     }
     else el.value = s[key] || '';
   }
-  // setDark uses checked specially
+  // setDark uses checked specially (hidden legacy checkbox kept in sync)
   const setDark = document.getElementById('setDark');
   if(setDark) setDark.checked = s.theme === 'dark';
+  // Sync the theme dropdown
+  const themeSel = document.getElementById('setThemeSelect');
+  if(themeSel) themeSel.value = s.theme || 'light';
+  // Sync the routine-lock toggle + quick button
+  const lockToggle = document.getElementById('setRoutineLock');
+  if(lockToggle) lockToggle.checked = routineLocked();
+  const lockBtn = document.getElementById('routineLockBtn');
+  if(lockBtn){
+    const lk = routineLocked();
+    lockBtn.dataset.locked = lk ? 'true' : 'false';
+    lockBtn.innerHTML = (lk ? '🔒' : '🔓') + ' <span class="lbl">' + (lk ? 'রুটিন আনলক' : 'রুটিন লক') + '</span>';
+  }
 
   // Refresh floating scrollbar
   // (Master Lock feature removed — no UI update needed here.)
@@ -8261,7 +8572,9 @@ function readSetting(id, type, fallback){
 
 function saveSettings(){
   const s = state.settings;
-  s.theme = document.getElementById('setDark').checked ? 'dark' : 'light';
+  const _themeSel = document.getElementById('setThemeSelect');
+  s.theme = _themeSel ? (_themeSel.value || 'light') : (s.theme || 'light');
+  s.routineLock = readSetting('setRoutineLock','bool', !!s.routineLock);
   s.compact = readSetting('setCompact','bool',false);
   s.autoSaveInterval = readSetting('setAutoSave','int',30);
   s.backupFrequency = readSetting('setBackup','str','hourly');
@@ -8346,7 +8659,7 @@ function resetSettings(){
   };
   // Keep defaults from initial state object
   const defaults = {
-    theme: 'light', compact: false, autoSaveInterval: 30, backupFrequency: 'hourly',
+    theme: 'light', routineLock: false, compact: false, autoSaveInterval: 30, backupFrequency: 'hourly',
     notifications: true, conflictAlerts: true, auditEnabled: true, pwaHint: true,
     dashRefresh: 60, cellFontSize: 14, classFontSize: 18, subjectFontSize: 17,
     sectionFontSize: 14, nameFontSize: 15, rowHeight: 38, cellPadding: 6, nameColWidth: 168,
@@ -8450,7 +8763,35 @@ function bindFloatingScroll(){
   }
 }
 
-function toggleDark(){state.settings.theme = document.getElementById('setDark').checked ? 'dark' : 'light';applySettings()}
+/* Legacy stub kept for backward compatibility (dark-mode checkbox is hidden now) */
+function toggleDark(){
+  const cb = document.getElementById('setDark');
+  state.settings.theme = (cb && cb.checked) ? 'dark' : 'light';
+  applySettings(); saveState();
+}
+/* New multi-theme selector */
+function setThemeChoice(val){
+  const valid = ['light','minimal','nature','pastel','dark','contrast'];
+  state.settings.theme = valid.includes(val) ? val : 'light';
+  applySettings();
+  saveState();
+  showToast('🎨 থিম পরিবর্তিত হয়েছে','success',1400);
+}
+/* Is routine editing currently locked? */
+function routineLocked(){ return !!(state.settings && state.settings.routineLock); }
+/* Toggle / set the routine lock. Only structural routine edits are blocked;
+   notifications, leave, dashboard and other tools stay fully active. */
+function toggleRoutineLock(force){
+  const next = (typeof force === 'boolean') ? force : !routineLocked();
+  state.settings.routineLock = next;
+  applySettings();
+  renderTable();
+  saveState();
+  try{ audit('রুটিন লক', next ? 'চালু' : 'বন্ধ'); }catch(_){}
+  showToast(next
+    ? '🔒 রুটিন লক করা হয়েছে — এলোমেলো ক্লিকে তথ্য বদলাবে না'
+    : '🔓 রুটিন আনলক করা হয়েছে — এডিট করা যাবে', next ? 'warning' : 'success', 2200);
+}
 function toggleCompact(){state.settings.compact = document.getElementById('setCompact').checked;applySettings()}
 
 /* Quick preset for slot column width — sets the input field value */
