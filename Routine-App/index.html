@@ -2695,13 +2695,19 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <option value="teacher">শিক্ষক (নিজস্ব রো)</option>
       </select>
     </div>
-    <div class="field" id="usernameField">
-      <label>ব্যবহারকারীর নাম</label>
+    <div class="field" id="accountSelectField" style="display:none">
+      <label>নাম নির্বাচন করুন</label>
+      <select id="loginAccountSelect" onchange="document.getElementById('loginPass').value=''"></select>
+    </div>
+    <div class="field" id="usernameField" style="display:none">
+      <label>ব্যবহারকারীর নাম (ম্যানুয়াল)</label>
       <input id="loginUser" type="text" autocomplete="username" placeholder="admin">
     </div>
     <div class="field" id="teacherSelectField" style="display:none">
       <label>শিক্ষক নির্বাচন করুন</label>
-      <select id="loginTeacher" onchange="document.getElementById('loginPass').value=''"></select>
+      <input id="loginTeacherSearch" type="text" autocomplete="off" placeholder="🔍 নাম বা সিরিয়াল নম্বর দিয়ে খুঁজুন (যেমন: করিম বা ১২)" oninput="filterLoginTeachers(this.value)" style="margin-bottom:8px;width:100%;box-sizing:border-box">
+      <select id="loginTeacher" size="6" onchange="document.getElementById('loginPass').value=''" style="width:100%;box-sizing:border-box"></select>
+      <div id="loginTeacherEmpty" style="display:none;font-size:12px;color:var(--text-3,#94a3b8);padding:6px 2px">কোনো শিক্ষক পাওয়া যায়নি — অন্য নাম বা সিরিয়াল নম্বর চেষ্টা করুন।</div>
     </div>
     <div class="field" id="passwordField">
       <label>পাসওয়ার্ড</label>
@@ -5684,7 +5690,11 @@ function doLogin(){
 
   if(role === 'admin' || role === 'manager'){
     ensureAccounts();
-    const u = document.getElementById('loginUser').value.trim();
+    // অগ্রাধিকার: নাম-ড্রপডাউন; খালি হলে ম্যানুয়াল ইউজারনেম ফিল্ড (ফলব্যাক)
+    const selEl = document.getElementById('loginAccountSelect');
+    const acctField = document.getElementById('accountSelectField');
+    const usingDropdown = selEl && acctField && acctField.style.display !== 'none' && selEl.value;
+    const u = (usingDropdown ? selEl.value : document.getElementById('loginUser').value).trim();
     const p = document.getElementById('loginPass').value;
     const arr = role === 'admin' ? state.accounts.admins : state.accounts.managers;
     const acct = arr.find(a => a.username === u);
@@ -5791,14 +5801,47 @@ function canEditTeacher(tid){
 /* Pre-populate login UI based on role */
 document.getElementById('loginRole').addEventListener('change', e=>{
   const r = e.target.value;
-  document.getElementById('usernameField').style.display = (r==='admin'||r==='manager')?'block':'none';
+  const isAcct = (r==='admin'||r==='manager');
+  document.getElementById('accountSelectField').style.display = isAcct ? 'block' : 'none';
+  // ম্যানুয়াল ইউজারনেম ফিল্ড সাধারণত লুকানো; শুধু ফলব্যাক হিসেবে কোডে ব্যবহৃত
+  document.getElementById('usernameField').style.display = 'none';
   document.getElementById('teacherSelectField').style.display = (r==='teacher')?'block':'none';
   // পাসওয়ার্ড সব ভূমিকার জন্য দরকার (অ্যাডমিন / ম্যানেজার / শিক্ষক)
   document.getElementById('passwordField').style.display = 'block';
   document.getElementById('loginPass').value = '';
-  if(r === 'admin') document.getElementById('loginUser').value = 'admin';
-  if(r === 'manager') document.getElementById('loginUser').value = 'manager';
+  if(isAcct){
+    populateLoginAccounts(r);
+  } else if(r === 'teacher'){
+    const s = document.getElementById('loginTeacherSearch');
+    if(s) s.value = '';
+    populateLoginTeachers();
+  }
 });
+
+/* অ্যাডমিন/ম্যানেজার ভূমিকার জন্য নামের ড্রপডাউন ভরাট করো।
+   একাধিক অ্যাকাউন্ট থাকলে সবগুলো নাম তালিকায় আসবে; option value = username। */
+function populateLoginAccounts(role){
+  ensureAccounts();
+  const sel = document.getElementById('loginAccountSelect');
+  if(!sel) return;
+  const arr = (role === 'admin') ? state.accounts.admins : state.accounts.managers;
+  const list = Array.isArray(arr) ? arr : [];
+  if(!list.length){
+    sel.innerHTML = `<option value="">কোনো অ্যাকাউন্ট নেই</option>`;
+    return;
+  }
+  sel.innerHTML = list.map(a=>{
+    const uname = esc(a.username||'');
+    const nm = esc(a.name || a.username || '');
+    return `<option value="${uname}">${nm}</option>`;
+  }).join('');
+}
+
+/* শিক্ষক ড্রপডাউন — নাম বা সিরিয়াল নম্বর দিয়ে ফিল্টার (লাইভ সার্চ)।
+   সিরিয়াল = state.teachers-এর ক্রম অনুসারে ১-ভিত্তিক নম্বর (টেবিলের SL-এর মতো)। */
+function filterLoginTeachers(q){
+  populateLoginTeachers(q);
+}
 
 /* ===========================================================
    RENDERING
@@ -6411,10 +6454,39 @@ function renderFilters(){
   fs.innerHTML = '<option value="">সব বিষয়</option>' + sub.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
 }
 
-function populateLoginTeachers(){
+function populateLoginTeachers(query){
   const sel = document.getElementById('loginTeacher');
   if(!sel) return;
-  sel.innerHTML = state.teachers.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  const teachers = Array.isArray(state.teachers) ? state.teachers : [];
+  const q = (query == null ? '' : String(query)).trim();
+
+  // বাংলা সংখ্যা → ইংরেজি (সিরিয়াল নম্বর সার্চের জন্য)
+  const bnToEn = s => String(s).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+  const qNorm = bnToEn(q).toLowerCase();
+  const qDigits = qNorm.replace(/[^0-9]/g, '');
+
+  let list = teachers.map((t, i) => ({ t, sl: i + 1 }));
+  if(q){
+    list = list.filter(({ t, sl }) => {
+      const nameHit = (t.name || '').toLowerCase().includes(q.toLowerCase());
+      // সিরিয়াল: পুরো সংখ্যা মিল (যেমন "12" → ১২ নম্বর শিক্ষক)
+      const slHit = qDigits !== '' && String(sl) === qDigits;
+      // আংশিক সংখ্যা টাইপ করলেও সাহায্য (যেমন "1" → 1,10,11...)
+      const slPartial = qDigits !== '' && String(sl).startsWith(qDigits);
+      return nameHit || slHit || slPartial;
+    });
+  }
+
+  sel.innerHTML = list.map(({ t, sl }) =>
+    `<option value="${esc(t.id)}">${toBnNum(sl)}. ${esc(t.name)}</option>`
+  ).join('');
+
+  // খালি-অবস্থা বার্তা ও নির্বাচন
+  const emptyEl = document.getElementById('loginTeacherEmpty');
+  if(emptyEl) emptyEl.style.display = list.length ? 'none' : 'block';
+  if(list.length){
+    sel.selectedIndex = 0;            // প্রথম মিলটি স্বয়ংক্রিয় নির্বাচিত
+  }
 }
 
 /* ===========================================================
