@@ -58,6 +58,35 @@ body:not([data-role="teacher"]) .teacher-only { display: none !important; }
 /* Admin/Manager-only buttons */
 body[data-role="teacher"] .admin-mgr-only { display: none !important; }
 body:not([data-role="admin"]):not([data-role="manager"]) .admin-mgr-only { display: none !important; }
+body:not([data-role="admin"]) .admin-only { display: none !important; }
+.perm-hidden { display: none !important; }
+.ac-section{border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;background:var(--surface-2)}
+.ac-section h3{margin:0 0 4px;font-size:14px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px}
+.ac-section .ac-desc{font-size:12px;color:var(--text-3);margin-bottom:12px;line-height:1.6}
+.ac-acct{border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;margin-bottom:9px;background:var(--surface)}
+.ac-acct-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.ac-acct-name{font-weight:900;font-size:14px;color:var(--text)}
+.ac-acct-user{font-size:12px;color:var(--text-3);font-family:var(--font-en);margin-top:2px}
+.ac-acct-actions{display:flex;gap:6px;flex-wrap:wrap}
+.ac-acct-actions button{padding:5px 10px;border-radius:7px;border:none;font-weight:800;font-size:12px;cursor:pointer}
+.ac-btn-edit{background:var(--info,#2563eb);color:#fff}
+.ac-btn-del{background:var(--danger,#dc2626);color:#fff}
+.ac-btn-pw{background:#7c3aed;color:#fff}
+.ac-perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 14px;margin-top:11px;padding-top:11px;border-top:1px dashed var(--border)}
+@media(max-width:560px){.ac-perm-grid{grid-template-columns:1fr}}
+.ac-perm-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;line-height:1.4}
+.ac-perm-item input{margin-top:2px;width:16px;height:16px;flex:none;accent-color:var(--primary,#0f766e);cursor:pointer}
+.ac-add-form{display:flex;flex-direction:column;gap:9px;margin-top:10px;padding:12px;border:1.5px dashed var(--border);border-radius:10px;background:var(--surface)}
+.ac-add-form .row{display:flex;gap:8px;flex-wrap:wrap}
+.ac-add-form .row > div{flex:1;min-width:140px}
+.ac-add-form label{font-size:11.5px;font-weight:800;color:var(--text-2);display:block;margin-bottom:3px}
+.ac-add-form input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface-2);font-weight:700;font-size:13px;box-sizing:border-box}
+.ac-pill{display:inline-block;font-size:10.5px;font-weight:900;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.3px}
+.ac-pill.admin{background:#ede9fe;color:#5b21b6}
+.ac-pill.manager{background:#dbeafe;color:#1e40af}
+.ac-pill.device{background:#dcfce7;color:#166534;text-transform:none;letter-spacing:0}
+.ac-empty{padding:18px;text-align:center;color:var(--text-3);font-weight:700;font-size:12.5px}
+.ac-devid{font-family:var(--font-en);font-size:11.5px;background:var(--surface);border:1px dashed var(--border);border-radius:6px;padding:6px 9px;color:var(--text-2);word-break:break-all}
 /* রুটিনের কলাম ওভারল্যাপ ঠেকানোর স্থায়ী সমাধান */
 .routine-table thead th:not(.col-sl):not(.col-name):not(.col-break),
 .routine-table tbody td:not(.col-sl):not(.col-name):not(.col-break) {
@@ -2897,7 +2926,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <span class="role-badge" id="userChipRole">—</span>
     </div>
     <div class="header-tools">
-      <button class="icon-btn editable-only" onclick="openModal('brandingModal')" title="ব্র্যান্ডিং এডিট">🎨</button>
+      <button class="icon-btn editable-only" data-perm="branding" onclick="openModal('brandingModal')" title="ব্র্যান্ডিং এডিট">🎨</button>
       <button class="icon-btn" onclick="openModal('developerModal')" title="ডেভলপার তথ্য">ℹ️</button>
       <button class="icon-btn" onclick="testNotifSound()" title="নোটিফিকেশন শব্দ পরীক্ষা করুন">🔊</button>
       <button class="icon-btn editable-only" onclick="openModal('settingsModal')" title="সেটিংস">⚙️</button>
@@ -2909,7 +2938,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
 
 <div class="toolbar">
     <!-- 🔔 Notification Bell — Admin/Manager only -->
-    <button class="tool-btn notif-btn admin-mgr-only" id="notifBellBtn" onclick="toggleNotifPanel()" title="ছুটির আবেদন নোটিফিকেশন">
+    <button class="tool-btn notif-btn admin-mgr-only" data-perm="approveLeave" id="notifBellBtn" onclick="toggleNotifPanel()" title="ছুটির আবেদন নোটিফিকেশন">
       <span class="icon">🔔</span> <span class="lbl">নোটিফিকেশন</span>
       <span class="notif-badge" id="notifBadge" style="display:none">0</span>
     </button>
@@ -2928,7 +2957,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <span class="leave-count-badge" id="leaveCountBadge" style="display:none">0</span>
     </button>
     <!-- 📊 Live Dashboard — Admin/Manager only -->
-    <button class="tool-btn admin-mgr-only" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
+    <button class="tool-btn admin-mgr-only" data-perm="dashboard" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
 
     <!-- ⋮ আরও — Consolidated dropdown for all secondary actions -->
     <div class="tool-menu-wrapper">
@@ -2940,22 +2969,22 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <button class="tool-btn teacher-only" id="teacherPwBtn" onclick="openPasswordSettings();closeToolMenu()" title="নিজের পাসওয়ার্ড পরিবর্তন করুন">
           <span class="icon">🔐</span> <span class="lbl">পাসওয়ার্ড</span>
         </button>
-        <button class="tool-btn editable-only" onclick="addTeacher();closeToolMenu()">➕ <span class="lbl">শিক্ষক যোগ করুন</span></button>
+        <button class="tool-btn editable-only" data-perm="manageTeachers" onclick="addTeacher();closeToolMenu()">➕ <span class="lbl">শিক্ষক যোগ করুন</span></button>
         <button class="tool-btn editable-only" onclick="undo();closeToolMenu()" id="undoBtn" disabled>↩️ <span class="lbl">আনডু</span></button>
         <button class="tool-btn editable-only" onclick="redo();closeToolMenu()" id="redoBtn" disabled>↪️ <span class="lbl">রিডু</span></button>
         <div class="tool-divider"></div>
-        <button class="tool-btn editable-only" onclick="openScheduleGen();closeToolMenu()">🕐 <span class="lbl">সময়সূচি</span></button>
-        <button class="tool-btn primary editable-only" onclick="openAIGenerator();closeToolMenu()">🤖 <span class="lbl">AI রুটিন</span></button>
-        <button class="tool-btn editable-only" onclick="toggleVoice();closeToolMenu()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
-        <button class="tool-btn editable-only" id="routineLockBtn" data-locked="false" onclick="toggleRoutineLock();closeToolMenu()" title="রুটিন লক/আনলক — এলোমেলো ক্লিক থেকে সুরক্ষা">🔓 <span class="lbl">রুটিন লক</span></button>
+        <button class="tool-btn editable-only" data-perm="scheduleGen" onclick="openScheduleGen();closeToolMenu()">🕐 <span class="lbl">সময়সূচি</span></button>
+        <button class="tool-btn primary editable-only" data-perm="aiRoutine" onclick="openAIGenerator();closeToolMenu()">🤖 <span class="lbl">AI রুটিন</span></button>
+        <button class="tool-btn editable-only" data-perm="voice" onclick="toggleVoice();closeToolMenu()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
+        <button class="tool-btn editable-only" data-perm="routineLock" id="routineLockBtn" data-locked="false" onclick="toggleRoutineLock();closeToolMenu()" title="রুটিন লক/আনলক — এলোমেলো ক্লিক থেকে সুরক্ষা">🔓 <span class="lbl">রুটিন লক</span></button>
         <div class="tool-divider"></div>
-        <button class="tool-btn editable-only" onclick="openModal('optionsModal');closeToolMenu()">📝 <span class="lbl">অপশন</span></button>
-        <button class="tool-btn editable-only" onclick="openModal('bulkModal');closeToolMenu()">✂️ <span class="lbl">বাল্ক এডিট</span></button>
-        <button class="tool-btn" onclick="openModal('auditModal');renderAudit();closeToolMenu()">📜 <span class="lbl">অডিট লগ</span></button>
+        <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openModal('optionsModal');closeToolMenu()">📝 <span class="lbl">অপশন</span></button>
+        <button class="tool-btn editable-only" data-perm="bulkEdit" onclick="openModal('bulkModal');closeToolMenu()">✂️ <span class="lbl">বাল্ক এডিট</span></button>
+        <button class="tool-btn" data-perm="auditLog" onclick="openModal('auditModal');renderAudit();closeToolMenu()">📜 <span class="lbl">অডিট লগ</span></button>
         <div class="tool-divider"></div>
-        <button class="tool-btn editable-only" onclick="exportJSON();closeToolMenu()">⬇ <span class="lbl">JSON এক্সপোর্ট</span></button>
-        <button class="tool-btn editable-only" onclick="exportCSV();closeToolMenu()">⬇ <span class="lbl">CSV এক্সপোর্ট</span></button>
-        <button class="tool-btn editable-only" onclick="document.getElementById('importFile').click();closeToolMenu()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
+        <button class="tool-btn editable-only" data-perm="importExport" onclick="exportJSON();closeToolMenu()">⬇ <span class="lbl">JSON এক্সপোর্ট</span></button>
+        <button class="tool-btn editable-only" data-perm="importExport" onclick="exportCSV();closeToolMenu()">⬇ <span class="lbl">CSV এক্সপোর্ট</span></button>
+        <button class="tool-btn editable-only" data-perm="importExport" onclick="document.getElementById('importFile').click();closeToolMenu()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
         <input type="file" id="importFile" style="display:none" accept=".json,.csv" onchange="handleImport(event)">
         <button class="tool-btn" onclick="window.print();closeToolMenu()">🖨 <span class="lbl">প্রিন্ট</span></button>
         <button class="tool-btn editable-only" onclick="shareView();closeToolMenu()">🔗 <span class="lbl">শেয়ার</span></button>
@@ -2994,7 +3023,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
   <div class="h-scroll-float" id="hScrollFloat"><div class="h-scroll-track" id="hScrollTrack"></div></div>
 
   <!-- FAB -->
-  <button class="fab dashboard-fab admin-mgr-only" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊</button>
+  <button class="fab dashboard-fab admin-mgr-only" data-perm="dashboard" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊</button>
 
   <!-- Routine-lock indicator (position:fixed — takes ZERO layout space,
        so the routine & theme stay exactly normal and fully visible) -->
@@ -3071,13 +3100,14 @@ body[data-role="manager"] .teacher-only{display:none !important}
     <div class="modal-body">
       <!-- Tabs -->
       <div style="display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--border);margin-bottom:14px">
-        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('display')" id="stTabDisplay" data-active="true">🎨 প্রদর্শন</button>
-        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('size')" id="stTabSize">📏 আকার</button>
-        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('color')" id="stTabColor">🎨 রঙ</button>
-        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('text')" id="stTabText">📝 টেক্সট</button>
-        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('feature')" id="stTabFeature">⚡ ফিচার</button>
-        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('ai')" id="stTabAI">🤖 AI কী</button>
-        <button class="tool-btn admin-mgr-only" onclick="switchSetTab('save')" id="stTabSave">💾 সেভ/ব্যাকআপ</button>
+        <button class="tool-btn admin-mgr-only" data-perm="displaySettings" onclick="switchSetTab('display')" id="stTabDisplay" data-active="true">🎨 প্রদর্শন</button>
+        <button class="tool-btn admin-mgr-only" data-perm="displaySettings" onclick="switchSetTab('size')" id="stTabSize">📏 আকার</button>
+        <button class="tool-btn admin-mgr-only" data-perm="displaySettings" onclick="switchSetTab('color')" id="stTabColor">🎨 রঙ</button>
+        <button class="tool-btn admin-mgr-only" data-perm="displaySettings" onclick="switchSetTab('text')" id="stTabText">📝 টেক্সট</button>
+        <button class="tool-btn admin-mgr-only" data-perm="displaySettings" onclick="switchSetTab('feature')" id="stTabFeature">⚡ ফিচার</button>
+        <button class="tool-btn admin-mgr-only" data-perm="displaySettings" onclick="switchSetTab('ai')" id="stTabAI">🤖 AI কী</button>
+        <button class="tool-btn admin-mgr-only" data-perm="dataReset" onclick="switchSetTab('save')" id="stTabSave">💾 সেভ/ব্যাকআপ</button>
+        <button class="tool-btn admin-only" onclick="switchSetTab('admin')" id="stTabAdmin" style="background:#7c3aed;color:#fff">🛡️ অ্যাডমিন কন্ট্রোল</button>
         <button class="tool-btn" onclick="switchSetTab('danger')" id="stTabDanger">🚨 অন্যান্য</button>
       </div>
 
@@ -3442,7 +3472,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
           <div class="divider"></div>
         </div>
         <!-- ডেটা মেরামত / রিসেট — শুধুমাত্র অ্যাডমিন ও ম্যানেজারের জন্য -->
-        <div class="admin-mgr-only">
+        <div class="admin-mgr-only" data-perm="dataReset">
           <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🔧 ডেটা মেরামত</h3>
           <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">কলাম label এ যদি ভুলে শ্রেণির নাম (যেমন "দশম শ্রেণি") চলে যায়, এটা auto-detect করে time format এ ফিরিয়ে আনে।</div>
           <button class="tool-btn" style="width:100%;background:var(--info);color:#fff" onclick="showRepairDialog()">🔧 ডেটা সমস্যা চেক ও ঠিক করো</button>
@@ -3454,6 +3484,68 @@ body[data-role="manager"] .teacher-only{display:none !important}
           <h3 style="margin:0 0 8px;font-size:12px;color:var(--danger);text-transform:uppercase">বিপজ্জনক জোন</h3>
           <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">এটি শিক্ষক, রুটিন, সেটিংস — সব মুছে ফেলবে। অপরিবর্তনীয়!</div>
           <button class="tool-btn danger" style="width:100%" onclick="resetData()">🗑️ সব ডেটা রিসেট করুন</button>
+        </div>
+      </div>
+
+      <!-- 🛡️ Admin Control tab — সম্পূর্ণ নিয়ন্ত্রণ শুধু অ্যাডমিনের -->
+      <div class="set-tab" data-tab="admin" style="display:none">
+        <div style="font-size:12.5px;color:var(--text-2);margin-bottom:14px;line-height:1.7;background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:10px;padding:11px 13px">
+          🛡️ <strong>অ্যাডমিন কন্ট্রোল</strong> — সকল ফিচার ও সেটিংসের পূর্ণ নিয়ন্ত্রণ শুধুমাত্র অ্যাডমিনের হাতে। এখান থেকে অ্যাডমিন এক বা একাধিক ম্যানেজার ও অ্যাডমিন নিয়োগ করতে পারবেন, প্রত্যেকের ক্ষমতা আলাদাভাবে নির্ধারণ করতে পারবেন, পাসওয়ার্ড পরিবর্তন করতে পারবেন এবং নির্দিষ্ট ডিভাইসকে পাসওয়ার্ড ছাড়া প্রবেশের অনুমতি দিতে পারবেন।
+        </div>
+
+        <!-- Admins -->
+        <div class="ac-section">
+          <h3>👑 অ্যাডমিন তালিকা <span class="ac-pill admin">পূর্ণ ক্ষমতা</span></h3>
+          <div class="ac-desc">অ্যাডমিনদের সব ফিচারে পূর্ণ নিয়ন্ত্রণ থাকে। আপনি চাইলে আরও অ্যাডমিন নিয়োগ করতে পারেন।</div>
+          <div id="acAdminList"></div>
+          <div class="ac-add-form">
+            <div style="font-weight:900;font-size:12.5px;color:var(--text)">➕ নতুন অ্যাডমিন নিয়োগ</div>
+            <div class="row">
+              <div><label>নাম</label><input id="acNewAdminName" type="text" placeholder="যেমন: প্রধান শিক্ষক"></div>
+              <div><label>ইউজারনেম (ইংরেজি)</label><input id="acNewAdminUser" type="text" autocomplete="off" placeholder="যেমন: admin2"></div>
+            </div>
+            <div class="row">
+              <div><label>পাসওয়ার্ড (কমপক্ষে ৪ অক্ষর)</label><input id="acNewAdminPass" type="text" autocomplete="off" placeholder="••••"></div>
+            </div>
+            <button class="tool-btn primary" style="width:100%" onclick="acAddAdmin()">👑 অ্যাডমিন যোগ করুন</button>
+          </div>
+        </div>
+
+        <!-- Managers -->
+        <div class="ac-section">
+          <h3>🧑‍💼 ম্যানেজার তালিকা <span class="ac-pill manager">নির্ধারিত ক্ষমতা</span></h3>
+          <div class="ac-desc">প্রত্যেক ম্যানেজারের নিজস্ব পাসওয়ার্ড ও আলাদা ক্ষমতা থাকে। নিচের চেকবক্স দিয়ে প্রতিটি ম্যানেজারের অনুমতি বাড়ান বা কমান — পরিবর্তন সাথে সাথে সংরক্ষিত হয়।</div>
+          <div id="acManagerList"></div>
+          <div class="ac-add-form">
+            <div style="font-weight:900;font-size:12.5px;color:var(--text)">➕ নতুন ম্যানেজার নিয়োগ</div>
+            <div class="row">
+              <div><label>নাম</label><input id="acNewMgrName" type="text" placeholder="যেমন: সহকারী পরিচালক"></div>
+              <div><label>ইউজারনেম (ইংরেজি)</label><input id="acNewMgrUser" type="text" autocomplete="off" placeholder="যেমন: manager2"></div>
+            </div>
+            <div class="row">
+              <div><label>পাসওয়ার্ড (কমপক্ষে ৪ অক্ষর)</label><input id="acNewMgrPass" type="text" autocomplete="off" placeholder="••••"></div>
+            </div>
+            <button class="tool-btn primary" style="width:100%" onclick="acAddManager()">🧑‍💼 ম্যানেজার যোগ করুন</button>
+          </div>
+        </div>
+
+        <!-- Trusted Devices -->
+        <div class="ac-section">
+          <h3>📱 পাসওয়ার্ড-মুক্ত ডিভাইস</h3>
+          <div class="ac-desc">নির্দিষ্ট ডিভাইসকে নির্দিষ্ট অ্যাকাউন্টের জন্য পাসওয়ার্ড ছাড়া প্রবেশের অনুমতি দিন। শুধু সেই ডিভাইসেই (এই ব্রাউজারে) প্রযোজ্য হবে।</div>
+          <div style="font-size:11.5px;font-weight:800;color:var(--text-2);margin-bottom:5px">এই ডিভাইসের আইডি:</div>
+          <div class="ac-devid" id="acThisDeviceId">—</div>
+          <div class="ac-add-form" style="margin-top:12px">
+            <div style="font-weight:900;font-size:12.5px;color:var(--text)">➕ এই ডিভাইসকে পাসওয়ার্ড-মুক্ত করুন</div>
+            <div class="row">
+              <div>
+                <label>কোন অ্যাকাউন্টের জন্য</label>
+                <select id="acTrustAccount" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface-2);font-weight:700;font-size:13px;box-sizing:border-box"></select>
+              </div>
+            </div>
+            <button class="tool-btn primary" style="width:100%" onclick="acTrustThisDevice()">📱 এই ডিভাইস বিশ্বস্ত করুন</button>
+          </div>
+          <div style="margin-top:12px" id="acTrustedList"></div>
         </div>
       </div>
     </div>
@@ -4448,6 +4540,8 @@ let state = {
   requests: [],
   /* ছুটির আবেদন (Leave applications) */
   requests: [],
+  /* 🛡️ Admin Control — multi-admin/manager, per-manager permissions, trusted devices */
+  accounts: { admins: [], managers: [], trustedDevices: [] },
   lastSaved: null
 };
 
@@ -4551,6 +4645,7 @@ function loadState(){
     console.warn('Failed to load state:', e);
   }
   if(state.teachers.length === 0) seedTeachers();
+  try{ ensureAccounts(); }catch(e){ console.warn('ensureAccounts failed:', e); }
 }
 
 function seedTeachers(){
@@ -4863,6 +4958,24 @@ function showToast(msg, type='info', dur=2800){
 function openModal(id){
   document.getElementById(id).classList.add('show');
   if(id === 'aiModal' && typeof updateAIKeyStatus === 'function') updateAIKeyStatus();
+  // সেটিংস খুললে ভূমিকা/অনুমতি অনুযায়ী প্রথম দৃশ্যমান ট্যাব দেখাও
+  if(id === 'settingsModal' && typeof pickDefaultSettingsTab === 'function'){
+    try{ pickDefaultSettingsTab(); }catch(e){}
+  }
+}
+/* বর্তমান ইউজারের জন্য সেটিংসের কোন ট্যাবটি প্রথমে দেখাবে তা ঠিক করে।
+   ম্যানেজারের displaySettings অনুমতি না থাকলে প্রদর্শন ট্যাব না দেখিয়ে
+   "অন্যান্য" (পাসওয়ার্ড) ট্যাব দেখায় — খালি মোডাল এড়াতে। */
+function pickDefaultSettingsTab(){
+  if(!currentUser){ switchSetTab('danger'); return; }
+  if(currentUser.role === 'admin'){ switchSetTab('display'); return; }
+  if(currentUser.role === 'manager'){
+    if(hasPerm('displaySettings')) switchSetTab('display');
+    else switchSetTab('danger');   // অন্তত পাসওয়ার্ড পরিবর্তন সবসময় থাকবে
+    return;
+  }
+  // teacher → পাসওয়ার্ড পরিবর্তনের জন্য danger ট্যাব
+  switchSetTab('danger');
 }
 function closeModal(id){document.getElementById(id).classList.remove('show')}
 document.querySelectorAll('.modal-overlay').forEach(o=>{
@@ -4896,6 +5009,403 @@ const USERS = {
   }catch(e){ /* ignore */ }
 })();
 
+/* ===========================================================
+   🛡️ ADMIN CONTROL — Multi-admin / multi-manager / per-manager
+   permissions / trusted (password-free) devices.
+   ডেটা state.accounts এ থাকে → Firebase দিয়ে সব ডিভাইসে সিঙ্ক হয়।
+=========================================================== */
+
+// সব Access Control অপশনের সংজ্ঞা (key → বাংলা লেবেল ও বিবরণ)
+const PERM_DEFS = [
+  {key:'editRoutine',   label:'রুটিন এডিট',            desc:'সেল/শিক্ষকের রুটিন পরিবর্তন'},
+  {key:'manageTeachers',label:'শিক্ষক ব্যবস্থাপনা',     desc:'শিক্ষক যোগ/সম্পাদনা/মুছা'},
+  {key:'aiRoutine',     label:'AI রুটিন জেনারেটর',      desc:'স্বয়ংক্রিয় রুটিন তৈরি'},
+  {key:'scheduleGen',   label:'সময়সূচি জেনারেটর',       desc:'সময়সূচি তৈরি টুল'},
+  {key:'manageOptions', label:'অপশন তালিকা',           desc:'শ্রেণি/বিষয়/শাখা সম্পাদনা'},
+  {key:'bulkEdit',      label:'বাল্ক এডিট',             desc:'একসাথে অনেক সেল সম্পাদনা'},
+  {key:'importExport',  label:'ইম্পোর্ট / এক্সপোর্ট',    desc:'JSON/CSV ইম্পোর্ট ও এক্সপোর্ট'},
+  {key:'branding',      label:'ব্র্যান্ডিং',            desc:'স্কুলের নাম/লোগো/হেডার পরিবর্তন'},
+  {key:'displaySettings',label:'প্রদর্শন সেটিংস',        desc:'থিম/আকার/রঙ/টেক্সট সেটিংস'},
+  {key:'approveLeave',  label:'ছুটি অনুমোদন',           desc:'ছুটির আবেদন গ্রহণ/বাতিল'},
+  {key:'dashboard',     label:'লাইভ ড্যাশবোর্ড',         desc:'ড্যাশবোর্ড দেখা'},
+  {key:'auditLog',      label:'অডিট লগ',                desc:'কার্যকলাপ লগ দেখা'},
+  {key:'voice',         label:'ভয়েস ইনপুট',            desc:'ভয়েস দিয়ে এন্ট্রি'},
+  {key:'routineLock',   label:'রুটিন লক',               desc:'রুটিন লক/আনলক করা'},
+  {key:'dataReset',     label:'ডেটা রিসেট/মেরামত',       desc:'সেটিংস/ডেটা রিসেট ও মেরামত'}
+];
+const PERM_KEYS = PERM_DEFS.map(p => p.key);
+
+function _permsAllTrue(){ const o={}; PERM_KEYS.forEach(k=>o[k]=true); return o; }
+function _permsNormalize(p){
+  const o = {}; const src = (p && typeof p === 'object') ? p : {};
+  PERM_KEYS.forEach(k => { o[k] = (src[k] === true); });
+  return o;
+}
+
+// এই ডিভাইসের স্থায়ী আইডি (পাসওয়ার্ড-মুক্ত প্রবেশ যাচাইয়ের জন্য)
+function getDeviceId(){
+  try{
+    let id = localStorage.getItem('routineDeviceId');
+    if(!id){
+      id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,9);
+      localStorage.setItem('routineDeviceId', id);
+    }
+    return id;
+  }catch(e){ return 'dev_unknown'; }
+}
+
+/* state.accounts নিশ্চিত করা ও পুরোনো সিস্টেম থেকে মাইগ্রেশন।
+   loadState / ensureStateIntegrity / applyRemoteState — সব জায়গায় কল হয়,
+   ফলে Firebase খালি/পুরোনো ডেটা পাঠালেও অ্যাকাউন্ট কখনো হারাবে না। */
+function ensureAccounts(){
+  if(!state.accounts || typeof state.accounts !== 'object') state.accounts = {};
+  const a = state.accounts;
+  if(!Array.isArray(a.admins)) a.admins = [];
+  if(!Array.isArray(a.managers)) a.managers = [];
+  if(!Array.isArray(a.trustedDevices)) a.trustedDevices = [];
+
+  // পুরোনো হার্ডকোডেড admin/manager + localStorage পাসওয়ার্ড থেকে একবার মাইগ্রেট
+  if(a.admins.length === 0){
+    let pw = 'lhrsc';
+    try{ const s = JSON.parse(localStorage.getItem('routinePasswords')||'{}'); if(s.admin) pw = String(s.admin); }catch(e){}
+    if(typeof USERS !== 'undefined' && USERS.admin && USERS.admin.password) pw = String(USERS.admin.password);
+    a.admins.push({username:'admin', name:'অ্যাডমিন', password:pw});
+  }
+  if(a.managers.length === 0){
+    let pw = 'lhrsc';
+    try{ const s = JSON.parse(localStorage.getItem('routinePasswords')||'{}'); if(s.manager) pw = String(s.manager); }catch(e){}
+    if(typeof USERS !== 'undefined' && USERS.manager && USERS.manager.password) pw = String(USERS.manager.password);
+    // ব্যাকওয়ার্ড-কম্প্যাট: পুরোনো একমাত্র ম্যানেজার আগের মতোই পূর্ণ এডিট-ক্ষমতা পাবে
+    a.managers.push({username:'manager', name:'ম্যানেজার', password:pw, permissions:_permsAllTrue()});
+  }
+  // ফিল্ড স্যানিটাইজ
+  a.admins.forEach(x=>{
+    if(!x.username) x.username = 'admin';
+    if(!x.name) x.name = 'অ্যাডমিন';
+    if(x.password == null || x.password === '') x.password = 'lhrsc';
+  });
+  a.managers.forEach(x=>{
+    if(!x.username) x.username = 'manager';
+    if(!x.name) x.name = 'ম্যানেজার';
+    if(x.password == null || x.password === '') x.password = 'lhrsc';
+    x.permissions = _permsNormalize(x.permissions);
+  });
+}
+
+// বর্তমান ইউজারের নির্দিষ্ট অনুমতি আছে কিনা
+function hasPerm(key){
+  if(!currentUser) return false;
+  if(currentUser.role === 'admin') return true;          // অ্যাডমিন = সর্বময় ক্ষমতা
+  if(currentUser.role === 'manager'){
+    if(!currentUser.permissions) return false;
+    return currentUser.permissions[key] === true;
+  }
+  return false; // teacher: এই permission গুলো প্রযোজ্য নয়
+}
+
+/* অ্যাকশন গার্ড: অনুমতি না থাকলে টোস্ট দেখিয়ে false ফেরায় (অ্যাডমিন → সবসময় true) */
+function requirePerm(key){
+  if(hasPerm(key)) return true;
+  if(typeof showToast === 'function') showToast('⛔ এই কাজের অনুমতি আপনার নেই','error');
+  return false;
+}
+
+/* লগইনের পর: ম্যানেজারের অনুমতি অনুযায়ী টুল বাটন লুকানো/দেখানো।
+   অ্যাডমিন → সব দৃশ্যমান। শিক্ষক → আগের role-CSS অপরিবর্তিত। */
+function applyPermissionVisibility(){
+  const els = document.querySelectorAll('[data-perm]');
+  const isManager = currentUser && currentUser.role === 'manager';
+  els.forEach(el=>{
+    const need = el.getAttribute('data-perm');
+    if(isManager && !hasPerm(need)) el.classList.add('perm-hidden');
+    else el.classList.remove('perm-hidden');
+  });
+}
+
+/* ---- লগইন: বিশ্বস্ত ডিভাইস যাচাই ---- */
+function isTrustedDevice(role, username){
+  try{
+    ensureAccounts();
+    const did = getDeviceId();
+    return state.accounts.trustedDevices.some(d =>
+      d && d.deviceId === did && d.role === role && String(d.account) === String(username));
+  }catch(e){ return false; }
+}
+
+/* ===========================================================
+   🛡️ ADMIN CONTROL — UI রেন্ডার ও অ্যাকশন
+=========================================================== */
+function renderAdminControl(){
+  if(!currentUser || currentUser.role !== 'admin') return;
+  ensureAccounts();
+  renderACAdmins();
+  renderACManagers();
+  renderACTrusted();
+  // এই ডিভাইসের আইডি দেখাও
+  const idEl = document.getElementById('acThisDeviceId');
+  if(idEl) idEl.textContent = getDeviceId();
+  // বিশ্বস্ত করার জন্য অ্যাকাউন্ট ড্রপডাউন ভরো
+  const sel = document.getElementById('acTrustAccount');
+  if(sel){
+    const opts = [];
+    state.accounts.admins.forEach(x=> opts.push(`<option value="admin::${esc(x.username)}">👑 ${esc(x.name)} (${esc(x.username)})</option>`));
+    state.accounts.managers.forEach(x=> opts.push(`<option value="manager::${esc(x.username)}">🧑‍💼 ${esc(x.name)} (${esc(x.username)})</option>`));
+    (state.teachers||[]).forEach(t=> opts.push(`<option value="teacher::${esc(t.id)}">👩‍🏫 ${esc(t.name)} (শিক্ষক)</option>`));
+    sel.innerHTML = opts.join('');
+  }
+}
+
+function renderACAdmins(){
+  const box = document.getElementById('acAdminList');
+  if(!box) return;
+  const list = state.accounts.admins;
+  if(!list.length){ box.innerHTML = '<div class="ac-empty">কোনো অ্যাডমিন নেই</div>'; return; }
+  box.innerHTML = list.map((x,i)=>`
+    <div class="ac-acct">
+      <div class="ac-acct-head">
+        <div>
+          <div class="ac-acct-name">👑 ${esc(x.name)}</div>
+          <div class="ac-acct-user">@${esc(x.username)}</div>
+        </div>
+        <div class="ac-acct-actions">
+          <button class="ac-btn-edit" onclick="acEditAdmin(${i})">✏️ নাম</button>
+          <button class="ac-btn-pw" onclick="acResetPw('admin',${i})">🔐 পাসওয়ার্ড</button>
+          ${list.length>1 ? `<button class="ac-btn-del" onclick="acDelAccount('admin',${i})">🗑️ মুছুন</button>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderACManagers(){
+  const box = document.getElementById('acManagerList');
+  if(!box) return;
+  const list = state.accounts.managers;
+  if(!list.length){ box.innerHTML = '<div class="ac-empty">কোনো ম্যানেজার নেই — নিচ থেকে যোগ করুন</div>'; return; }
+  box.innerHTML = list.map((x,i)=>{
+    const perms = _permsNormalize(x.permissions);
+    const grid = PERM_DEFS.map(p=>`
+      <label class="ac-perm-item" title="${esc(p.desc)}">
+        <input type="checkbox" ${perms[p.key]?'checked':''} onchange="acTogglePerm(${i},'${p.key}',this.checked)">
+        <span>${esc(p.label)}<br><span style="font-weight:500;color:var(--text-3);font-size:11px">${esc(p.desc)}</span></span>
+      </label>`).join('');
+    const onCnt = PERM_KEYS.filter(k=>perms[k]).length;
+    return `
+    <div class="ac-acct">
+      <div class="ac-acct-head">
+        <div>
+          <div class="ac-acct-name">🧑‍💼 ${esc(x.name)} <span class="ac-pill manager">${toBnNum(onCnt)}/${toBnNum(PERM_KEYS.length)} ক্ষমতা</span></div>
+          <div class="ac-acct-user">@${esc(x.username)}</div>
+        </div>
+        <div class="ac-acct-actions">
+          <button class="ac-btn-edit" onclick="acEditManager(${i})">✏️ নাম</button>
+          <button class="ac-btn-pw" onclick="acResetPw('manager',${i})">🔐 পাসওয়ার্ড</button>
+          <button class="ac-btn-del" onclick="acDelAccount('manager',${i})">🗑️ মুছুন</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">
+        <button class="tool-btn" style="font-size:11.5px;padding:5px 9px" onclick="acSetAllPerms(${i},true)">✅ সব দাও</button>
+        <button class="tool-btn" style="font-size:11.5px;padding:5px 9px" onclick="acSetAllPerms(${i},false)">⛔ সব বন্ধ</button>
+      </div>
+      <div class="ac-perm-grid">${grid}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderACTrusted(){
+  const box = document.getElementById('acTrustedList');
+  if(!box) return;
+  const list = state.accounts.trustedDevices;
+  if(!list.length){ box.innerHTML = '<div class="ac-empty">কোনো বিশ্বস্ত ডিভাইস নেই</div>'; return; }
+  const thisDev = getDeviceId();
+  box.innerHTML = list.map((d,i)=>{
+    let who = d.account;
+    if(d.role === 'admin'){ const m=state.accounts.admins.find(x=>x.username===d.account); who = m? m.name+' (অ্যাডমিন)' : d.account+' (অ্যাডমিন)'; }
+    else if(d.role === 'manager'){ const m=state.accounts.managers.find(x=>x.username===d.account); who = m? m.name+' (ম্যানেজার)' : d.account+' (ম্যানেজার)'; }
+    else if(d.role === 'teacher'){ const t=(state.teachers||[]).find(x=>x.id===d.account); who = t? t.name+' (শিক্ষক)' : 'শিক্ষক'; }
+    const isThis = d.deviceId === thisDev;
+    return `
+    <div class="ac-acct">
+      <div class="ac-acct-head">
+        <div>
+          <div class="ac-acct-name">📱 ${esc(who)} ${isThis?'<span class="ac-pill device">এই ডিভাইস</span>':''}</div>
+          <div class="ac-acct-user">${esc(d.deviceId)}</div>
+        </div>
+        <div class="ac-acct-actions">
+          <button class="ac-btn-del" onclick="acRemoveTrusted(${i})">🗑️ সরান</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _acGuard(){
+  if(!currentUser || currentUser.role !== 'admin'){
+    showToast('⛔ শুধুমাত্র অ্যাডমিন এই কাজ করতে পারবেন','error');
+    return false;
+  }
+  return true;
+}
+function _acPersist(actionMsg){
+  ensureAccounts();
+  saveState();                 // localStorage + Firebase সিঙ্ক
+  if(actionMsg) audit('অ্যাডমিন কন্ট্রোল', actionMsg);
+  renderAdminControl();
+}
+
+function acAddAdmin(){
+  if(!_acGuard()) return;
+  const name = (document.getElementById('acNewAdminName').value||'').trim();
+  const user = (document.getElementById('acNewAdminUser').value||'').trim();
+  const pass = (document.getElementById('acNewAdminPass').value||'').trim();
+  if(!name || !user || !pass){ showToast('নাম, ইউজারনেম ও পাসওয়ার্ড দিন','warning'); return; }
+  if(pass.length < 4){ showToast('পাসওয়ার্ড কমপক্ষে ৪ অক্ষর','warning'); return; }
+  if(!/^[A-Za-z0-9_.-]+$/.test(user)){ showToast('ইউজারনেম ইংরেজি অক্ষর/সংখ্যা হতে হবে','warning'); return; }
+  ensureAccounts();
+  const taken = state.accounts.admins.some(x=>x.username===user) || state.accounts.managers.some(x=>x.username===user);
+  if(taken){ showToast('এই ইউজারনেম আগেই আছে','error'); return; }
+  state.accounts.admins.push({username:user, name, password:pass});
+  document.getElementById('acNewAdminName').value='';
+  document.getElementById('acNewAdminUser').value='';
+  document.getElementById('acNewAdminPass').value='';
+  _acPersist('নতুন অ্যাডমিন: '+name+' (@'+user+')');
+  showToast('✅ অ্যাডমিন যোগ হয়েছে','success');
+}
+
+function acAddManager(){
+  if(!_acGuard()) return;
+  const name = (document.getElementById('acNewMgrName').value||'').trim();
+  const user = (document.getElementById('acNewMgrUser').value||'').trim();
+  const pass = (document.getElementById('acNewMgrPass').value||'').trim();
+  if(!name || !user || !pass){ showToast('নাম, ইউজারনেম ও পাসওয়ার্ড দিন','warning'); return; }
+  if(pass.length < 4){ showToast('পাসওয়ার্ড কমপক্ষে ৪ অক্ষর','warning'); return; }
+  if(!/^[A-Za-z0-9_.-]+$/.test(user)){ showToast('ইউজারনেম ইংরেজি অক্ষর/সংখ্যা হতে হবে','warning'); return; }
+  ensureAccounts();
+  const taken = state.accounts.admins.some(x=>x.username===user) || state.accounts.managers.some(x=>x.username===user);
+  if(taken){ showToast('এই ইউজারনেম আগেই আছে','error'); return; }
+  // ডিফল্ট: মৌলিক এডিট অনুমতি (অ্যাডমিন পরে বাড়াতে/কমাতে পারবেন)
+  const def = _permsNormalize({editRoutine:true, manageTeachers:true, approveLeave:true, dashboard:true, auditLog:true});
+  state.accounts.managers.push({username:user, name, password:pass, permissions:def});
+  document.getElementById('acNewMgrName').value='';
+  document.getElementById('acNewMgrUser').value='';
+  document.getElementById('acNewMgrPass').value='';
+  _acPersist('নতুন ম্যানেজার: '+name+' (@'+user+')');
+  showToast('✅ ম্যানেজার যোগ হয়েছে — এখন অনুমতি ঠিক করুন','success');
+}
+
+function acEditAdmin(i){
+  if(!_acGuard()) return;
+  ensureAccounts();
+  const x = state.accounts.admins[i]; if(!x) return;
+  const nn = prompt('নতুন নাম:', x.name);
+  if(nn == null) return;
+  const v = nn.trim(); if(!v){ showToast('নাম খালি রাখা যাবে না','warning'); return; }
+  x.name = v;
+  _acPersist('অ্যাডমিনের নাম পরিবর্তন: '+v);
+  showToast('✅ সংরক্ষিত','success');
+  if(currentUser && currentUser.role==='admin' && currentUser.username===x.username){
+    currentUser.name = v; document.getElementById('userChipName').textContent = v;
+  }
+}
+
+function acEditManager(i){
+  if(!_acGuard()) return;
+  ensureAccounts();
+  const x = state.accounts.managers[i]; if(!x) return;
+  const nn = prompt('নতুন নাম:', x.name);
+  if(nn == null) return;
+  const v = nn.trim(); if(!v){ showToast('নাম খালি রাখা যাবে না','warning'); return; }
+  x.name = v;
+  _acPersist('ম্যানেজারের নাম পরিবর্তন: '+v);
+  showToast('✅ সংরক্ষিত','success');
+}
+
+function acResetPw(kind, i){
+  if(!_acGuard()) return;
+  ensureAccounts();
+  const arr = kind==='admin' ? state.accounts.admins : state.accounts.managers;
+  const x = arr[i]; if(!x) return;
+  const np = prompt('"'+x.name+'" এর নতুন পাসওয়ার্ড (কমপক্ষে ৪ অক্ষর):', '');
+  if(np == null) return;
+  const v = np.trim();
+  if(v.length < 4){ showToast('পাসওয়ার্ড কমপক্ষে ৪ অক্ষর','warning'); return; }
+  x.password = v;
+  _acPersist((kind==='admin'?'অ্যাডমিন':'ম্যানেজার')+' পাসওয়ার্ড পরিবর্তন: '+x.name);
+  showToast('✅ পাসওয়ার্ড পরিবর্তিত হয়েছে','success');
+}
+
+function acDelAccount(kind, i){
+  if(!_acGuard()) return;
+  ensureAccounts();
+  const arr = kind==='admin' ? state.accounts.admins : state.accounts.managers;
+  const x = arr[i]; if(!x) return;
+  if(kind==='admin' && state.accounts.admins.length <= 1){
+    showToast('অন্তত একজন অ্যাডমিন থাকতে হবে','error'); return;
+  }
+  if(kind==='admin' && currentUser && currentUser.username === x.username){
+    showToast('নিজের অ্যাডমিন অ্যাকাউন্ট মুছতে পারবেন না','error'); return;
+  }
+  if(!confirm('"'+x.name+'" (@'+x.username+') মুছে ফেলবেন? এটি ফেরানো যাবে না।')) return;
+  arr.splice(i,1);
+  // ঐ অ্যাকাউন্টের বিশ্বস্ত ডিভাইসগুলোও সরাও
+  state.accounts.trustedDevices = state.accounts.trustedDevices.filter(d=> !(d.role===kind && String(d.account)===String(x.username)));
+  _acPersist((kind==='admin'?'অ্যাডমিন':'ম্যানেজার')+' মুছে ফেলা হয়েছে: '+x.name);
+  showToast('🗑️ মুছে ফেলা হয়েছে','info');
+}
+
+function acTogglePerm(i, key, val){
+  if(!_acGuard()) return;
+  ensureAccounts();
+  const x = state.accounts.managers[i]; if(!x) return;
+  x.permissions = _permsNormalize(x.permissions);
+  x.permissions[key] = !!val;
+  saveState();
+  audit('ম্যানেজার অনুমতি', x.name+' — '+key+' = '+(val?'চালু':'বন্ধ'));
+  renderACManagers();
+  // লগইন করা ম্যানেজার যদি এটাই হয়, তখনই UI আপডেট হবে (সাধারণত অ্যাডমিন এডিট করে)
+  if(currentUser && currentUser.role==='manager' && currentUser.username===x.username){
+    currentUser.permissions = Object.assign({}, x.permissions);
+    applyPermissionVisibility();
+  }
+}
+
+function acSetAllPerms(i, val){
+  if(!_acGuard()) return;
+  ensureAccounts();
+  const x = state.accounts.managers[i]; if(!x) return;
+  x.permissions = {}; PERM_KEYS.forEach(k=> x.permissions[k] = !!val);
+  saveState();
+  audit('ম্যানেজার অনুমতি', x.name+' — সব '+(val?'চালু':'বন্ধ'));
+  renderACManagers();
+  if(currentUser && currentUser.role==='manager' && currentUser.username===x.username){
+    currentUser.permissions = Object.assign({}, x.permissions);
+    applyPermissionVisibility();
+  }
+}
+
+function acTrustThisDevice(){
+  if(!_acGuard()) return;
+  ensureAccounts();
+  const sel = document.getElementById('acTrustAccount');
+  if(!sel || !sel.value){ showToast('একটি অ্যাকাউন্ট নির্বাচন করুন','warning'); return; }
+  const [role, account] = sel.value.split('::');
+  const did = getDeviceId();
+  const exists = state.accounts.trustedDevices.some(d=> d.deviceId===did && d.role===role && String(d.account)===String(account));
+  if(exists){ showToast('এই ডিভাইস ইতিমধ্যে বিশ্বস্ত','info'); return; }
+  state.accounts.trustedDevices.push({deviceId:did, role, account, at:new Date().toISOString()});
+  _acPersist('বিশ্বস্ত ডিভাইস যোগ ('+role+': '+account+')');
+  showToast('📱 এই ডিভাইস এখন পাসওয়ার্ড ছাড়াই প্রবেশ করতে পারবে','success');
+}
+
+function acRemoveTrusted(i){
+  if(!_acGuard()) return;
+  ensureAccounts();
+  const d = state.accounts.trustedDevices[i]; if(!d) return;
+  if(!confirm('এই বিশ্বস্ত ডিভাইস সরিয়ে ফেলবেন? এরপর ঐ ডিভাইসে পাসওয়ার্ড লাগবে।')) return;
+  state.accounts.trustedDevices.splice(i,1);
+  _acPersist('বিশ্বস্ত ডিভাইস সরানো হয়েছে');
+  showToast('🗑️ সরানো হয়েছে','info');
+}
+
 // পাসওয়ার্ড পরিবর্তন — বর্তমানে লগইন করা ইউজারের (admin / manager / teacher) নিজের পাসওয়ার্ড পরিবর্তন করে
 function changePassword(){
   if(!currentUser){
@@ -4909,16 +5419,22 @@ function changePassword(){
   // বর্তমান ইউজার অনুযায়ী টার্গেট নির্ধারণ
   let getCurrentPw, applyNewPw, label;
   if(currentUser.role === 'admin' || currentUser.role === 'manager'){
-    const key = currentUser.username || currentUser.role;
-    if(!USERS[key]){ showToast('অজানা অ্যাকাউন্ট','error'); return; }
-    label = USERS[key].name;
-    getCurrentPw = () => String(USERS[key].password);
+    ensureAccounts();
+    const arr = currentUser.role === 'admin' ? state.accounts.admins : state.accounts.managers;
+    const acct = arr.find(a => a.username === (currentUser.username || currentUser.role));
+    if(!acct){ showToast('অজানা অ্যাকাউন্ট','error'); return; }
+    label = acct.name;
+    getCurrentPw = () => String(acct.password);
     applyNewPw = (pw) => {
-      USERS[key].password = pw;
-      let stored = {};
-      try{ stored = JSON.parse(localStorage.getItem('routinePasswords')||'{}'); }catch(e){ stored = {}; }
-      stored[key] = pw;
-      try{ localStorage.setItem('routinePasswords', JSON.stringify(stored)); }catch(e){}
+      acct.password = pw;
+      saveState();   // state.accounts → localStorage (+ Firebase) এ সিঙ্ক হয়
+      // ব্যাকওয়ার্ড-কম্প্যাট: পুরোনো USERS/localStorage ও আপডেট রাখি
+      try{
+        if(typeof USERS !== 'undefined' && USERS[acct.username]) USERS[acct.username].password = pw;
+        let st = JSON.parse(localStorage.getItem('routinePasswords')||'{}');
+        st[acct.username] = pw;
+        localStorage.setItem('routinePasswords', JSON.stringify(st));
+      }catch(e){}
     };
   } else if(currentUser.role === 'teacher'){
     const t = state.teachers.find(x => x.id === currentUser.teacherId);
@@ -5123,23 +5639,38 @@ function doLogin(){
   errEl.classList.remove('show');
 
   if(role === 'admin' || role === 'manager'){
+    ensureAccounts();
     const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPass').value;
-    if(!USERS[u] || USERS[u].password !== p || USERS[u].role !== role){
+    const arr = role === 'admin' ? state.accounts.admins : state.accounts.managers;
+    const acct = arr.find(a => a.username === u);
+    if(!acct){
       errEl.textContent = '❌ ভুল ব্যবহারকারী নাম বা পাসওয়ার্ড';
       errEl.classList.add('show');
       return;
     }
-    currentUser = {name:USERS[u].name, role, username:u};
+    // বিশ্বস্ত ডিভাইস হলে পাসওয়ার্ড ছাড়াই প্রবেশ
+    const trusted = isTrustedDevice(role, u);
+    if(!trusted && String(acct.password) !== p){
+      errEl.textContent = '❌ ভুল ব্যবহারকারী নাম বা পাসওয়ার্ড';
+      errEl.classList.add('show');
+      return;
+    }
+    currentUser = {
+      name: acct.name,
+      role,
+      username: u,
+      permissions: role === 'admin' ? _permsAllTrue() : _permsNormalize(acct.permissions)
+    };
   } else if(role === 'teacher'){
     const tid = document.getElementById('loginTeacher').value;
     if(!tid){errEl.textContent='শিক্ষক নির্বাচন করুন';errEl.classList.add('show');return}
     const t = state.teachers.find(x=>x.id===tid);
     if(!t){errEl.textContent='শিক্ষক পাওয়া যায়নি';errEl.classList.add('show');return}
-    // শিক্ষক লগইন পাসওয়ার্ড যাচাই — পাসওয়ার্ড ছাড়া লগইন হবে না
+    // শিক্ষক লগইন পাসওয়ার্ড যাচাই — বিশ্বস্ত ডিভাইস হলে পাসওয়ার্ড ছাড়াই
     const p = document.getElementById('loginPass').value;
     const expectedPw = (t.password != null && t.password !== '') ? String(t.password) : '1234';
-    if(p !== expectedPw){
+    if(!isTrustedDevice('teacher', tid) && p !== expectedPw){
       errEl.textContent = '❌ ভুল পাসওয়ার্ড';
       errEl.classList.add('show');
       return;
@@ -5192,6 +5723,9 @@ function applyRolePermissions(){
   isReadOnly = (role === 'teacher');
   document.body.setAttribute('data-readonly', isReadOnly);
   document.body.setAttribute('data-role', role);
+
+  // ম্যানেজারের জন্য অনুমতি অনুযায়ী টুল লুকাও/দেখাও (অ্যাডমিন → সব দৃশ্যমান)
+  try{ applyPermissionVisibility(); }catch(e){}
 }
 
 function canEdit(){ return !!currentUser && currentUser.role !== 'teacher'; }
@@ -5301,6 +5835,8 @@ function ensureStateIntegrity(){
   if(!state.aiSettings || typeof state.aiSettings !== 'object'){
     state.aiSettings = {geminiKey:'', lastGenerated:null};
   }
+  // 🛡️ Admin Control অ্যাকাউন্ট — Firebase ফাঁকা/পুরোনো ডেটা পাঠালেও কখনো হারাবে না
+  try{ ensureAccounts(); }catch(e){ console.warn('ensureAccounts (integrity) failed:', e); }
 }
 
 /* updateAILinks — পুরোনো বিল্ডে এই function call করা হয়, কিন্তু
@@ -5919,6 +6455,7 @@ function repairCorruptedData(){
 }
 
 function showRepairDialog(){
+  if(!requirePerm('dataReset')) return;
   const issues = repairCorruptedData();
   if(!issues.length){
     showToast('✅ কোনো data সমস্যা পাওয়া যায়নি!','success');
@@ -6372,6 +6909,7 @@ function updateCornerLabel(which, text){
    TEACHER OPERATIONS
 =========================================================== */
 function addTeacher(){
+  if(!requirePerm('manageTeachers')) return;
   try {
     console.log("🔵 addTeacher called");
     
@@ -7080,6 +7618,7 @@ function startDashTimer(){
 let schedStructure = []; // working structure: [{type:'slot'|'break', mins:50}]
 
 function openScheduleGen(){
+  if(!requirePerm('scheduleGen')) return;
   if(!state.schedulePresets) state.schedulePresets = [];
   loadStructureFromCurrent();
   renderPresets();
@@ -7451,6 +7990,7 @@ let aiLastResult = null;
 
 function openAIGenerator(){
   if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!requirePerm('aiRoutine')) return;
   // Req #3: Init provider dropdown — use saved provider, fall back to gemini
   if(!state.aiSettings) state.aiSettings = {};
   const provider = state.aiSettings.provider || 'gemini';
@@ -8125,11 +8665,21 @@ function switchSetTab(tab){
     b.removeAttribute('data-active');
     b.classList.remove('primary');
   });
-  const idMap = {display:'stTabDisplay', size:'stTabSize', color:'stTabColor', text:'stTabText', feature:'stTabFeature', ai:'stTabAI', save:'stTabSave', danger:'stTabDanger'};
+  const idMap = {display:'stTabDisplay', size:'stTabSize', color:'stTabColor', text:'stTabText', feature:'stTabFeature', ai:'stTabAI', save:'stTabSave', danger:'stTabDanger', admin:'stTabAdmin'};
   const btn = document.getElementById(idMap[tab]);
   if(btn){btn.setAttribute('data-active','true');btn.classList.add('primary')}
   // 🎛️ আকার ট্যাব খুললে মাস্টার স্লাইডারগুলো বর্তমান মান দিয়ে আপডেট করো
   if(tab === 'size'){ try{ syncMasterSizeSliders(); }catch(_){} }
+  // 🛡️ অ্যাডমিন কন্ট্রোল ট্যাব খুললে প্যানেল রেন্ডার করো (শুধু অ্যাডমিন)
+  if(tab === 'admin'){
+    if(currentUser && currentUser.role === 'admin'){
+      try{ renderAdminControl(); }catch(e){ console.warn('renderAdminControl failed:', e); }
+    } else {
+      // অ্যাডমিন ছাড়া কেউ এই ট্যাব খুললে নিরাপদে অন্যান্য ট্যাবে ফেরত
+      switchSetTab('danger');
+      return;
+    }
+  }
   // পাসওয়ার্ড পরিবর্তন সেকশন — যেকোনো লগইন করা ইউজার (admin/manager/teacher) নিজের পাসওয়ার্ড পরিবর্তন করতে পারে
   const pwSec = document.getElementById('setPasswordSection');
   if(pwSec){
@@ -8170,6 +8720,7 @@ function removeOption(i){
 
 function saveOptions(){
   if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!requirePerm('manageOptions')) return;
   snapshot();
   ['class','subject','section'].forEach(tab=>{
     // gather inputs from current rendered state
@@ -8194,6 +8745,7 @@ function saveOptions(){
    IMPORT / EXPORT
 =========================================================== */
 function exportJSON(){
+  if(!requirePerm('importExport')) return;
   const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -8206,6 +8758,7 @@ function exportJSON(){
 }
 
 function exportCSV(){
+  if(!requirePerm('importExport')) return;
   const cols = state.columns;
   let csv = 'SL,নাম,পদবী,বিষয়,';
   csv += cols.map(c=>`"${c.label.replace(/"/g,'""')}"`).join(',') + '\n';
@@ -8243,6 +8796,7 @@ function exportCSV(){
 
 function handleImport(e){
   if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!requirePerm('importExport')) return;
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
@@ -8645,6 +9199,7 @@ function saveSettings(){
 }
 
 function resetSettings(){
+  if(!requirePerm('dataReset')) return;
   if(!confirm('সব সেটিংস রিসেট করবেন? (ডেটা ও API key থাকবে)')) return;
   // Preserve API keys
   const keepKeys = {
@@ -8831,6 +9386,7 @@ function applyColorTheme(theme){
 }
 
 function resetData(){
+  if(!requirePerm('dataReset')) return;
   if(!confirm('⚠️ সব ডেটা মুছে ফেলবেন? এটি অপরিবর্তনীয়!\n\nএটি ক্লাউড (Firebase) এবং সব ডিভাইস থেকেও মুছে যাবে।')) return;
   if(!confirm('সত্যিই নিশ্চিত? শেষ সুযোগ!')) return;
 
@@ -8853,6 +9409,7 @@ function resetData(){
 
 function saveBranding(){
   if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!requirePerm('branding')) return;
   snapshot();
   state.branding.schoolName = document.getElementById('bSchool').value.trim();
   state.branding.systemName = document.getElementById('bSystem').value.trim();
