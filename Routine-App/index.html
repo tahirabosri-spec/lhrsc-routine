@@ -918,9 +918,13 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   box-shadow:0 2px 8px rgba(15,118,110,.3);
   transform:scale(1.1);
 }
-/* Locked teacher row — entire row gets visual lock indicator */
-.routine-table tr[data-tid] td.is-locked,
-.routine-table tr[draggable="false"] td{
+/* Locked teacher row — শুধুমাত্র সত্যিকারের লক করা সেলে (.is-locked)
+   হালকা অ্যাম্বার ইন্ডিকেটর। col-sl ও col-name বাদ — ওদের নিজস্ব
+   locked স্টাইল আছে (নিচে আলাদা রুলে)। ⚠️ আগের
+   `tr[draggable="false"] td` সিলেক্টরটি সরানো হলো: শিক্ষক রোলে বা
+   রুটিন-লকে সব রো draggable="false" হয়ে যেত, ফলে নাম কলামের গাঢ়
+   সবুজ ব্যাকগ্রাউন্ড সাদা হয়ে গিয়ে সাদা নাম-টেক্সট অদৃশ্য হতো। */
+.routine-table tr[data-tid] td.is-locked:not(.col-sl):not(.col-name){
   background:linear-gradient(135deg, var(--surface) 60%, #fef3c7 100%) !important;
   position:relative;
 }
@@ -2612,6 +2616,11 @@ body[data-role="manager"] .teacher-only{display:none !important}
 .req-card .rc-status.approved{background:var(--success-soft);color:var(--success)}
 .req-card .rc-status.rejected{background:var(--danger-soft);color:var(--danger)}
 .req-card .rc-actions{display:flex;gap:8px;margin-top:4px}
+.req-card .rc-no-perm{
+  margin-top:6px;padding:7px 10px;border-radius:8px;
+  background:var(--danger-soft);color:var(--danger);
+  font-size:11.5px;font-weight:700;line-height:1.5;
+}
 .req-card .rc-btn{
   flex:1;padding:8px 10px;border-radius:8px;border:none;cursor:pointer;
   font-family:var(--font-bn);font-weight:800;font-size:13px;
@@ -2682,7 +2691,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <label>ভূমিকা নির্বাচন করুন</label>
       <select id="loginRole">
         <option value="admin">অ্যাডমিন (সম্পূর্ণ নিয়ন্ত্রণ)</option>
-        <option value="manager">ম্যানেজার (এডিট অ্যাক্সেস)</option>
+        <option value="manager" selected>ম্যানেজার (এডিট অ্যাক্সেস)</option>
         <option value="teacher">শিক্ষক (নিজস্ব রো)</option>
       </select>
     </div>
@@ -2751,6 +2760,10 @@ body[data-role="manager"] .teacher-only{display:none !important}
     <button class="tool-btn leave-btn" id="leaveListBtn" onclick="openLeaveListModal()" title="ছুটিতে থাকা শিক্ষকদের তালিকা">
       <span class="icon">🌙</span> <span class="lbl">ছুটি</span>
       <span class="leave-count-badge" id="leaveCountBadge" style="display:none">0</span>
+    </button>
+    <!-- 🔊 Voice Announce — এখনই বর্তমান পিরিয়ড ঘোষণা করো (অ্যাডমিন+ম্যানেজার) -->
+    <button class="tool-btn admin-mgr-only" id="voiceAnnounceBtn" onclick="announceNow()" title="এখনই বর্তমান পিরিয়ড ও ছুটির শিক্ষক ঘোষণা করুন">
+      <span class="icon">🔊</span> <span class="lbl">এখনই ঘোষণা</span>
     </button>
     <!-- 📊 Live Dashboard — Admin/Manager only -->
     <button class="tool-btn admin-mgr-only" data-perm="dashboard" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
@@ -3150,6 +3163,30 @@ body[data-role="manager"] .teacher-only{display:none !important}
         </div>
 
         <div class="divider"></div>
+        <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা</h3>
+        <div style="font-size:11.5px;color:var(--text-2);background:var(--surface-2);padding:9px 11px;border-radius:8px;line-height:1.65;margin-bottom:10px">
+          প্রতি পিরিয়ড শুরু হলে অ্যাপ নিজে থেকেই বাংলায় বলবে — যেমন <strong>“তৃতীয় পিরিয়ড শুরু হয়েছে”</strong>, এবং কোনো শিক্ষক ছুটিতে থাকলে <strong>“মোঃ করিম স্যার আজ ছুটিতে আছেন”</strong>। ইন্টারনেট ছাড়াই কাজ করে (ডিভাইসের নিজস্ব ভয়েস)।
+        </div>
+        <div class="toggle-row">
+          <div class="info"><div class="lbl">📢 অটো পিরিয়ড ঘোষণা</div><div class="desc">প্রতি পিরিয়ড শুরুর সময় স্বয়ংক্রিয়ভাবে বলবে</div></div>
+          <label class="switch"><input type="checkbox" id="setVoiceAnnounce"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="info"><div class="lbl">🌙 ছুটির শিক্ষকের নাম বলবে</div><div class="desc">ঘোষণার সাথে আজ ছুটিতে থাকা শিক্ষকদের নামও বলবে</div></div>
+          <label class="switch"><input type="checkbox" id="setVoiceAnnounceLeave"><span class="slider"></span></label>
+        </div>
+        <div class="field"><label>🎙️ ভয়েস নির্বাচন (বাংলা থাকলে স্বয়ংক্রিয়)</label>
+          <select id="setVoiceURI"><option value="">স্বয়ংক্রিয় (সেরা বাংলা ভয়েস)</option></select>
+        </div>
+        <div class="field"><label>কথার গতি (0.5 = ধীর, 1.5 = দ্রুত)</label>
+          <input id="setVoiceRate" type="number" min="0.5" max="1.5" step="0.05" placeholder="0.92">
+        </div>
+        <div class="field"><label>স্বরের পিচ (0.5–2.0)</label>
+          <input id="setVoicePitch" type="number" min="0.5" max="2" step="0.1" placeholder="1.0">
+        </div>
+        <button class="tool-btn" style="width:100%;margin-top:4px" type="button" onclick="testVoiceAnnounce()">🔊 ভয়েস ঘোষণা পরীক্ষা করুন</button>
+
+        <div class="divider"></div>
         <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">ড্যাশবোর্ড</h3>
         <div class="field"><label>রিফ্রেশ ইন্টারভাল</label>
           <select id="setDashRefresh"><option value="30">৩০ সেকেন্ড</option><option value="60">১ মিনিট</option><option value="300">৫ মিনিট</option><option value="0">ম্যানুয়াল</option></select>
@@ -3356,6 +3393,15 @@ body[data-role="manager"] .teacher-only{display:none !important}
               </div>
             </div>
             <div style="font-size:11px;color:var(--text-3);margin:-4px 0 8px;line-height:1.6">উদাহরণ: বাংলাদেশের ০১৭১২৩৪৫৬৭৮ নম্বরের জন্য লিখুন <strong>8801712345678</strong> (শুরুর ০ বাদ, আগে 880)।</div>
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px">
+              <label style="font-weight:800;font-size:12.5px;color:var(--text);display:block;margin-bottom:5px">🔔 আবেদন এলে অ্যালার্ম কতবার বাজবে</label>
+              <select id="setLeaveAlarmCount" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-weight:700;font-size:13px;box-sizing:border-box">
+                <option value="1">১ বার</option>
+                <option value="2">২ বার</option>
+                <option value="3">৩ বার</option>
+              </select>
+              <div style="font-size:11px;color:var(--text-3);margin-top:5px;line-height:1.6">নতুন ছুটির আবেদন এলে অ্যালার্ম টোনটি পরপর কতবার বাজবে তা অ্যাডমিন এখান থেকে ঠিক করতে পারবেন।</div>
+            </div>
             <div class="toggle-row" style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px">
               <div class="info"><div class="lbl">🔁 বারবার অ্যালার্ম</div><div class="desc">পেন্ডিং আবেদন থাকা পর্যন্ত প্রতিবার লগইনে ও থেমে থেমে অ্যালার্ম বাজবে</div></div>
               <label class="switch"><input type="checkbox" id="setLeaveAlarmRepeat"><span class="slider"></span></label>
@@ -4247,7 +4293,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
     </div>
     <div class="modal-body">
       <div class="info-banner" style="font-weight:700">
-        আপনার আবেদন প্রিন্সিপাল/ম্যানেজারের কাছে পাঠানো হবে। অনুমোদন বা বাতিল হলে আপনি এই অ্যাপেই জানতে পারবেন।
+        📨 আপনার আবেদন <strong>বরাবর পরিচালক/অধ্যক্ষ</strong> মহোদয়ের কাছে পাঠানো হবে। অনুমোদন বা বাতিল হলে আপনি এই অ্যাপেই জানতে পারবেন।
       </div>
       <div class="field">
         <label style="font-weight:700">ছুটির ধরন</label>
@@ -4469,6 +4515,7 @@ let state = {
     /* 🔔 ছুটির আবেদন নোটিফিকেশন */
     adminWhatsapp: '',          // অ্যাডমিনের হোয়াটসঅ্যাপ নম্বর (দেশের কোডসহ, শুধু সংখ্যা)
     leaveAlarmRepeat: true,     // পেন্ডিং আবেদন থাকলে বারবার অ্যালার্ম বাজবে
+    leaveAlarmCount: 3,         // আবেদন এলে অ্যালার্ম কতবার বাজবে (১/২/৩)
     leaveSendWhatsapp: true,    // আবেদন জমা দিলে হোয়াটসঅ্যাপে পাঠানোর সুযোগ
     /* Feature toggles */
     showRowLabels: false,
@@ -4477,6 +4524,12 @@ let state = {
     voiceEnabled: true,
     aiEnabled: true,
     alwaysShowColTools: false,
+    /* 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা (প্রতি পিরিয়ডে) */
+    voiceAnnounce: true,        // পিরিয়ড শুরুর ঘোষণা স্বয়ংক্রিয়ভাবে বলবে
+    voiceAnnounceLeave: true,   // ছুটিতে থাকা শিক্ষকদের নামও বলবে
+    voiceRate: 0.92,            // কথার গতি (0.5–1.5)
+    voicePitch: 1.0,            // স্বরের পিচ
+    voiceURI: '',               // নির্বাচিত ভয়েস (খালি = স্বয়ংক্রিয় বাংলা)
     /* SL & Name column customization */
     slLocked: false,
     nameLocked: false,
@@ -4621,6 +4674,16 @@ function loadState(){
       if(ss.adminWhatsapp === undefined) ss.adminWhatsapp = '';
       if(ss.leaveAlarmRepeat === undefined) ss.leaveAlarmRepeat = true;
       if(ss.leaveSendWhatsapp === undefined) ss.leaveSendWhatsapp = true;
+      // Migrate v1.5: অ্যালার্ম কতবার বাজবে (১/২/৩) — শুধু 1,2,3 গ্রহণযোগ্য
+      if(![1,2,3].includes(ss.leaveAlarmCount)){
+        ss.leaveAlarmCount = (ss.leaveAlarmCount === 4) ? 3 : 3;
+      }
+      // Migrate v1.4: স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা
+      if(ss.voiceAnnounce === undefined) ss.voiceAnnounce = true;
+      if(ss.voiceAnnounceLeave === undefined) ss.voiceAnnounceLeave = true;
+      if(ss.voiceRate === undefined) ss.voiceRate = 0.92;
+      if(ss.voicePitch === undefined) ss.voicePitch = 1.0;
+      if(ss.voiceURI === undefined) ss.voiceURI = '';
     }
   }catch(e){
     console.warn('Failed to load state:', e);
@@ -5673,6 +5736,8 @@ function doLogin(){
   scheduleHourlyBackup();
   // 🔔 Notification system kick-off
   initNotificationSystem();
+  // 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা চালু
+  startVoiceAnnouncer();
   showToast('✅ স্বাগতম, ' + currentUser.name + '!', 'success');
 }
 
@@ -5682,6 +5747,8 @@ function logout(){
   saveState();
   // 🔔 stop notification polling
   stopNotificationSystem();
+  // 🔊 ভয়েস ঘোষণা বন্ধ
+  stopVoiceAnnouncer();
   currentUser = null;
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('appRoot').style.display = 'none';
@@ -7591,6 +7658,211 @@ function startDashTimer(){
 }
 
 /* ===========================================================
+   🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা (Web Speech API)
+   - প্রতি পিরিয়ড শুরু হলে নিজে থেকে বলে: "তৃতীয় পিরিয়ড শুরু হয়েছে"
+   - ছুটিতে থাকা শিক্ষকদের নামও বলে: "মোঃ করিম স্যার আজ ছুটিতে আছেন"
+   - সম্পূর্ণ অফলাইন — ব্রাউজারের নিজস্ব ভয়েস ব্যবহার করে, কোনো API key লাগে না।
+=========================================================== */
+let _voiceTimer = null;          // প্রতি মিনিটে চেক করার টাইমার
+let _lastAnnouncedSlotId = null; // একই পিরিয়ড দুবার বলা ঠেকাতে
+let _voicesCache = [];
+
+function _ttsSupported(){
+  return ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
+}
+
+function _loadVoices(){
+  if(!_ttsSupported()) return [];
+  try{ _voicesCache = window.speechSynthesis.getVoices() || []; }catch(_){ _voicesCache = []; }
+  return _voicesCache;
+}
+if(_ttsSupported()){
+  _loadVoices();
+  try{ window.speechSynthesis.onvoiceschanged = () => { _loadVoices(); populateVoiceSelect(); }; }catch(_){}
+}
+
+/* সবচেয়ে ভালো বাংলা ভয়েস খুঁজি; না থাকলে যে কোনো প্রাপ্য ভয়েস */
+function _pickVoice(){
+  const list = _voicesCache.length ? _voicesCache : _loadVoices();
+  if(!list || !list.length) return null;
+  const wantURI = (state.settings && state.settings.voiceURI) || '';
+  if(wantURI){
+    const exact = list.find(v => v.voiceURI === wantURI);
+    if(exact) return exact;
+  }
+  // bn, bn-BD, bn-IN — যেকোনো বাংলা ভয়েস
+  const bn = list.find(v => /^bn(-|_|$)/i.test(v.lang || ''));
+  if(bn) return bn;
+  // hi (হিন্দি) বাংলা স্বরবর্ণের কাছাকাছি — fallback হিসেবে গ্রহণযোগ্য
+  const hi = list.find(v => /^hi(-|_|$)/i.test(v.lang || ''));
+  if(hi) return hi;
+  return list[0] || null;
+}
+
+/* সেটিংসের ভয়েস ড্রপডাউন ভরাট করি */
+function populateVoiceSelect(){
+  const sel = document.getElementById('setVoiceURI');
+  if(!sel) return;
+  const list = _voicesCache.length ? _voicesCache : _loadVoices();
+  const cur = (state.settings && state.settings.voiceURI) || '';
+  let html = '<option value="">স্বয়ংক্রিয় (সেরা বাংলা ভয়েস)</option>';
+  // বাংলা ভয়েস আগে দেখাই
+  const bnFirst = list.slice().sort((a,b)=>{
+    const ab = /^bn/i.test(a.lang||'') ? 0 : 1;
+    const bb = /^bn/i.test(b.lang||'') ? 0 : 1;
+    return ab - bb;
+  });
+  bnFirst.forEach(v => {
+    const isBn = /^bn/i.test(v.lang||'');
+    html += `<option value="${esc(v.voiceURI)}">${isBn?'🇧🇩 ':''}${esc(v.name)} (${esc(v.lang||'')})</option>`;
+  });
+  sel.innerHTML = html;
+  sel.value = cur;
+}
+
+/* পিরিয়ড নম্বরকে বাংলা পদবাচক শব্দে রূপান্তর (১ম→প্রথম) */
+const _ORDINAL_BN = ['','প্রথম','দ্বিতীয়','তৃতীয়','চতুর্থ','পঞ্চম','ষষ্ঠ','সপ্তম','অষ্টম','নবম','দশম','একাদশ','দ্বাদশ','ত্রয়োদশ','চতুর্দশ','পঞ্চদশ'];
+function _ordinalBn(n){
+  if(n >= 1 && n < _ORDINAL_BN.length) return _ORDINAL_BN[n];
+  return toBnNum(n) + ' নম্বর';
+}
+
+/* বর্তমান স্লট কোন পিরিয়ড (শুধু slot কলাম গুনে; break বাদ) */
+function _slotPeriodInfo(){
+  const slotCols = state.columns.filter(c => c.type === 'slot');
+  const cur = getCurrentSlot();
+  if(!cur) return null;
+  const idx = slotCols.findIndex(c => c.id === cur.id);
+  return { col: cur, periodNo: idx >= 0 ? idx + 1 : 0 };
+}
+
+/* ঘোষণার বাক্য তৈরি */
+function _buildAnnouncement(opts){
+  opts = opts || {};
+  const parts = [];
+  const info = _slotPeriodInfo();
+  if(info && info.periodNo > 0){
+    parts.push(_ordinalBn(info.periodNo) + ' পিরিয়ড শুরু হয়েছে।');
+  } else if(info && info.col){
+    parts.push('নতুন পিরিয়ড শুরু হয়েছে।');
+  } else if(opts.manual){
+    parts.push('এই মুহূর্তে কোনো পিরিয়ড চলছে না।');
+  }
+  // ছুটির শিক্ষক
+  if(state.settings && state.settings.voiceAnnounceLeave !== false){
+    const leave = getOnLeaveTeachers();
+    if(leave.length){
+      const names = leave.map(t => (t.name || '').trim()).filter(Boolean);
+      if(names.length === 1){
+        parts.push(names[0] + ' আজ ছুটিতে আছেন।');
+      } else if(names.length > 1){
+        parts.push(names.join(', ') + ' — তাঁরা আজ ছুটিতে আছেন।');
+      }
+    }
+  }
+  return parts.join(' ');
+}
+
+/* মূল কথা বলার ফাংশন */
+function speakBangla(text){
+  if(!text) return false;
+  if(!_ttsSupported()){
+    showToast('⚠️ এই ব্রাউজারে ভয়েস সাপোর্ট নেই — তথ্য টেক্সটে দেখানো হলো','warning',3000);
+    return false;
+  }
+  try{
+    window.speechSynthesis.cancel(); // আগের কিছু চললে থামাও
+    const u = new SpeechSynthesisUtterance(text);
+    const v = _pickVoice();
+    if(v){ u.voice = v; u.lang = v.lang || 'bn-BD'; }
+    else { u.lang = 'bn-BD'; }
+    const s = state.settings || {};
+    u.rate = (typeof s.voiceRate === 'number' && s.voiceRate >= 0.5 && s.voiceRate <= 1.5) ? s.voiceRate : 0.92;
+    u.pitch = (typeof s.voicePitch === 'number' && s.voicePitch >= 0.5 && s.voicePitch <= 2) ? s.voicePitch : 1.0;
+    u.volume = 1.0;
+    window.speechSynthesis.speak(u);
+    return true;
+  }catch(e){
+    console.warn('TTS speak failed:', e);
+    return false;
+  }
+}
+
+/* ম্যানুয়াল — টুলবার বাটন থেকে "এখনই ঘোষণা" */
+function announceNow(){
+  // নিয়ন্ত্রণ শুধু অ্যাডমিন/ম্যানেজার
+  if(!_voiceControlAllowed()){
+    showToast('⛔ ভয়েস ঘোষণা শুধু অ্যাডমিন ও ম্যানেজার নিয়ন্ত্রণ করতে পারবেন','warning');
+    return;
+  }
+  const text = _buildAnnouncement({ manual:true });
+  // স্ক্রিনেও দেখাই (ভয়েস না বাজলেও তথ্য মিস হবে না)
+  showNotifToast({ title:'🔊 ঘোষণা', body:text, hint:'' });
+  const ok = speakBangla(text);
+  if(!ok){
+    showToast('🔊 ' + text, 'info', 5000);
+  }
+}
+
+/* সেটিংস → "ভয়েস ঘোষণা পরীক্ষা করুন" */
+function testVoiceAnnounce(){
+  // ইনপুট থেকে সাময়িকভাবে rate/pitch নিয়ে প্রিভিউ
+  const r = parseFloat((document.getElementById('setVoiceRate')||{}).value);
+  const p = parseFloat((document.getElementById('setVoicePitch')||{}).value);
+  if(isFinite(r)) state.settings.voiceRate = Math.min(1.5, Math.max(0.5, r));
+  if(isFinite(p)) state.settings.voicePitch = Math.min(2, Math.max(0.5, p));
+  const vSel = document.getElementById('setVoiceURI');
+  if(vSel) state.settings.voiceURI = vSel.value || '';
+  const sample = 'তৃতীয় পিরিয়ড শুরু হয়েছে। মোঃ করিম স্যার আজ ছুটিতে আছেন।';
+  const ok = speakBangla(sample);
+  showToast(ok ? '🔊 নমুনা ঘোষণা বাজানো হলো' : '⚠️ ভয়েস বাজানো গেল না — ডিভাইসের ভয়েস/সাউন্ড দেখুন', ok?'success':'warning', 3000);
+}
+
+/* প্রতি মিনিটে চেক — নতুন পিরিয়ড শুরু হলে স্বয়ংক্রিয়ভাবে বলো */
+function _voiceTick(){
+  // নিয়ন্ত্রণ শুধু অ্যাডমিন/ম্যানেজার — অন্য রোলে কখনো বাজবে না
+  if(!_voiceControlAllowed()) return;
+  if(!state.settings || state.settings.voiceAnnounce === false) return;
+  const cur = getCurrentSlot();
+  const curId = cur ? cur.id : null;
+  // স্লট বদলেছে (নতুন পিরিয়ড শুরু) — এবং এখন কোনো স্লট চলছে
+  if(curId && curId !== _lastAnnouncedSlotId){
+    _lastAnnouncedSlotId = curId;
+    const text = _buildAnnouncement({ manual:false });
+    if(text){
+      showNotifToast({ title:'🔊 স্বয়ংক্রিয় ঘোষণা', body:text, hint:'' });
+      speakBangla(text);
+    }
+  } else if(!curId){
+    // বিরতি/স্কুল-পরবর্তী — পরের পিরিয়ড আবার ঘোষণার জন্য রিসেট
+    _lastAnnouncedSlotId = null;
+  }
+}
+
+/* 🎛️ ভয়েস ঘোষণার নিয়ন্ত্রণ শুধুমাত্র অ্যাডমিন ও ম্যানেজারের হাতে */
+function _voiceControlAllowed(){
+  return !!(currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager'));
+}
+
+function startVoiceAnnouncer(){
+  if(!_ttsSupported()) return;
+  // শুধুমাত্র অ্যাডমিন/ম্যানেজার লগইন করলে অটো ঘোষণা চালু হবে
+  if(!_voiceControlAllowed()) return;
+  _loadVoices();
+  if(_voiceTimer) clearInterval(_voiceTimer);
+  // লগইনের সময় বর্তমান স্লট "শোনা হয়েছে" ধরে নিই — যাতে ঢোকার সাথে সাথেই
+  // মাঝপথের পিরিয়ড অপ্রত্যাশিতভাবে ঘোষণা না করে; পরের পিরিয়ড থেকে বলবে।
+  const cur = getCurrentSlot();
+  _lastAnnouncedSlotId = cur ? cur.id : null;
+  _voiceTimer = setInterval(_voiceTick, 60000); // প্রতি মিনিটে
+}
+function stopVoiceAnnouncer(){
+  if(_voiceTimer){ clearInterval(_voiceTimer); _voiceTimer = null; }
+  try{ if(_ttsSupported()) window.speechSynthesis.cancel(); }catch(_){}
+  _lastAnnouncedSlotId = null;
+}
+
+/* ===========================================================
    SCHEDULE GENERATOR
    - Auto-generates time labels for slot columns based on
      start time + period duration + break structure.
@@ -8651,6 +8923,8 @@ function switchSetTab(tab){
   if(btn){btn.setAttribute('data-active','true');btn.classList.add('primary')}
   // 🎛️ আকার ট্যাব খুললে মাস্টার স্লাইডারগুলো বর্তমান মান দিয়ে আপডেট করো
   if(tab === 'size'){ try{ syncMasterSizeSliders(); }catch(_){} }
+  // 🔊 ফিচার ট্যাব খুললে ভয়েস ড্রপডাউন ভরাট করো
+  if(tab === 'feature'){ try{ populateVoiceSelect(); }catch(_){} }
   // 🛡️ অ্যাডমিন কন্ট্রোল ট্যাব খুললে প্যানেল রেন্ডার করো (শুধু অ্যাডমিন)
   if(tab === 'admin'){
     if(currentUser && currentUser.role === 'admin'){
@@ -9070,7 +9344,10 @@ function applySettings(){
     setGeminiKey: 'geminiKey', setGeminiModel: 'geminiModel',
     setPerplexityKey: 'perplexityKey', setPerplexityModel: 'perplexityModel',
     setAdminWhatsapp: 'adminWhatsapp', setLeaveAlarmRepeat: 'leaveAlarmRepeat',
-    setLeaveSendWhatsapp: 'leaveSendWhatsapp'
+    setLeaveAlarmCount: 'leaveAlarmCount',
+    setLeaveSendWhatsapp: 'leaveSendWhatsapp',
+    setVoiceAnnounce: 'voiceAnnounce', setVoiceAnnounceLeave: 'voiceAnnounceLeave',
+    setVoiceRate: 'voiceRate', setVoicePitch: 'voicePitch', setVoiceURI: 'voiceURI'
   };
   for(const [id, key] of Object.entries(ids)){
     const el = document.getElementById(id);
@@ -9186,7 +9463,24 @@ function saveSettings(){
   // 🔔 ছুটির আবেদন নোটিফিকেশন সেটিংস
   s.adminWhatsapp = (readSetting('setAdminWhatsapp','str','') || '').replace(/[^0-9]/g,'');
   s.leaveAlarmRepeat = readSetting('setLeaveAlarmRepeat','bool',true);
+  {
+    let _lac = readSetting('setLeaveAlarmCount','int',3);
+    if(![1,2,3].includes(_lac)) _lac = 3;
+    s.leaveAlarmCount = _lac;
+  }
   s.leaveSendWhatsapp = readSetting('setLeaveSendWhatsapp','bool',true);
+  // 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা
+  s.voiceAnnounce = readSetting('setVoiceAnnounce','bool',true);
+  s.voiceAnnounceLeave = readSetting('setVoiceAnnounceLeave','bool',true);
+  {
+    let _vr = parseFloat(readSetting('setVoiceRate','str','0.92'));
+    if(!isFinite(_vr) || _vr < 0.5) _vr = 0.5; if(_vr > 1.5) _vr = 1.5;
+    s.voiceRate = _vr;
+    let _vp = parseFloat(readSetting('setVoicePitch','str','1.0'));
+    if(!isFinite(_vp) || _vp < 0.5) _vp = 0.5; if(_vp > 2) _vp = 2;
+    s.voicePitch = _vp;
+  }
+  s.voiceURI = readSetting('setVoiceURI','str','') || '';
 
   saveState();
   applySettings();
@@ -9224,6 +9518,7 @@ function resetSettings(){
     colorBreakText: '#1e3a8a', colorFreeBg: '#fee2e2', colorFreeText: '#991b1b',
     showRowLabels: false, floatingScrollbar: true, boldImportant: true,
     voiceEnabled: true, aiEnabled: true, alwaysShowColTools: false, aiAutoCopy: true,
+    voiceAnnounce: true, voiceAnnounceLeave: true, voiceRate: 0.92, voicePitch: 1.0, voiceURI: '',
     freeText: 'Free', leaveText: '🌙 ছুটিতে আছি', breakText: 'বিরতি',
     slLocked: false, nameLocked: false,
     slCustomBg: '', slCustomText: '', nameCustomBg: '', nameCustomText: '',
@@ -9232,7 +9527,7 @@ function resetSettings(){
     customBorder: '#d8dee8', customText: '#0f172a', customText2: '#475569',
     customPrimaryHover: '#115e59',
     customHeaderBg: 'linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%)',
-    adminWhatsapp: '', leaveAlarmRepeat: true, leaveSendWhatsapp: true
+    adminWhatsapp: '', leaveAlarmRepeat: true, leaveAlarmCount: 3, leaveSendWhatsapp: true
   };
   state.settings = Object.assign({}, defaults, keepKeys);
   saveState();
@@ -10177,11 +10472,19 @@ function _beepFallback(){
   }catch(_){}
 }
 
+/* অ্যাডমিন-নির্ধারিত অ্যালার্ম সংখ্যা (১/২/৩) — সেটিং থেকে নিরাপদে পড়ি */
+function _leaveAlarmTimes(){
+  const n = state.settings && state.settings.leaveAlarmCount;
+  return [1,2,3].includes(n) ? n : 3;
+}
+
 /* 🚨 শক্তিশালী ছুটি-অ্যালার্ম — টোনটি পরপর কয়েকবার বাজে + ভাইব্রেশন।
-   শব্দ ব্লকড হলে WebAudio ফলব্যাক বিপ বাজে — তাই প্রায় সবসময় শোনা যায়। */
+   শব্দ ব্লকড হলে WebAudio ফলব্যাক বিপ বাজে — তাই প্রায় সবসময় শোনা যায়।
+   times না দিলে অ্যাডমিনের সেটিং (১/২/৩) ব্যবহার হয়। */
 function playLeaveAlarm(times){
   unlockNotifAudio();
-  const total = Math.max(1, times || 3);
+  const want = (typeof times === 'number' && times > 0) ? times : _leaveAlarmTimes();
+  const total = Math.max(1, Math.min(3, want));
   let played = 0;
   let usedFallback = false;
 
@@ -10309,7 +10612,8 @@ function maybeSendLeaveToWhatsapp(req){
   const typeBn = {casual:'নৈমিত্তিক', sick:'অসুস্থতা', emergency:'জরুরি', personal:'ব্যক্তিগত', other:'অন্যান্য'}[req.type] || req.type;
   const dateRange = (req.from === req.to) ? req.from : `${req.from} থেকে ${req.to}`;
   const msg =
-    '🔔 *নতুন ছুটির আবেদন*\n\n' +
+    '🔔 *নতুন ছুটির আবেদন*\n' +
+    'বরাবর: পরিচালক/অধ্যক্ষ মহোদয়\n\n' +
     '👤 শিক্ষক: ' + req.teacherName + '\n' +
     '📋 ধরন: ' + typeBn + '\n' +
     '📅 তারিখ: ' + dateRange + '\n' +
@@ -10406,11 +10710,13 @@ function renderReqCard(r, forAdmin){
   const typeBn = {casual:'নৈমিত্তিক', sick:'অসুস্থতা', emergency:'জরুরি', personal:'ব্যক্তিগত', other:'অন্যান্য'}[r.type] || r.type;
   const statusLbl = {pending:'⏳ পেন্ডিং', approved:'✅ অনুমোদিত', rejected:'❌ বাতিল'}[r.status];
   const dateRange = (r.from === r.to) ? r.from : `${r.from} → ${r.to}`;
-  const actions = forAdmin && r.status === 'pending' ? `
+  const canDecide = (typeof hasPerm === 'function') && hasPerm('approveLeave');
+  const actions = forAdmin && r.status === 'pending' && canDecide ? `
     <div class="rc-actions">
       <button class="rc-btn approve" onclick="decideRequest('${r.id}','approved')">✅ অনুমোদন</button>
       <button class="rc-btn reject" onclick="decideRequest('${r.id}','rejected')">❌ বাতিল</button>
-    </div>` : '';
+    </div>` : (forAdmin && r.status === 'pending' && !canDecide ? `
+    <div class="rc-no-perm">⛔ এই আবেদন গ্রহণ/বাতিলের ক্ষমতা আপনার নেই — পরিচালক/অধ্যক্ষ অনুমোদন দেবেন</div>` : '');
   const decidedBy = r.decidedBy ? `<div class="rc-decided-by">${r.status==='approved'?'অনুমোদন':'বাতিল'} করেছেন: ${esc(r.decidedBy)} — ${fmtTime(r.decidedAt)}</div>` : '';
   return `
     <div class="req-card" data-req-id="${r.id}">
@@ -10429,7 +10735,17 @@ function renderReqCard(r, forAdmin){
 }
 
 function decideRequest(reqId, decision){
-  if(!canFullEdit()) return;
+  // ছুটির আবেদন গ্রহণ/বাতিল — অ্যাডমিন সর্বদা পারবেন।
+  // ম্যানেজার শুধু তখনই পারবেন যদি অ্যাডমিন তাকে "ছুটি অনুমোদন" ক্ষমতা দিয়ে থাকেন।
+  if(!currentUser){ return; }
+  if(currentUser.role === 'teacher'){
+    showToast('⛔ শিক্ষক ছুটির আবেদন গ্রহণ/বাতিল করতে পারবেন না','error');
+    return;
+  }
+  if(!hasPerm('approveLeave')){
+    showToast('⛔ ছুটির আবেদন গ্রহণ/বাতিলের ক্ষমতা আপনার নেই — অ্যাডমিন/পরিচালক এই ক্ষমতা দিতে পারবেন','error',3500);
+    return;
+  }
   ensureRequestsArray();
   const r = state.requests.find(x => x.id === reqId);
   if(!r || r.status !== 'pending') return;
@@ -10506,7 +10822,7 @@ function alertPendingLeaves(count, onLogin){
     hint: 'এখনই দেখতে ক্লিক করুন',
     onClick: () => { openNotifPanel(); }
   });
-  playLeaveAlarm(onLogin ? 4 : 3);
+  playLeaveAlarm();   // অ্যাডমিনের নির্ধারিত সংখ্যা (১/২/৩) ব্যবহার হবে
   try{ if(navigator.vibrate) navigator.vibrate([300,120,300,120,300]); }catch(_){}
   try{
     if('Notification' in window && Notification.permission === 'granted'){
@@ -10614,8 +10930,8 @@ function fireNewRequestAlert(req){
     hint: 'বিস্তারিত দেখতে ক্লিক করুন',
     onClick: () => { openNotifPanel(); }
   });
-  // 2. 🚨 শক্তিশালী অ্যালার্ম — টোনটি পরপর কয়েকবার বাজবে (autoplay-unlocked)
-  playLeaveAlarm(3);
+  // 2. 🚨 শক্তিশালী অ্যালার্ম — অ্যাডমিনের নির্ধারিত সংখ্যা (১/২/৩) বার বাজবে
+  playLeaveAlarm();
   // 3. Vibrate (mobile)
   try{ if(navigator.vibrate) navigator.vibrate([300,120,300,120,300]); }catch(_){}
   // 4. Browser Notification (desktop)
