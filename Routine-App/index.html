@@ -4535,10 +4535,6 @@ function setOrgCode(code){
 function fbDataPath(){
   const code = getOrgCode();
   if(!code) return LEGACY_FB_PATH;
-  // 🔑 LHRSC-এর স্থায়ী কোড — এই কোড দিলে পুরোনো 'routineData' পথ থেকেই
-  // ডেটা পড়বে/লিখবে। ফলে কলেজের স্যাররা যেকোনো ডিভাইসে এই কোড দিয়ে
-  // আসল LHRSC রুটিনসহ ঢুকতে পারবেন; পুরোনো ডিভাইসও অক্ষত থাকবে।
-  if(code.trim().toUpperCase() === 'LHRSC-2005') return LEGACY_FB_PATH;
   // কোড স্যানিটাইজ: Firebase পাথে . # $ [ ] / অনুমোদিত নয়
   const safe = code.replace(/[.#$\[\]\/\s]/g, '_');
   return 'schools/' + safe;
