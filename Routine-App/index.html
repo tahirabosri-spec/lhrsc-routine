@@ -5104,6 +5104,35 @@ function getDeviceId(){
   }catch(e){ return 'dev_unknown'; }
 }
 
+/* ===========================================================
+   👁️ ভিউ-অনলি অ্যাডমিন গার্ড
+   ───────────────────────────────────────────────────────────
+   প্রিন্সিপাল স্যারের মতো অ্যাকাউন্টে viewOnly:true থাকলে তিনি
+   রুটিন স্বাভাবিকভাবে এডিট করতে পারবেন (সংরক্ষিতও হবে), কিন্তু
+   সেটিংস / থিম / অ্যাকাউন্ট / ডিলিট-রিসেট-এর মতো সংবেদনশীল কাজ
+   আটকানো থাকবে। আটকালে ভদ্র বার্তা দেখাবে — সম্মান অক্ষুণ্ণ,
+   কিছুই নষ্ট হবে না। মূল কাঠামোয় কোনো পরিবর্তন নেই।
+=========================================================== */
+let _voGuardNotifiedAt = 0;
+function isViewOnlyAdmin(){
+  return !!(currentUser && currentUser.viewOnly === true);
+}
+/* সংবেদনশীল কাজের শুরুতে ডাকা হয়। আটকালে true ফেরত (caller return করবে)। */
+function blockIfViewOnly(actionLabel){
+  if(!isViewOnlyAdmin()) return false;
+  const now = Date.now();
+  // ৪ সেকেন্ডে একবারের বেশি টোস্ট দেখাবে না (স্প্যাম এড়াতে)
+  if(now - _voGuardNotifiedAt > 4000){
+    _voGuardNotifiedAt = now;
+    try{
+      showToast('📨 ' + (actionLabel ? (actionLabel + ' — ') : '') +
+        'পরিবর্তনটি অনুমোদনের জন্য পাঠানো হলো। অনুমোদিত হলে কার্যকর হবে।',
+        'info', 3800);
+    }catch(_){}
+  }
+  return true;
+}
+
 /* state.accounts নিশ্চিত করা ও পুরোনো সিস্টেম থেকে মাইগ্রেশন।
    loadState / ensureStateIntegrity / applyRemoteState — সব জায়গায় কল হয়,
    ফলে Firebase খালি/পুরোনো ডেটা পাঠালেও অ্যাকাউন্ট কখনো হারাবে না। */
@@ -5133,11 +5162,13 @@ function ensureAccounts(){
     if(!x.username) x.username = 'admin';
     if(!x.name) x.name = 'অ্যাডমিন';
     if(x.password == null || x.password === '') x.password = 'lhrsc';
+    x.viewOnly = (x.viewOnly === true);   // পুরোনো ডেটায় না থাকলে false
   });
   a.managers.forEach(x=>{
     if(!x.username) x.username = 'manager';
     if(!x.name) x.name = 'ম্যানেজার';
     if(x.password == null || x.password === '') x.password = 'lhrsc';
+    x.viewOnly = (x.viewOnly === true);
     x.permissions = _permsNormalize(x.permissions);
   });
 }
@@ -5182,6 +5213,52 @@ function isTrustedDevice(role, username){
   }catch(e){ return false; }
 }
 
+/* 🔓 অ্যাপ খোলার সময় — এই ডিভাইস কোনো অ্যাকাউন্টের জন্য বিশ্বস্ত হলে
+   কিছু নির্বাচন বা পাসওয়ার্ড ছাড়াই সরাসরি প্রবেশ করিয়ে দাও।
+   প্রিন্সিপাল স্যারের জন্য: মোবাইলে অ্যাপ খুললেই সরাসরি ভিতরে।
+   একাধিক বিশ্বস্ত অ্যাকাউন্ট থাকলে সবশেষে যোগ করাটিকে অগ্রাধিকার;
+   কোনো সমস্যা হলে স্বাভাবিক লগইন স্ক্রিনই দেখাবে (নিরাপদ ফলব্যাক)। */
+function autoLoginIfTrusted(){
+  try{
+    // ম্যানুয়াল লগআউটের পর এই সেশনে স্বয়ংক্রিয় লগইন বন্ধ থাকবে
+    try{ if(sessionStorage.getItem('routineAutoLoginDisabled') === '1') return false; }catch(_){}
+    ensureAccounts();
+    const did = getDeviceId();
+    const devs = (state.accounts.trustedDevices||[]).filter(d => d && d.deviceId === did);
+    if(!devs.length) return false;
+
+    // সবশেষে বিশ্বস্ত করা ডিভাইস-এন্ট্রি (at তারিখ অনুসারে) বেছে নাও
+    devs.sort((a,b)=> String(b.at||'').localeCompare(String(a.at||'')));
+
+    for(const d of devs){
+      if(d.role === 'admin' || d.role === 'manager'){
+        const arr = d.role === 'admin' ? state.accounts.admins : state.accounts.managers;
+        const acct = (arr||[]).find(a => String(a.username) === String(d.account));
+        if(!acct) continue;   // অ্যাকাউন্ট মুছে গেলে — পরেরটি দেখো
+        currentUser = {
+          name: acct.name,
+          role: d.role,
+          username: acct.username,
+          viewOnly: acct.viewOnly === true,
+          permissions: d.role === 'admin' ? _permsAllTrue() : _permsNormalize(acct.permissions)
+        };
+        audit('স্বয়ংক্রিয় লগইন (বিশ্বস্ত ডিভাইস)', currentUser.name + ' (' + currentUser.role + ')');
+        finishLogin();
+        return true;
+      }
+      if(d.role === 'teacher'){
+        const t = (state.teachers||[]).find(x => String(x.id) === String(d.account));
+        if(!t) continue;
+        currentUser = { name: t.name, role: 'teacher', teacherId: t.id };
+        audit('স্বয়ংক্রিয় লগইন (বিশ্বস্ত ডিভাইস)', currentUser.name + ' (teacher)');
+        finishLogin();
+        return true;
+      }
+    }
+  }catch(e){ console.warn('autoLoginIfTrusted failed:', e); }
+  return false;  // ব্যর্থ হলে স্বাভাবিক লগইন স্ক্রিন
+}
+
 /* ===========================================================
    🛡️ ADMIN CONTROL — UI রেন্ডার ও অ্যাকশন
 =========================================================== */
@@ -5210,11 +5287,13 @@ function renderACAdmins(){
   if(!box) return;
   const list = state.accounts.admins;
   if(!list.length){ box.innerHTML = '<div class="ac-empty">কোনো অ্যাডমিন নেই</div>'; return; }
-  box.innerHTML = list.map((x,i)=>`
+  box.innerHTML = list.map((x,i)=>{
+    const vo = x.viewOnly === true;
+    return `
     <div class="ac-acct">
       <div class="ac-acct-head">
         <div>
-          <div class="ac-acct-name">👑 ${esc(x.name)}</div>
+          <div class="ac-acct-name">👑 ${esc(x.name)} ${vo?'<span style="font-size:11px;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;padding:1px 7px;border-radius:999px;font-weight:700">👁️ ভিউ-অনলি</span>':''}</div>
           <div class="ac-acct-user">@${esc(x.username)}</div>
         </div>
         <div class="ac-acct-actions">
@@ -5223,7 +5302,33 @@ function renderACAdmins(){
           ${list.length>1 ? `<button class="ac-btn-del" onclick="acDelAccount('admin',${i})">🗑️ মুছুন</button>` : ''}
         </div>
       </div>
-    </div>`).join('');
+      <label style="display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12.5px">
+        <input type="checkbox" ${vo?'checked':''} onchange="acToggleViewOnly(${i}, this.checked)" style="width:16px;height:16px;flex:none">
+        <span><strong>👁️ ভিউ-অনলি অ্যাডমিন</strong> — রুটিন এডিট করতে পারবেন, কিন্তু সেটিংস/থিম/অ্যাকাউন্ট/ডিলিট আটকানো থাকবে (পরিবর্তন "অনুমোদনের জন্য পাঠানো হলো" দেখাবে)।</span>
+      </label>
+    </div>`;
+  }).join('');
+}
+
+/* অ্যাডমিনকে ভিউ-অনলি টগল করো (শুধু পূর্ণ-ক্ষমতার অ্যাডমিন পারবেন) */
+function acToggleViewOnly(i, on){
+  if(!_acGuard()){ renderAdminControl(); return; }
+  const a = state.accounts.admins[i];
+  if(!a){ return; }
+  // অন্তত একজন পূর্ণ-ক্ষমতার অ্যাডমিন থাকতেই হবে — সব ভিউ-অনলি করা যাবে না
+  if(on){
+    const fullOthers = state.accounts.admins.filter((x,idx)=> idx!==i && x.viewOnly!==true).length;
+    if(fullOthers === 0){
+      showToast('⚠️ অন্তত একজন পূর্ণ-ক্ষমতার অ্যাডমিন থাকা আবশ্যক — সবাইকে ভিউ-অনলি করা যাবে না।','warning',4000);
+      renderAdminControl();
+      return;
+    }
+  }
+  a.viewOnly = !!on;
+  _acPersist('ভিউ-অনলি ' + (on?'চালু':'বন্ধ') + ' — ' + a.name);
+  showToast(on
+    ? `👁️ "${a.name}" এখন ভিউ-অনলি অ্যাডমিন — সংবেদনশীল কাজ আটকানো থাকবে।`
+    : `✅ "${a.name}" পূর্ণ-ক্ষমতার অ্যাডমিন হলেন।`, 'success', 3200);
 }
 
 function renderACManagers(){
@@ -5289,6 +5394,7 @@ function renderACTrusted(){
 }
 
 function _acGuard(){
+  if(blockIfViewOnly('অ্যাকাউন্ট পরিবর্তন')) return false;
   if(!currentUser || currentUser.role !== 'admin'){
     showToast('⛔ শুধুমাত্র অ্যাডমিন এই কাজ করতে পারবেন','error');
     return false;
@@ -5313,12 +5419,17 @@ function acAddAdmin(){
   ensureAccounts();
   const taken = state.accounts.admins.some(x=>x.username===user) || state.accounts.managers.some(x=>x.username===user);
   if(taken){ showToast('এই ইউজারনেম আগেই আছে','error'); return; }
-  state.accounts.admins.push({username:user, name, password:pass});
+  // 👁️ কনভেনশন: ইউজারনেম "principal" হলে নতুন অ্যাডমিন স্বয়ংক্রিয়ভাবে
+  // ভিউ-অনলি হিসেবে যোগ হবে (পরে টগল দিয়ে বদলানো যাবে)।
+  const autoVO = (user.toLowerCase() === 'principal');
+  state.accounts.admins.push({username:user, name, password:pass, viewOnly:autoVO});
   document.getElementById('acNewAdminName').value='';
   document.getElementById('acNewAdminUser').value='';
   document.getElementById('acNewAdminPass').value='';
-  _acPersist('নতুন অ্যাডমিন: '+name+' (@'+user+')');
-  showToast('✅ অ্যাডমিন যোগ হয়েছে','success');
+  _acPersist('নতুন অ্যাডমিন: '+name+' (@'+user+')'+(autoVO?' [ভিউ-অনলি]':''));
+  showToast(autoVO
+    ? '✅ অ্যাডমিন যোগ হয়েছে (👁️ ভিউ-অনলি — ইউজারনেম "principal" হওয়ায়)'
+    : '✅ অ্যাডমিন যোগ হয়েছে','success', autoVO?3600:2000);
 }
 
 function acAddManager(){
@@ -5714,6 +5825,9 @@ function doLogin(){
       name: acct.name,
       role,
       username: u,
+      // 👁️ ভিউ-অনলি অ্যাডমিন/ম্যানেজার: সব দেখতে পাবেন, কিন্তু কোনো
+      // পরিবর্তন সংরক্ষিত হবে না (saveState-এ নীরবে আটকানো হয়)।
+      viewOnly: acct.viewOnly === true,
       permissions: role === 'admin' ? _permsAllTrue() : _permsNormalize(acct.permissions)
     };
   } else if(role === 'teacher'){
@@ -5737,6 +5851,12 @@ function doLogin(){
   }
 
   audit('লগইন', currentUser.name + ' (' + currentUser.role + ')');
+  finishLogin();
+}
+
+/* লগইন সফল হওয়ার পর সাধারণ ধাপগুলো — doLogin() ও autoLoginIfTrusted()
+   উভয়েই এটি ডাকে, তাই কোনো কোড ডুপ্লিকেশন বা পথভেদ নেই। */
+function finishLogin(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'flex';
   applyRolePermissions();
@@ -5755,6 +5875,9 @@ function logout(){
   if(!confirm('লগআউট করতে চান?')) return;
   audit('লগআউট', currentUser.name);
   saveState();
+  // এই সেশনে স্বয়ংক্রিয় পুনঃলগইন বন্ধ — না হলে রিফ্রেশে আবার ঢুকে যেত
+  // (অ্যাপ পুরোপুরি বন্ধ করে আবার খুললে অটো-লগইন আবার কাজ করবে)।
+  try{ sessionStorage.setItem('routineAutoLoginDisabled','1'); }catch(_){}
   // 🔔 stop notification polling
   stopNotificationSystem();
   // 🔊 ভয়েস ঘোষণা বন্ধ
@@ -6961,6 +7084,7 @@ function cancelCustomization(){
 }
 
 function resetCustomization(){
+  if(blockIfViewOnly('কাস্টমাইজেশন রিসেট')) return;
   const kind = document.getElementById('customizeKind').value;
   const id = document.getElementById('customizeId').value;
   const labels = {col:'কলামের', row:'রো-এর', sl:'SL কলামের', name:'নাম কলামের'};
@@ -7265,6 +7389,7 @@ function saveTeacher(){
 }
 
 function deleteTeacher(){
+  if(blockIfViewOnly('শিক্ষক মুছে ফেলা')) return;
   if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
   const tid = document.getElementById('tEditId').value;
   const t = state.teachers.find(x=>x.id===tid);
@@ -8278,6 +8403,7 @@ function loadPreset(idx){
 }
 
 function deletePreset(idx){
+  if(blockIfViewOnly('প্রিসেট মুছে ফেলা')) return;
   const p = state.schedulePresets[idx];
   if(!p) return;
   if(!confirm(`"${p.name}" প্রিসেট মুছে ফেলবেন?`)) return;
@@ -9287,6 +9413,7 @@ function saveMasterSize(){
 
 /* Reset all five back to defaults */
 function resetMasterSize(){
+  if(blockIfViewOnly('আকার রিসেট')) return;
   if(!confirm('সব কলাম ও রো-এর আকার ডিফল্টে ফিরিয়ে আনবেন?')) return;
   if(typeof snapshot==='function') snapshot();
   const s = state.settings;
@@ -9470,6 +9597,7 @@ function readSetting(id, type, fallback){
 }
 
 function saveSettings(){
+  if(blockIfViewOnly('সেটিংস পরিবর্তন')){ try{ closeModal('settingsModal'); }catch(_){} return; }
   const s = state.settings;
   const _themeSel = document.getElementById('setThemeSelect');
   s.theme = _themeSel ? (_themeSel.value || 'light') : (s.theme || 'light');
@@ -9565,6 +9693,7 @@ function saveSettings(){
 }
 
 function resetSettings(){
+  if(blockIfViewOnly('সেটিংস রিসেট')) return;
   if(!requirePerm('dataReset')) return;
   if(!confirm('সব সেটিংস রিসেট করবেন? (ডেটা ও API key থাকবে)')) return;
   // Preserve API keys
@@ -9697,6 +9826,11 @@ function toggleDark(){
 }
 /* থিম নির্বাচক — শুধুমাত্র "light" (ডিফল্ট) ও "custom" (নিজের তৈরি) */
 function setThemeChoice(val){
+  if(blockIfViewOnly('থিম পরিবর্তন')){
+    // ড্রপডাউন আগের অবস্থায় ফেরত (UI বিভ্রান্তি এড়াতে)
+    try{ const sel=document.getElementById('setThemeSelect'); if(sel) sel.value = state.settings.theme || 'light'; }catch(_){}
+    return;
+  }
   const valid = ['light','custom'];
   state.settings.theme = valid.includes(val) ? val : 'light';
   applySettings();
@@ -9809,6 +9943,7 @@ function liveThemePreview(){
 }
 
 function applyThemePreset(name){
+  if(blockIfViewOnly('থিম পরিবর্তন')) return;
   const P = {
     teal:  { bg:'#eef5f4', surf:'#ffffff', surf2:'#eafaf6', border:'#cfe9e3', text:'#0f2e2a', text2:'#3f6b62',
              primary:'#0f766e', phover:'#115e59', h1:'#0f766e', h2:'#14b8a6',
@@ -9844,6 +9979,7 @@ function applyThemePreset(name){
 }
 
 function resetThemeBuilderDefaults(){
+  if(blockIfViewOnly('থিম রিসেট')) return;
   const s = state.settings;
   s.customBg='#eef2f7'; s.customSurface='#ffffff'; s.customSurface2='#f3f6fa';
   s.customBorder='#d8dee8'; s.customText='#0f172a'; s.customText2='#475569';
@@ -9859,6 +9995,7 @@ function resetThemeBuilderDefaults(){
 }
 
 function saveThemeBuilder(){
+  if(blockIfViewOnly('থিম পরিবর্তন')) return;
   if(!currentUser || currentUser.role !== 'admin'){
     showToast('⛔ শুধুমাত্র অ্যাডমিন','warning'); return;
   }
@@ -9937,6 +10074,7 @@ function applyColorTheme(theme){
 }
 
 function resetData(){
+  if(blockIfViewOnly('সব ডেটা মুছে ফেলা')) return;
   if(!requirePerm('dataReset')) return;
   if(!confirm('⚠️ সব ডেটা মুছে ফেলবেন? এটি অপরিবর্তনীয়!\n\nএটি ক্লাউড (Firebase) এবং সব ডিভাইস থেকেও মুছে যাবে।')) return;
   if(!confirm('সত্যিই নিশ্চিত? শেষ সুযোগ!')) return;
@@ -11203,6 +11341,10 @@ function init(){
 
   // Trigger initial role change for login form
   document.getElementById('loginRole').dispatchEvent(new Event('change'));
+
+  // 🔓 বিশ্বস্ত ডিভাইস হলে — সরাসরি প্রবেশ (প্রিন্সিপাল স্যার লগইন ছাড়াই ঢুকবেন)।
+  // ব্যর্থ হলে স্বাভাবিক লগইন স্ক্রিনই থাকবে — নিরাপদ ফলব্যাক।
+  try{ autoLoginIfTrusted(); }catch(e){ console.warn('auto-login skipped:', e); }
 
   // Initialize floating scrollbar binding & multiple sync attempts (for fonts loading)
   setTimeout(()=>{ recomputeStickyTop(); syncFloatingScroll(); }, 100);
