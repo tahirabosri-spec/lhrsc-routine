@@ -2866,6 +2866,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <button class="tool-btn editable-only" data-perm="importExport" onclick="exportJSON();closeToolMenu()">⬇ <span class="lbl">JSON এক্সপোর্ট</span></button>
         <button class="tool-btn editable-only" data-perm="importExport" onclick="exportCSV();closeToolMenu()">⬇ <span class="lbl">CSV এক্সপোর্ট</span></button>
         <button class="tool-btn editable-only" data-perm="importExport" onclick="triggerImport();closeToolMenu()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
+        <button class="tool-btn editable-only" data-perm="manageTeachers" onclick="document.getElementById('importTeacherJSON').click();closeToolMenu()">⬆ <span class="lbl">শিক্ষক JSON আপলোড</span></button>
         <button class="tool-btn" onclick="window.print();closeToolMenu()">🖨 <span class="lbl">প্রিন্ট</span></button>
         <button class="tool-btn editable-only" onclick="shareView();closeToolMenu()">🔗 <span class="lbl">শেয়ার</span></button>
       </div>
@@ -4449,7 +4450,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
 
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
-
+<input type="file" id="importTeacherJSON" accept=".json" style="display:none" onchange="handleTeacherJSONImport(event)">
 <!-- ============================================================
      FIREBASE SDK — Realtime Database integration
      এই অংশটি Firebase সংযোগ স্থাপন করে
@@ -12019,6 +12020,129 @@ document.addEventListener('keydown', e => {
 
 // Save before unload
 window.addEventListener('beforeunload', () => {saveState()});
+// ====== ডাইনামিক শিক্ষক JSON আপলোড লজিক ======
+function handleTeacherJSONImport(e){
+    if(!canFullEdit()){showToast('অনুমতি নেই','error');return;}
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onerror = () => {
+        showToast('❌ ফাইল পড়া যায়নি, আবার চেষ্টা করুন','error');
+        e.target.value = '';
+    };
+    
+    // বাংলা UTF-8 Support
+    reader.readAsText(file, "UTF-8"); 
+    
+    reader.onload = ev => {
+        try {
+            let data;
+            try {
+                data = JSON.parse(ev.target.result);
+            } catch(err) {
+                // Invalid JSON detect
+                throw new Error("JSON ফাইলের ফরম্যাট ঠিক নেই। কমা বা ব্র্যাকেট চেক করুন।");
+            }
+            
+            if(!Array.isArray(data)){
+                throw new Error("JSON ফাইলের মূল কাঠামো একটি Array ([...]) হতে হবে।");
+            }
+
+            let newAdded = 0;
+            let updated = 0;
+            
+            snapshot(); // মূল স্ট্রাকচার ঠিক রাখতে আনডু করার জন্য বর্তমান অবস্থা সেভ
+
+            data.forEach((item, index) => {
+                // Missing Field Validation
+                if(!item.name) throw new Error(`আইটেম ${index + 1}: শিক্ষকের 'name' (নাম) দেওয়া নেই।`);
+
+                // Duplicate Entry চেক ও Automatic Mapping 
+                let t = state.teachers.find(x => x.name.trim() === item.name.trim());
+                if(t) {
+                    updated++; // আগে থেকে থাকলে শুধু ডেটা আপডেট হবে, রুটিন ভাঙবে না
+                } else {
+                    // নতুন শিক্ষক হলে আপনার সিস্টেমের স্ট্রাকচারে তৈরি করা
+                    t = {
+                        id: uid(),
+                        name: item.name.trim(),
+                        title: item.title || '',
+                        mainSubject: '',
+                        subjects: [],
+                        classes: [],
+                        sections: [],
+                        cells: {},
+                        weeklyTotal: 0,
+                        weeklyAssignments: {},
+                        preferredDays: [],
+                        unavailableDays: [],
+                        slotGroupLimits: {morning:0, lateMorning:0, afternoon:0, evening:0},
+                        notes: '',
+                        password: '1234'
+                    };
+                    state.teachers.push(t);
+                    newAdded++;
+                }
+
+                // ডাইনামিক ম্যাপিং: সাবজেক্ট, ক্লাস এবং সেকশনগুলো
+                const subjects = new Set(t.subjects || []);
+                const classes = new Set(t.classes || []);
+                const sections = new Set(t.sections || []);
+
+                if(Array.isArray(item.classes)){
+                    item.classes.forEach(c => {
+                        if(c.subject) subjects.add(c.subject);
+                        if(c.class_name) classes.add(c.class_name);
+                        if(c.section) sections.add(c.section);
+                    });
+                }
+
+                t.subjects = Array.from(subjects);
+                t.classes = Array.from(classes);
+                t.sections = Array.from(sections);
+                
+                if (t.subjects.length > 0 && !t.mainSubject) {
+                    t.mainSubject = t.subjects[0];
+                }
+
+                // শিফট ও পছন্দনীয় সময় 'নোটে' যুক্ত করা যেন AI রুটিনের সময় কাজে লাগে
+                let notesArr = t.notes ? [t.notes] : [];
+                if(item.shift) notesArr.push(`শিফট: ${item.shift}`);
+                if(Array.isArray(item.preferences)){
+                    notesArr.push(`পছন্দ: ${item.preferences.join(', ')}`);
+                }
+                if (notesArr.length > 0) {
+                    t.notes = notesArr.join('\n');
+                }
+            });
+
+            // ডাটা সেভ ও রিফ্রেশ
+            saveState();
+            renderTable();
+            if(typeof populateLoginTeachers === 'function') populateLoginTeachers();
+            if(typeof populateBulk === 'function') populateBulk();
+
+            showToast(`✅ সফল! নতুন: ${newAdded} জন, আপডেট: ${updated} জন`, 'success');
+            
+            // অটোমেটিক রুটিন তৈরির ট্রিগার
+            setTimeout(() => {
+                if(confirm("শিক্ষকদের তথ্য সফলভাবে আপডেট হয়েছে! আপনি কি এখন এই তথ্য অনুযায়ী 'স্বয়ংক্রিয় রুটিন' জেনারেট করতে চান?")){
+                    if(typeof openAIGenerator === 'function') openAIGenerator();
+                    else if(typeof autoGenerateRoutine === 'function') autoGenerateRoutine();
+                }
+            }, 1000);
+
+        } catch(err) {
+            // App Crash ঠেকানো এবং User-friendly Error
+            console.error("JSON Error:", err);
+            showToast('❌ আপলোড ব্যর্থ: ' + err.message, 'error');
+        } finally {
+            e.target.value = ''; // ইনপুট ক্লিয়ার
+        }
+    };
+}
+// ====== শেষ ======
 </script>
 <!-- 📥 স্থায়ী ইম্পোর্ট ইনপুট — tool-menu প্যানেলের বাইরে body-level এ রাখা হয়েছে।
      কারণ: মোবাইলে tool-menu প্যানেল খুললে DOM-এ portal/restore হয়; আগে input এই
