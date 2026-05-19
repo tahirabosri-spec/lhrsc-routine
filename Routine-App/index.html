@@ -325,44 +325,235 @@ body:not([data-role="admin"]) .admin-only { display: none !important; }
   --transition:.18s cubic-bezier(.4,0,.2,1);
 }
 
+/* Dark mode */
+[data-theme="dark"]{
+  --bg:#0b1220;
+  --bg-2:#0f172a;
+  --surface:#111827;
+  --surface-2:#0f172a;
+  --border:#1f2937;
+  --border-strong:#334155;
+  --text:#e2e8f0;
+  --text-2:#cbd5e1;
+  --text-3:#64748b;
+  --primary:#14b8a6;
+  --primary-hover:#0d9488;
+  --primary-soft:#134e4a;
+  --break-bg:#1e3a8a;
+  --break-text:#dbeafe;
+  --sl-bg:#14532d;
+  --sl-text:#bbf7d0;
+  --name-bg:#0d9488;
+  --name-text:#ffffff;
+  --free-bg:#7f1d1d;
+  --free-text:#fecaca;
+  --header-bg:linear-gradient(135deg,#0f172a 0%,#134e4a 60%,#115e59 100%);
+  --shadow:0 4px 12px rgba(0,0,0,.4);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.5);
+  /* Eye-care neon accents (Prompt 3) */
+  --neon:#22d3ee;
+  --neon-soft:rgba(34,211,238,.16);
+}
+/* Dark — eye-care time header (no pure black/white) */
+body[data-theme="dark"] #theadRow th{
+  background-color:#0e7490 !important; color:#e0f2fe !important;
+  border-bottom:3px solid #22d3ee !important;
+}
+body[data-theme="dark"] #theadRow th.col-break{
+  background-color:#b45309 !important; color:#fff7ed !important;
+}
+
 /* =============================================================
-   THEME SYSTEM
-   ─────────────────────────────────────────────────────────────
-   এই অ্যাপে এখন মাত্র দুইটি থিম:
-     1) "light"  → ডিফল্ট থিম (উপরের :root প্যালেট)
-     2) "custom" → অ্যাডমিনের নিজের তৈরি থিম
-   পুরোনো নেইমড থিম (dark / minimal / nature / pastel / contrast)
-   সম্পূর্ণভাবে সরিয়ে ফেলা হয়েছে। কাস্টম থিমের রঙগুলো JS থেকে
-   ইনলাইন CSS ভেরিয়েবল হিসেবে :root-এ বসানো হয়, তাই রুটিনের
-   মূল কাঠামো অপরিবর্তিত থাকে।
+   THEME 1 — Minimalist & Corporate (Light)
 ============================================================= */
-/* কাস্টম থিম সক্রিয় থাকলে সারি/কলামের রেখা আরও স্পষ্ট হয় */
-body[data-theme="custom"] .routine-table tbody td{
-  border-right:1px solid var(--border) !important;
+[data-theme="minimal"]{
+  --bg:#f1f5f9;
+  --bg-2:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#f8fafc;
+  --border:#e2e8f0;
+  --border-strong:#cbd5e1;
+  --text:#0f172a;
+  --text-2:#475569;
+  --text-3:#94a3b8;
+  --primary:#1e3a8a;
+  --primary-hover:#1e40af;
+  --primary-soft:#dbeafe;
+  --accent:#2563eb;
+  --break-bg:#eef2ff;
+  --break-text:#1e3a8a;
+  --sl-bg:#e2e8f0;
+  --sl-text:#1e293b;
+  --name-bg:#1e3a8a;
+  --name-text:#ffffff;
+  --free-bg:#f1f5f9;
+  --free-text:#64748b;
+  --header-bg:linear-gradient(135deg,#1e3a8a 0%,#1e40af 100%);
+  --shadow:0 1px 2px rgba(15,23,42,.06);
+  --shadow-lg:0 8px 24px rgba(15,23,42,.10);
+  --row-tint:rgba(30,58,138,.035);
+  --col-line:#e2e8f0;
 }
-/* 🎨 থিম বিল্ডার গ্রিড */
-.tb-grid{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+body[data-theme="minimal"] #theadRow th{
+  background-color:#1e3a8a !important; color:#ffffff !important;
+  border-bottom:2px solid #1e40af !important;
 }
-.tb-field{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
-  background:var(--surface-2);border:1.5px solid var(--border);
-  border-radius:10px;padding:8px 11px;
+body[data-theme="minimal"] #theadRow th.col-break{
+  background-color:#475569 !important; color:#fff !important;
 }
-.tb-field label{
-  font-size:12.5px;font-weight:800;color:var(--text);
+
+/* =============================================================
+   THEME 2 — Calming Nature & Teal
+============================================================= */
+[data-theme="nature"]{
+  --bg:#ecfdf5;
+  --bg-2:#f0fdf4;
+  --surface:#f7fdf9;
+  --surface-2:#ecfdf5;
+  --border:#bbf7d0;
+  --border-strong:#86efac;
+  --text:#14342b;
+  --text-2:#166534;
+  --text-3:#4d7c5f;
+  --primary:#0f766e;
+  --primary-hover:#115e59;
+  --primary-soft:#ccfbf1;
+  --accent:#10b981;
+  --break-bg:#d1fae5;
+  --break-text:#065f46;
+  --sl-bg:#bbf7d0;
+  --sl-text:#14532d;
+  --name-bg:#0f766e;
+  --name-text:#ffffff;
+  --free-bg:#fef2f2;
+  --free-text:#b91c1c;
+  --header-bg:linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%);
+  --shadow:0 2px 6px rgba(15,118,110,.10);
+  --shadow-lg:0 10px 28px rgba(15,118,110,.18);
+  --row-tint:rgba(16,185,129,.06);
+  --col-line:#bbf7d0;
 }
-.tb-field input[type="color"]{
-  width:46px;height:32px;padding:0;border:1.5px solid var(--border);
-  border-radius:7px;background:transparent;cursor:pointer;flex:none;
+body[data-theme="nature"] #theadRow th{
+  background-color:#0f766e !important; color:#ffffff !important;
+  border-bottom:3px solid #14b8a6 !important;
 }
-@media (max-width:520px){ .tb-grid{grid-template-columns:1fr} }
-/* 🎨 থিম বিল্ডার গ্রিড */
-.tb-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
-.tb-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 10px}
-.tb-row label{font-size:12px;font-weight:700;color:var(--text-2);flex:1}
-.tb-row input[type="color"]{width:44px;height:30px;border:1px solid var(--border);border-radius:6px;padding:0;cursor:pointer;background:none}
-@media (max-width:560px){.tb-grid{grid-template-columns:1fr}}
+body[data-theme="nature"] #theadRow th.col-break{
+  background-color:#047857 !important; color:#ecfdf5 !important;
+}
+
+/* =============================================================
+   THEME 3 — Soft Pastel Academic
+============================================================= */
+[data-theme="pastel"]{
+  --bg:#f7f7fb;
+  --bg-2:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#f5f3ff;
+  --border:#e5e7f5;
+  --border-strong:#cbd5e1;
+  --text:#334155;
+  --text-2:#475569;
+  --text-3:#94a3b8;
+  --primary:#7c8ce0;
+  --primary-hover:#6366f1;
+  --primary-soft:#e0e7ff;
+  --accent:#a78bfa;
+  --break-bg:#fae8ff;
+  --break-text:#6b21a8;
+  --sl-bg:#dbeafe;
+  --sl-text:#1e3a8a;
+  --name-bg:#8b9be8;
+  --name-text:#ffffff;
+  --free-bg:#fdf2f8;
+  --free-text:#9d174d;
+  --header-bg:linear-gradient(135deg,#a5b4fc 0%,#c4b5fd 50%,#a7f3d0 100%);
+  --shadow:0 2px 8px rgba(124,140,224,.12);
+  --shadow-lg:0 10px 28px rgba(124,140,224,.20);
+  --row-tint:rgba(167,139,250,.05);
+  --col-line:#e5e7f5;
+}
+body[data-theme="pastel"] #theadRow th{
+  background-color:#8b9be8 !important; color:#ffffff !important;
+  border-bottom:3px solid #a7f3d0 !important;
+}
+body[data-theme="pastel"] #theadRow th.col-break{
+  background-color:#c084fc !important; color:#ffffff !important;
+}
+/* Soft section colour-coding (baby-blue / mint / lavender) */
+body[data-theme="pastel"] .routine-table .teacher-row-class td:not(.col-sl):not(.col-name):not(.col-break){background:rgba(191,219,254,.28) !important}
+body[data-theme="pastel"] .routine-table .teacher-row-subject td:not(.col-sl):not(.col-name):not(.col-break){background:rgba(187,247,208,.26) !important}
+body[data-theme="pastel"] .routine-table .teacher-row-section td:not(.col-sl):not(.col-name):not(.col-break){background:rgba(221,214,254,.30) !important}
+
+/* =============================================================
+   THEME 4 — High Contrast & Accessible
+============================================================= */
+[data-theme="contrast"]{
+  --bg:#ffffff;
+  --bg-2:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#ffffff;
+  --border:#475569;
+  --border-strong:#1e293b;
+  --text:#000000;
+  --text-2:#1e293b;
+  --text-3:#334155;
+  --primary:#000000;
+  --primary-hover:#1e293b;
+  --primary-soft:#fde047;
+  --accent:#b45309;
+  --break-bg:#fde047;
+  --break-text:#000000;
+  --sl-bg:#000000;
+  --sl-text:#ffffff;
+  --name-bg:#000000;
+  --name-text:#ffffff;
+  --free-bg:#fecaca;
+  --free-text:#7f1d1d;
+  --header-bg:linear-gradient(135deg,#000000 0%,#1e293b 100%);
+  --shadow:0 0 0 1px #475569;
+  --shadow-lg:0 4px 0 #1e293b;
+  --col-line:#475569;
+}
+body[data-theme="contrast"] #theadRow th{
+  background-color:#000000 !important; color:#ffffff !important;
+  border-bottom:3px solid #000000 !important;
+}
+body[data-theme="contrast"] #theadRow th.col-break{
+  background-color:#b45309 !important; color:#ffffff !important;
+}
+body[data-theme="contrast"] .routine-table th,
+body[data-theme="contrast"] .routine-table td{
+  border:1px solid #475569 !important;
+}
+body[data-theme="contrast"] .routine-table td .cell-content:hover{
+  background:#fde047 !important; color:#000 !important;
+}
+body[data-theme="contrast"] .routine-table td.is-free,
+body[data-theme="contrast"] .routine-table td.has-conflict{
+  background:#fecaca !important;
+}
+
+/* =============================================================
+   SHARED THEME CLARITY — crisp rows & columns for every theme
+   (also keeps each teacher block readable while the routine is locked)
+============================================================= */
+body[data-theme="minimal"] .routine-table tbody td,
+body[data-theme="nature"]  .routine-table tbody td,
+body[data-theme="pastel"]  .routine-table tbody td{
+  border-right:1px solid var(--col-line) !important;
+}
+/* Gentle zebra striping per teacher block (every other teacher) */
+body[data-theme="minimal"] .routine-table tbody tr.teacher-row-class:nth-of-type(6n+4) td:not(.col-sl):not(.col-name):not(.col-break),
+body[data-theme="minimal"] .routine-table tbody tr.teacher-row-subject:nth-of-type(6n+5) td:not(.col-sl):not(.col-name):not(.col-break),
+body[data-theme="minimal"] .routine-table tbody tr.teacher-row-section:nth-of-type(6n+6) td:not(.col-sl):not(.col-name):not(.col-break){
+  background:var(--row-tint) !important;
+}
+/* Soft crosshair-style hover for editable cells */
+body[data-theme="minimal"] .routine-table td .cell-content:hover,
+body[data-theme="nature"]  .routine-table td .cell-content:hover{
+  background:var(--primary-soft) !important;
+  box-shadow:inset 0 0 0 1px var(--primary);
+}
 
 /* =============================================================
    ROUTINE LOCK — protects routine data from accidental clicks.
@@ -419,6 +610,9 @@ body[data-routine-lock="true"] .routine-lock-chip{display:inline-flex}
 #routineLockBtn[data-locked="true"]{
   background:#fef3c7 !important;color:#92400e !important;
   border-color:#f59e0b !important;font-weight:800;
+}
+[data-theme="dark"] #routineLockBtn[data-locked="true"]{
+  background:rgba(245,158,11,.22) !important;color:#fbbf24 !important;
 }
 
 /* Compact mode */
@@ -493,6 +687,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   border-radius:8px;font-size:12px;
   border-left:3px solid var(--info);
 }
+[data-theme="dark"] .login-hint{background:rgba(2,132,199,.15)}
 .login-error{
   margin-top:10px;padding:8px 10px;
   background:var(--danger-soft);color:var(--danger);
@@ -918,13 +1113,9 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   box-shadow:0 2px 8px rgba(15,118,110,.3);
   transform:scale(1.1);
 }
-/* Locked teacher row — শুধুমাত্র সত্যিকারের লক করা সেলে (.is-locked)
-   হালকা অ্যাম্বার ইন্ডিকেটর। col-sl ও col-name বাদ — ওদের নিজস্ব
-   locked স্টাইল আছে (নিচে আলাদা রুলে)। ⚠️ আগের
-   `tr[draggable="false"] td` সিলেক্টরটি সরানো হলো: শিক্ষক রোলে বা
-   রুটিন-লকে সব রো draggable="false" হয়ে যেত, ফলে নাম কলামের গাঢ়
-   সবুজ ব্যাকগ্রাউন্ড সাদা হয়ে গিয়ে সাদা নাম-টেক্সট অদৃশ্য হতো। */
-.routine-table tr[data-tid] td.is-locked:not(.col-sl):not(.col-name){
+/* Locked teacher row — entire row gets visual lock indicator */
+.routine-table tr[data-tid] td.is-locked,
+.routine-table tr[draggable="false"] td{
   background:linear-gradient(135deg, var(--surface) 60%, #fef3c7 100%) !important;
   position:relative;
 }
@@ -1098,6 +1289,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   color:rgba(255,255,255,.85);
   line-height:1.15;
 }
+[data-theme="dark"] .routine-table td.col-name .t-meta{color:rgba(255,255,255,.7)}
 
 /* Compact-readable mode: reduces vertical space without hurting legibility */
 [data-density="compact"] .routine-table td .cell-content{
@@ -1145,6 +1337,7 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
 /* Hide row-label by default; visible only if setting is on */
 .row-label{display:none;font-size:9.5px;font-weight:700;position:absolute;left:2px;top:1px;background:rgba(0,0,0,.08);color:var(--text-2);padding:0 4px;border-radius:3px;pointer-events:none;opacity:.6}
 [data-show-rowlabel="true"] .row-label{display:inline-block}
+[data-theme="dark"] .row-label{background:rgba(255,255,255,.1)}
 
 /* Floating horizontal scrollbar */
 .h-scroll-float{
@@ -1165,6 +1358,7 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
 }
 [data-floating-scroll="true"] .h-scroll-float{display:block}
 .h-scroll-float .h-scroll-track{height:1px}
+[data-theme="dark"] .h-scroll-float{background:rgba(15,23,42,.92);border-top-color:var(--primary)}
 [data-floating-scroll="true"] .table-wrap{padding-bottom:24px}
 /* FIX: floating scrollbar চালু থাকলে .table-wrap এর native horizontal
    scrollbar লুকাও — না হলে দুটো scrollbar পাশাপাশি দেখা যায়। */
@@ -1875,6 +2069,7 @@ input[type="range"]::-moz-range-thumb{
   min-height:60px;
   white-space:pre-wrap;
 }
+[data-theme="dark"] .ai-response{background:rgba(2,132,199,.15);color:#bae6fd}
 
 /* =============================================================
    MOBILE
@@ -1953,6 +2148,7 @@ input[type="range"]::-moz-range-thumb{
 .tag{display:inline-block;padding:1px 7px;background:var(--primary-soft);color:var(--primary);border-radius:99px;font-size:10.5px;font-weight:600}
 .tag.danger{background:var(--danger-soft);color:var(--danger)}
 .tag.warning{background:#fef3c7;color:var(--warning)}
+[data-theme="dark"] .tag.warning{background:rgba(217,119,6,.2)}
 .divider{height:1px;background:var(--border);margin:14px 0}
 
 /* selectable cells for bulk */
@@ -2086,6 +2282,7 @@ input[type="range"]::-moz-range-thumb{
   transition: var(--transition);
 }
 .teacher-item .tel-link:hover{ background: var(--info); color: #fff; }
+[data-theme="dark"] .teacher-item .tel-link{ background: rgba(2,132,199,0.2); }
 
 /* === Req #5: Free/Busy teacher names — larger font in dashboard === */
 .teacher-item.free .nm-text,
@@ -2111,6 +2308,7 @@ input[type="range"]::-moz-range-thumb{
   line-height: 1.5;
 }
 .teacher-item.leave .leave-classes strong{ color: var(--warning); }
+[data-theme="dark"] .teacher-item.leave .leave-classes{ background: rgba(217,119,6,0.15); }
 
 /* =============================================================
    SLOT QUICK BUTTONS (ফ্রি / ব্যস্ত শিক্ষক — প্রতি ঘন্টায়)
@@ -2188,6 +2386,7 @@ input[type="range"]::-moz-range-thumb{
   margin-top:3px;
   line-height:1.45;
 }
+[data-theme="dark"] #slotTeachersModal .teacher-item .busy-where{ color:#fca5a5; }
 #slotTeachersModal .teacher-item .busy-where .bw-label{ color:var(--text-3); font-weight:600; }
 #slotTeachersModal .st-empty{
   grid-column:1/-1;
@@ -2615,12 +2814,8 @@ body[data-role="manager"] .teacher-only{display:none !important}
 .req-card .rc-status.pending{background:#fef3c7;color:#92400e}
 .req-card .rc-status.approved{background:var(--success-soft);color:var(--success)}
 .req-card .rc-status.rejected{background:var(--danger-soft);color:var(--danger)}
+[data-theme="dark"] .req-card .rc-status.pending{background:rgba(245,158,11,.2);color:#fbbf24}
 .req-card .rc-actions{display:flex;gap:8px;margin-top:4px}
-.req-card .rc-no-perm{
-  margin-top:6px;padding:7px 10px;border-radius:8px;
-  background:var(--danger-soft);color:var(--danger);
-  font-size:11.5px;font-weight:700;line-height:1.5;
-}
 .req-card .rc-btn{
   flex:1;padding:8px 10px;border-radius:8px;border:none;cursor:pointer;
   font-family:var(--font-bn);font-weight:800;font-size:13px;
@@ -2691,23 +2886,17 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <label>ভূমিকা নির্বাচন করুন</label>
       <select id="loginRole">
         <option value="admin">অ্যাডমিন (সম্পূর্ণ নিয়ন্ত্রণ)</option>
-        <option value="manager" selected>ম্যানেজার (এডিট অ্যাক্সেস)</option>
+        <option value="manager">ম্যানেজার (এডিট অ্যাক্সেস)</option>
         <option value="teacher">শিক্ষক (নিজস্ব রো)</option>
       </select>
     </div>
-    <div class="field" id="accountSelectField" style="display:none">
-      <label>নাম নির্বাচন করুন</label>
-      <select id="loginAccountSelect" onchange="document.getElementById('loginPass').value=''"></select>
-    </div>
-    <div class="field" id="usernameField" style="display:none">
-      <label>ব্যবহারকারীর নাম (ম্যানুয়াল)</label>
+    <div class="field" id="usernameField">
+      <label>ব্যবহারকারীর নাম</label>
       <input id="loginUser" type="text" autocomplete="username" placeholder="admin">
     </div>
     <div class="field" id="teacherSelectField" style="display:none">
       <label>শিক্ষক নির্বাচন করুন</label>
-      <input id="loginTeacherSearch" type="text" autocomplete="off" placeholder="🔍 নাম বা সিরিয়াল নম্বর দিয়ে খুঁজুন (যেমন: করিম বা ১২)" oninput="filterLoginTeachers(this.value)" style="margin-bottom:8px;width:100%;box-sizing:border-box">
-      <select id="loginTeacher" size="6" onchange="document.getElementById('loginPass').value=''" style="width:100%;box-sizing:border-box"></select>
-      <div id="loginTeacherEmpty" style="display:none;font-size:12px;color:var(--text-3,#94a3b8);padding:6px 2px">কোনো শিক্ষক পাওয়া যায়নি — অন্য নাম বা সিরিয়াল নম্বর চেষ্টা করুন।</div>
+      <select id="loginTeacher" onchange="document.getElementById('loginPass').value=''"></select>
     </div>
     <div class="field" id="passwordField">
       <label>পাসওয়ার্ড</label>
@@ -2766,10 +2955,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
     <button class="tool-btn leave-btn" id="leaveListBtn" onclick="openLeaveListModal()" title="ছুটিতে থাকা শিক্ষকদের তালিকা">
       <span class="icon">🌙</span> <span class="lbl">ছুটি</span>
       <span class="leave-count-badge" id="leaveCountBadge" style="display:none">0</span>
-    </button>
-    <!-- 🔊 Voice Announce — এখনই বর্তমান পিরিয়ড ঘোষণা করো (অ্যাডমিন+ম্যানেজার) -->
-    <button class="tool-btn admin-mgr-only" id="voiceAnnounceBtn" onclick="announceNow()" title="এখনই বর্তমান পিরিয়ড ও ছুটির শিক্ষক ঘোষণা করুন">
-      <span class="icon">🔊</span> <span class="lbl">এখনই ঘোষণা</span>
     </button>
     <!-- 📊 Live Dashboard — Admin/Manager only -->
     <button class="tool-btn admin-mgr-only" data-perm="dashboard" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
@@ -2932,13 +3117,13 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <div class="toggle-row">
           <div class="info"><div class="lbl">থিম নির্বাচন</div><div class="desc">পুরো অ্যাপের চেহারা ও রঙ পরিবর্তন করুন</div></div>
           <select id="setThemeSelect" onchange="setThemeChoice(this.value)" style="min-width:190px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface-2);font-weight:700">
-            <option value="light">☀️ ডিফল্ট থিম</option>
-            <option value="custom">🎨 কাস্টম থিম (নিজের তৈরি)</option>
+            <option value="light">☀️ ডিফল্ট (লাইট)</option>
+            <option value="minimal">🏢 মিনিমাল ও কর্পোরেট</option>
+            <option value="nature">🌿 প্রকৃতি ও টিল</option>
+            <option value="pastel">🎨 সফট পেস্টেল</option>
+            <option value="dark">🌙 ডার্ক (আই-কেয়ার)</option>
+            <option value="contrast">🔲 হাই কনট্রাস্ট</option>
           </select>
-        </div>
-        <div class="toggle-row admin-only">
-          <div class="info"><div class="lbl">🎨 নিজের থিম তৈরি করুন</div><div class="desc">শক্তিশালী থিম বিল্ডার — পুরো অ্যাপের রঙ নিজের মতো সাজান (শুধু অ্যাডমিন)</div></div>
-          <button class="tool-btn primary" type="button" onclick="openThemeBuilder()" style="white-space:nowrap">🎨 থিম বিল্ডার খুলুন</button>
         </div>
         <input type="checkbox" id="setDark" style="display:none">
         <div class="toggle-row">
@@ -3169,30 +3354,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
         </div>
 
         <div class="divider"></div>
-        <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা</h3>
-        <div style="font-size:11.5px;color:var(--text-2);background:var(--surface-2);padding:9px 11px;border-radius:8px;line-height:1.65;margin-bottom:10px">
-          প্রতি পিরিয়ড শুরু হলে অ্যাপ নিজে থেকেই বাংলায় বলবে — যেমন <strong>“তৃতীয় পিরিয়ড শুরু হয়েছে”</strong>, এবং কোনো শিক্ষক ছুটিতে থাকলে <strong>“মোঃ করিম স্যার আজ ছুটিতে আছেন”</strong>। ইন্টারনেট ছাড়াই কাজ করে (ডিভাইসের নিজস্ব ভয়েস)।
-        </div>
-        <div class="toggle-row">
-          <div class="info"><div class="lbl">📢 অটো পিরিয়ড ঘোষণা</div><div class="desc">প্রতি পিরিয়ড শুরুর সময় স্বয়ংক্রিয়ভাবে বলবে</div></div>
-          <label class="switch"><input type="checkbox" id="setVoiceAnnounce"><span class="slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <div class="info"><div class="lbl">🌙 ছুটির শিক্ষকের নাম বলবে</div><div class="desc">ঘোষণার সাথে আজ ছুটিতে থাকা শিক্ষকদের নামও বলবে</div></div>
-          <label class="switch"><input type="checkbox" id="setVoiceAnnounceLeave"><span class="slider"></span></label>
-        </div>
-        <div class="field"><label>🎙️ ভয়েস নির্বাচন (বাংলা থাকলে স্বয়ংক্রিয়)</label>
-          <select id="setVoiceURI"><option value="">স্বয়ংক্রিয় (সেরা বাংলা ভয়েস)</option></select>
-        </div>
-        <div class="field"><label>কথার গতি (0.5 = ধীর, 1.5 = দ্রুত)</label>
-          <input id="setVoiceRate" type="number" min="0.5" max="1.5" step="0.05" placeholder="0.92">
-        </div>
-        <div class="field"><label>স্বরের পিচ (0.5–2.0)</label>
-          <input id="setVoicePitch" type="number" min="0.5" max="2" step="0.1" placeholder="1.0">
-        </div>
-        <button class="tool-btn" style="width:100%;margin-top:4px" type="button" onclick="testVoiceAnnounce()">🔊 ভয়েস ঘোষণা পরীক্ষা করুন</button>
-
-        <div class="divider"></div>
         <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">ড্যাশবোর্ড</h3>
         <div class="field"><label>রিফ্রেশ ইন্টারভাল</label>
           <select id="setDashRefresh"><option value="30">৩০ সেকেন্ড</option><option value="60">১ মিনিট</option><option value="300">৫ মিনিট</option><option value="0">ম্যানুয়াল</option></select>
@@ -3385,39 +3546,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
             <button class="tool-btn primary" style="width:100%" onclick="acTrustThisDevice()">📱 এই ডিভাইস বিশ্বস্ত করুন</button>
           </div>
           <div style="margin-top:12px" id="acTrustedList"></div>
-        </div>
-
-        <!-- 🔔 ছুটির আবেদন নোটিফিকেশন ও হোয়াটসঅ্যাপ -->
-        <div class="ac-section">
-          <h3>🔔 ছুটির আবেদন অ্যালার্ম ও হোয়াটসঅ্যাপ</h3>
-          <div class="ac-desc">শিক্ষক ছুটির আবেদন করলে অ্যাডমিনের কাছে শব্দসহ অ্যালার্ম বাজবে। আবেদন গ্রহণ বা বাতিল না করা পর্যন্ত প্রতিবার প্রবেশে আবার অ্যালার্ম বাজবে। আবেদনটি অ্যাডমিনের হোয়াটসঅ্যাপ নম্বরেও পাঠানো যাবে।</div>
-          <div class="ac-add-form" style="margin-top:8px">
-            <div class="row">
-              <div>
-                <label>অ্যাডমিনের হোয়াটসঅ্যাপ নম্বর (দেশের কোডসহ, শুধু সংখ্যা)</label>
-                <input id="setAdminWhatsapp" type="text" inputmode="numeric" autocomplete="off" placeholder="যেমন: 8801712345678" style="width:100%;box-sizing:border-box">
-              </div>
-            </div>
-            <div style="font-size:11px;color:var(--text-3);margin:-4px 0 8px;line-height:1.6">উদাহরণ: বাংলাদেশের ০১৭১২৩৪৫৬৭৮ নম্বরের জন্য লিখুন <strong>8801712345678</strong> (শুরুর ০ বাদ, আগে 880)।</div>
-            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px">
-              <label style="font-weight:800;font-size:12.5px;color:var(--text);display:block;margin-bottom:5px">🔔 আবেদন এলে অ্যালার্ম কতবার বাজবে</label>
-              <select id="setLeaveAlarmCount" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-weight:700;font-size:13px;box-sizing:border-box">
-                <option value="1">১ বার</option>
-                <option value="2">২ বার</option>
-                <option value="3">৩ বার</option>
-              </select>
-              <div style="font-size:11px;color:var(--text-3);margin-top:5px;line-height:1.6">নতুন ছুটির আবেদন এলে অ্যালার্ম টোনটি পরপর কতবার বাজবে তা অ্যাডমিন এখান থেকে ঠিক করতে পারবেন।</div>
-            </div>
-            <div class="toggle-row" style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px">
-              <div class="info"><div class="lbl">🔁 বারবার অ্যালার্ম</div><div class="desc">পেন্ডিং আবেদন থাকা পর্যন্ত প্রতিবার লগইনে ও থেমে থেমে অ্যালার্ম বাজবে</div></div>
-              <label class="switch"><input type="checkbox" id="setLeaveAlarmRepeat"><span class="slider"></span></label>
-            </div>
-            <div class="toggle-row" style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:8px">
-              <div class="info"><div class="lbl">📲 হোয়াটসঅ্যাপে পাঠানো</div><div class="desc">শিক্ষক আবেদন জমা দিলে অ্যাডমিনের হোয়াটসঅ্যাপে পাঠানোর সুযোগ দেখাবে</div></div>
-              <label class="switch"><input type="checkbox" id="setLeaveSendWhatsapp"><span class="slider"></span></label>
-            </div>
-            <button class="tool-btn" style="width:100%;margin-top:10px" type="button" onclick="testNotifSound()">🔊 অ্যালার্ম শব্দ পরীক্ষা করুন</button>
-          </div>
         </div>
       </div>
     </div>
@@ -4053,140 +4181,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
   </div>
 </div>
 
-<!-- 🎨 থিম বিল্ডার মোডাল (শুধু অ্যাডমিন) -->
-<div class="modal-overlay" id="themeBuilderModal">
-  <div class="modal narrow">
-    <div class="modal-header" style="background:linear-gradient(135deg,#7c3aed 0%,#6d28d9 100%)">
-      <h2 style="color:#fff">🎨 থিম বিল্ডার</h2>
-      <button class="modal-close" onclick="closeModal('themeBuilderModal')">×</button>
-    </div>
-    <div class="modal-body">
-      <div style="font-size:12.5px;color:var(--text-2);margin-bottom:14px;line-height:1.7;background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:10px;padding:11px 13px">
-        🎨 <strong>নিজের থিম তৈরি করুন</strong> — প্রতিটি রঙ পরিবর্তন করলে সাথে সাথেই পুরো অ্যাপে লাইভ দেখা যাবে। পছন্দ হলে <strong>“💾 সংরক্ষণ ও প্রয়োগ”</strong> চাপুন। এই থিম সব ডিভাইসে সংরক্ষিত থাকবে এবং শুধুমাত্র অ্যাডমিন পরিবর্তন করতে পারবেন।
-      </div>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        <button class="tool-btn" type="button" onclick="applyThemePreset('teal')">🟢 সবুজ-টিল</button>
-        <button class="tool-btn" type="button" onclick="applyThemePreset('blue')">🔵 কর্পোরেট নীল</button>
-        <button class="tool-btn" type="button" onclick="applyThemePreset('night')">🌙 নাইট মোড</button>
-        <button class="tool-btn" type="button" onclick="applyThemePreset('warm')">🟠 উষ্ণ</button>
-        <button class="tool-btn" type="button" onclick="applyThemePreset('pink')">🌸 কোমল</button>
-      </div>
-
-      <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">পৃষ্ঠা ও কার্ড</h3>
-      <div class="tb-grid">
-        <div class="tb-row"><label>পৃষ্ঠার ব্যাকগ্রাউন্ড</label><input type="color" id="tbBg" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>কার্ড / প্যানেল</label><input type="color" id="tbSurface" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>হালকা সারফেস</label><input type="color" id="tbSurface2" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>বর্ডার / রেখা</label><input type="color" id="tbBorder" oninput="liveThemePreview()"></div>
-      </div>
-
-      <div class="divider"></div>
-      <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">টেক্সট</h3>
-      <div class="tb-grid">
-        <div class="tb-row"><label>মূল টেক্সট</label><input type="color" id="tbText" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>গৌণ টেক্সট</label><input type="color" id="tbText2" oninput="liveThemePreview()"></div>
-      </div>
-
-      <div class="divider"></div>
-      <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">প্রধান রঙ ও হেডার</h3>
-      <div class="tb-grid">
-        <div class="tb-row"><label>প্রাইমারি (বাটন/অ্যাকসেন্ট)</label><input type="color" id="tbPrimary" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>প্রাইমারি হোভার</label><input type="color" id="tbPrimaryHover" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>হেডার রঙ ১</label><input type="color" id="tbHeader1" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>হেডার রঙ ২</label><input type="color" id="tbHeader2" oninput="liveThemePreview()"></div>
-      </div>
-
-      <div class="divider"></div>
-      <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">রুটিন টেবিল</h3>
-      <div class="tb-grid">
-        <div class="tb-row"><label>SL সেল ব্যাকগ্রাউন্ড</label><input type="color" id="tbSlBg" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>SL সেল টেক্সট</label><input type="color" id="tbSlText" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>নাম সেল ব্যাকগ্রাউন্ড</label><input type="color" id="tbNameBg" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>নাম সেল টেক্সট</label><input type="color" id="tbNameText" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>বিরতি ব্যাকগ্রাউন্ড</label><input type="color" id="tbBreakBg" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>বিরতি টেক্সট</label><input type="color" id="tbBreakText" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>Free/ছুটি ব্যাকগ্রাউন্ড</label><input type="color" id="tbFreeBg" oninput="liveThemePreview()"></div>
-        <div class="tb-row"><label>Free/ছুটি টেক্সট</label><input type="color" id="tbFreeText" oninput="liveThemePreview()"></div>
-      </div>
-
-      <div style="margin-top:14px;font-size:11.5px;color:var(--text-3);line-height:1.6">
-        💡 “সংরক্ষণ ও প্রয়োগ” চাপলে থিমটি <strong>কাস্টম থিম</strong> হিসেবে সক্রিয় হবে। বন্ধ করলে আগের অবস্থায় ফিরে যাবে (সংরক্ষণ না করলে)।
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="tool-btn" onclick="cancelThemeBuilder()">বাতিল</button>
-      <button class="tool-btn" onclick="resetThemeBuilderDefaults()">↺ ডিফল্ট রঙ</button>
-      <button class="tool-btn primary" onclick="saveThemeBuilder()">💾 সংরক্ষণ ও প্রয়োগ</button>
-    </div>
-  </div>
-</div>
-
-<!-- 🎨 থিম বিল্ডার মোডাল (শুধু অ্যাডমিন) -->
-<div class="modal-overlay" id="themeBuilderModal">
-  <div class="modal narrow">
-    <div class="modal-header" style="background:linear-gradient(135deg,#7c3aed 0%,#6366f1 100%)">
-      <h2 style="color:#fff">🎨 থিম বিল্ডার — নিজের থিম তৈরি করুন</h2>
-      <button class="modal-close" onclick="closeModal('themeBuilderModal')">×</button>
-    </div>
-    <div class="modal-body">
-      <div style="font-size:12.5px;color:var(--text-2);margin-bottom:14px;line-height:1.7;background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:10px;padding:11px 13px">
-        🎨 <strong>নিজের থিম তৈরি করুন</strong> — প্রতিটি রঙ পরিবর্তন করার সাথে সাথেই পুরো অ্যাপে লাইভ প্রিভিউ দেখা যাবে। পছন্দ হলে <strong>সংরক্ষণ ও প্রয়োগ</strong> চাপুন। এটি শুধুমাত্র অ্যাডমিনের নিয়ন্ত্রণে।
-      </div>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        <button class="tool-btn" type="button" onclick="applyThemePreset('teal')">🌊 টিল</button>
-        <button class="tool-btn" type="button" onclick="applyThemePreset('indigo')">🔷 ইন্ডিগো</button>
-        <button class="tool-btn" type="button" onclick="applyThemePreset('emerald')">🌿 সবুজ</button>
-        <button class="tool-btn" type="button" onclick="applyThemePreset('rose')">🌹 গোলাপি</button>
-        <button class="tool-btn" type="button" onclick="applyThemePreset('night')">🌙 রাত</button>
-        <button class="tool-btn" type="button" onclick="applyThemePreset('sand')">🏜️ বালি</button>
-      </div>
-
-      <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">🖼️ অ্যাপের সাধারণ রঙ</h3>
-      <div class="tb-grid">
-        <div class="tb-field"><label>পৃষ্ঠার ব্যাকগ্রাউন্ড</label><input type="color" id="tbBg" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>কার্ড/প্যানেল</label><input type="color" id="tbSurface" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>সেকেন্ডারি সারফেস</label><input type="color" id="tbSurface2" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>বর্ডার রেখা</label><input type="color" id="tbBorder" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>মূল টেক্সট</label><input type="color" id="tbText" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>হালকা টেক্সট</label><input type="color" id="tbText2" oninput="liveThemePreview()"></div>
-      </div>
-
-      <div class="divider"></div>
-      <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">⭐ প্রাইমারি ও হেডার</h3>
-      <div class="tb-grid">
-        <div class="tb-field"><label>প্রাইমারি রঙ</label><input type="color" id="tbPrimary" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>প্রাইমারি (হোভার)</label><input type="color" id="tbPrimaryHover" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>হেডার রঙ ১</label><input type="color" id="tbHeader1" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>হেডার রঙ ২</label><input type="color" id="tbHeader2" oninput="liveThemePreview()"></div>
-      </div>
-
-      <div class="divider"></div>
-      <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-2);text-transform:uppercase">📋 রুটিন সেলের রঙ</h3>
-      <div class="tb-grid">
-        <div class="tb-field"><label>SL ব্যাকগ্রাউন্ড</label><input type="color" id="tbSlBg" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>SL টেক্সট</label><input type="color" id="tbSlText" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>নাম ব্যাকগ্রাউন্ড</label><input type="color" id="tbNameBg" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>নাম টেক্সট</label><input type="color" id="tbNameText" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>বিরতি ব্যাকগ্রাউন্ড</label><input type="color" id="tbBreakBg" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>বিরতি টেক্সট</label><input type="color" id="tbBreakText" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>Free ব্যাকগ্রাউন্ড</label><input type="color" id="tbFreeBg" oninput="liveThemePreview()"></div>
-        <div class="tb-field"><label>Free টেক্সট</label><input type="color" id="tbFreeText" oninput="liveThemePreview()"></div>
-      </div>
-
-      <div style="margin-top:14px;font-size:12px;color:var(--text-2);background:var(--surface-2);padding:10px;border-radius:8px;line-height:1.6">
-        💡 পরিবর্তন লাইভ প্রিভিউ হিসেবে দেখা যাচ্ছে। <strong>বাতিল</strong> চাপলে আগের অবস্থায় ফিরে যাবে; <strong>সংরক্ষণ ও প্রয়োগ</strong> চাপলে কাস্টম থিম স্থায়ীভাবে সক্রিয় হবে।
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="tool-btn" onclick="cancelThemeBuilder()">বাতিল</button>
-      <button class="tool-btn" onclick="resetThemeBuilderDefaults()">↺ ডিফল্টে ফেরত</button>
-      <button class="tool-btn primary" onclick="saveThemeBuilder()">💾 সংরক্ষণ ও প্রয়োগ</button>
-    </div>
-  </div>
-</div>
-
 <!-- 🌙 ছুটিতে থাকা শিক্ষকদের তালিকা মোডাল -->
 <div class="modal-overlay" id="leaveListModal">
   <div class="modal narrow">
@@ -4299,7 +4293,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
     </div>
     <div class="modal-body">
       <div class="info-banner" style="font-weight:700">
-        📨 আপনার আবেদন <strong>বরাবর পরিচালক/অধ্যক্ষ</strong> মহোদয়ের কাছে পাঠানো হবে। অনুমোদন বা বাতিল হলে আপনি এই অ্যাপেই জানতে পারবেন।
+        আপনার আবেদন প্রিন্সিপাল/ম্যানেজারের কাছে পাঠানো হবে। অনুমোদন বা বাতিল হলে আপনি এই অ্যাপেই জানতে পারবেন।
       </div>
       <div class="field">
         <label style="font-weight:700">ছুটির ধরন</label>
@@ -4509,20 +4503,6 @@ let state = {
     colorBreakText: '#1e3a8a',
     colorFreeBg: '#fee2e2',
     colorFreeText: '#991b1b',
-    /* 🎨 Custom theme palette (theme === 'custom' হলে প্রযোজ্য) */
-    customBg: '#eef2f7',
-    customSurface: '#ffffff',
-    customSurface2: '#f3f6fa',
-    customBorder: '#d8dee8',
-    customText: '#0f172a',
-    customText2: '#475569',
-    customPrimaryHover: '#115e59',
-    customHeaderBg: 'linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%)',
-    /* 🔔 ছুটির আবেদন নোটিফিকেশন */
-    adminWhatsapp: '',          // অ্যাডমিনের হোয়াটসঅ্যাপ নম্বর (দেশের কোডসহ, শুধু সংখ্যা)
-    leaveAlarmRepeat: true,     // পেন্ডিং আবেদন থাকলে বারবার অ্যালার্ম বাজবে
-    leaveAlarmCount: 3,         // আবেদন এলে অ্যালার্ম কতবার বাজবে (১/২/৩)
-    leaveSendWhatsapp: true,    // আবেদন জমা দিলে হোয়াটসঅ্যাপে পাঠানোর সুযোগ
     /* Feature toggles */
     showRowLabels: false,
     floatingScrollbar: true,
@@ -4530,12 +4510,6 @@ let state = {
     voiceEnabled: true,
     aiEnabled: true,
     alwaysShowColTools: false,
-    /* 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা (প্রতি পিরিয়ডে) */
-    voiceAnnounce: true,        // পিরিয়ড শুরুর ঘোষণা স্বয়ংক্রিয়ভাবে বলবে
-    voiceAnnounceLeave: true,   // ছুটিতে থাকা শিক্ষকদের নামও বলবে
-    voiceRate: 0.92,            // কথার গতি (0.5–1.5)
-    voicePitch: 1.0,            // স্বরের পিচ
-    voiceURI: '',               // নির্বাচিত ভয়েস (খালি = স্বয়ংক্রিয় বাংলা)
     /* SL & Name column customization */
     slLocked: false,
     nameLocked: false,
@@ -4666,30 +4640,6 @@ function loadState(){
       if(ss.slLabel === undefined) ss.slLabel = 'SL';
       if(ss.nameLabel === undefined) ss.nameLabel = 'শিক্ষকের নাম';
       if(ss.slNameSwapped === undefined) ss.slNameSwapped = false;
-      // Migrate v1.3: সরিয়ে ফেলা থিম (dark/minimal/nature/pastel/contrast) → ডিফল্ট
-      if(!['light','custom'].includes(ss.theme)) ss.theme = 'light';
-      // Migrate v1.3: কাস্টম থিম প্যালেট ও নোটিফিকেশন ফিল্ড
-      if(ss.customBg === undefined) ss.customBg = '#eef2f7';
-      if(ss.customSurface === undefined) ss.customSurface = '#ffffff';
-      if(ss.customSurface2 === undefined) ss.customSurface2 = '#f3f6fa';
-      if(ss.customBorder === undefined) ss.customBorder = '#d8dee8';
-      if(ss.customText === undefined) ss.customText = '#0f172a';
-      if(ss.customText2 === undefined) ss.customText2 = '#475569';
-      if(ss.customPrimaryHover === undefined) ss.customPrimaryHover = '#115e59';
-      if(ss.customHeaderBg === undefined) ss.customHeaderBg = 'linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%)';
-      if(ss.adminWhatsapp === undefined) ss.adminWhatsapp = '';
-      if(ss.leaveAlarmRepeat === undefined) ss.leaveAlarmRepeat = true;
-      if(ss.leaveSendWhatsapp === undefined) ss.leaveSendWhatsapp = true;
-      // Migrate v1.5: অ্যালার্ম কতবার বাজবে (১/২/৩) — শুধু 1,2,3 গ্রহণযোগ্য
-      if(![1,2,3].includes(ss.leaveAlarmCount)){
-        ss.leaveAlarmCount = (ss.leaveAlarmCount === 4) ? 3 : 3;
-      }
-      // Migrate v1.4: স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা
-      if(ss.voiceAnnounce === undefined) ss.voiceAnnounce = true;
-      if(ss.voiceAnnounceLeave === undefined) ss.voiceAnnounceLeave = true;
-      if(ss.voiceRate === undefined) ss.voiceRate = 0.92;
-      if(ss.voicePitch === undefined) ss.voicePitch = 1.0;
-      if(ss.voiceURI === undefined) ss.voiceURI = '';
     }
   }catch(e){
     console.warn('Failed to load state:', e);
@@ -5690,11 +5640,7 @@ function doLogin(){
 
   if(role === 'admin' || role === 'manager'){
     ensureAccounts();
-    // অগ্রাধিকার: নাম-ড্রপডাউন; খালি হলে ম্যানুয়াল ইউজারনেম ফিল্ড (ফলব্যাক)
-    const selEl = document.getElementById('loginAccountSelect');
-    const acctField = document.getElementById('accountSelectField');
-    const usingDropdown = selEl && acctField && acctField.style.display !== 'none' && selEl.value;
-    const u = (usingDropdown ? selEl.value : document.getElementById('loginUser').value).trim();
+    const u = document.getElementById('loginUser').value.trim();
     const p = document.getElementById('loginPass').value;
     const arr = role === 'admin' ? state.accounts.admins : state.accounts.managers;
     const acct = arr.find(a => a.username === u);
@@ -5746,8 +5692,6 @@ function doLogin(){
   scheduleHourlyBackup();
   // 🔔 Notification system kick-off
   initNotificationSystem();
-  // 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা চালু
-  startVoiceAnnouncer();
   showToast('✅ স্বাগতম, ' + currentUser.name + '!', 'success');
 }
 
@@ -5757,8 +5701,6 @@ function logout(){
   saveState();
   // 🔔 stop notification polling
   stopNotificationSystem();
-  // 🔊 ভয়েস ঘোষণা বন্ধ
-  stopVoiceAnnouncer();
   currentUser = null;
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('appRoot').style.display = 'none';
@@ -5801,47 +5743,14 @@ function canEditTeacher(tid){
 /* Pre-populate login UI based on role */
 document.getElementById('loginRole').addEventListener('change', e=>{
   const r = e.target.value;
-  const isAcct = (r==='admin'||r==='manager');
-  document.getElementById('accountSelectField').style.display = isAcct ? 'block' : 'none';
-  // ম্যানুয়াল ইউজারনেম ফিল্ড সাধারণত লুকানো; শুধু ফলব্যাক হিসেবে কোডে ব্যবহৃত
-  document.getElementById('usernameField').style.display = 'none';
+  document.getElementById('usernameField').style.display = (r==='admin'||r==='manager')?'block':'none';
   document.getElementById('teacherSelectField').style.display = (r==='teacher')?'block':'none';
   // পাসওয়ার্ড সব ভূমিকার জন্য দরকার (অ্যাডমিন / ম্যানেজার / শিক্ষক)
   document.getElementById('passwordField').style.display = 'block';
   document.getElementById('loginPass').value = '';
-  if(isAcct){
-    populateLoginAccounts(r);
-  } else if(r === 'teacher'){
-    const s = document.getElementById('loginTeacherSearch');
-    if(s) s.value = '';
-    populateLoginTeachers();
-  }
+  if(r === 'admin') document.getElementById('loginUser').value = 'admin';
+  if(r === 'manager') document.getElementById('loginUser').value = 'manager';
 });
-
-/* অ্যাডমিন/ম্যানেজার ভূমিকার জন্য নামের ড্রপডাউন ভরাট করো।
-   একাধিক অ্যাকাউন্ট থাকলে সবগুলো নাম তালিকায় আসবে; option value = username। */
-function populateLoginAccounts(role){
-  ensureAccounts();
-  const sel = document.getElementById('loginAccountSelect');
-  if(!sel) return;
-  const arr = (role === 'admin') ? state.accounts.admins : state.accounts.managers;
-  const list = Array.isArray(arr) ? arr : [];
-  if(!list.length){
-    sel.innerHTML = `<option value="">কোনো অ্যাকাউন্ট নেই</option>`;
-    return;
-  }
-  sel.innerHTML = list.map(a=>{
-    const uname = esc(a.username||'');
-    const nm = esc(a.name || a.username || '');
-    return `<option value="${uname}">${nm}</option>`;
-  }).join('');
-}
-
-/* শিক্ষক ড্রপডাউন — নাম বা সিরিয়াল নম্বর দিয়ে ফিল্টার (লাইভ সার্চ)।
-   সিরিয়াল = state.teachers-এর ক্রম অনুসারে ১-ভিত্তিক নম্বর (টেবিলের SL-এর মতো)। */
-function filterLoginTeachers(q){
-  populateLoginTeachers(q);
-}
 
 /* ===========================================================
    RENDERING
@@ -6454,39 +6363,10 @@ function renderFilters(){
   fs.innerHTML = '<option value="">সব বিষয়</option>' + sub.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
 }
 
-function populateLoginTeachers(query){
+function populateLoginTeachers(){
   const sel = document.getElementById('loginTeacher');
   if(!sel) return;
-  const teachers = Array.isArray(state.teachers) ? state.teachers : [];
-  const q = (query == null ? '' : String(query)).trim();
-
-  // বাংলা সংখ্যা → ইংরেজি (সিরিয়াল নম্বর সার্চের জন্য)
-  const bnToEn = s => String(s).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
-  const qNorm = bnToEn(q).toLowerCase();
-  const qDigits = qNorm.replace(/[^0-9]/g, '');
-
-  let list = teachers.map((t, i) => ({ t, sl: i + 1 }));
-  if(q){
-    list = list.filter(({ t, sl }) => {
-      const nameHit = (t.name || '').toLowerCase().includes(q.toLowerCase());
-      // সিরিয়াল: পুরো সংখ্যা মিল (যেমন "12" → ১২ নম্বর শিক্ষক)
-      const slHit = qDigits !== '' && String(sl) === qDigits;
-      // আংশিক সংখ্যা টাইপ করলেও সাহায্য (যেমন "1" → 1,10,11...)
-      const slPartial = qDigits !== '' && String(sl).startsWith(qDigits);
-      return nameHit || slHit || slPartial;
-    });
-  }
-
-  sel.innerHTML = list.map(({ t, sl }) =>
-    `<option value="${esc(t.id)}">${toBnNum(sl)}. ${esc(t.name)}</option>`
-  ).join('');
-
-  // খালি-অবস্থা বার্তা ও নির্বাচন
-  const emptyEl = document.getElementById('loginTeacherEmpty');
-  if(emptyEl) emptyEl.style.display = list.length ? 'none' : 'block';
-  if(list.length){
-    sel.selectedIndex = 0;            // প্রথম মিলটি স্বয়ংক্রিয় নির্বাচিত
-  }
+  sel.innerHTML = state.teachers.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
 }
 
 /* ===========================================================
@@ -7730,211 +7610,6 @@ function startDashTimer(){
 }
 
 /* ===========================================================
-   🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা (Web Speech API)
-   - প্রতি পিরিয়ড শুরু হলে নিজে থেকে বলে: "তৃতীয় পিরিয়ড শুরু হয়েছে"
-   - ছুটিতে থাকা শিক্ষকদের নামও বলে: "মোঃ করিম স্যার আজ ছুটিতে আছেন"
-   - সম্পূর্ণ অফলাইন — ব্রাউজারের নিজস্ব ভয়েস ব্যবহার করে, কোনো API key লাগে না।
-=========================================================== */
-let _voiceTimer = null;          // প্রতি মিনিটে চেক করার টাইমার
-let _lastAnnouncedSlotId = null; // একই পিরিয়ড দুবার বলা ঠেকাতে
-let _voicesCache = [];
-
-function _ttsSupported(){
-  return ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
-}
-
-function _loadVoices(){
-  if(!_ttsSupported()) return [];
-  try{ _voicesCache = window.speechSynthesis.getVoices() || []; }catch(_){ _voicesCache = []; }
-  return _voicesCache;
-}
-if(_ttsSupported()){
-  _loadVoices();
-  try{ window.speechSynthesis.onvoiceschanged = () => { _loadVoices(); populateVoiceSelect(); }; }catch(_){}
-}
-
-/* সবচেয়ে ভালো বাংলা ভয়েস খুঁজি; না থাকলে যে কোনো প্রাপ্য ভয়েস */
-function _pickVoice(){
-  const list = _voicesCache.length ? _voicesCache : _loadVoices();
-  if(!list || !list.length) return null;
-  const wantURI = (state.settings && state.settings.voiceURI) || '';
-  if(wantURI){
-    const exact = list.find(v => v.voiceURI === wantURI);
-    if(exact) return exact;
-  }
-  // bn, bn-BD, bn-IN — যেকোনো বাংলা ভয়েস
-  const bn = list.find(v => /^bn(-|_|$)/i.test(v.lang || ''));
-  if(bn) return bn;
-  // hi (হিন্দি) বাংলা স্বরবর্ণের কাছাকাছি — fallback হিসেবে গ্রহণযোগ্য
-  const hi = list.find(v => /^hi(-|_|$)/i.test(v.lang || ''));
-  if(hi) return hi;
-  return list[0] || null;
-}
-
-/* সেটিংসের ভয়েস ড্রপডাউন ভরাট করি */
-function populateVoiceSelect(){
-  const sel = document.getElementById('setVoiceURI');
-  if(!sel) return;
-  const list = _voicesCache.length ? _voicesCache : _loadVoices();
-  const cur = (state.settings && state.settings.voiceURI) || '';
-  let html = '<option value="">স্বয়ংক্রিয় (সেরা বাংলা ভয়েস)</option>';
-  // বাংলা ভয়েস আগে দেখাই
-  const bnFirst = list.slice().sort((a,b)=>{
-    const ab = /^bn/i.test(a.lang||'') ? 0 : 1;
-    const bb = /^bn/i.test(b.lang||'') ? 0 : 1;
-    return ab - bb;
-  });
-  bnFirst.forEach(v => {
-    const isBn = /^bn/i.test(v.lang||'');
-    html += `<option value="${esc(v.voiceURI)}">${isBn?'🇧🇩 ':''}${esc(v.name)} (${esc(v.lang||'')})</option>`;
-  });
-  sel.innerHTML = html;
-  sel.value = cur;
-}
-
-/* পিরিয়ড নম্বরকে বাংলা পদবাচক শব্দে রূপান্তর (১ম→প্রথম) */
-const _ORDINAL_BN = ['','প্রথম','দ্বিতীয়','তৃতীয়','চতুর্থ','পঞ্চম','ষষ্ঠ','সপ্তম','অষ্টম','নবম','দশম','একাদশ','দ্বাদশ','ত্রয়োদশ','চতুর্দশ','পঞ্চদশ'];
-function _ordinalBn(n){
-  if(n >= 1 && n < _ORDINAL_BN.length) return _ORDINAL_BN[n];
-  return toBnNum(n) + ' নম্বর';
-}
-
-/* বর্তমান স্লট কোন পিরিয়ড (শুধু slot কলাম গুনে; break বাদ) */
-function _slotPeriodInfo(){
-  const slotCols = state.columns.filter(c => c.type === 'slot');
-  const cur = getCurrentSlot();
-  if(!cur) return null;
-  const idx = slotCols.findIndex(c => c.id === cur.id);
-  return { col: cur, periodNo: idx >= 0 ? idx + 1 : 0 };
-}
-
-/* ঘোষণার বাক্য তৈরি */
-function _buildAnnouncement(opts){
-  opts = opts || {};
-  const parts = [];
-  const info = _slotPeriodInfo();
-  if(info && info.periodNo > 0){
-    parts.push(_ordinalBn(info.periodNo) + ' পিরিয়ড শুরু হয়েছে।');
-  } else if(info && info.col){
-    parts.push('নতুন পিরিয়ড শুরু হয়েছে।');
-  } else if(opts.manual){
-    parts.push('এই মুহূর্তে কোনো পিরিয়ড চলছে না।');
-  }
-  // ছুটির শিক্ষক
-  if(state.settings && state.settings.voiceAnnounceLeave !== false){
-    const leave = getOnLeaveTeachers();
-    if(leave.length){
-      const names = leave.map(t => (t.name || '').trim()).filter(Boolean);
-      if(names.length === 1){
-        parts.push(names[0] + ' আজ ছুটিতে আছেন।');
-      } else if(names.length > 1){
-        parts.push(names.join(', ') + ' — তাঁরা আজ ছুটিতে আছেন।');
-      }
-    }
-  }
-  return parts.join(' ');
-}
-
-/* মূল কথা বলার ফাংশন */
-function speakBangla(text){
-  if(!text) return false;
-  if(!_ttsSupported()){
-    showToast('⚠️ এই ব্রাউজারে ভয়েস সাপোর্ট নেই — তথ্য টেক্সটে দেখানো হলো','warning',3000);
-    return false;
-  }
-  try{
-    window.speechSynthesis.cancel(); // আগের কিছু চললে থামাও
-    const u = new SpeechSynthesisUtterance(text);
-    const v = _pickVoice();
-    if(v){ u.voice = v; u.lang = v.lang || 'bn-BD'; }
-    else { u.lang = 'bn-BD'; }
-    const s = state.settings || {};
-    u.rate = (typeof s.voiceRate === 'number' && s.voiceRate >= 0.5 && s.voiceRate <= 1.5) ? s.voiceRate : 0.92;
-    u.pitch = (typeof s.voicePitch === 'number' && s.voicePitch >= 0.5 && s.voicePitch <= 2) ? s.voicePitch : 1.0;
-    u.volume = 1.0;
-    window.speechSynthesis.speak(u);
-    return true;
-  }catch(e){
-    console.warn('TTS speak failed:', e);
-    return false;
-  }
-}
-
-/* ম্যানুয়াল — টুলবার বাটন থেকে "এখনই ঘোষণা" */
-function announceNow(){
-  // নিয়ন্ত্রণ শুধু অ্যাডমিন/ম্যানেজার
-  if(!_voiceControlAllowed()){
-    showToast('⛔ ভয়েস ঘোষণা শুধু অ্যাডমিন ও ম্যানেজার নিয়ন্ত্রণ করতে পারবেন','warning');
-    return;
-  }
-  const text = _buildAnnouncement({ manual:true });
-  // স্ক্রিনেও দেখাই (ভয়েস না বাজলেও তথ্য মিস হবে না)
-  showNotifToast({ title:'🔊 ঘোষণা', body:text, hint:'' });
-  const ok = speakBangla(text);
-  if(!ok){
-    showToast('🔊 ' + text, 'info', 5000);
-  }
-}
-
-/* সেটিংস → "ভয়েস ঘোষণা পরীক্ষা করুন" */
-function testVoiceAnnounce(){
-  // ইনপুট থেকে সাময়িকভাবে rate/pitch নিয়ে প্রিভিউ
-  const r = parseFloat((document.getElementById('setVoiceRate')||{}).value);
-  const p = parseFloat((document.getElementById('setVoicePitch')||{}).value);
-  if(isFinite(r)) state.settings.voiceRate = Math.min(1.5, Math.max(0.5, r));
-  if(isFinite(p)) state.settings.voicePitch = Math.min(2, Math.max(0.5, p));
-  const vSel = document.getElementById('setVoiceURI');
-  if(vSel) state.settings.voiceURI = vSel.value || '';
-  const sample = 'তৃতীয় পিরিয়ড শুরু হয়েছে। মোঃ করিম স্যার আজ ছুটিতে আছেন।';
-  const ok = speakBangla(sample);
-  showToast(ok ? '🔊 নমুনা ঘোষণা বাজানো হলো' : '⚠️ ভয়েস বাজানো গেল না — ডিভাইসের ভয়েস/সাউন্ড দেখুন', ok?'success':'warning', 3000);
-}
-
-/* প্রতি মিনিটে চেক — নতুন পিরিয়ড শুরু হলে স্বয়ংক্রিয়ভাবে বলো */
-function _voiceTick(){
-  // নিয়ন্ত্রণ শুধু অ্যাডমিন/ম্যানেজার — অন্য রোলে কখনো বাজবে না
-  if(!_voiceControlAllowed()) return;
-  if(!state.settings || state.settings.voiceAnnounce === false) return;
-  const cur = getCurrentSlot();
-  const curId = cur ? cur.id : null;
-  // স্লট বদলেছে (নতুন পিরিয়ড শুরু) — এবং এখন কোনো স্লট চলছে
-  if(curId && curId !== _lastAnnouncedSlotId){
-    _lastAnnouncedSlotId = curId;
-    const text = _buildAnnouncement({ manual:false });
-    if(text){
-      showNotifToast({ title:'🔊 স্বয়ংক্রিয় ঘোষণা', body:text, hint:'' });
-      speakBangla(text);
-    }
-  } else if(!curId){
-    // বিরতি/স্কুল-পরবর্তী — পরের পিরিয়ড আবার ঘোষণার জন্য রিসেট
-    _lastAnnouncedSlotId = null;
-  }
-}
-
-/* 🎛️ ভয়েস ঘোষণার নিয়ন্ত্রণ শুধুমাত্র অ্যাডমিন ও ম্যানেজারের হাতে */
-function _voiceControlAllowed(){
-  return !!(currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager'));
-}
-
-function startVoiceAnnouncer(){
-  if(!_ttsSupported()) return;
-  // শুধুমাত্র অ্যাডমিন/ম্যানেজার লগইন করলে অটো ঘোষণা চালু হবে
-  if(!_voiceControlAllowed()) return;
-  _loadVoices();
-  if(_voiceTimer) clearInterval(_voiceTimer);
-  // লগইনের সময় বর্তমান স্লট "শোনা হয়েছে" ধরে নিই — যাতে ঢোকার সাথে সাথেই
-  // মাঝপথের পিরিয়ড অপ্রত্যাশিতভাবে ঘোষণা না করে; পরের পিরিয়ড থেকে বলবে।
-  const cur = getCurrentSlot();
-  _lastAnnouncedSlotId = cur ? cur.id : null;
-  _voiceTimer = setInterval(_voiceTick, 60000); // প্রতি মিনিটে
-}
-function stopVoiceAnnouncer(){
-  if(_voiceTimer){ clearInterval(_voiceTimer); _voiceTimer = null; }
-  try{ if(_ttsSupported()) window.speechSynthesis.cancel(); }catch(_){}
-  _lastAnnouncedSlotId = null;
-}
-
-/* ===========================================================
    SCHEDULE GENERATOR
    - Auto-generates time labels for slot columns based on
      start time + period duration + break structure.
@@ -8995,8 +8670,6 @@ function switchSetTab(tab){
   if(btn){btn.setAttribute('data-active','true');btn.classList.add('primary')}
   // 🎛️ আকার ট্যাব খুললে মাস্টার স্লাইডারগুলো বর্তমান মান দিয়ে আপডেট করো
   if(tab === 'size'){ try{ syncMasterSizeSliders(); }catch(_){} }
-  // 🔊 ফিচার ট্যাব খুললে ভয়েস ড্রপডাউন ভরাট করো
-  if(tab === 'feature'){ try{ populateVoiceSelect(); }catch(_){} }
   // 🛡️ অ্যাডমিন কন্ট্রোল ট্যাব খুললে প্যানেল রেন্ডার করো (শুধু অ্যাডমিন)
   if(tab === 'admin'){
     if(currentUser && currentUser.role === 'admin'){
@@ -9355,42 +9028,29 @@ function applySettings(){
   root.style.setProperty('--break-col-w', breakW > 0 ? breakW + 'px' : 'auto');
   root.style.setProperty('--break-col-min', (breakW > 0 ? breakW : 60) + 'px');
 
-  // রুটিন সেলের কাস্টম রঙ — "light" (ডিফল্ট) ও "custom" উভয় থিমেই প্রযোজ্য,
-  // যাতে রঙ ট্যাব ও থিম বিল্ডার দুটোই কাজ করে এবং রুটিনের চেহারা ঠিক থাকে।
-  root.style.setProperty('--primary', s.colorPrimary||'#0f766e');
-  root.style.setProperty('--sl-bg', s.colorSlBg||'#bbf7d0');
-  root.style.setProperty('--sl-text', s.colorSlText||'#14532d');
-  root.style.setProperty('--name-bg', s.colorNameBg||'#0f766e');
-  root.style.setProperty('--name-text', s.colorNameText||'#ffffff');
-  root.style.setProperty('--break-bg', s.colorBreakBg||'#dbeafe');
-  root.style.setProperty('--break-text', s.colorBreakText||'#1e3a8a');
-  root.style.setProperty('--free-bg', s.colorFreeBg||'#fee2e2');
-  root.style.setProperty('--free-text', s.colorFreeText||'#991b1b');
-
-  // 🎨 কাস্টম থিম — পুরো অ্যাপের প্যালেট (পৃষ্ঠা/কার্ড/টেক্সট/হেডার)
-  // শুধু theme === 'custom' হলে প্রযোজ্য; 'light' হলে ডিফল্ট :root প্যালেট ফেরত।
-  if(s.theme === 'custom'){
-    root.style.setProperty('--bg', s.customBg || '#f4f6f8');
-    root.style.setProperty('--bg-2', s.customSurface || '#ffffff');
-    root.style.setProperty('--surface', s.customSurface || '#ffffff');
-    root.style.setProperty('--surface-2', s.customSurface2 || '#f9fafb');
-    root.style.setProperty('--border', s.customBorder || '#e5e7eb');
-    root.style.setProperty('--border-strong', s.customBorder || '#d1d5db');
-    root.style.setProperty('--text', s.customText || '#0f172a');
-    root.style.setProperty('--text-2', s.customText2 || '#475569');
-    root.style.setProperty('--primary-hover', s.customPrimaryHover || s.colorPrimary || '#115e59');
-    root.style.setProperty('--header-bg', s.customHeaderBg || ('linear-gradient(135deg,'+(s.colorPrimary||'#0f766e')+' 0%,'+(s.colorPrimary||'#0d9488')+' 100%)'));
+  // Custom colours apply ONLY in the default light theme.
+  // Named themes (minimal/nature/pastel/dark/contrast) keep their own palette
+  // so switching themes never breaks the routine's look.
+  if(!s.theme || s.theme === 'light'){
+    root.style.setProperty('--primary', s.colorPrimary||'#0f766e');
+    root.style.setProperty('--sl-bg', s.colorSlBg||'#bbf7d0');
+    root.style.setProperty('--sl-text', s.colorSlText||'#14532d');
+    root.style.setProperty('--name-bg', s.colorNameBg||'#0f766e');
+    root.style.setProperty('--name-text', s.colorNameText||'#ffffff');
+    root.style.setProperty('--break-bg', s.colorBreakBg||'#dbeafe');
+    root.style.setProperty('--break-text', s.colorBreakText||'#1e3a8a');
+    root.style.setProperty('--free-bg', s.colorFreeBg||'#fee2e2');
+    root.style.setProperty('--free-text', s.colorFreeText||'#991b1b');
   } else {
-    root.style.removeProperty('--bg');
-    root.style.removeProperty('--bg-2');
-    root.style.removeProperty('--surface');
-    root.style.removeProperty('--surface-2');
-    root.style.removeProperty('--border');
-    root.style.removeProperty('--border-strong');
-    root.style.removeProperty('--text');
-    root.style.removeProperty('--text-2');
-    root.style.removeProperty('--primary-hover');
-    root.style.removeProperty('--header-bg');
+    root.style.removeProperty('--primary');
+    root.style.removeProperty('--sl-bg');
+    root.style.removeProperty('--sl-text');
+    root.style.removeProperty('--name-bg');
+    root.style.removeProperty('--name-text');
+    root.style.removeProperty('--break-bg');
+    root.style.removeProperty('--break-text');
+    root.style.removeProperty('--free-bg');
+    root.style.removeProperty('--free-text');
   }
 
   // Sync settings UI controls if open
@@ -9414,12 +9074,7 @@ function applySettings(){
     setOpenaiKey: 'openaiKey', setOpenaiModel: 'openaiModel',
     setAnthropicKey: 'anthropicKey', setAnthropicModel: 'anthropicModel',
     setGeminiKey: 'geminiKey', setGeminiModel: 'geminiModel',
-    setPerplexityKey: 'perplexityKey', setPerplexityModel: 'perplexityModel',
-    setAdminWhatsapp: 'adminWhatsapp', setLeaveAlarmRepeat: 'leaveAlarmRepeat',
-    setLeaveAlarmCount: 'leaveAlarmCount',
-    setLeaveSendWhatsapp: 'leaveSendWhatsapp',
-    setVoiceAnnounce: 'voiceAnnounce', setVoiceAnnounceLeave: 'voiceAnnounceLeave',
-    setVoiceRate: 'voiceRate', setVoicePitch: 'voicePitch', setVoiceURI: 'voiceURI'
+    setPerplexityKey: 'perplexityKey', setPerplexityModel: 'perplexityModel'
   };
   for(const [id, key] of Object.entries(ids)){
     const el = document.getElementById(id);
@@ -9532,27 +9187,6 @@ function saveSettings(){
   s.geminiModel = readSetting('setGeminiModel','str','gemini-2.0-flash') || 'gemini-2.0-flash';
   s.perplexityKey = readSetting('setPerplexityKey','str','') || '';
   s.perplexityModel = readSetting('setPerplexityModel','str','sonar') || 'sonar';
-  // 🔔 ছুটির আবেদন নোটিফিকেশন সেটিংস
-  s.adminWhatsapp = (readSetting('setAdminWhatsapp','str','') || '').replace(/[^0-9]/g,'');
-  s.leaveAlarmRepeat = readSetting('setLeaveAlarmRepeat','bool',true);
-  {
-    let _lac = readSetting('setLeaveAlarmCount','int',3);
-    if(![1,2,3].includes(_lac)) _lac = 3;
-    s.leaveAlarmCount = _lac;
-  }
-  s.leaveSendWhatsapp = readSetting('setLeaveSendWhatsapp','bool',true);
-  // 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা
-  s.voiceAnnounce = readSetting('setVoiceAnnounce','bool',true);
-  s.voiceAnnounceLeave = readSetting('setVoiceAnnounceLeave','bool',true);
-  {
-    let _vr = parseFloat(readSetting('setVoiceRate','str','0.92'));
-    if(!isFinite(_vr) || _vr < 0.5) _vr = 0.5; if(_vr > 1.5) _vr = 1.5;
-    s.voiceRate = _vr;
-    let _vp = parseFloat(readSetting('setVoicePitch','str','1.0'));
-    if(!isFinite(_vp) || _vp < 0.5) _vp = 0.5; if(_vp > 2) _vp = 2;
-    s.voicePitch = _vp;
-  }
-  s.voiceURI = readSetting('setVoiceURI','str','') || '';
 
   saveState();
   applySettings();
@@ -9590,16 +9224,10 @@ function resetSettings(){
     colorBreakText: '#1e3a8a', colorFreeBg: '#fee2e2', colorFreeText: '#991b1b',
     showRowLabels: false, floatingScrollbar: true, boldImportant: true,
     voiceEnabled: true, aiEnabled: true, alwaysShowColTools: false, aiAutoCopy: true,
-    voiceAnnounce: true, voiceAnnounceLeave: true, voiceRate: 0.92, voicePitch: 1.0, voiceURI: '',
     freeText: 'Free', leaveText: '🌙 ছুটিতে আছি', breakText: 'বিরতি',
     slLocked: false, nameLocked: false,
     slCustomBg: '', slCustomText: '', nameCustomBg: '', nameCustomText: '',
-    slLabel: 'SL', nameLabel: 'শিক্ষকের নাম', slNameSwapped: false,
-    customBg: '#eef2f7', customSurface: '#ffffff', customSurface2: '#f3f6fa',
-    customBorder: '#d8dee8', customText: '#0f172a', customText2: '#475569',
-    customPrimaryHover: '#115e59',
-    customHeaderBg: 'linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%)',
-    adminWhatsapp: '', leaveAlarmRepeat: true, leaveAlarmCount: 3, leaveSendWhatsapp: true
+    slLabel: 'SL', nameLabel: 'শিক্ষকের নাম', slNameSwapped: false
   };
   state.settings = Object.assign({}, defaults, keepKeys);
   saveState();
@@ -9690,199 +9318,20 @@ function bindFloatingScroll(){
   }
 }
 
-/* Legacy stub kept for backward compatibility (dark-mode checkbox removed) */
+/* Legacy stub kept for backward compatibility (dark-mode checkbox is hidden now) */
 function toggleDark(){
-  state.settings.theme = 'light';
+  const cb = document.getElementById('setDark');
+  state.settings.theme = (cb && cb.checked) ? 'dark' : 'light';
   applySettings(); saveState();
 }
-/* থিম নির্বাচক — শুধুমাত্র "light" (ডিফল্ট) ও "custom" (নিজের তৈরি) */
+/* New multi-theme selector */
 function setThemeChoice(val){
-  const valid = ['light','custom'];
+  const valid = ['light','minimal','nature','pastel','dark','contrast'];
   state.settings.theme = valid.includes(val) ? val : 'light';
   applySettings();
   saveState();
-  if(state.settings.theme === 'custom'){
-    showToast('🎨 কাস্টম থিম সক্রিয় — থিম বিল্ডার থেকে রঙ পরিবর্তন করুন','success',2200);
-  } else {
-    showToast('☀️ ডিফল্ট থিম প্রয়োগ হয়েছে','success',1400);
-  }
+  showToast('🎨 থিম পরিবর্তিত হয়েছে','success',1400);
 }
-/* ===========================================================
-   🎨 THEME BUILDER — অ্যাডমিন-নিয়ন্ত্রিত কাস্টম থিম তৈরি
-=========================================================== */
-let _themeBuilderBackup = null;   // বাতিল করলে ফেরত আনার জন্য
-
-function _grad2(c1, c2){
-  return 'linear-gradient(135deg,' + c1 + ' 0%,' + c2 + ' 100%)';
-}
-/* "linear-gradient(...c1 0%,...c2..." থেকে দুটি রঙ বের করি (preset/ডিফল্টের জন্য) */
-function _gradColors(g){
-  try{
-    const m = String(g||'').match(/#[0-9a-fA-F]{3,8}/g);
-    if(m && m.length >= 2) return [m[0], m[m.length-1]];
-    if(m && m.length === 1) return [m[0], m[0]];
-  }catch(_){}
-  return ['#0f766e', '#14b8a6'];
-}
-function _normHex(v, fallback){
-  if(!v) return fallback;
-  v = String(v).trim();
-  if(/^#[0-9a-fA-F]{6}$/.test(v)) return v;
-  if(/^#[0-9a-fA-F]{3}$/.test(v)) return '#' + v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
-  return fallback;
-}
-
-function openThemeBuilder(){
-  // শুধুমাত্র অ্যাডমিন
-  if(!currentUser || currentUser.role !== 'admin'){
-    showToast('⛔ শুধুমাত্র অ্যাডমিন থিম তৈরি করতে পারবেন','warning');
-    return;
-  }
-  const s = state.settings;
-  // বর্তমান অবস্থা ব্যাকআপ (বাতিল করলে ফেরত আসবে)
-  _themeBuilderBackup = JSON.parse(JSON.stringify({
-    theme: s.theme,
-    customBg: s.customBg, customSurface: s.customSurface, customSurface2: s.customSurface2,
-    customBorder: s.customBorder, customText: s.customText, customText2: s.customText2,
-    customPrimaryHover: s.customPrimaryHover, customHeaderBg: s.customHeaderBg,
-    colorPrimary: s.colorPrimary, colorSlBg: s.colorSlBg, colorSlText: s.colorSlText,
-    colorNameBg: s.colorNameBg, colorNameText: s.colorNameText,
-    colorBreakBg: s.colorBreakBg, colorBreakText: s.colorBreakText,
-    colorFreeBg: s.colorFreeBg, colorFreeText: s.colorFreeText
-  }));
-  _fillThemeBuilderInputs();
-  openModal('themeBuilderModal');
-}
-
-function _fillThemeBuilderInputs(){
-  const s = state.settings;
-  const hdr = _gradColors(s.customHeaderBg);
-  const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
-  set('tbBg', _normHex(s.customBg, '#eef2f7'));
-  set('tbSurface', _normHex(s.customSurface, '#ffffff'));
-  set('tbSurface2', _normHex(s.customSurface2, '#f3f6fa'));
-  set('tbBorder', _normHex(s.customBorder, '#d8dee8'));
-  set('tbText', _normHex(s.customText, '#0f172a'));
-  set('tbText2', _normHex(s.customText2, '#475569'));
-  set('tbPrimary', _normHex(s.colorPrimary, '#0f766e'));
-  set('tbPrimaryHover', _normHex(s.customPrimaryHover, '#115e59'));
-  set('tbHeader1', _normHex(hdr[0], '#0f766e'));
-  set('tbHeader2', _normHex(hdr[1], '#14b8a6'));
-  set('tbSlBg', _normHex(s.colorSlBg, '#bbf7d0'));
-  set('tbSlText', _normHex(s.colorSlText, '#14532d'));
-  set('tbNameBg', _normHex(s.colorNameBg, '#0f766e'));
-  set('tbNameText', _normHex(s.colorNameText, '#ffffff'));
-  set('tbBreakBg', _normHex(s.colorBreakBg, '#dbeafe'));
-  set('tbBreakText', _normHex(s.colorBreakText, '#1e3a8a'));
-  set('tbFreeBg', _normHex(s.colorFreeBg, '#fee2e2'));
-  set('tbFreeText', _normHex(s.colorFreeText, '#991b1b'));
-}
-
-/* থিম বিল্ডারের ইনপুট → state.settings-এ লিখি */
-function _readThemeBuilderInputs(){
-  const s = state.settings;
-  const g = id => { const el = document.getElementById(id); return el ? el.value : null; };
-  s.customBg = g('tbBg') || s.customBg;
-  s.customSurface = g('tbSurface') || s.customSurface;
-  s.customSurface2 = g('tbSurface2') || s.customSurface2;
-  s.customBorder = g('tbBorder') || s.customBorder;
-  s.customText = g('tbText') || s.customText;
-  s.customText2 = g('tbText2') || s.customText2;
-  s.colorPrimary = g('tbPrimary') || s.colorPrimary;
-  s.customPrimaryHover = g('tbPrimaryHover') || s.customPrimaryHover;
-  s.customHeaderBg = _grad2(g('tbHeader1') || '#0f766e', g('tbHeader2') || '#14b8a6');
-  s.colorSlBg = g('tbSlBg') || s.colorSlBg;
-  s.colorSlText = g('tbSlText') || s.colorSlText;
-  s.colorNameBg = g('tbNameBg') || s.colorNameBg;
-  s.colorNameText = g('tbNameText') || s.colorNameText;
-  s.colorBreakBg = g('tbBreakBg') || s.colorBreakBg;
-  s.colorBreakText = g('tbBreakText') || s.colorBreakText;
-  s.colorFreeBg = g('tbFreeBg') || s.colorFreeBg;
-  s.colorFreeText = g('tbFreeText') || s.colorFreeText;
-}
-
-/* লাইভ প্রিভিউ — সংরক্ষণ ছাড়াই সাথে সাথে দেখায় */
-function liveThemePreview(){
-  _readThemeBuilderInputs();
-  state.settings.theme = 'custom';   // প্রিভিউয়ের সময় কাস্টম প্যালেট দেখাও
-  applySettings();
-}
-
-function applyThemePreset(name){
-  const P = {
-    teal:  { bg:'#eef5f4', surf:'#ffffff', surf2:'#eafaf6', border:'#cfe9e3', text:'#0f2e2a', text2:'#3f6b62',
-             primary:'#0f766e', phover:'#115e59', h1:'#0f766e', h2:'#14b8a6',
-             slbg:'#bbf7d0', sltx:'#14532d', nmbg:'#0f766e', nmtx:'#ffffff',
-             brbg:'#d1fae5', brtx:'#065f46', frbg:'#fee2e2', frtx:'#991b1b' },
-    blue:  { bg:'#eef2f9', surf:'#ffffff', surf2:'#eef4ff', border:'#d3def0', text:'#0f172a', text2:'#475569',
-             primary:'#1e40af', phover:'#1e3a8a', h1:'#1e3a8a', h2:'#3b82f6',
-             slbg:'#dbeafe', sltx:'#1e3a8a', nmbg:'#1e40af', nmtx:'#ffffff',
-             brbg:'#eef2ff', brtx:'#1e3a8a', frbg:'#fee2e2', frtx:'#991b1b' },
-    night: { bg:'#0f172a', surf:'#1e293b', surf2:'#172033', border:'#334155', text:'#e2e8f0', text2:'#94a3b8',
-             primary:'#14b8a6', phover:'#0d9488', h1:'#0f172a', h2:'#115e59',
-             slbg:'#14532d', sltx:'#bbf7d0', nmbg:'#0d9488', nmtx:'#ffffff',
-             brbg:'#1e3a8a', brtx:'#dbeafe', frbg:'#7f1d1d', frtx:'#fecaca' },
-    warm:  { bg:'#fdf6ef', surf:'#ffffff', surf2:'#fdeede', border:'#f0dcc4', text:'#3a2412', text2:'#7c5a3a',
-             primary:'#c2410c', phover:'#9a3412', h1:'#c2410c', h2:'#f97316',
-             slbg:'#fed7aa', sltx:'#7c2d12', nmbg:'#c2410c', nmtx:'#ffffff',
-             brbg:'#ffedd5', brtx:'#9a3412', frbg:'#fee2e2', frtx:'#991b1b' },
-    pink:  { bg:'#fdf2f8', surf:'#ffffff', surf2:'#fce7f3', border:'#f5d0e5', text:'#3b1130', text2:'#7d3a63',
-             primary:'#be185d', phover:'#9d174d', h1:'#be185d', h2:'#ec4899',
-             slbg:'#fbcfe8', sltx:'#831843', nmbg:'#be185d', nmtx:'#ffffff',
-             brbg:'#fae8ff', brtx:'#86198f', frbg:'#fee2e2', frtx:'#991b1b' }
-  };
-  const p = P[name]; if(!p) return;
-  const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
-  set('tbBg',p.bg); set('tbSurface',p.surf); set('tbSurface2',p.surf2); set('tbBorder',p.border);
-  set('tbText',p.text); set('tbText2',p.text2);
-  set('tbPrimary',p.primary); set('tbPrimaryHover',p.phover);
-  set('tbHeader1',p.h1); set('tbHeader2',p.h2);
-  set('tbSlBg',p.slbg); set('tbSlText',p.sltx); set('tbNameBg',p.nmbg); set('tbNameText',p.nmtx);
-  set('tbBreakBg',p.brbg); set('tbBreakText',p.brtx); set('tbFreeBg',p.frbg); set('tbFreeText',p.frtx);
-  liveThemePreview();
-  showToast('🎨 প্রিসেট প্রয়োগ — পছন্দ হলে সংরক্ষণ করুন','info',1800);
-}
-
-function resetThemeBuilderDefaults(){
-  const s = state.settings;
-  s.customBg='#eef2f7'; s.customSurface='#ffffff'; s.customSurface2='#f3f6fa';
-  s.customBorder='#d8dee8'; s.customText='#0f172a'; s.customText2='#475569';
-  s.customPrimaryHover='#115e59';
-  s.customHeaderBg='linear-gradient(135deg,#0f766e 0%,#14b8a6 100%)';
-  s.colorPrimary='#0f766e'; s.colorSlBg='#bbf7d0'; s.colorSlText='#14532d';
-  s.colorNameBg='#0f766e'; s.colorNameText='#ffffff';
-  s.colorBreakBg='#dbeafe'; s.colorBreakText='#1e3a8a';
-  s.colorFreeBg='#fee2e2'; s.colorFreeText='#991b1b';
-  _fillThemeBuilderInputs();
-  liveThemePreview();
-  showToast('↺ ডিফল্ট রঙ ফিরিয়ে আনা হয়েছে','info',1600);
-}
-
-function saveThemeBuilder(){
-  if(!currentUser || currentUser.role !== 'admin'){
-    showToast('⛔ শুধুমাত্র অ্যাডমিন','warning'); return;
-  }
-  _readThemeBuilderInputs();
-  state.settings.theme = 'custom';
-  applySettings();
-  saveState();
-  renderTable();
-  _themeBuilderBackup = null;
-  try{ audit('থিম তৈরি', 'কাস্টম থিম সংরক্ষণ ও প্রয়োগ'); }catch(_){}
-  closeModal('themeBuilderModal');
-  showToast('✅ কাস্টম থিম সংরক্ষিত ও প্রয়োগ করা হয়েছে','success',2200);
-}
-
-/* বাতিল — সংরক্ষণ না করে আগের অবস্থায় ফেরত */
-function cancelThemeBuilder(){
-  if(_themeBuilderBackup){
-    Object.assign(state.settings, _themeBuilderBackup);
-    _themeBuilderBackup = null;
-    applySettings();
-  }
-  closeModal('themeBuilderModal');
-}
-
 /* Is routine editing currently locked? */
 function routineLocked(){ return !!(state.settings && state.settings.routineLock); }
 /* Toggle / set the routine lock. Only structural routine edits are blocked;
@@ -10456,7 +9905,6 @@ function setupPWA(){
 const NOTIF_BEEP_BASE64 = 'data:audio/mpeg;base64,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';
 
 let notifPollTimer = null;
-let leaveReminderTimer = null;      // পেন্ডিং আবেদন থাকলে বারবার অ্যালার্ম
 let notifLastSeenIds = new Set();   // for admin/manager polling
 let notifLastDecisionStamp = 0;     // for teacher polling of approval/rejection
 let notifBeepCache = null;
@@ -10516,76 +9964,6 @@ function playNotifBeep(){
       });
     }
   }catch(e){ console.warn('Audio play failed:', e); }
-}
-
-/* 🔊 WebAudio ফলব্যাক — base64 অডিও কোনো কারণে না বাজলেও জোরালো বিপ শোনা যাবে */
-let _alarmAudioCtx = null;
-function _beepFallback(){
-  try{
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if(!Ctx) return;
-    if(!_alarmAudioCtx) _alarmAudioCtx = new Ctx();
-    const ctx = _alarmAudioCtx;
-    if(ctx.state === 'suspended'){ try{ ctx.resume(); }catch(_){ } }
-    const now = ctx.currentTime;
-    // তিনটি ছোট জোরালো টোন (ডি-ডি-ডিং)
-    [0, 0.22, 0.44].forEach((off, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.value = i === 2 ? 1180 : 920;
-      gain.gain.setValueAtTime(0.0001, now + off);
-      gain.gain.exponentialRampToValueAtTime(0.5, now + off + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + off + 0.18);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(now + off);
-      osc.stop(now + off + 0.2);
-    });
-  }catch(_){}
-}
-
-/* অ্যাডমিন-নির্ধারিত অ্যালার্ম সংখ্যা (১/২/৩) — সেটিং থেকে নিরাপদে পড়ি */
-function _leaveAlarmTimes(){
-  const n = state.settings && state.settings.leaveAlarmCount;
-  return [1,2,3].includes(n) ? n : 3;
-}
-
-/* 🚨 শক্তিশালী ছুটি-অ্যালার্ম — টোনটি পরপর কয়েকবার বাজে + ভাইব্রেশন।
-   শব্দ ব্লকড হলে WebAudio ফলব্যাক বিপ বাজে — তাই প্রায় সবসময় শোনা যায়।
-   times না দিলে অ্যাডমিনের সেটিং (১/২/৩) ব্যবহার হয়। */
-function playLeaveAlarm(times){
-  unlockNotifAudio();
-  const want = (typeof times === 'number' && times > 0) ? times : _leaveAlarmTimes();
-  const total = Math.max(1, Math.min(3, want));
-  let played = 0;
-  let usedFallback = false;
-
-  function once(){
-    let alarmAudio = null;
-    try{
-      alarmAudio = new Audio(NOTIF_BEEP_BASE64);
-      alarmAudio.volume = 1.0;
-    }catch(_){ alarmAudio = null; }
-
-    if(!alarmAudio){ _beepFallback(); next(); return; }
-
-    alarmAudio.addEventListener('ended', next, { once:true });
-    const p = alarmAudio.play();
-    if(p && typeof p.then === 'function'){
-      p.catch(() => {
-        // HTMLAudio ব্লকড — WebAudio দিয়ে অন্তত একবার বাজাই
-        if(!usedFallback){ usedFallback = true; _beepFallback(); }
-        // ended ইভেন্ট আসবে না, তাই নিজে থেকেই পরের ধাপে যাই
-        setTimeout(next, 700);
-      });
-    }
-  }
-  function next(){
-    played++;
-    try{ if(navigator.vibrate) navigator.vibrate([300,120,300]); }catch(_){}
-    if(played < total){ setTimeout(once, 250); }
-  }
-  once();
 }
 
 // অ্যাপ লোডের সাথেই global click/keydown/touch listener — প্রথম interaction-এই audio unlock হয়
@@ -10666,41 +10044,6 @@ function submitLeaveApplication(){
   audit('ছুটির আবেদন', `${currentUser.name} — ${from} থেকে ${to}`);
   closeModal('leaveApplyModal');
   showToast('✅ আপনার আবেদন পাঠানো হয়েছে','success');
-
-  // 📲 অ্যাডমিনের হোয়াটসঅ্যাপে আবেদনটি পাঠানোর সুযোগ
-  try{ maybeSendLeaveToWhatsapp(req); }catch(e){ console.warn('WhatsApp send skipped:', e); }
-}
-
-/* শিক্ষকের ছুটির আবেদন অ্যাডমিনের হোয়াটসঅ্যাপ নম্বরে পাঠাও।
-   নম্বর সেট করা না থাকলে কিছু হবে না; থাকলে নিশ্চিতকরণসহ wa.me খোলে। */
-function maybeSendLeaveToWhatsapp(req){
-  const s = state.settings || {};
-  if(s.leaveSendWhatsapp === false) return;
-  const num = String(s.adminWhatsapp || '').replace(/[^0-9]/g,'');
-  if(!num){
-    showToast('ℹ️ অ্যাডমিনের হোয়াটসঅ্যাপ নম্বর সেট করা নেই — শুধু অ্যাপে আবেদন জমা হয়েছে','info',3000);
-    return;
-  }
-  const typeBn = {casual:'নৈমিত্তিক', sick:'অসুস্থতা', emergency:'জরুরি', personal:'ব্যক্তিগত', other:'অন্যান্য'}[req.type] || req.type;
-  const dateRange = (req.from === req.to) ? req.from : `${req.from} থেকে ${req.to}`;
-  const msg =
-    '🔔 *নতুন ছুটির আবেদন*\n' +
-    'বরাবর: পরিচালক/অধ্যক্ষ মহোদয়\n\n' +
-    '👤 শিক্ষক: ' + req.teacherName + '\n' +
-    '📋 ধরন: ' + typeBn + '\n' +
-    '📅 তারিখ: ' + dateRange + '\n' +
-    '📝 কারণ: ' + req.reason + '\n' +
-    '🕒 সময়: ' + fmtTime(req.createdAt) + '\n\n' +
-    '— রুটিন ম্যানেজমেন্ট সিস্টেম';
-  const url = 'https://wa.me/' + num + '?text=' + encodeURIComponent(msg);
-  if(confirm('আবেদনটি অ্যাডমিনের হোয়াটসঅ্যাপে পাঠাতে চান?\n\nহোয়াটসঅ্যাপ খুলবে — সেখানে "Send" চাপলেই আবেদনটি চলে যাবে।')){
-    const w = window.open(url, '_blank');
-    if(!w){
-      // পপ-আপ ব্লকড — সরাসরি নেভিগেট
-      try{ location.href = url; }catch(_){}
-    }
-    audit('ছুটির আবেদন হোয়াটসঅ্যাপে', `${req.teacherName} → ${num}`);
-  }
 }
 
 /* ---- TEACHER: My Applications view ---- */
@@ -10782,13 +10125,11 @@ function renderReqCard(r, forAdmin){
   const typeBn = {casual:'নৈমিত্তিক', sick:'অসুস্থতা', emergency:'জরুরি', personal:'ব্যক্তিগত', other:'অন্যান্য'}[r.type] || r.type;
   const statusLbl = {pending:'⏳ পেন্ডিং', approved:'✅ অনুমোদিত', rejected:'❌ বাতিল'}[r.status];
   const dateRange = (r.from === r.to) ? r.from : `${r.from} → ${r.to}`;
-  const canDecide = (typeof hasPerm === 'function') && hasPerm('approveLeave');
-  const actions = forAdmin && r.status === 'pending' && canDecide ? `
+  const actions = forAdmin && r.status === 'pending' ? `
     <div class="rc-actions">
       <button class="rc-btn approve" onclick="decideRequest('${r.id}','approved')">✅ অনুমোদন</button>
       <button class="rc-btn reject" onclick="decideRequest('${r.id}','rejected')">❌ বাতিল</button>
-    </div>` : (forAdmin && r.status === 'pending' && !canDecide ? `
-    <div class="rc-no-perm">⛔ এই আবেদন গ্রহণ/বাতিলের ক্ষমতা আপনার নেই — পরিচালক/অধ্যক্ষ অনুমোদন দেবেন</div>` : '');
+    </div>` : '';
   const decidedBy = r.decidedBy ? `<div class="rc-decided-by">${r.status==='approved'?'অনুমোদন':'বাতিল'} করেছেন: ${esc(r.decidedBy)} — ${fmtTime(r.decidedAt)}</div>` : '';
   return `
     <div class="req-card" data-req-id="${r.id}">
@@ -10807,17 +10148,7 @@ function renderReqCard(r, forAdmin){
 }
 
 function decideRequest(reqId, decision){
-  // ছুটির আবেদন গ্রহণ/বাতিল — অ্যাডমিন সর্বদা পারবেন।
-  // ম্যানেজার শুধু তখনই পারবেন যদি অ্যাডমিন তাকে "ছুটি অনুমোদন" ক্ষমতা দিয়ে থাকেন।
-  if(!currentUser){ return; }
-  if(currentUser.role === 'teacher'){
-    showToast('⛔ শিক্ষক ছুটির আবেদন গ্রহণ/বাতিল করতে পারবেন না','error');
-    return;
-  }
-  if(!hasPerm('approveLeave')){
-    showToast('⛔ ছুটির আবেদন গ্রহণ/বাতিলের ক্ষমতা আপনার নেই — অ্যাডমিন/পরিচালক এই ক্ষমতা দিতে পারবেন','error',3500);
-    return;
-  }
+  if(!canFullEdit()) return;
   ensureRequestsArray();
   const r = state.requests.find(x => x.id === reqId);
   if(!r || r.status !== 'pending') return;
@@ -10853,22 +10184,13 @@ function initNotificationSystem(){
     }
   }catch(_){}
 
-  // Seed last-seen set with currently-known pending request ids so polling
-  // won't double-alert; but we DO alert once on login if any are pending.
+  // Seed last-seen set with currently-known pending request ids so we don't alert for old ones on first load
   if(currentUser.role === 'admin' || currentUser.role === 'manager'){
-    const pendingNow = state.requests.filter(r=>r.status==='pending');
-    notifLastSeenIds = new Set(pendingNow.map(r=>r.id));
+    notifLastSeenIds = new Set(state.requests.filter(r=>r.status==='pending').map(r=>r.id));
     updateNotifBadge();
-    // 🚨 প্রতিবার প্রবেশে — অমীমাংসিত (পেন্ডিং) আবেদন থাকলে শক্তিশালী অ্যালার্ম
-    if(pendingNow.length){
-      setTimeout(() => alertPendingLeaves(pendingNow.length, /*onLogin=*/true), 600);
-    }
-    // Poll every 5 seconds for brand-new requests
+    // Poll every 5 seconds
     if(notifPollTimer) clearInterval(notifPollTimer);
     notifPollTimer = setInterval(pollNewRequestsForAdmin, 5000);
-    // 🔁 অমীমাংসিত আবেদন থাকা পর্যন্ত প্রতি ৪৫ সেকেন্ডে আবার মনে করিয়ে অ্যালার্ম
-    if(leaveReminderTimer) clearInterval(leaveReminderTimer);
-    leaveReminderTimer = setInterval(remindPendingLeaves, 45000);
   } else if(currentUser.role === 'teacher'){
     notifLastDecisionStamp = Date.now();
     updateTeacherBadge();
@@ -10881,43 +10203,7 @@ function initNotificationSystem(){
 
 function stopNotificationSystem(){
   if(notifPollTimer){ clearInterval(notifPollTimer); notifPollTimer = null; }
-  if(leaveReminderTimer){ clearInterval(leaveReminderTimer); leaveReminderTimer = null; }
   notifLastSeenIds = new Set();
-}
-
-/* 🚨 অমীমাংসিত ছুটির আবেদনের জন্য শক্তিশালী অ্যালার্ম + প্রম্পট টোস্ট */
-function alertPendingLeaves(count, onLogin){
-  if(!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) return;
-  showNotifToast({
-    title: '🚨 অমীমাংসিত ছুটির আবেদন!',
-    body: `${toBnNum(count)} টি আবেদন গ্রহণ/বাতিলের অপেক্ষায়`,
-    hint: 'এখনই দেখতে ক্লিক করুন',
-    onClick: () => { openNotifPanel(); }
-  });
-  playLeaveAlarm();   // অ্যাডমিনের নির্ধারিত সংখ্যা (১/২/৩) ব্যবহার হবে
-  try{ if(navigator.vibrate) navigator.vibrate([300,120,300,120,300]); }catch(_){}
-  try{
-    if('Notification' in window && Notification.permission === 'granted'){
-      const n = new Notification('🚨 অমীমাংসিত ছুটির আবেদন', {
-        body: `${count} টি ছুটির আবেদন এখনও গ্রহণ বা বাতিল করা হয়নি`,
-        tag: 'leave-pending-reminder'
-      });
-      n.onclick = () => { window.focus(); openNotifPanel(); n.close(); };
-    }
-  }catch(_){}
-}
-
-/* প্রতি ৪৫ সেকেন্ডে — আবেদন এখনও পেন্ডিং থাকলে আবার অ্যালার্ম
-   (অ্যাডমিন গ্রহণ/বাতিল না করা পর্যন্ত চলবে)। প্যানেল খোলা থাকলে চুপ থাকে। */
-function remindPendingLeaves(){
-  ensureRequestsArray();
-  if(!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) return;
-  if(!state.settings || state.settings.leaveAlarmRepeat === false) return;
-  const pending = state.requests.filter(r => r.status === 'pending');
-  if(!pending.length) return;
-  const panel = document.getElementById('notifPanel');
-  if(panel && panel.classList.contains('show')) return; // ইতিমধ্যে দেখছেন
-  alertPendingLeaves(pending.length, false);
 }
 
 function pollNewRequestsForAdmin(){
@@ -11002,10 +10288,10 @@ function fireNewRequestAlert(req){
     hint: 'বিস্তারিত দেখতে ক্লিক করুন',
     onClick: () => { openNotifPanel(); }
   });
-  // 2. 🚨 শক্তিশালী অ্যালার্ম — অ্যাডমিনের নির্ধারিত সংখ্যা (১/২/৩) বার বাজবে
-  playLeaveAlarm();
+  // 2. Beep — কাস্টম রিংটোন বাজাও (autoplay-unlocked)
+  playNotifBeep();
   // 3. Vibrate (mobile)
-  try{ if(navigator.vibrate) navigator.vibrate([300,120,300,120,300]); }catch(_){}
+  try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(_){}
   // 4. Browser Notification (desktop)
   try{
     if('Notification' in window && Notification.permission === 'granted'){
