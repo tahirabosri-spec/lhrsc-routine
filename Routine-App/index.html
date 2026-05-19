@@ -5,13 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="theme-color" content="#0f766e">
 <meta name="description" content="লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ — রুটিন ম্যানেজমেন্ট সিস্টেম">
-<!-- 📱 মোবাইল অ্যাপ-সদৃশ অভিজ্ঞতা (iOS + Android), হোম স্ক্রিনে যোগ করলে ফুলস্ক্রিন -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="রুটিন">
-<meta name="format-detection" content="telephone=no">
-<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='38' fill='%230f766e'/><text x='50%25' y='62%25' text-anchor='middle' font-size='104' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>">
 <title>রুটিন ম্যানেজমেন্ট — লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ</title>
 
 <!-- Inline PWA Manifest -->
@@ -2689,69 +2682,11 @@ body[data-role="manager"] .teacher-only{display:none !important}
 <!-- ============================================
      LOGIN SCREEN
 ============================================ -->
-<!-- 🏫 প্রতিষ্ঠান সেটআপ স্ক্রিন — প্রথমবার / কোড সেট না থাকলে -->
-<div class="login-bg" id="setupScreen" style="display:none">
-  <div class="login-card">
-    <div class="login-logo" id="setupLogo">রু</div>
-    <div class="login-title">রুটিন ম্যানেজমেন্ট সিস্টেম</div>
-    <div class="login-subtitle">আপনার প্রতিষ্ঠানের জন্য সেটআপ করুন</div>
-
-    <div id="setupChoiceView">
-      <div style="font-size:13px;color:var(--text-2);line-height:1.7;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px">
-        🏫 প্রতিটি প্রতিষ্ঠানের তথ্য সম্পূর্ণ আলাদা ও নিরাপদ থাকে। নতুন প্রতিষ্ঠান হলে কোড তৈরি করুন; আগের কোড থাকলে সেটি দিয়ে যুক্ত হোন।
-      </div>
-      <button class="tool-btn primary" style="width:100%;margin-bottom:10px;padding:13px" onclick="setupShowCreate()">🆕 নতুন প্রতিষ্ঠান তৈরি করুন</button>
-      <button class="tool-btn" style="width:100%;padding:13px" onclick="setupShowJoin()">🔑 বিদ্যমান কোড দিয়ে যুক্ত হোন</button>
-    </div>
-
-    <div id="setupCreateView" style="display:none">
-      <div class="field">
-        <label>প্রতিষ্ঠানের নাম <span style="color:#dc2626">*</span></label>
-        <input id="setupOrgName" type="text" autocomplete="off" placeholder="যেমন: ঢাকা মডেল স্কুল">
-      </div>
-      <div class="field">
-        <label>লোগো অক্ষর <span style="color:var(--text-3,#94a3b8);font-weight:400">(ঐচ্ছিক — সর্বোচ্চ ৩ অক্ষর)</span></label>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input id="setupOrgLogo" type="text" maxlength="3" autocomplete="off" placeholder="যেমন: ঢা" style="flex:1" oninput="setupLogoPreview()">
-          <div id="setupLogoPrev" style="width:48px;height:48px;border:1.5px solid var(--border);border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);font-weight:800;font-size:18px;flex:none">রু</div>
-        </div>
-      </div>
-      <div class="field">
-        <label>পরিচালক/অধ্যক্ষের নাম <span style="color:var(--text-3,#94a3b8);font-weight:400">(ঐচ্ছিক)</span></label>
-        <input id="setupOrgPrincipal" type="text" autocomplete="off" placeholder="যেমন: অধ্যক্ষ মোঃ রহিম">
-      </div>
-      <div style="font-size:11.5px;color:var(--text-3,#94a3b8);line-height:1.6;margin:-2px 0 12px">পরে সেটিংস → ব্র্যান্ডিং থেকে লোগো ছবি, রঙ ও সব তথ্য পরিবর্তন করতে পারবেন।</div>
-      <button class="tool-btn primary" style="width:100%;padding:13px;margin-bottom:8px" onclick="setupCreateOrg()">✅ কোড তৈরি করে শুরু করুন</button>
-      <button class="tool-btn" style="width:100%" onclick="setupBackToChoice()">← পেছনে</button>
-    </div>
-
-    <div id="setupCreatedView" style="display:none">
-      <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:8px">আপনার প্রতিষ্ঠানের কোড তৈরি হয়েছে। <strong style="color:#b45309">এই কোডটি সংরক্ষণ করে রাখুন</strong> — অন্য ডিভাইস/মোবাইলে যুক্ত হতে এটি লাগবে।</div>
-      <div style="display:flex;align-items:center;gap:8px;background:var(--surface-2);border:2px dashed var(--primary);border-radius:10px;padding:14px;margin-bottom:12px">
-        <code id="setupNewCode" style="font-size:20px;font-weight:800;letter-spacing:1px;color:var(--primary);flex:1;text-align:center;word-break:break-all"></code>
-        <button class="tool-btn" type="button" onclick="setupCopyCode()" title="কপি করুন">📋</button>
-      </div>
-      <button class="tool-btn primary" style="width:100%;padding:13px" onclick="setupFinish()">শুরু করুন →</button>
-    </div>
-
-    <div id="setupJoinView" style="display:none">
-      <div class="field">
-        <label>প্রতিষ্ঠান কোড</label>
-        <input id="setupJoinCode" type="text" autocomplete="off" placeholder="যেমন: DHAK-K7M2X9" style="text-transform:uppercase">
-      </div>
-      <button class="tool-btn primary" style="width:100%;padding:13px;margin-bottom:8px" onclick="setupJoinOrg()">🔑 যুক্ত হোন</button>
-      <button class="tool-btn" style="width:100%" onclick="setupBackToChoice()">← পেছনে</button>
-    </div>
-
-    <div id="setupError" class="login-error" style="margin-top:12px"></div>
-  </div>
-</div>
-
 <div class="login-bg" id="loginScreen">
   <div class="login-card">
-    <div class="login-logo" id="loginLogo">রু</div>
-    <div class="login-title" id="loginTitle">রুটিন ম্যানেজমেন্ট সিস্টেম</div>
-    <div class="login-subtitle" id="loginSubtitle">লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ</div>
+    <div class="login-logo">রু</div>
+    <div class="login-title">রুটিন ম্যানেজমেন্ট সিস্টেম</div>
+    <div class="login-subtitle">লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ</div>
     <div class="field">
       <label>ভূমিকা নির্বাচন করুন</label>
       <select id="loginRole">
@@ -2855,7 +2790,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <div class="tool-divider"></div>
         <button class="tool-btn editable-only" data-perm="scheduleGen" onclick="openScheduleGen();closeToolMenu()">🕐 <span class="lbl">সময়সূচি</span></button>
         <button class="tool-btn primary editable-only" data-perm="aiRoutine" onclick="openAIGenerator();closeToolMenu()">🤖 <span class="lbl">AI রুটিন</span></button>
-        <button class="tool-btn editable-only" data-perm="aiRoutine" onclick="autoGenerateRoutine();closeToolMenu()" title="API ছাড়াই ৪০–৫০ জন শিক্ষকের রুটিন স্বয়ংক্রিয়ভাবে তৈরি করুন">⚙️ <span class="lbl">স্বয়ংক্রিয় রুটিন</span></button>
         <button class="tool-btn editable-only" data-perm="voice" onclick="toggleVoice();closeToolMenu()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
         <button class="tool-btn editable-only" data-perm="routineLock" id="routineLockBtn" data-locked="false" onclick="toggleRoutineLock();closeToolMenu()" title="রুটিন লক/আনলক — এলোমেলো ক্লিক থেকে সুরক্ষা">🔓 <span class="lbl">রুটিন লক</span></button>
         <div class="tool-divider"></div>
@@ -2865,8 +2799,8 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <div class="tool-divider"></div>
         <button class="tool-btn editable-only" data-perm="importExport" onclick="exportJSON();closeToolMenu()">⬇ <span class="lbl">JSON এক্সপোর্ট</span></button>
         <button class="tool-btn editable-only" data-perm="importExport" onclick="exportCSV();closeToolMenu()">⬇ <span class="lbl">CSV এক্সপোর্ট</span></button>
-        <button class="tool-btn editable-only" data-perm="importExport" onclick="triggerImport();closeToolMenu()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
-        <button class="tool-btn editable-only" data-perm="manageTeachers" onclick="document.getElementById('importTeacherJSON').click();closeToolMenu()">⬆ <span class="lbl">শিক্ষক JSON আপলোড</span></button>
+        <button class="tool-btn editable-only" data-perm="importExport" onclick="document.getElementById('importFile').click();closeToolMenu()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
+        <input type="file" id="importFile" style="display:none" accept=".json,.csv" onchange="handleImport(event)">
         <button class="tool-btn" onclick="window.print();closeToolMenu()">🖨 <span class="lbl">প্রিন্ট</span></button>
         <button class="tool-btn editable-only" onclick="shareView();closeToolMenu()">🔗 <span class="lbl">শেয়ার</span></button>
       </div>
@@ -2948,20 +2882,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <div class="field"><label>স্কুলের নাম</label><input id="bSchool" type="text"></div>
       <div class="field"><label>সিস্টেম নাম</label><input id="bSystem" type="text"></div>
       <div class="field"><label>লোগো অক্ষর</label><input id="bLogo" type="text" maxlength="3"></div>
-      <div class="field">
-        <label>🖼️ লোগো ছবি (ঐচ্ছিক — দিলে অক্ষরের বদলে ছবি দেখাবে)</label>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-          <div id="bLogoPreview" style="width:56px;height:56px;border:1.5px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);font-weight:800;font-size:20px;overflow:hidden;flex:none">রু</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <label class="tool-btn" style="cursor:pointer;margin:0">
-              📤 ছবি আপলোড
-              <input id="bLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none" onchange="onLogoFileChosen(this)">
-            </label>
-            <button class="tool-btn" type="button" onclick="clearBrandLogoImage()">🗑️ ছবি সরান</button>
-          </div>
-        </div>
-        <div style="font-size:11px;color:var(--text-3,#94a3b8);margin-top:6px;line-height:1.6">সর্বোচ্চ ~৩০০ KB, বর্গাকার ছবি (PNG/JPG/SVG) সবচেয়ে ভালো দেখায়। ছবি না দিলে লোগো অক্ষরই ব্যবহার হবে।</div>
-      </div>
       <div class="field"><label>হেডার ব্যাকগ্রাউন্ড গ্র্যাডিয়েন্ট</label>
         <select id="bGradient">
           <option value="linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%)">টিল সবুজ (ডিফল্ট)</option>
@@ -4450,7 +4370,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
 
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
-<input type="file" id="importTeacherJSON" accept=".json" style="display:none" onchange="handleTeacherJSONImport(event)">
+
 <!-- ============================================================
      FIREBASE SDK — Realtime Database integration
      এই অংশটি Firebase সংযোগ স্থাপন করে
@@ -4497,66 +4417,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
 =========================================================== */
 const STORAGE_KEY = 'lhrsc_routine_v1';
 const BACKUP_KEY = 'lhrsc_routine_backups';
-
-/* ===========================================================
-   🏫 মাল্টি-টেন্যান্ট: প্রতিষ্ঠান-কোড অনুযায়ী আলাদা ডেটা-পথ
-   ───────────────────────────────────────────────────────────
-   • প্রতিষ্ঠান-কোড থাকে localStorage-এ (ডিভাইস-নির্দিষ্ট, কখনো
-     Firebase-এ সিঙ্ক হয় না — তাই কোনো লুপ/সংঘর্ষ নেই)।
-   • কোড না থাকলে পুরোনো 'routineData' পথই ব্যবহৃত হয় →
-     বর্তমান LHRSC স্কুলের ডেটা ১০০% অক্ষত, কিছুই হারাবে না।
-   • কোড থাকলে ডেটা যায় 'schools/CODE'-তে → প্রতিটি প্রতিষ্ঠান
-     সম্পূর্ণ আলাদা ঘরে, কেউ কারো ডেটা দেখবে না।
-=========================================================== */
-const ORG_CODE_KEY = 'routineOrgCode';      // localStorage key (device-local)
-const LEGACY_FB_PATH = 'routineData';        // পুরোনো একক পথ (ব্যাকওয়ার্ড-সেফ)
-
-/* বর্তমান প্রতিষ্ঠান-কোড (না থাকলে খালি স্ট্রিং = লিগ্যাসি মোড) */
-function getOrgCode(){
-  try{
-    const c = localStorage.getItem(ORG_CODE_KEY);
-    return (typeof c === 'string' && c.trim()) ? c.trim() : '';
-  }catch(e){ return ''; }
-}
-
-/* প্রতিষ্ঠান-কোড সেট/মুছা (শুধু localStorage — Firebase নয়) */
-function setOrgCode(code){
-  try{
-    if(code && String(code).trim()){
-      localStorage.setItem(ORG_CODE_KEY, String(code).trim());
-    } else {
-      localStorage.removeItem(ORG_CODE_KEY);
-    }
-  }catch(e){ console.warn('setOrgCode failed:', e); }
-}
-
-/* Firebase ডেটা-পথ — কোড থাকলে schools/CODE, নাহলে পুরোনো পথ।
-   সব Firebase কল (save / read / reset) এই একটিই ফাংশন ব্যবহার করে,
-   ফলে পথ কখনো অসামঞ্জস্য হবে না (বাগ-মুক্ত)। */
-function fbDataPath(){
-  const code = getOrgCode();
-  if(!code) return LEGACY_FB_PATH;
-  // কোড স্যানিটাইজ: Firebase পাথে . # $ [ ] / অনুমোদিত নয়
-  const safe = code.replace(/[.#$\[\]\/\s]/g, '_');
-  return 'schools/' + safe;
-}
-
-/* নতুন প্রতিষ্ঠানের জন্য সংঘর্ষমুক্ত ইউনিক কোড তৈরি।
-   ফরম্যাট: PREFIX-XXXX (নাম থেকে প্রিফিক্স + র‍্যান্ডম, অস্পষ্ট অক্ষর বাদ) */
-function generateOrgCode(orgName){
-  const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // I,O,0,1 বাদ (বিভ্রান্তি এড়াতে)
-  let prefix = '';
-  const cleaned = String(orgName || '').toUpperCase().replace(/[^A-Z]/g, '');
-  prefix = cleaned.slice(0, 4) || 'SCHL';
-  let rand = '';
-  for(let i=0;i<5;i++){
-    rand += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
-  }
-  // সময়-ভিত্তিক বাড়তি অংশ — একই মুহূর্তেও সংঘর্ষ এড়াতে
-  const t = Date.now().toString(36).toUpperCase().slice(-3);
-  return prefix + '-' + rand + t;
-}
-
 
 /* Weekday constants */
 const WEEK_DAYS = [
@@ -4608,7 +4468,6 @@ let state = {
     schoolName: 'লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ',
     systemName: 'রুটিন ম্যানেজমেন্ট সিস্টেম',
     logo: 'রু',
-    logoImage: '',
     headerGradient: 'linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%)',
     founder: '',
     principal: ''
@@ -4738,7 +4597,7 @@ function saveState(){
     if(_firebaseSyncEnabled && !_applyingRemoteState && window.FB && window.FB.ready
        && currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.role === 'teacher')){
       setSaveStatus('☁️ ক্লাউডে সংরক্ষণ হচ্ছে...','saved');
-      window.FB.set(window.FB.ref(window.FB.db, fbDataPath()), state)
+      window.FB.set(window.FB.ref(window.FB.db, 'routineData'), state)
         .then(() => setSaveStatus('☁️ ক্লাউডে সংরক্ষিত','saved'))
         .catch(e => {
           console.error('Firebase save error:', e);
@@ -4901,7 +4760,7 @@ function startFirebaseSync(){
   if(_firebaseListenerStarted) return;
   _firebaseListenerStarted = true;
 
-  const dbRef = window.FB.ref(window.FB.db, fbDataPath());
+  const dbRef = window.FB.ref(window.FB.db, 'routineData');
 
   // রিয়েল-টাইম লিসেনার: যেকোনো ডিভাইসে পরিবর্তন হলে এটা ট্রিগার হবে
   window.FB.onValue(dbRef, (snapshot) => {
@@ -5245,35 +5104,6 @@ function getDeviceId(){
   }catch(e){ return 'dev_unknown'; }
 }
 
-/* ===========================================================
-   👁️ ভিউ-অনলি অ্যাডমিন গার্ড
-   ───────────────────────────────────────────────────────────
-   প্রিন্সিপাল স্যারের মতো অ্যাকাউন্টে viewOnly:true থাকলে তিনি
-   রুটিন স্বাভাবিকভাবে এডিট করতে পারবেন (সংরক্ষিতও হবে), কিন্তু
-   সেটিংস / থিম / অ্যাকাউন্ট / ডিলিট-রিসেট-এর মতো সংবেদনশীল কাজ
-   আটকানো থাকবে। আটকালে ভদ্র বার্তা দেখাবে — সম্মান অক্ষুণ্ণ,
-   কিছুই নষ্ট হবে না। মূল কাঠামোয় কোনো পরিবর্তন নেই।
-=========================================================== */
-let _voGuardNotifiedAt = 0;
-function isViewOnlyAdmin(){
-  return !!(currentUser && currentUser.viewOnly === true);
-}
-/* সংবেদনশীল কাজের শুরুতে ডাকা হয়। আটকালে true ফেরত (caller return করবে)। */
-function blockIfViewOnly(actionLabel){
-  if(!isViewOnlyAdmin()) return false;
-  const now = Date.now();
-  // ৪ সেকেন্ডে একবারের বেশি টোস্ট দেখাবে না (স্প্যাম এড়াতে)
-  if(now - _voGuardNotifiedAt > 4000){
-    _voGuardNotifiedAt = now;
-    try{
-      showToast('📨 ' + (actionLabel ? (actionLabel + ' — ') : '') +
-        'পরিবর্তনটি অনুমোদনের জন্য পাঠানো হলো। অনুমোদিত হলে কার্যকর হবে।',
-        'info', 3800);
-    }catch(_){}
-  }
-  return true;
-}
-
 /* state.accounts নিশ্চিত করা ও পুরোনো সিস্টেম থেকে মাইগ্রেশন।
    loadState / ensureStateIntegrity / applyRemoteState — সব জায়গায় কল হয়,
    ফলে Firebase খালি/পুরোনো ডেটা পাঠালেও অ্যাকাউন্ট কখনো হারাবে না। */
@@ -5303,13 +5133,11 @@ function ensureAccounts(){
     if(!x.username) x.username = 'admin';
     if(!x.name) x.name = 'অ্যাডমিন';
     if(x.password == null || x.password === '') x.password = 'lhrsc';
-    x.viewOnly = (x.viewOnly === true);   // পুরোনো ডেটায় না থাকলে false
   });
   a.managers.forEach(x=>{
     if(!x.username) x.username = 'manager';
     if(!x.name) x.name = 'ম্যানেজার';
     if(x.password == null || x.password === '') x.password = 'lhrsc';
-    x.viewOnly = (x.viewOnly === true);
     x.permissions = _permsNormalize(x.permissions);
   });
 }
@@ -5344,147 +5172,6 @@ function applyPermissionVisibility(){
   });
 }
 
-/* ===========================================================
-   🏫 প্রতিষ্ঠান সেটআপ স্ক্রিন — কন্ট্রোলার
-=========================================================== */
-function _setupShow(viewId){
-  ['setupChoiceView','setupCreateView','setupCreatedView','setupJoinView'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.style.display = (id === viewId) ? 'block' : 'none';
-  });
-  const err = document.getElementById('setupError');
-  if(err){ err.textContent = ''; err.classList.remove('show'); }
-}
-function _setupErr(msg){
-  const err = document.getElementById('setupError');
-  if(err){ err.textContent = msg; err.classList.add('show'); }
-}
-function setupShowCreate(){ _setupShow('setupCreateView'); setupLogoPreview(); setTimeout(()=>{ const i=document.getElementById('setupOrgName'); if(i) i.focus(); }, 50); }
-function setupShowJoin(){ _setupShow('setupJoinView'); setTimeout(()=>{ const i=document.getElementById('setupJoinCode'); if(i) i.focus(); }, 50); }
-function setupBackToChoice(){ _setupShow('setupChoiceView'); }
-
-/* সেটআপ স্ক্রিনে লোগো অক্ষরের লাইভ প্রিভিউ */
-function setupLogoPreview(){
-  const inp = document.getElementById('setupOrgLogo');
-  const prev = document.getElementById('setupLogoPrev');
-  if(!prev) return;
-  const v = (inp ? inp.value : '').trim();
-  prev.textContent = v || 'রু';
-}
-
-let _pendingNewCode = '';
-function setupCreateOrg(){
-  const nameEl = document.getElementById('setupOrgName');
-  const name = (nameEl ? nameEl.value : '').trim();
-  if(!name){ _setupErr('প্রতিষ্ঠানের নাম লিখুন'); return; }
-  if(name.length < 2){ _setupErr('নামটি খুব ছোট'); return; }
-  _pendingNewCode = generateOrgCode(name);
-  // নতুন প্রতিষ্ঠানের প্রাথমিক ব্র্যান্ডিং (নাম + ঐচ্ছিক লোগো/পরিচালক)।
-  // পরে সেটিংস → ব্র্যান্ডিং থেকে সব বদলানো যাবে।
-  try{
-    if(!state.branding || typeof state.branding !== 'object') state.branding = {};
-    state.branding.schoolName = name;
-    const logoV = (document.getElementById('setupOrgLogo')||{}).value;
-    const princV = (document.getElementById('setupOrgPrincipal')||{}).value;
-    if(logoV && logoV.trim()) state.branding.logo = logoV.trim().slice(0,3);
-    if(princV && princV.trim()) state.branding.principal = princV.trim();
-  }catch(_){}
-  const codeEl = document.getElementById('setupNewCode');
-  if(codeEl) codeEl.textContent = _pendingNewCode;
-  _setupShow('setupCreatedView');
-}
-
-function setupCopyCode(){
-  const code = _pendingNewCode || (document.getElementById('setupNewCode')||{}).textContent || '';
-  if(!code) return;
-  try{
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(code).then(
-        ()=> showToast('📋 কোড কপি হয়েছে','success',2000),
-        ()=> _setupFallbackCopy(code)
-      );
-    } else { _setupFallbackCopy(code); }
-  }catch(e){ _setupFallbackCopy(code); }
-}
-function _setupFallbackCopy(text){
-  try{
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    showToast('📋 কোড কপি হয়েছে','success',2000);
-  }catch(e){ showToast('কপি করা গেল না — কোডটি হাতে লিখে রাখুন','warning',3000); }
-}
-
-function setupCreatedFinishGuard(){ return !!_pendingNewCode; }
-function setupFinish(){
-  if(!_pendingNewCode){ _setupErr('কোড তৈরি হয়নি'); return; }
-  // নতুন প্রতিষ্ঠানের ব্র্যান্ডিং অস্থায়ীভাবে সংরক্ষণ করি — reload-এর পর
-  // localStorage মুছে যাওয়ায় এটি না রাখলে নাম/লোগো হারিয়ে যেত (বাগ)।
-  try{
-    const seed = {
-      schoolName: (state.branding && state.branding.schoolName) || '',
-      logo: (state.branding && state.branding.logo) || '',
-      principal: (state.branding && state.branding.principal) || ''
-    };
-    localStorage.setItem('routinePendingBranding', JSON.stringify(seed));
-  }catch(_){}
-  setOrgCode(_pendingNewCode);
-  // নতুন আলাদা ওয়ার্কস্পেস — পরিষ্কার অবস্থা থেকে শুরু (লিগ্যাসি ডেটা মিশবে না)
-  try{ localStorage.removeItem(STORAGE_KEY); }catch(_){}
-  location.reload();
-}
-
-function setupJoinOrg(){
-  const el = document.getElementById('setupJoinCode');
-  let code = (el ? el.value : '').trim().toUpperCase();
-  if(!code){ _setupErr('প্রতিষ্ঠান কোড লিখুন'); return; }
-  if(code.length < 4){ _setupErr('কোডটি সঠিক নয়'); return; }
-  setOrgCode(code);
-  try{ localStorage.removeItem(STORAGE_KEY); }catch(_){}
-  location.reload();
-}
-
-/* নতুন প্রতিষ্ঠান সেটআপের পর reload হলে — setupFinish() যে অস্থায়ী
-   ব্র্যান্ডিং রেখেছিল তা state-এ বসাই ও একবার সংরক্ষণ করি, তারপর
-   অস্থায়ী কী মুছে দিই (একবারই চলবে)। ডেটা/কাঠামোয় কোনো ঝুঁকি নেই —
-   শুধু branding অবজেক্টের ৩টি ফিল্ড সেট হয়। */
-function _applyPendingBrandingIfAny(){
-  let seed = null;
-  try{
-    const raw = localStorage.getItem('routinePendingBranding');
-    if(raw) seed = JSON.parse(raw);
-  }catch(_){ seed = null; }
-  if(!seed || typeof seed !== 'object') return;
-  try{
-    if(!state.branding || typeof state.branding !== 'object') state.branding = {};
-    if(seed.schoolName) state.branding.schoolName = String(seed.schoolName);
-    if(seed.logo) state.branding.logo = String(seed.logo).slice(0,3);
-    if(seed.principal) state.branding.principal = String(seed.principal);
-    // অস্থায়ী কী মুছে দাও — যাতে ভবিষ্যতে আর প্রয়োগ না হয়
-    localStorage.removeItem('routinePendingBranding');
-    // লোকালি সংরক্ষণ (Firebase সিঙ্ক লগইনের পর স্বাভাবিকভাবে হবে)
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(_){}
-  }catch(e){ console.warn('apply pending branding failed:', e); }
-}
-
-/* অ্যাপ চালুর সময় — কোড সেট না থাকলে সেটআপ স্ক্রিন দেখাও।
-   কোড থাকলে false ফেরত → স্বাভাবিক লগইন/অটো-লগইন চলবে। */
-function maybeShowSetupScreen(){
-  if(getOrgCode()) return false;          // কোড আছে — সেটআপ লাগবে না
-  // লিগ্যাসি সুরক্ষা: পুরোনো LHRSC ডিভাইসে ইতিমধ্যে ডেটা থাকলে সেটআপ
-  // স্ক্রিন দেখিয়ে বিভ্রান্ত করব না — পুরোনো পথেই স্বাভাবিক চলবে।
-  let hasLegacyData = false;
-  try{ hasLegacyData = !!localStorage.getItem(STORAGE_KEY); }catch(_){}
-  if(hasLegacyData) return false;
-  const ss = document.getElementById('setupScreen');
-  const ls = document.getElementById('loginScreen');
-  if(ss) ss.style.display = 'flex';
-  if(ls) ls.style.display = 'none';
-  _setupShow('setupChoiceView');
-  return true;
-}
-
 /* ---- লগইন: বিশ্বস্ত ডিভাইস যাচাই ---- */
 function isTrustedDevice(role, username){
   try{
@@ -5493,52 +5180,6 @@ function isTrustedDevice(role, username){
     return state.accounts.trustedDevices.some(d =>
       d && d.deviceId === did && d.role === role && String(d.account) === String(username));
   }catch(e){ return false; }
-}
-
-/* 🔓 অ্যাপ খোলার সময় — এই ডিভাইস কোনো অ্যাকাউন্টের জন্য বিশ্বস্ত হলে
-   কিছু নির্বাচন বা পাসওয়ার্ড ছাড়াই সরাসরি প্রবেশ করিয়ে দাও।
-   প্রিন্সিপাল স্যারের জন্য: মোবাইলে অ্যাপ খুললেই সরাসরি ভিতরে।
-   একাধিক বিশ্বস্ত অ্যাকাউন্ট থাকলে সবশেষে যোগ করাটিকে অগ্রাধিকার;
-   কোনো সমস্যা হলে স্বাভাবিক লগইন স্ক্রিনই দেখাবে (নিরাপদ ফলব্যাক)। */
-function autoLoginIfTrusted(){
-  try{
-    // ম্যানুয়াল লগআউটের পর এই সেশনে স্বয়ংক্রিয় লগইন বন্ধ থাকবে
-    try{ if(sessionStorage.getItem('routineAutoLoginDisabled') === '1') return false; }catch(_){}
-    ensureAccounts();
-    const did = getDeviceId();
-    const devs = (state.accounts.trustedDevices||[]).filter(d => d && d.deviceId === did);
-    if(!devs.length) return false;
-
-    // সবশেষে বিশ্বস্ত করা ডিভাইস-এন্ট্রি (at তারিখ অনুসারে) বেছে নাও
-    devs.sort((a,b)=> String(b.at||'').localeCompare(String(a.at||'')));
-
-    for(const d of devs){
-      if(d.role === 'admin' || d.role === 'manager'){
-        const arr = d.role === 'admin' ? state.accounts.admins : state.accounts.managers;
-        const acct = (arr||[]).find(a => String(a.username) === String(d.account));
-        if(!acct) continue;   // অ্যাকাউন্ট মুছে গেলে — পরেরটি দেখো
-        currentUser = {
-          name: acct.name,
-          role: d.role,
-          username: acct.username,
-          viewOnly: acct.viewOnly === true,
-          permissions: d.role === 'admin' ? _permsAllTrue() : _permsNormalize(acct.permissions)
-        };
-        audit('স্বয়ংক্রিয় লগইন (বিশ্বস্ত ডিভাইস)', currentUser.name + ' (' + currentUser.role + ')');
-        finishLogin();
-        return true;
-      }
-      if(d.role === 'teacher'){
-        const t = (state.teachers||[]).find(x => String(x.id) === String(d.account));
-        if(!t) continue;
-        currentUser = { name: t.name, role: 'teacher', teacherId: t.id };
-        audit('স্বয়ংক্রিয় লগইন (বিশ্বস্ত ডিভাইস)', currentUser.name + ' (teacher)');
-        finishLogin();
-        return true;
-      }
-    }
-  }catch(e){ console.warn('autoLoginIfTrusted failed:', e); }
-  return false;  // ব্যর্থ হলে স্বাভাবিক লগইন স্ক্রিন
 }
 
 /* ===========================================================
@@ -5569,13 +5210,11 @@ function renderACAdmins(){
   if(!box) return;
   const list = state.accounts.admins;
   if(!list.length){ box.innerHTML = '<div class="ac-empty">কোনো অ্যাডমিন নেই</div>'; return; }
-  box.innerHTML = list.map((x,i)=>{
-    const vo = x.viewOnly === true;
-    return `
+  box.innerHTML = list.map((x,i)=>`
     <div class="ac-acct">
       <div class="ac-acct-head">
         <div>
-          <div class="ac-acct-name">👑 ${esc(x.name)} ${vo?'<span style="font-size:11px;color:#b45309;background:#fef3c7;border:1px solid #fcd34d;padding:1px 7px;border-radius:999px;font-weight:700">👁️ ভিউ-অনলি</span>':''}</div>
+          <div class="ac-acct-name">👑 ${esc(x.name)}</div>
           <div class="ac-acct-user">@${esc(x.username)}</div>
         </div>
         <div class="ac-acct-actions">
@@ -5584,33 +5223,7 @@ function renderACAdmins(){
           ${list.length>1 ? `<button class="ac-btn-del" onclick="acDelAccount('admin',${i})">🗑️ মুছুন</button>` : ''}
         </div>
       </div>
-      <label style="display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12.5px">
-        <input type="checkbox" ${vo?'checked':''} onchange="acToggleViewOnly(${i}, this.checked)" style="width:16px;height:16px;flex:none">
-        <span><strong>👁️ ভিউ-অনলি অ্যাডমিন</strong> — রুটিন এডিট করতে পারবেন, কিন্তু সেটিংস/থিম/অ্যাকাউন্ট/ডিলিট আটকানো থাকবে (পরিবর্তন "অনুমোদনের জন্য পাঠানো হলো" দেখাবে)।</span>
-      </label>
-    </div>`;
-  }).join('');
-}
-
-/* অ্যাডমিনকে ভিউ-অনলি টগল করো (শুধু পূর্ণ-ক্ষমতার অ্যাডমিন পারবেন) */
-function acToggleViewOnly(i, on){
-  if(!_acGuard()){ renderAdminControl(); return; }
-  const a = state.accounts.admins[i];
-  if(!a){ return; }
-  // অন্তত একজন পূর্ণ-ক্ষমতার অ্যাডমিন থাকতেই হবে — সব ভিউ-অনলি করা যাবে না
-  if(on){
-    const fullOthers = state.accounts.admins.filter((x,idx)=> idx!==i && x.viewOnly!==true).length;
-    if(fullOthers === 0){
-      showToast('⚠️ অন্তত একজন পূর্ণ-ক্ষমতার অ্যাডমিন থাকা আবশ্যক — সবাইকে ভিউ-অনলি করা যাবে না।','warning',4000);
-      renderAdminControl();
-      return;
-    }
-  }
-  a.viewOnly = !!on;
-  _acPersist('ভিউ-অনলি ' + (on?'চালু':'বন্ধ') + ' — ' + a.name);
-  showToast(on
-    ? `👁️ "${a.name}" এখন ভিউ-অনলি অ্যাডমিন — সংবেদনশীল কাজ আটকানো থাকবে।`
-    : `✅ "${a.name}" পূর্ণ-ক্ষমতার অ্যাডমিন হলেন।`, 'success', 3200);
+    </div>`).join('');
 }
 
 function renderACManagers(){
@@ -5676,7 +5289,6 @@ function renderACTrusted(){
 }
 
 function _acGuard(){
-  if(blockIfViewOnly('অ্যাকাউন্ট পরিবর্তন')) return false;
   if(!currentUser || currentUser.role !== 'admin'){
     showToast('⛔ শুধুমাত্র অ্যাডমিন এই কাজ করতে পারবেন','error');
     return false;
@@ -5701,17 +5313,12 @@ function acAddAdmin(){
   ensureAccounts();
   const taken = state.accounts.admins.some(x=>x.username===user) || state.accounts.managers.some(x=>x.username===user);
   if(taken){ showToast('এই ইউজারনেম আগেই আছে','error'); return; }
-  // 👁️ কনভেনশন: ইউজারনেম "principal" হলে নতুন অ্যাডমিন স্বয়ংক্রিয়ভাবে
-  // ভিউ-অনলি হিসেবে যোগ হবে (পরে টগল দিয়ে বদলানো যাবে)।
-  const autoVO = (user.toLowerCase() === 'principal');
-  state.accounts.admins.push({username:user, name, password:pass, viewOnly:autoVO});
+  state.accounts.admins.push({username:user, name, password:pass});
   document.getElementById('acNewAdminName').value='';
   document.getElementById('acNewAdminUser').value='';
   document.getElementById('acNewAdminPass').value='';
-  _acPersist('নতুন অ্যাডমিন: '+name+' (@'+user+')'+(autoVO?' [ভিউ-অনলি]':''));
-  showToast(autoVO
-    ? '✅ অ্যাডমিন যোগ হয়েছে (👁️ ভিউ-অনলি — ইউজারনেম "principal" হওয়ায়)'
-    : '✅ অ্যাডমিন যোগ হয়েছে','success', autoVO?3600:2000);
+  _acPersist('নতুন অ্যাডমিন: '+name+' (@'+user+')');
+  showToast('✅ অ্যাডমিন যোগ হয়েছে','success');
 }
 
 function acAddManager(){
@@ -6107,9 +5714,6 @@ function doLogin(){
       name: acct.name,
       role,
       username: u,
-      // 👁️ ভিউ-অনলি অ্যাডমিন/ম্যানেজার: সব দেখতে পাবেন, কিন্তু কোনো
-      // পরিবর্তন সংরক্ষিত হবে না (saveState-এ নীরবে আটকানো হয়)।
-      viewOnly: acct.viewOnly === true,
       permissions: role === 'admin' ? _permsAllTrue() : _permsNormalize(acct.permissions)
     };
   } else if(role === 'teacher'){
@@ -6133,12 +5737,6 @@ function doLogin(){
   }
 
   audit('লগইন', currentUser.name + ' (' + currentUser.role + ')');
-  finishLogin();
-}
-
-/* লগইন সফল হওয়ার পর সাধারণ ধাপগুলো — doLogin() ও autoLoginIfTrusted()
-   উভয়েই এটি ডাকে, তাই কোনো কোড ডুপ্লিকেশন বা পথভেদ নেই। */
-function finishLogin(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'flex';
   applyRolePermissions();
@@ -6157,9 +5755,6 @@ function logout(){
   if(!confirm('লগআউট করতে চান?')) return;
   audit('লগআউট', currentUser.name);
   saveState();
-  // এই সেশনে স্বয়ংক্রিয় পুনঃলগইন বন্ধ — না হলে রিফ্রেশে আবার ঢুকে যেত
-  // (অ্যাপ পুরোপুরি বন্ধ করে আবার খুললে অটো-লগইন আবার কাজ করবে)।
-  try{ sessionStorage.setItem('routineAutoLoginDisabled','1'); }catch(_){}
   // 🔔 stop notification polling
   stopNotificationSystem();
   // 🔊 ভয়েস ঘোষণা বন্ধ
@@ -6294,13 +5889,10 @@ function ensureStateIntegrity(){
       schoolName:'লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ',
       systemName:'রুটিন ম্যানেজমেন্ট সিস্টেম',
       logo:'রু',
-      logoImage:'',
       headerGradient:'linear-gradient(135deg,#0f766e 0%,#0d9488 50%,#14b8a6 100%)',
       founder:'', principal:''
     };
   }
-  // logoImage ফিল্ড পুরোনো ডেটায় না থাকলে নিরাপদে যোগ (ব্যাকওয়ার্ড-সেফ)
-  if(state.branding.logoImage === undefined) state.branding.logoImage = '';
   // প্রতিটা teacher এর missing field ভর্তি কর
   state.teachers.forEach(t=>{
     if(t.locked === undefined) t.locked = false;
@@ -6367,42 +5959,16 @@ function renderAll(){
   }catch(_){}
 }
 
-/* লোগো একটি এলিমেন্টে বসাও — ছবি থাকলে <img>, নাহলে টেক্সট।
-   পুরোনো আচরণ অক্ষুণ্ণ: logoImage খালি হলে আগের মতো টেক্সট লোগোই দেখাবে। */
-function _applyLogoTo(el, b){
-  if(!el) return;
-  const img = (b && typeof b.logoImage === 'string') ? b.logoImage.trim() : '';
-  if(img){
-    el.innerHTML = '';
-    const im = document.createElement('img');
-    im.src = img;
-    im.alt = 'logo';
-    im.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:inherit;display:block';
-    im.onerror = function(){ el.textContent = (b && b.logo) ? b.logo : 'রু'; };
-    el.appendChild(im);
-  } else {
-    el.textContent = (b && b.logo) ? b.logo : 'রু';
-  }
-}
-
 function renderBranding(){
-  const b = state.branding || {};
-  const setTxt = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
-  setTxt('schoolNameTxt', b.schoolName);
-  setTxt('systemNameTxt', b.systemName);
-  setTxt('printSchoolName', b.schoolName);
-  setTxt('printSystemName', (b.systemName||'') + ' — সাপ্তাহিক রুটিন');
-  // হেডার লোগো (ছবি বা টেক্সট)
-  _applyLogoTo(document.getElementById('brandLogo'), b);
-  // 🏷️ হোয়াইট-লেবেল: লগইন ও সেটআপ স্ক্রিনেও প্রতিষ্ঠানের নিজস্ব পরিচয়
-  _applyLogoTo(document.getElementById('loginLogo'), b);
-  _applyLogoTo(document.getElementById('setupLogo'), b);
-  setTxt('loginTitle', b.systemName);
-  setTxt('loginSubtitle', b.schoolName);
-  const hdr = document.querySelector('.app-header');
-  if(hdr && b.headerGradient) hdr.style.background = b.headerGradient;
-  if(b.headerGradient) document.documentElement.style.setProperty('--header-bg', b.headerGradient);
-  document.title = (b.systemName||'রুটিন') + ' — ' + (b.schoolName||'');
+  const b = state.branding;
+  document.getElementById('schoolNameTxt').textContent = b.schoolName;
+  document.getElementById('systemNameTxt').textContent = b.systemName;
+  document.getElementById('brandLogo').textContent = b.logo;
+  document.getElementById('printSchoolName').textContent = b.schoolName;
+  document.getElementById('printSystemName').textContent = b.systemName + ' — সাপ্তাহিক রুটিন';
+  document.querySelector('.app-header').style.background = b.headerGradient;
+  document.documentElement.style.setProperty('--header-bg', b.headerGradient);
+  document.title = b.systemName + ' — ' + b.schoolName;
 }
 
 function renderTable(){
@@ -7395,7 +6961,6 @@ function cancelCustomization(){
 }
 
 function resetCustomization(){
-  if(blockIfViewOnly('কাস্টমাইজেশন রিসেট')) return;
   const kind = document.getElementById('customizeKind').value;
   const id = document.getElementById('customizeId').value;
   const labels = {col:'কলামের', row:'রো-এর', sl:'SL কলামের', name:'নাম কলামের'};
@@ -7700,7 +7265,6 @@ function saveTeacher(){
 }
 
 function deleteTeacher(){
-  if(blockIfViewOnly('শিক্ষক মুছে ফেলা')) return;
   if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
   const tid = document.getElementById('tEditId').value;
   const t = state.teachers.find(x=>x.id===tid);
@@ -8714,7 +8278,6 @@ function loadPreset(idx){
 }
 
 function deletePreset(idx){
-  if(blockIfViewOnly('প্রিসেট মুছে ফেলা')) return;
   const p = state.schedulePresets[idx];
   if(!p) return;
   if(!confirm(`"${p.name}" প্রিসেট মুছে ফেলবেন?`)) return;
@@ -9323,122 +8886,6 @@ function aiApplyResult(){
 }
 
 /* ===========================================================
-   ⚙️ স্বয়ংক্রিয় রুটিন (লোকাল — কোনো API লাগে না)
-   ৪০–৫০ জন শিক্ষকের রুটিন এক ক্লিকে স্বয়ংক্রিয়ভাবে তৈরি করে।
-   - কনফ্লিক্ট-মুক্ত: একই পিরিয়ডে একই শ্রেণি+শাখায় দুজন শিক্ষক বসবে না
-   - প্রতি শিক্ষকের subjects/classes/sections/weeklyTotal থাকলে সেটি মানা হয়
-   - না থাকলে state.options থেকে স্বয়ংক্রিয়ভাবে নেওয়া হয়
-   - 🔒 লক করা ও ছুটিতে থাকা শিক্ষক অপরিবর্তিত থাকে
-   মূল আর্কিটেকচার অক্ষত — শুধু বিদ্যমান cell স্ট্রাকচার ব্যবহার করা হয়েছে।
-=========================================================== */
-function autoGenerateRoutine(){
-  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
-  if(!requirePerm('aiRoutine')) return;
-  try{
-    if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity();
-
-    const slotCols = (state.columns||[]).filter(c => c && c.type === 'slot');
-    if(!slotCols.length){
-      showToast('❌ কোনো পিরিয়ড কলাম নেই — আগে "সময়সূচি" দিয়ে কলাম তৈরি করুন','error',5000);
-      return;
-    }
-
-    const teachers = (state.teachers||[]).filter(t => t && !t.onLeave && !t.locked);
-    if(!teachers.length){
-      showToast('❌ উপযুক্ত শিক্ষক নেই (সবাই লক/ছুটিতে অথবা তালিকা ফাঁকা)','error',5000);
-      return;
-    }
-
-    if(!confirm(
-        `⚙️ স্বয়ংক্রিয় রুটিন তৈরি\n\n` +
-        `• ${toBnNum(teachers.length)} জন শিক্ষকের রুটিন তৈরি হবে\n` +
-        `• ${toBnNum(slotCols.length)} টি পিরিয়ড কলাম পূরণ হবে\n` +
-        `• 🔒 লক করা ও ছুটিতে থাকা শিক্ষক অপরিবর্তিত থাকবে\n` +
-        `• একই সময়ে একই শ্রেণি+শাখায় দুজন শিক্ষক বসবেন না (কনফ্লিক্ট-মুক্ত)\n` +
-        `• প্রতিটি শিক্ষকের পুরনো পিরিয়ড মুছে নতুন রুটিন বসবে\n\n` +
-        `চালিয়ে যাবেন?`)){
-      return;
-    }
-
-    snapshot();
-
-    const opt = state.options || {};
-    const allClasses  = Array.isArray(opt.class)   ? opt.class.filter(Boolean)                 : [];
-    const allSections = Array.isArray(opt.section) ? opt.section.filter(Boolean)               : [];
-    const allSubjects = Array.isArray(opt.subject) ? opt.subject.filter(x=>x && x!=='Free')    : [];
-
-    // প্রতি পিরিয়ডে যে "শ্রেণি||শাখা" ইতিমধ্যে নেওয়া হয়েছে — কনফ্লিক্ট গার্ড
-    const slotTaken = {};
-    slotCols.forEach(c => { slotTaken[c.id] = new Set(); });
-
-    let filled = 0, teachersDone = 0;
-
-    teachers.forEach((t, ti) => {
-      if(!t.cells) t.cells = {};
-      // এই শিক্ষকের সব slot সেল রিসেট (বিরতি কলাম স্পর্শ করা হয় না)
-      slotCols.forEach(c => { t.cells[c.id] = {}; });
-
-      // শিক্ষকভিত্তিক pool — না থাকলে গ্লোবাল অপশন থেকে fallback
-      const subjPool = (Array.isArray(t.subjects) && t.subjects.length) ? t.subjects.filter(Boolean)
-                     : (t.mainSubject ? [t.mainSubject]
-                     : (allSubjects.length ? allSubjects.slice() : ['সাধারণ']));
-      const classPool = (Array.isArray(t.classes) && t.classes.length) ? t.classes.filter(Boolean)
-                      : (allClasses.length ? allClasses.slice() : ['শ্রেণি ১']);
-      const sectPool  = (Array.isArray(t.sections) && t.sections.length) ? t.sections.filter(Boolean)
-                      : (allSections.length ? allSections.slice() : ['ক']);
-
-      if(!subjPool.length)  subjPool.push('সাধারণ');
-      if(!classPool.length) classPool.push('শ্রেণি ১');
-      if(!sectPool.length)  sectPool.push('ক');
-
-      // এই শিক্ষকের জন্য কয়টি পিরিয়ড পূরণ হবে
-      let target = (typeof t.weeklyTotal === 'number' && t.weeklyTotal > 0)
-                   ? t.weeklyTotal : slotCols.length;
-      if(target > slotCols.length) target = slotCols.length;
-      if(target < 0) target = 0;
-
-      let comboIdx = ti;          // শুরুর অবস্থান stagger — সবাই slot ১-এ collide করবে না
-      let placed = 0;
-
-      for(let si = 0; si < slotCols.length && placed < target; si++){
-        const col   = slotCols[si];
-        const taken = slotTaken[col.id];
-        const maxTry = Math.max(classPool.length * sectPool.length, 1);
-        let assigned = false;
-
-        for(let attempt = 0; attempt < maxTry && !assigned; attempt++){
-          const cls = classPool[comboIdx % classPool.length];
-          const sec = sectPool[Math.floor(comboIdx / classPool.length) % sectPool.length];
-          comboIdx++;
-          const key = cls + '||' + sec;
-          if(taken.has(key)) continue;   // এই পিরিয়ডে অন্য শিক্ষক ইতিমধ্যে নিয়েছে
-          const subj = subjPool[(si + ti) % subjPool.length] || subjPool[0];
-          t.cells[col.id] = { class: cls, section: sec, subject: subj };
-          taken.add(key);
-          assigned = true;
-          placed++; filled++;
-        }
-        // সব combo নেওয়া থাকলে সেলটি ফ্রি থাকবে (কোনো কনফ্লিক্ট নয়)
-      }
-      if(placed > 0) teachersDone++;
-    });
-
-    if(!state.aiSettings) state.aiSettings = {};
-    state.aiSettings.lastAutoGenerated = new Date().toISOString();
-
-    saveState();
-    renderTable();
-    try{ populateBulk(); }catch(_){}
-    try{ if(typeof refreshDashboardSilent === 'function') refreshDashboardSilent(false); }catch(_){}
-    audit('স্বয়ংক্রিয় রুটিন', `${teachersDone} শিক্ষক, ${filled} পিরিয়ড পূরণ`);
-    showToast(`✅ স্বয়ংক্রিয় রুটিন তৈরি — ${toBnNum(teachersDone)} জন শিক্ষক, ${toBnNum(filled)} টি পিরিয়ড`, 'success', 4500);
-  }catch(err){
-    console.error('❌ autoGenerateRoutine error:', err);
-    showToast('❌ স্বয়ংক্রিয় রুটিন ব্যর্থ: ' + err.message, 'error', 5000);
-  }
-}
-
-/* ===========================================================
    BULK OPERATIONS
 =========================================================== */
 function populateBulk(){
@@ -9674,71 +9121,32 @@ function exportCSV(){
   showToast('✅ CSV ডাউনলোড সম্পন্ন','success');
 }
 
-/* মেনু আগে বন্ধ করি, তারপর একটু দেরিতে ফাইল ডায়ালগ খুলি — যাতে প্যানেল
-   re-parent হওয়া (portal/restore) সম্পূর্ণ হওয়ার পরই native picker খোলে।
-   এতে মোবাইলে JSON/CSV নির্বাচনের change ইভেন্ট আর হারায় না। */
-function triggerImport(){
-  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
-  if(!requirePerm('importExport')) return;
-  const inp = document.getElementById('importFile');
-  if(!inp){ showToast('❌ ইম্পোর্ট ইনপুট পাওয়া যায়নি','error'); return; }
-  // নতুন নির্বাচন নিশ্চিত করতে আগের value মুছি (একই ফাইল আবার নিলে change ফায়ার হয়)
-  inp.value = '';
-  setTimeout(()=>{ try{ inp.click(); }catch(e){ console.error('import click failed:', e); } }, 60);
-}
-
 function handleImport(e){
   if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
   if(!requirePerm('importExport')) return;
-  const file = e.target.files && e.target.files[0];
-  if(!file){ return; }
-  const lname = (file.name || '').toLowerCase();   // case-insensitive (.JSON ও কাজ করবে)
+  const file = e.target.files[0];
+  if(!file) return;
   const reader = new FileReader();
-  reader.onerror = () => {
-    showToast('❌ ফাইল পড়া যায়নি — আবার চেষ্টা করুন','error');
-    e.target.value = '';
-  };
   reader.onload = ev => {
     try{
-      if(lname.endsWith('.json')){
-        let data;
-        try{
-          data = JSON.parse(ev.target.result);
-        }catch(parseErr){
-          showToast('❌ অবৈধ JSON ফাইল — ফাইলটি ঠিক আছে কিনা দেখুন','error', 5000);
-          e.target.value = '';
-          return;
-        }
-        if(!data || typeof data !== 'object' || Array.isArray(data)){
-          showToast('❌ JSON কাঠামো সঠিক নয় (অবজেক্ট প্রত্যাশিত)','error', 5000);
-          e.target.value = '';
-          return;
-        }
-        if(!confirm('বর্তমান ডেটা প্রতিস্থাপিত হবে। নিশ্চিত?')){
-          e.target.value = '';
-          return;
-        }
+      if(file.name.endsWith('.json')){
+        const data = JSON.parse(ev.target.result);
+        if(!confirm('বর্তমান ডেটা প্রতিস্থাপিত হবে। নিশ্চিত?')) return;
         snapshot();
         Object.assign(state, data);
-        // ইম্পোর্টের পর কাঠামো ভাঙা থাকলে নিরাপদে মেরামত করি (ক্র্যাশ রোধ)
-        try{ if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity(); }catch(_){}
         saveState();
         renderAll();
-        try{ populateBulk(); }catch(_){}
         audit('ইম্পোর্ট', file.name);
         showToast('✅ ইম্পোর্ট সম্পন্ন','success');
-      } else if(lname.endsWith('.csv')){
+      } else if(file.name.endsWith('.csv')){
         showToast('CSV ইম্পোর্ট সাপোর্ট সীমিত — JSON ব্যবহার করুন','warning');
-      } else {
-        showToast('❌ অসমর্থিত ফাইল — শুধু .json ফাইল ইম্পোর্ট করুন','error');
       }
     }catch(err){
-      showToast('❌ ইম্পোর্ট ব্যর্থ: ' + err.message, 'error', 5000);
-    }finally{
-      e.target.value = '';
+      showToast('❌ ইম্পোর্ট ব্যর্থ: ' + err.message, 'error');
     }
   };
   reader.readAsText(file);
+  e.target.value = '';
 }
 
 /* ===========================================================
@@ -9879,7 +9287,6 @@ function saveMasterSize(){
 
 /* Reset all five back to defaults */
 function resetMasterSize(){
-  if(blockIfViewOnly('আকার রিসেট')) return;
   if(!confirm('সব কলাম ও রো-এর আকার ডিফল্টে ফিরিয়ে আনবেন?')) return;
   if(typeof snapshot==='function') snapshot();
   const s = state.settings;
@@ -10063,7 +9470,6 @@ function readSetting(id, type, fallback){
 }
 
 function saveSettings(){
-  if(blockIfViewOnly('সেটিংস পরিবর্তন')){ try{ closeModal('settingsModal'); }catch(_){} return; }
   const s = state.settings;
   const _themeSel = document.getElementById('setThemeSelect');
   s.theme = _themeSel ? (_themeSel.value || 'light') : (s.theme || 'light');
@@ -10159,7 +9565,6 @@ function saveSettings(){
 }
 
 function resetSettings(){
-  if(blockIfViewOnly('সেটিংস রিসেট')) return;
   if(!requirePerm('dataReset')) return;
   if(!confirm('সব সেটিংস রিসেট করবেন? (ডেটা ও API key থাকবে)')) return;
   // Preserve API keys
@@ -10292,11 +9697,6 @@ function toggleDark(){
 }
 /* থিম নির্বাচক — শুধুমাত্র "light" (ডিফল্ট) ও "custom" (নিজের তৈরি) */
 function setThemeChoice(val){
-  if(blockIfViewOnly('থিম পরিবর্তন')){
-    // ড্রপডাউন আগের অবস্থায় ফেরত (UI বিভ্রান্তি এড়াতে)
-    try{ const sel=document.getElementById('setThemeSelect'); if(sel) sel.value = state.settings.theme || 'light'; }catch(_){}
-    return;
-  }
   const valid = ['light','custom'];
   state.settings.theme = valid.includes(val) ? val : 'light';
   applySettings();
@@ -10409,7 +9809,6 @@ function liveThemePreview(){
 }
 
 function applyThemePreset(name){
-  if(blockIfViewOnly('থিম পরিবর্তন')) return;
   const P = {
     teal:  { bg:'#eef5f4', surf:'#ffffff', surf2:'#eafaf6', border:'#cfe9e3', text:'#0f2e2a', text2:'#3f6b62',
              primary:'#0f766e', phover:'#115e59', h1:'#0f766e', h2:'#14b8a6',
@@ -10445,7 +9844,6 @@ function applyThemePreset(name){
 }
 
 function resetThemeBuilderDefaults(){
-  if(blockIfViewOnly('থিম রিসেট')) return;
   const s = state.settings;
   s.customBg='#eef2f7'; s.customSurface='#ffffff'; s.customSurface2='#f3f6fa';
   s.customBorder='#d8dee8'; s.customText='#0f172a'; s.customText2='#475569';
@@ -10461,7 +9859,6 @@ function resetThemeBuilderDefaults(){
 }
 
 function saveThemeBuilder(){
-  if(blockIfViewOnly('থিম পরিবর্তন')) return;
   if(!currentUser || currentUser.role !== 'admin'){
     showToast('⛔ শুধুমাত্র অ্যাডমিন','warning'); return;
   }
@@ -10540,7 +9937,6 @@ function applyColorTheme(theme){
 }
 
 function resetData(){
-  if(blockIfViewOnly('সব ডেটা মুছে ফেলা')) return;
   if(!requirePerm('dataReset')) return;
   if(!confirm('⚠️ সব ডেটা মুছে ফেলবেন? এটি অপরিবর্তনীয়!\n\nএটি ক্লাউড (Firebase) এবং সব ডিভাইস থেকেও মুছে যাবে।')) return;
   if(!confirm('সত্যিই নিশ্চিত? শেষ সুযোগ!')) return;
@@ -10548,7 +9944,7 @@ function resetData(){
   // ক্লাউড থেকেও মুছে দাও
   if(window.FB && window.FB.ready){
     _firebaseSyncEnabled = false; // রিসেটের সময় সিঙ্ক বন্ধ
-    window.FB.set(window.FB.ref(window.FB.db, fbDataPath()), null)
+    window.FB.set(window.FB.ref(window.FB.db, 'routineData'), null)
       .catch(e => console.warn('Firebase reset error:', e))
       .finally(() => {
         localStorage.removeItem(STORAGE_KEY);
@@ -10572,64 +9968,11 @@ function saveBranding(){
   state.branding.headerGradient = document.getElementById('bGradient').value;
   state.branding.founder = document.getElementById('bFounder').value.trim();
   state.branding.principal = document.getElementById('bPrincipal').value.trim();
-  // 🖼️ লোগো ছবি — _pendingLogoImage-এ নতুন আপলোড থাকলে সেটি, নাহলে আগেরটি
-  if(_pendingLogoImage !== null){
-    state.branding.logoImage = _pendingLogoImage;   // '' হলে ছবি সরানো হয়েছে
-  }
-  _pendingLogoImage = null;
   saveState();
   renderBranding();
   closeModal('brandingModal');
   audit('ব্র্যান্ডিং আপডেট', '');
   showToast('✅ ব্র্যান্ডিং সংরক্ষিত','success');
-}
-
-/* ব্র্যান্ডিং মডালে লোগো ছবি — সংরক্ষণের আগ পর্যন্ত অস্থায়ীভাবে রাখি।
-   null = অপরিবর্তিত, '' = সরানো হয়েছে, string = নতুন ছবি (base64)। */
-let _pendingLogoImage = null;
-
-function onLogoFileChosen(input){
-  const file = input && input.files && input.files[0];
-  if(!file){ return; }
-  if(!/^image\/(png|jpeg|jpg|webp|svg\+xml)$/i.test(file.type)){
-    showToast('শুধু PNG / JPG / WEBP / SVG ছবি দিন','warning',3000);
-    input.value = ''; return;
-  }
-  // ~৩০০ KB সীমা — Firebase সিঙ্ক ও স্টোরেজ হালকা রাখতে
-  if(file.size > 300 * 1024){
-    showToast('ছবিটি বড় (সর্বোচ্চ ~৩০০ KB) — ছোট/সংকুচিত ছবি দিন','warning',3500);
-    input.value = ''; return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(e){
-    const dataUrl = String(e.target.result || '');
-    if(!dataUrl.startsWith('data:image/')){
-      showToast('ছবি পড়া গেল না — অন্য ছবি চেষ্টা করুন','error',3000);
-      return;
-    }
-    _pendingLogoImage = dataUrl;
-    _updateLogoPreview(dataUrl, null);
-    showToast('🖼️ ছবি নির্বাচিত — "সংরক্ষণ করুন" চাপলে কার্যকর হবে','info',3000);
-  };
-  reader.onerror = function(){ showToast('ছবি পড়তে সমস্যা হয়েছে','error',3000); };
-  reader.readAsDataURL(file);
-}
-
-function clearBrandLogoImage(){
-  _pendingLogoImage = '';   // সংরক্ষণে logoImage খালি হবে → টেক্সট লোগো ফিরবে
-  const lg = (document.getElementById('bLogo')||{}).value || (state.branding && state.branding.logo) || 'রু';
-  _updateLogoPreview('', lg);
-  showToast('🗑️ ছবি সরানো হবে — "সংরক্ষণ করুন" চাপলে কার্যকর','info',2800);
-}
-
-function _updateLogoPreview(imgData, fallbackText){
-  const box = document.getElementById('bLogoPreview');
-  if(!box) return;
-  if(imgData){
-    box.innerHTML = '<img src="'+imgData+'" alt="logo" style="width:100%;height:100%;object-fit:contain">';
-  } else {
-    box.textContent = fallbackText || 'রু';
-  }
 }
 
 /* ===========================================================
@@ -11063,144 +10406,43 @@ function handleVoiceCommand(cmd){
 /* ===========================================================
    PWA — Inline Manifest & Service Worker
 =========================================================== */
-/* ক্যানভাসে ব্র্যান্ডিং-অনুযায়ী আইকন তৈরি (PNG dataURL)।
-   প্রতিটি প্রতিষ্ঠান নিজের লোগো-অক্ষর ও রঙে আইকন পাবে।
-   maskable=true হলে Android-এর জন্য নিরাপদ প্যাডিং যোগ করে।
-   ব্যর্থ হলে null ফেরত — কলার নিরাপদে SVG ফলব্যাক ব্যবহার করবে।
-   ⚠️ এটি কেবল আইকন বানায় — state/রুটিন/ডেটায় কোনো প্রভাব নেই। */
-function _makeBrandIcon(size, maskable){
-  try{
-    const cv = document.createElement('canvas');
-    cv.width = size; cv.height = size;
-    const ctx = cv.getContext('2d');
-    if(!ctx) return null;
-    const b = (state && state.branding) || {};
-    // হেডার গ্রেডিয়েন্ট থেকে প্রথম রঙ; না পেলে ডিফল্ট টিল
-    let c1 = '#0f766e', c2 = '#0d9488';
-    try{
-      const m = String(b.headerGradient||'').match(/#[0-9a-fA-F]{6}/g);
-      if(m && m.length){ c1 = m[0]; c2 = m[m.length-1]; }
-    }catch(_){}
-    const g = ctx.createLinearGradient(0,0,size,size);
-    g.addColorStop(0, c1); g.addColorStop(1, c2);
-    ctx.fillStyle = g;
-    // maskable হলে পুরো বর্গ ভরাট (safe-zone), নাহলে গোলাকার কোণ
-    if(maskable){
-      ctx.fillRect(0,0,size,size);
-    } else {
-      const r = size * 0.18;
-      ctx.beginPath();
-      ctx.moveTo(r,0); ctx.arcTo(size,0,size,size,r);
-      ctx.arcTo(size,size,0,size,r); ctx.arcTo(0,size,0,0,r);
-      ctx.arcTo(0,0,size,0,r); ctx.closePath(); ctx.fill();
-    }
-    // লোগো-অক্ষর (সর্বোচ্চ ৩ অক্ষর)
-    const letter = String(b.logo || 'রু').slice(0,3);
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    // maskable হলে ছোট ফন্ট (safe-zone ~80%)
-    const scale = maskable ? 0.40 : 0.52;
-    ctx.font = '700 ' + Math.floor(size*scale) + 'px sans-serif';
-    ctx.fillText(letter, size/2, size/2 + size*0.03);
-    return cv.toDataURL('image/png');
-  }catch(e){
-    console.warn('icon generation skipped:', e);
-    return null;
-  }
-}
-
 function setupPWA(){
-  const b = (state && state.branding) || {};
-  const schoolName = b.schoolName || 'রুটিন ম্যানেজমেন্ট সিস্টেম';
-  const systemName = b.systemName || 'রুটিন ম্যানেজমেন্ট সিস্টেম';
-
-  // SVG ফলব্যাক আইকন (ক্যানভাস ব্যর্থ হলেও অন্তত এটি থাকবে)
-  const svg192 = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230f766e'/><text x='50%25' y='62%25' text-anchor='middle' font-size='110' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>";
-
-  // ব্র্যান্ডিং-অনুযায়ী PNG আইকন (Play Store/Android-এর জন্য জরুরি)
-  const icon192  = _makeBrandIcon(192, false) || svg192;
-  const icon512  = _makeBrandIcon(512, false) || svg192;
-  const iconMask = _makeBrandIcon(512, true)  || svg192;
-
-  const icons = [
-    { src: icon192,  sizes:'192x192', type:'image/png', purpose:'any' },
-    { src: icon512,  sizes:'512x512', type:'image/png', purpose:'any' },
-    { src: iconMask, sizes:'512x512', type:'image/png', purpose:'maskable' }
-  ];
-
-  // সমৃদ্ধ manifest (Play Store / PWABuilder যা যা চায়)
+  // Inline manifest as data URL
   const manifest = {
-    id: '/?app=routine',
-    name: schoolName + ' — ' + systemName,
+    name: state.branding.schoolName + ' — ' + state.branding.systemName,
     short_name: 'রুটিন',
-    description: schoolName + ' এর সাপ্তাহিক রুটিন ও শিক্ষক ব্যবস্থাপনা।',
-    start_url: location.pathname + '?app=routine',
-    scope: location.pathname,
+    start_url: location.pathname,
     display: 'standalone',
-    orientation: 'any',
-    lang: 'bn',
-    dir: 'ltr',
     background_color: '#0f766e',
     theme_color: '#0f766e',
-    categories: ['education', 'productivity'],
-    icons: icons
+    icons:[{src:"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230f766e'/><text x='50%25' y='62%25' text-anchor='middle' font-size='110' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>",sizes:"192x192",type:"image/svg+xml"}]
   };
-  try{
-    const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
-    const mLink = document.getElementById('manifestLink');
-    if(mLink){
-      // আগের blob URL থাকলে রিভোক (মেমরি লিক এড়াতে)
-      if(mLink.href && mLink.href.startsWith('blob:')){
-        try{ URL.revokeObjectURL(mLink.href); }catch(_){}
-      }
-      mLink.href = URL.createObjectURL(blob);
-    }
-    // Apple touch icon-ও ব্র্যান্ডেড আইকনে আপডেট
-    const ati = document.getElementById('appleTouchIcon');
-    if(ati && icon192 && icon192.startsWith('data:image/png')) ati.href = icon192;
-    // favicon-ও ব্র্যান্ডেড (ট্যাবে নিজস্ব পরিচয়)
-    try{
-      const fav = document.querySelector("link[rel='icon']");
-      if(fav && icon192 && icon192.startsWith('data:image/png')) fav.href = icon192;
-    }catch(_){}
-  }catch(e){ console.warn('manifest setup skipped:', e); }
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  document.getElementById('manifestLink').href = URL.createObjectURL(blob);
 
-  // Service worker — network-first (নতুন আপডেট দ্রুত আসে, পুরোনো ভার্সনে
-  // আটকে থাকে না), অফলাইনে ক্যাশ থেকে দেখায়। ব্যর্থ হলেও অ্যাপ স্বাভাবিক চলে।
+  // Service worker via blob URL (limited but offers offline cache via app shell)
   if('serviceWorker' in navigator){
-    const swCode = [
-      "const CACHE='lhrsc-routine-v2';",
-      "self.addEventListener('install',e=>self.skipWaiting());",
-      "self.addEventListener('activate',e=>{",
-      "  e.waitUntil((async()=>{",
-      "    const keys=await caches.keys();",
-      "    await Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)));",
-      "    await self.clients.claim();",
-      "  })());",
-      "});",
-      "self.addEventListener('fetch',e=>{",
-      "  if(e.request.method!=='GET') return;",
-      "  e.respondWith((async()=>{",
-      "    try{",
-      "      const res=await fetch(e.request);",
-      "      if(res && res.ok){",
-      "        const c=res.clone();",
-      "        caches.open(CACHE).then(ch=>ch.put(e.request,c)).catch(()=>{});",
-      "      }",
-      "      return res;",
-      "    }catch(err){",
-      "      const cached=await caches.match(e.request);",
-      "      return cached || caches.match('/') || Response.error();",
-      "    }",
-      "  })());",
-      "});"
-    ].join('\n');
+    const swCode = `
+      const CACHE = 'lhrsc-routine-v1';
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('activate', e => self.clients.claim());
+      self.addEventListener('fetch', e => {
+        e.respondWith(
+          caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+            if(res.ok && e.request.method === 'GET'){
+              const c = res.clone();
+              caches.open(CACHE).then(cache => cache.put(e.request, c));
+            }
+            return res;
+          }).catch(() => caches.match('/')))
+        );
+      });
+    `;
     try{
-      const swBlob = new Blob([swCode], {type:'application/javascript'});
-      const swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl).catch(()=>{ /* নিরাপদে উপেক্ষা */ });
-    }catch(e){ /* SW ব্যর্থ হলেও অ্যাপ স্বাভাবিক চলবে */ }
+      const blob = new Blob([swCode], {type:'application/javascript'});
+      const url = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(url).catch(()=>{});
+    }catch(e){}
   }
 }
 
@@ -11943,14 +11185,6 @@ window.addEventListener('resize', () => {
 =========================================================== */
 function init(){
   loadState();
-  // 🏫 নতুন প্রতিষ্ঠান সেটআপের পর reload হলে — অস্থায়ীভাবে রাখা ব্র্যান্ডিং
-  // (নাম/লোগো/পরিচালক) এখন state-এ বসাই, তারপর একবার সংরক্ষণ করি।
-  // এতে নতুন স্কুল প্রথম থেকেই নিজের পরিচয়ে অ্যাপ দেখবে, LHRSC নয়।
-  try{ _applyPendingBrandingIfAny(); }catch(e){ console.warn('pending branding skipped:', e); }
-  // 🏷️ হোয়াইট-লেবেল: state লোড হওয়ার সাথে সাথেই লগইন/সেটআপ স্ক্রিনে
-  // প্রতিষ্ঠানের নিজস্ব নাম/লোগো দেখাও (লগইনের আগেই)। DOM প্রস্তুত না
-  // থাকলে renderBranding ভেতরে নিরাপদে স্কিপ করে — কোনো ক্র্যাশ নেই।
-  try{ renderBranding(); }catch(e){ console.warn('early branding render skipped:', e); }
   // Initial snapshot for undo baseline
   historyStack = [JSON.stringify({teachers:state.teachers, columns:state.columns, options:state.options, branding:state.branding})];
 
@@ -11969,17 +11203,6 @@ function init(){
 
   // Trigger initial role change for login form
   document.getElementById('loginRole').dispatchEvent(new Event('change'));
-
-  // 🏫 প্রতিষ্ঠান কোড সেট না থাকলে আগে সেটআপ স্ক্রিন দেখাও।
-  // সেটআপ দরকার হলে অটো-লগইন/লগইন স্কিপ — ব্যবহারকারী আগে প্রতিষ্ঠান ঠিক করবে।
-  let _needSetup = false;
-  try{ _needSetup = maybeShowSetupScreen(); }catch(e){ console.warn('setup screen check failed:', e); }
-
-  // 🔓 বিশ্বস্ত ডিভাইস হলে — সরাসরি প্রবেশ (প্রিন্সিপাল স্যার লগইন ছাড়াই ঢুকবেন)।
-  // ব্যর্থ হলে স্বাভাবিক লগইন স্ক্রিনই থাকবে — নিরাপদ ফলব্যাক।
-  if(!_needSetup){
-    try{ autoLoginIfTrusted(); }catch(e){ console.warn('auto-login skipped:', e); }
-  }
 
   // Initialize floating scrollbar binding & multiple sync attempts (for fonts loading)
   setTimeout(()=>{ recomputeStickyTop(); syncFloatingScroll(); }, 100);
@@ -12020,134 +11243,6 @@ document.addEventListener('keydown', e => {
 
 // Save before unload
 window.addEventListener('beforeunload', () => {saveState()});
-// ====== ডাইনামিক শিক্ষক JSON আপলোড লজিক ======
-function handleTeacherJSONImport(e){
-    if(!canFullEdit()){showToast('অনুমতি নেই','error');return;}
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
-
-    const reader = new FileReader();
-    reader.onerror = () => {
-        showToast('❌ ফাইল পড়া যায়নি, আবার চেষ্টা করুন','error');
-        e.target.value = '';
-    };
-    
-    // বাংলা UTF-8 Support
-    reader.readAsText(file, "UTF-8"); 
-    
-    reader.onload = ev => {
-        try {
-            let data;
-            try {
-                data = JSON.parse(ev.target.result);
-            } catch(err) {
-                // Invalid JSON detect
-                throw new Error("JSON ফাইলের ফরম্যাট ঠিক নেই। কমা বা ব্র্যাকেট চেক করুন।");
-            }
-            
-            if(!Array.isArray(data)){
-                throw new Error("JSON ফাইলের মূল কাঠামো একটি Array ([...]) হতে হবে।");
-            }
-
-            let newAdded = 0;
-            let updated = 0;
-            
-            snapshot(); // মূল স্ট্রাকচার ঠিক রাখতে আনডু করার জন্য বর্তমান অবস্থা সেভ
-
-            data.forEach((item, index) => {
-                // Missing Field Validation
-                if(!item.name) throw new Error(`আইটেম ${index + 1}: শিক্ষকের 'name' (নাম) দেওয়া নেই।`);
-
-                // Duplicate Entry চেক ও Automatic Mapping 
-                let t = state.teachers.find(x => x.name.trim() === item.name.trim());
-                if(t) {
-                    updated++; // আগে থেকে থাকলে শুধু ডেটা আপডেট হবে, রুটিন ভাঙবে না
-                } else {
-                    // নতুন শিক্ষক হলে আপনার সিস্টেমের স্ট্রাকচারে তৈরি করা
-                    t = {
-                        id: uid(),
-                        name: item.name.trim(),
-                        title: item.title || '',
-                        mainSubject: '',
-                        subjects: [],
-                        classes: [],
-                        sections: [],
-                        cells: {},
-                        weeklyTotal: 0,
-                        weeklyAssignments: {},
-                        preferredDays: [],
-                        unavailableDays: [],
-                        slotGroupLimits: {morning:0, lateMorning:0, afternoon:0, evening:0},
-                        notes: '',
-                        password: '1234'
-                    };
-                    state.teachers.push(t);
-                    newAdded++;
-                }
-
-                // ডাইনামিক ম্যাপিং: সাবজেক্ট, ক্লাস এবং সেকশনগুলো
-                const subjects = new Set(t.subjects || []);
-                const classes = new Set(t.classes || []);
-                const sections = new Set(t.sections || []);
-
-                if(Array.isArray(item.classes)){
-                    item.classes.forEach(c => {
-                        if(c.subject) subjects.add(c.subject);
-                        if(c.class_name) classes.add(c.class_name);
-                        if(c.section) sections.add(c.section);
-                    });
-                }
-
-                t.subjects = Array.from(subjects);
-                t.classes = Array.from(classes);
-                t.sections = Array.from(sections);
-                
-                if (t.subjects.length > 0 && !t.mainSubject) {
-                    t.mainSubject = t.subjects[0];
-                }
-
-                // শিফট ও পছন্দনীয় সময় 'নোটে' যুক্ত করা যেন AI রুটিনের সময় কাজে লাগে
-                let notesArr = t.notes ? [t.notes] : [];
-                if(item.shift) notesArr.push(`শিফট: ${item.shift}`);
-                if(Array.isArray(item.preferences)){
-                    notesArr.push(`পছন্দ: ${item.preferences.join(', ')}`);
-                }
-                if (notesArr.length > 0) {
-                    t.notes = notesArr.join('\n');
-                }
-            });
-
-            // ডাটা সেভ ও রিফ্রেশ
-            saveState();
-            renderTable();
-            if(typeof populateLoginTeachers === 'function') populateLoginTeachers();
-            if(typeof populateBulk === 'function') populateBulk();
-
-            showToast(`✅ সফল! নতুন: ${newAdded} জন, আপডেট: ${updated} জন`, 'success');
-            
-            // অটোমেটিক রুটিন তৈরির ট্রিগার
-            setTimeout(() => {
-                if(confirm("শিক্ষকদের তথ্য সফলভাবে আপডেট হয়েছে! আপনি কি এখন এই তথ্য অনুযায়ী 'স্বয়ংক্রিয় রুটিন' জেনারেট করতে চান?")){
-                    if(typeof openAIGenerator === 'function') openAIGenerator();
-                    else if(typeof autoGenerateRoutine === 'function') autoGenerateRoutine();
-                }
-            }, 1000);
-
-        } catch(err) {
-            // App Crash ঠেকানো এবং User-friendly Error
-            console.error("JSON Error:", err);
-            showToast('❌ আপলোড ব্যর্থ: ' + err.message, 'error');
-        } finally {
-            e.target.value = ''; // ইনপুট ক্লিয়ার
-        }
-    };
-}
-// ====== শেষ ======
 </script>
-<!-- 📥 স্থায়ী ইম্পোর্ট ইনপুট — tool-menu প্যানেলের বাইরে body-level এ রাখা হয়েছে।
-     কারণ: মোবাইলে tool-menu প্যানেল খুললে DOM-এ portal/restore হয়; আগে input এই
-     প্যানেলের ভেতরে থাকায় ফাইল ডায়ালগ খোলার পরপরই প্যানেল re-parent হয়ে যেত,
-     ফলে change ইভেন্ট হারিয়ে JSON আপলোড হতো না। body-level এ থাকায় এটি কখনো সরে না। -->
-<input type="file" id="importFile" style="display:none" accept=".json,.csv,application/json,text/csv" onchange="handleImport(event)">
 </body>
 </html>
