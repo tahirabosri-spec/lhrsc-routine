@@ -1920,80 +1920,6 @@ input[type="range"]::-moz-range-thumb{
 }
 .te-card-summary b{color:var(--text-1);font-weight:700}
 
-/* ════════════════════════════════════════════════════════════
-   🆕 STICKY LIVE SUMMARY + SOFT-COLORED CARDS + NO-SPLIT BLOCKS
-   Additive scoped styles — পুরোনো কিছু override করে না।
-   ════════════════════════════════════════════════════════════ */
-/* Sticky Live Summary — modal-body scroll-এ উপরে stick করে */
-.tms-summary{
-  position:sticky;top:0;z-index:6;
-  backdrop-filter:saturate(140%) blur(6px);
-  -webkit-backdrop-filter:saturate(140%) blur(6px);
-  box-shadow:0 2px 8px -4px rgba(0,0,0,.18);
-}
-.tms-summary.active{
-  background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
-}
-
-/* প্রতিটি Teaching Entry-কে স্বতন্ত্র — কিন্তু লেখা সবসময় স্পষ্ট।
-   White card + colored left strip + colored top-corner accent;
-   pastel background বাদ — text-on-white = highest readability. */
-.te-card{
-  break-inside:avoid;page-break-inside:avoid;
-  background:var(--surface,#fff) !important;
-  color:var(--text-1,#0f172a) !important;
-  border-left-width:4px;
-  position:relative;
-}
-/* প্রতিটি কার্ডে ছোট colored tag (উপরে-ডানে) — entry-আলাদা বোঝা যায়, লেখা ব্যাহত হয় না */
-.te-card::before{
-  content:'';position:absolute;top:0;right:0;
-  width:46px;height:4px;border-radius:0 0 0 4px;
-  opacity:.95;
-}
-.te-card .te-card-num{background:var(--card-accent,#0284c7)}
-.te-card .te-card-summary b{color:var(--text-1,#0f172a) !important}
-.te-card label{color:var(--text-2,#334155) !important}
-
-/* ৮টা accent color — শুধু border-left, top-strip ও entry-num bubble-এ;
-   card body সম্পূর্ণ white → text 100% readable */
-.te-card.te-c-0{border-left-color:#0ea5e9;--card-accent:#0ea5e9}
-.te-card.te-c-0::before{background:#0ea5e9}
-.te-card.te-c-1{border-left-color:#a855f7;--card-accent:#a855f7}
-.te-card.te-c-1::before{background:#a855f7}
-.te-card.te-c-2{border-left-color:#16a34a;--card-accent:#16a34a}
-.te-card.te-c-2::before{background:#16a34a}
-.te-card.te-c-3{border-left-color:#d97706;--card-accent:#d97706}
-.te-card.te-c-3::before{background:#d97706}
-.te-card.te-c-4{border-left-color:#dc2626;--card-accent:#dc2626}
-.te-card.te-c-4::before{background:#dc2626}
-.te-card.te-c-5{border-left-color:#0891b2;--card-accent:#0891b2}
-.te-card.te-c-5::before{background:#0891b2}
-.te-card.te-c-6{border-left-color:#7c3aed;--card-accent:#7c3aed}
-.te-card.te-c-6::before{background:#7c3aed}
-.te-card.te-c-7{border-left-color:#ea580c;--card-accent:#ea580c}
-.te-card.te-c-7::before{background:#ea580c}
-/* duplicate-flag — left border red (অন্য accent override) */
-.te-card.te-flagged.te-c-0,
-.te-card.te-flagged.te-c-1,
-.te-card.te-flagged.te-c-2,
-.te-card.te-flagged.te-c-3,
-.te-card.te-flagged.te-c-4,
-.te-card.te-flagged.te-c-5,
-.te-card.te-flagged.te-c-6,
-.te-card.te-flagged.te-c-7{border-left-color:#ef4444}
-/* inner panels — back to original light surface (card is white now) */
-.te-card .te-day-row,
-.te-card .te-tslot-wrap{background:var(--surface-2)}
-.te-card .te-tslot-group{background:var(--surface)}
-.te-card .te-field select,
-.te-card .te-field input,
-.te-card .te-field textarea{background:var(--surface);color:var(--text-1)}
-/* Print — keep each card together */
-@media print{
-  .te-card{break-inside:avoid;page-break-inside:avoid}
-}
-
 /* =============================================================
    AI ROUTINE GENERATOR
 ============================================================= */
@@ -8090,50 +8016,25 @@ function _teUsageMaps(entries){
   return {sub, cls, sec};
 }
 
-/* Slot কলামগুলোকে ৪ গ্রুপে ভাগ — বিরতি-অবস্থান ভিত্তিক:
-   • ১ম বিরতির আগের সব স্লট → 🌅 সকাল
-   • ১ম বিরতির পরের স্লটগুলো → ☀️ দুপুর
-   • ২য় বিরতির পরের স্লটগুলো → 🌤️ বিকেল
-   • ৩য় বিরতির পরের স্লটগুলো → 🌆 সন্ধ্যা
-   বিরতি কম থাকলে শেষ অংশ-গ্রুপগুলো খালি থাকে; কোনো বিরতি না থাকলে
-   সব স্লট সকাল-এ যায়। (যদি কোনো legacy কারণে slotCols-ই পাঠানো হয়,
-   index-ভিত্তিক fallback হিসেবে আগের 25/50/75% logic ব্যবহৃত হবে।) */
+/* Slot কলামগুলোকে ৪ গ্রুপে ভাগ (Morning/Noon/Afternoon/Evening) —
+   _slotGroupOf() থাকলে সেটা ব্যবহার, নাহলে লেবেল থেকে heuristic */
 function _teSlotsByGroup(slotCols){
   const groups = {
-    morning:    {key:'morning',    label:'🌅 সকাল',   cols:[]},
-    lateMorning:{key:'lateMorning',label:'☀️ দুপুর',   cols:[]},
-    afternoon:  {key:'afternoon',  label:'🌤️ বিকেল',  cols:[]},
-    evening:    {key:'evening',    label:'🌆 সন্ধ্যা', cols:[]}
+    morning:    {key:'morning',    label:'🌅 সকাল',       cols:[]},
+    lateMorning:{key:'lateMorning',label:'☀️ দুপুর',       cols:[]},
+    afternoon:  {key:'afternoon',  label:'🌤️ বিকাল',      cols:[]},
+    evening:    {key:'evening',    label:'🌆 সন্ধ্যা/রাত', cols:[]}
   };
-  const slotSet = new Set((slotCols||[]).map(c => c && c.id).filter(Boolean));
-  const fullCols = (state && Array.isArray(state.columns)) ? state.columns : [];
-
-  // যদি state.columns অনুপস্থিত বা slotCols-এ যেসব slot আছে সেগুলো full-list-এ না থাকে,
-  // তাহলে fallback index-ভিত্তিক ভাগে যাই (legacy safe)
-  const matched = fullCols.filter(c => c && c.type === 'slot' && slotSet.has(c.id));
-  if(!fullCols.length || matched.length === 0){
-    const total = (slotCols||[]).length;
-    (slotCols||[]).forEach((c, i) => {
+  const total = slotCols.length;
+  slotCols.forEach((c, i) => {
+    let g = 'morning';
+    if(typeof _slotGroupOf === 'function'){
+      try{ g = _slotGroupOf(i, total) || 'morning'; }catch(_){ g = 'morning'; }
+    } else {
       const r = total > 0 ? (i/total) : 0;
-      const gk = r < 0.25 ? 'morning' : r < 0.50 ? 'lateMorning' : r < 0.75 ? 'afternoon' : 'evening';
-      groups[gk].cols.push(c);
-    });
-    return groups;
-  }
-
-  // break-ভিত্তিক logic — state.columns ক্রমে হাঁটি, বিরতি দেখলে groupKey পরিবর্তন
-  const order = ['morning','lateMorning','afternoon','evening'];
-  let breakCount = 0;
-  fullCols.forEach(c => {
-    if(!c) return;
-    if(c.type === 'break'){
-      breakCount++;
-      return;
+      g = r < 0.25 ? 'morning' : r < 0.50 ? 'lateMorning' : r < 0.75 ? 'afternoon' : 'evening';
     }
-    if(c.type !== 'slot') return;
-    if(!slotSet.has(c.id)) return; // শুধুই দৃশ্যমান/পাঠানো slot
-    const gk = order[Math.min(breakCount, order.length - 1)];
-    groups[gk].cols.push(c);
+    (groups[g] || groups.morning).cols.push(c);
   });
   return groups;
 }
@@ -8265,13 +8166,12 @@ function _teCardHTML(e, idx, ctx){
   }).join('');
 
   const flagged = isUsedSub || isUsedCls || isUsedSec;
-  const colorClass = 'te-c-' + (idx % 8);  // ৮টা soft color cycle
   const cardSummary = (e.subject || e.class || e.section)
     ? `<div class="te-card-summary"><b>${_teEsc(e.subject||'—')}</b> · ${_teEsc(e.class||'—')} · শাখা ${_teEsc(e.section||'—')} · দিন ${_teBnNum(selDays.size)} · slot ${_teBnNum(selSlots.size)}</div>`
     : '';
 
   return `
-  <div class="te-card ${colorClass} ${flagged?'te-flagged':''}" data-te-idx="${idx}">
+  <div class="te-card ${flagged?'te-flagged':''}" data-te-idx="${idx}">
     <div class="te-card-head">
       <div>
         <div class="te-card-title"><span class="te-card-num">${_teBnNum(idx+1)}</span> এন্ট্রি</div>
