@@ -2103,6 +2103,344 @@ input[type="range"]::-moz-range-thumb{
   line-height:1;
 }
 
+/* ════════════════════════════════════════════════════════════
+   🆕 EXPANDED TEACHER MODAL + SPECIAL SCHEDULE + YELLOW HIGHLIGHT
+   + 6-DAY COVERAGE WARNING — সব additive scoped styles
+   ════════════════════════════════════════════════════════════ */
+/* শিক্ষক তথ্য মোডাল ডিফল্টেই বড় হয়ে খোলে — easier data entry */
+#teacherModal .modal.wide{
+  max-width:min(1180px, 96vw) !important;
+  width:96vw;
+}
+#teacherModal .modal-body{
+  max-height:calc(100vh - 170px) !important;
+  min-height:60vh;
+}
+@media(max-width:760px){
+  #teacherModal .modal.wide{
+    max-width:100vw !important;width:100vw;
+    border-radius:0;height:100vh;max-height:100vh;
+    display:flex;flex-direction:column;
+  }
+  #teacherModal .modal-body{flex:1;max-height:none !important;min-height:0}
+}
+
+/* 🌟 Special Schedule section — distinct emerald accent */
+.ss-section{
+  margin-top:14px;padding:12px;
+  background:linear-gradient(180deg,#ecfdf5 0%,#d1fae5 100%);
+  border:1.5px solid #10b981;border-radius:10px;
+}
+.ss-header{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;margin-bottom:8px;
+}
+.ss-title{
+  font-size:13px;font-weight:800;color:#065f46;
+  letter-spacing:.3px;display:flex;align-items:center;gap:8px;
+}
+.ss-toggle{
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  background:#fff;border:1px solid #10b981;border-radius:8px;
+  padding:5px 11px;font-size:12px;font-weight:700;color:#047857;
+}
+.ss-toggle input{accent-color:#10b981;width:16px;height:16px;cursor:pointer}
+.ss-toggle.is-on{background:#10b981;color:#fff;border-color:#10b981}
+.ss-help{
+  font-size:11.5px;color:#047857;font-style:italic;
+  background:#fff;border-left:3px solid #10b981;
+  padding:6px 9px;border-radius:5px;margin-bottom:9px;
+}
+.ss-list{display:flex;flex-direction:column;gap:8px}
+.ss-empty{
+  text-align:center;padding:14px;background:#fff;
+  border:1px dashed #10b981;border-radius:8px;
+  color:#047857;font-size:12px;font-style:italic;
+}
+.ss-card{
+  background:#fff;border:1.5px solid #10b981;border-left-width:4px;
+  border-radius:8px;padding:10px 11px;
+  box-shadow:0 1px 2px rgba(16,185,129,.15);
+  position:relative;
+}
+.ss-card::after{
+  content:'📌 SPECIAL';
+  position:absolute;top:6px;right:8px;
+  background:#10b981;color:#fff;
+  font-size:9px;font-weight:800;letter-spacing:.6px;
+  padding:2px 7px;border-radius:9px;
+}
+.ss-card-head{
+  font-size:12px;font-weight:700;color:#065f46;
+  margin-bottom:8px;display:flex;align-items:center;gap:7px;
+}
+.ss-card-num{
+  background:#10b981;color:#fff;
+  width:22px;height:22px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;
+}
+.ss-card-remove{
+  background:transparent;border:1px solid #ef4444;color:#ef4444;
+  padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;
+  cursor:pointer;margin-left:auto;
+}
+.ss-card-remove:hover{background:#ef4444;color:#fff}
+.ss-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:7px}
+@media(max-width:560px){.ss-grid{grid-template-columns:1fr}}
+.ss-field label{
+  display:block;font-size:10.5px;font-weight:700;color:#047857;
+  margin-bottom:3px;
+}
+.ss-field select,.ss-field input{
+  width:100%;padding:6px 8px;font-size:12.5px;
+  border:1px solid #6ee7b7;border-radius:6px;background:#fff;
+  color:#0f172a;
+}
+.ss-days{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:4px;
+  background:#f0fdf4;padding:5px;border-radius:6px;
+  border:1px solid #6ee7b7;
+}
+@media(max-width:560px){.ss-days{grid-template-columns:repeat(3,1fr)}}
+.ss-day-box{
+  background:#fff;border:1.5px solid #6ee7b7;border-radius:5px;
+  padding:5px 3px;font-size:11px;font-weight:700;color:#047857;
+  text-align:center;cursor:pointer;user-select:none;
+}
+.ss-day-box.checked{background:#10b981;border-color:#10b981;color:#fff}
+.ss-add-btn{
+  background:#10b981;color:#fff;border:none;
+  padding:6px 12px;border-radius:6px;
+  font-size:12px;font-weight:700;cursor:pointer;
+}
+.ss-add-btn:hover{filter:brightness(1.1)}
+.ss-add-btn:disabled{opacity:.5;cursor:not-allowed}
+.ss-collapsed .ss-list,
+.ss-collapsed .ss-help,
+.ss-collapsed .ss-add-btn{display:none}
+.ss-collapsed .ss-section{padding-bottom:10px}
+
+/* Special-schedule cell marker in main routine table */
+.cell-subject.is-special-cell{position:relative}
+.cell-subject.is-special-cell::after{
+  content:'📌';
+  position:absolute;top:1px;left:2px;
+  font-size:8.5px;
+  background:#10b981;color:#fff;
+  width:14px;height:14px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  pointer-events:none;line-height:1;
+}
+
+/* 🟡 Yellow partial-coverage highlight — 6-দিনের নিচে coverage থাকলে */
+.cell-subject.is-partial-coverage,
+.cell-class.is-partial-coverage,
+.cell-section.is-partial-coverage{
+  background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+}
+.cell-subject.is-partial-coverage::after{
+  content:attr(data-cov);
+  position:absolute;bottom:1px;right:2px;
+  background:#f59e0b;color:#fff;font-size:8.5px;font-weight:800;
+  padding:1px 4px;border-radius:7px;line-height:1;
+  pointer-events:none;
+}
+
+/* Coverage warning banner */
+.coverage-warning{
+  margin:10px 0;padding:10px 12px;
+  background:linear-gradient(180deg,#fef3c7 0%,#fde68a 100%);
+  border:1.5px solid #f59e0b;border-radius:8px;
+  font-size:12.5px;color:#78350f;
+  display:none;
+}
+.coverage-warning.active{display:block}
+.coverage-warning b{color:#9a3412}
+.coverage-warning .cov-list{
+  margin-top:6px;font-size:11.5px;color:#92400e;
+  max-height:90px;overflow-y:auto;line-height:1.5;
+}
+.coverage-warning .cov-item{
+  background:#fff;border-radius:5px;padding:2px 7px;
+  display:inline-block;margin:2px 3px 0 0;
+  border:1px solid #fcd34d;
+}
+
+/* ════════════════════════════════════════════════════════════
+   🆕 LIVE DASHBOARD + COMPACT MODAL + HOUR-BOX SHARED + SOFT BADGE
+   পুরোপুরি additive scoped styles — কোনো existing class override নয়
+   ════════════════════════════════════════════════════════════ */
+
+/* 📊 Live Dashboard — floating widget bottom-left, collapsible */
+#liveDashboard{
+  position:fixed;left:14px;bottom:14px;z-index:42;
+  width:320px;max-width:calc(100vw - 28px);
+  background:#fff;border:1.5px solid #0284c7;
+  border-radius:10px;
+  box-shadow:0 8px 24px -8px rgba(2,132,199,.35),0 2px 6px rgba(0,0,0,.08);
+  font-size:12px;color:#0f172a;
+  transition:transform .2s ease;
+}
+#liveDashboard.is-collapsed{transform:translateY(calc(100% - 38px))}
+#liveDashboard .ld-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;cursor:pointer;user-select:none;
+  background:linear-gradient(180deg,#0284c7 0%,#0369a1 100%);
+  color:#fff;border-radius:8px 8px 0 0;
+  font-weight:700;font-size:13px;
+}
+#liveDashboard .ld-head-title{display:flex;align-items:center;gap:7px}
+#liveDashboard .ld-toggle{
+  background:rgba(255,255,255,.18);border:none;color:#fff;
+  width:26px;height:26px;border-radius:6px;cursor:pointer;
+  font-size:14px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+#liveDashboard .ld-toggle:hover{background:rgba(255,255,255,.30)}
+#liveDashboard.is-collapsed .ld-toggle{transform:rotate(180deg)}
+#liveDashboard .ld-body{
+  padding:10px 12px;max-height:60vh;overflow-y:auto;
+}
+#liveDashboard .ld-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;
+}
+#liveDashboard .ld-stat{
+  background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;
+  padding:6px 8px;
+}
+#liveDashboard .ld-stat-label{
+  font-size:10px;font-weight:600;color:#0369a1;
+  text-transform:uppercase;letter-spacing:.4px;
+}
+#liveDashboard .ld-stat-value{
+  font-size:18px;font-weight:800;color:#075985;
+  line-height:1.1;margin-top:2px;
+}
+#liveDashboard .ld-section-title{
+  font-size:11px;font-weight:700;color:#0369a1;
+  text-transform:uppercase;letter-spacing:.5px;
+  margin:8px 0 4px;display:flex;align-items:center;
+  justify-content:space-between;gap:6px;
+}
+#liveDashboard .ld-section-title .ld-count{
+  background:#0284c7;color:#fff;font-size:10px;
+  padding:1px 7px;border-radius:9px;font-weight:800;
+}
+#liveDashboard .ld-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 7px;margin-bottom:3px;
+  background:#f8fafc;border-radius:5px;font-size:11.5px;
+  border:1px solid #e2e8f0;
+}
+#liveDashboard .ld-row-name{font-weight:600;color:#1e293b;flex:1;min-width:0}
+#liveDashboard .ld-row-meta{
+  display:flex;gap:4px;align-items:center;flex-shrink:0;
+}
+#liveDashboard .ld-tag{
+  background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:8px;
+}
+#liveDashboard .ld-tag.k-cls{background:#dcfce7;color:#166534}
+#liveDashboard .ld-tag.k-sec{background:#fef3c7;color:#92400e}
+#liveDashboard .ld-tag.k-prd{background:#ede9fe;color:#5b21b6}
+#liveDashboard .ld-bar{
+  height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden;
+  margin-top:3px;
+}
+#liveDashboard .ld-bar-fill{
+  height:100%;background:linear-gradient(90deg,#0ea5e9 0%,#0284c7 100%);
+  transition:width .25s;
+}
+#liveDashboard .ld-bar-fill.full{background:linear-gradient(90deg,#22c55e 0%,#16a34a 100%)}
+#liveDashboard .ld-bar-fill.warn{background:linear-gradient(90deg,#f59e0b 0%,#d97706 100%)}
+#liveDashboard .ld-empty{
+  text-align:center;font-size:11.5px;font-style:italic;
+  color:#64748b;padding:14px 8px;
+}
+@media(max-width:480px){
+  #liveDashboard{width:calc(100vw - 28px);font-size:11.5px}
+  #liveDashboard .ld-stats{grid-template-columns:1fr 1fr 1fr;gap:4px}
+  #liveDashboard .ld-stat{padding:5px 6px}
+  #liveDashboard .ld-stat-value{font-size:15px}
+}
+
+/* 🪶 Compact Teacher Modal — tighter spacing without breaking layout */
+#teacherModal .modal-body{padding:14px}
+#teacherModal .field{margin-bottom:9px}
+#teacherModal .field label{font-size:11.5px;margin-bottom:3px}
+#teacherModal .tch-pane{padding:8px 0 4px}
+#teacherModal .tms-master{padding:10px 10px 4px;margin-bottom:10px}
+#teacherModal .tms-master .field{margin-bottom:7px}
+#teacherModal .tms-summary{padding:8px 10px;margin-bottom:10px}
+#teacherModal .te-section{margin-top:12px;padding-top:10px}
+#teacherModal .te-card{padding:9px 10px 10px}
+#teacherModal .te-card-head{margin-bottom:7px}
+#teacherModal .te-mini-row{margin-bottom:6px}
+#teacherModal .te-grid-3{gap:6px;margin-bottom:6px}
+#teacherModal .te-grid-2{gap:6px;margin-bottom:6px}
+#teacherModal .te-field label{font-size:10.5px;margin-bottom:2px}
+#teacherModal .te-field select,
+#teacherModal .te-field input,
+#teacherModal .te-field textarea{padding:5px 7px;font-size:12px}
+#teacherModal .te-day-row{padding:4px;gap:4px}
+#teacherModal .te-day-box{padding:4px 3px}
+#teacherModal .te-day-box .te-day-name{font-size:10.5px}
+#teacherModal .te-tslot-wrap{padding:6px;gap:5px}
+#teacherModal .te-tslot-group{padding:5px 6px}
+#teacherModal .te-tslot-chip{padding:3px 7px;font-size:10.5px}
+#teacherModal .ss-section{padding:10px;margin-top:10px}
+#teacherModal .ss-card{padding:8px 10px}
+#teacherModal .ss-grid{gap:5px;margin-bottom:5px}
+#teacherModal .ss-field label{font-size:10px}
+#teacherModal .ss-field select,
+#teacherModal .ss-field input{padding:5px 7px;font-size:12px}
+#teacherModal .chip{padding:3px 9px;font-size:11.5px}
+#teacherModal .info-banner{padding:8px 10px;font-size:11.5px;margin-bottom:8px}
+
+/* 🔀 Soft shared/split badge — main routine cell — distinct color */
+.cell-subject.is-shared-cell{
+  background:linear-gradient(135deg,rgba(254,243,199,.55) 0%,rgba(252,211,77,.18) 100%) !important;
+}
+.cell-subject.is-shared-cell .cell-content::before{
+  content:'SHARED';
+  display:inline-block;
+  background:#f59e0b;color:#fff;font-size:8.5px;font-weight:800;
+  letter-spacing:.4px;padding:1px 5px;border-radius:7px;
+  margin-right:5px;vertical-align:middle;
+}
+
+/* ⏰ Hour-box — multi-teacher shared display strip below column label */
+.hour-shared-strip{
+  display:flex;flex-direction:column;gap:2px;
+  margin-top:4px;padding:3px 4px;
+  background:rgba(254,243,199,.6);
+  border:1px dashed #f59e0b;border-radius:5px;
+  font-size:9.5px;color:#78350f;line-height:1.35;
+  max-height:60px;overflow:hidden;
+}
+.hour-shared-strip .hs-row{
+  display:flex;align-items:center;gap:3px;flex-wrap:wrap;
+  font-weight:600;
+}
+.hour-shared-strip .hs-cs{
+  background:#fff;color:#92400e;
+  padding:0 5px;border-radius:6px;
+  font-size:9px;font-weight:700;border:1px solid #fde68a;
+}
+.hour-shared-strip .hs-teacher{color:#92400e;font-weight:700}
+.hour-shared-strip .hs-subject{color:#78350f}
+.hour-shared-strip .hs-plus{color:#d97706;font-weight:800;margin:0 2px}
+.hour-shared-strip .hs-more{
+  font-size:9px;color:#a16207;font-style:italic;text-align:center;
+  font-weight:600;
+}
+@media(max-width:560px){
+  .hour-shared-strip{font-size:9px;padding:2px 3px;max-height:50px}
+  .hour-shared-strip .hs-cs{font-size:8.5px}
+}
+
 /* =============================================================
    AI ROUTINE GENERATOR
 ============================================================= */
@@ -4504,6 +4842,23 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <!-- ════ 🔀 SHARED / SPLIT SLOT SUMMARY ════
              একই slot-এ ভিন্ন দিনে ভিন্ন বিষয়/শিক্ষক থাকলে এখানে দেখাবে -->
         <div class="tms-shared-summary" id="sharedSlotSummary" style="display:none"></div>
+
+        <!-- ════ 🌟 SPECIAL HOUR / CLASS CONTROL ════
+             নির্দিষ্ট ঘন্টা+ক্লাস লক — Auto Routine এগুলো overwrite করতে পারবে না -->
+        <div class="ss-section" id="specialScheduleSection">
+          <div class="ss-header">
+            <div class="ss-title">🌟 স্পেশাল ঘন্টা / ক্লাস কন্ট্রোল</div>
+            <label class="ss-toggle" id="ssToggleLabel">
+              <input type="checkbox" id="ssEnableToggle" onchange="_ssToggleEnable(this.checked)">
+              <span id="ssToggleText">সক্রিয় করুন</span>
+            </label>
+          </div>
+          <div class="ss-help">
+            📌 এই section-এর প্রতিটি entry লক — Auto Routine বা Smart Solve কখনই এগুলো নাড়াতে/ওভাররাইট করতে পারবে না; বরং এগুলোর সাথে মিল রেখে বাকি রুটিন তৈরি হবে। dropdown শুধু উপরের মাস্টার-নির্বাচিত আইটেম দেখায়।
+          </div>
+          <button type="button" class="ss-add-btn" onclick="_ssAddEntry()">➕ নতুন স্পেশাল এন্ট্রি</button>
+          <div class="ss-list" id="ssEntriesList" style="margin-top:8px"></div>
+        </div>
       </div>
 
       <!-- TAB 3: TIME PREFERENCES (hidden — superseded by per-entry time slots in Teaching tab) -->
@@ -6937,18 +7292,22 @@ function renderTable(){
     const colStyleAttr = colStyles.length ? ` style="${colStyles.join(';')}"` : '';
     // প্রতি ঘন্টায় (স্লট) দুইটি কুইক-বাটন: ফ্রি শিক্ষক / ব্যস্ত শিক্ষক
     let quickBtnsHtml = '';
+    let hourSharedHtml = '';
     if(c.type === 'slot'){
       const fc = slotFreeBusyCount(c.id);
       quickBtnsHtml = `<div class="slot-quick-btns">
         <button type="button" class="slot-qbtn free" onclick="event.stopPropagation();openSlotTeachers('${c.id}','free')" title="এই ঘন্টায় ফ্রি (ক্লাস নেই) শিক্ষকের তালিকা — কল করা যাবে">🟢 ফ্রি <span class="qb-n">${toBnNum(fc.free)}</span></button>
         <button type="button" class="slot-qbtn busy" onclick="event.stopPropagation();openSlotTeachers('${c.id}','busy')" title="এই ঘন্টায় ব্যস্ত শিক্ষকের তালিকা (কোন ক্লাস/শাখায়) — কল করা যাবে">🔴 ব্যস্ত <span class="qb-n">${toBnNum(fc.busy)}</span></button>
       </div>`;
+      // 🆕 Hour-box shared/split summary — compact multi-teacher display
+      try{ hourSharedHtml = (typeof _hourBoxSharedHTML === 'function') ? _hourBoxSharedHTML(c.id) : ''; }catch(_){ hourSharedHtml = ''; }
     }
     html += `<th class="${breakCls}${lockedCls}" data-cid="${c.id}" draggable="false"${colStyleAttr}>
       <div class="col-header-inner">
         <div class="col-label" data-cid="${c.id}" ${canEditCol?`ondblclick="enableColLabelEdit(this,'${c.id}')" title="ডাবল-ক্লিক করে এডিট"`:''} draggable="false">${esc(c.label)}</div>
       </div>
       ${quickBtnsHtml}
+      ${hourSharedHtml}
     </th>`;
   });
   tr.innerHTML = html;
@@ -7095,8 +7454,20 @@ function renderTable(){
             </div></td>`;
         } else {
           const isSharedCell = (Array.isArray(cell.days) && cell.days.length) || (Array.isArray(cell.parts) && cell.parts.length);
-          const sharedTitle = isSharedCell ? ` title="🔀 শেয়ার্ড স্লট — পাঠদান ট্যাবে বিস্তারিত দেখুন"` : '';
-          body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}${isSharedCell?' is-shared-cell':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}${sharedTitle}>
+          const isSpecialCell = !!(cell.special || cell.locked);
+          // 6-day coverage check (only meaningful if cell has class+subject)
+          let isPartial = false, coverageN = 0;
+          try{
+            if(typeof getCellCoverageStatus === 'function'){
+              const cv = getCellCoverageStatus(t, c.id);
+              if(cv && cv.status === 'partial'){ isPartial = true; coverageN = cv.covered; }
+            }
+          }catch(_){}
+          const sharedTitle = isSharedCell ? ` title="🔀 শেয়ার্ড স্লট — পাঠদান ট্যাবে বিস্তারিত দেখুন"`
+                            : (isSpecialCell ? ` title="📌 স্পেশাল লকড — স্বয়ংক্রিয় রুটিন এটি পরিবর্তন করে না"`
+                            : (isPartial ? ` title="🟡 আংশিক — ${coverageN}/6 দিন coverage; অন্য শিক্ষক প্রয়োজন"` : ''));
+          const covData = isPartial ? ` data-cov="${toBnNum(coverageN)}/৬"` : '';
+          body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}${isSharedCell?' is-shared-cell':''}${isSpecialCell?' is-special-cell':''}${isPartial?' is-partial-coverage':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}${sharedTitle}${covData}>
             <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
               <span class="row-label">বিষয়</span>${esc(cell.subject||'—')}
             </div></td>`;
@@ -7271,6 +7642,9 @@ function setupDragDrop(){
     clearDragVisuals();
     _rowDragTid = null;
   });
+
+  // 🆕 Live Dashboard refresh — renderTable শেষে stats আপডেট
+  try{ refreshLiveDashboard(); }catch(_){}
 }
 
 function reorderColumn(fromId, toId){
@@ -8014,6 +8388,7 @@ function editTeacher(tid){
 
   // 📋 Multiple Teaching Entries — পাঠদান ট্যাবের নতুন সেকশন
   try{ renderTeachingEntries(t); }catch(_){}
+  try{ renderSpecialSchedule(t); }catch(_){}
 
   // Time preferences
   document.getElementById('tEditWeeklyTotal').value = t.weeklyTotal || '';
@@ -8755,6 +9130,511 @@ function renderSharedSlotSummary(){
   `;
 }
 
+/* ───────────── 🌟 SPECIAL SCHEDULE — LOCKED HOUR/CLASS CONTROL ─────────────
+   Data shape: teacher.specialSchedule = {
+     enabled:bool,
+     entries:[ {id, slotId, days:[], class, section, subject, notes} ]
+   }
+   এই entries Auto Routine-এ FIRST priority পায় এবং কখনও overwrite হয় না।
+   ──────────────────────────────────────────────────────────────────────── */
+function _ssEnsure(teacher){
+  if(!teacher) return null;
+  if(!teacher.specialSchedule || typeof teacher.specialSchedule !== 'object'){
+    teacher.specialSchedule = {enabled:false, entries:[]};
+  }
+  if(!Array.isArray(teacher.specialSchedule.entries)) teacher.specialSchedule.entries = [];
+  return teacher.specialSchedule;
+}
+function _ssNewEntry(){
+  return {
+    id:'ss_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    slotId:'', days:['Sat','Sun','Mon','Tue','Wed','Thu'],
+    class:'', section:'', subject:'', notes:''
+  };
+}
+function _ssCurrentTeacher(){
+  const tid = document.getElementById('tEditId');
+  if(!tid || !tid.value) return null;
+  return (state.teachers||[]).find(x => x.id === tid.value) || null;
+}
+function _ssToggleEnable(checked){
+  const t = _ssCurrentTeacher();
+  if(!t) return;
+  const sp = _ssEnsure(t);
+  sp.enabled = !!checked;
+  document.getElementById('ssToggleText').textContent = checked ? 'চালু' : 'সক্রিয় করুন';
+  document.getElementById('ssToggleLabel').classList.toggle('is-on', !!checked);
+  renderSpecialSchedule(t);
+}
+function _ssAddEntry(){
+  const t = _ssCurrentTeacher();
+  if(!t) return;
+  if(typeof blockIfViewOnly === 'function' && blockIfViewOnly('স্পেশাল এন্ট্রি যোগ')) return;
+  const sp = _ssEnsure(t);
+  if(!sp.enabled){
+    sp.enabled = true;
+    const cb = document.getElementById('ssEnableToggle');
+    if(cb){ cb.checked = true; }
+    document.getElementById('ssToggleText').textContent = 'চালু';
+    document.getElementById('ssToggleLabel').classList.add('is-on');
+  }
+  _ssSyncFromDOM(t);
+  sp.entries.push(_ssNewEntry());
+  renderSpecialSchedule(t);
+}
+function _ssRemoveEntry(idx){
+  const t = _ssCurrentTeacher();
+  if(!t) return;
+  const sp = _ssEnsure(t);
+  if(idx < 0 || idx >= sp.entries.length) return;
+  _ssSyncFromDOM(t);
+  if(!confirm('এই স্পেশাল এন্ট্রি মুছে ফেলবেন?')) return;
+  sp.entries.splice(idx, 1);
+  renderSpecialSchedule(t);
+}
+function _ssUpdateField(idx, field, value){
+  const t = _ssCurrentTeacher();
+  if(!t) return;
+  const sp = _ssEnsure(t);
+  const e = sp.entries[idx];
+  if(!e) return;
+  e[field] = String(value || '').trim();
+}
+function _ssToggleDay(idx, dayKey, el){
+  const t = _ssCurrentTeacher();
+  if(!t) return;
+  const sp = _ssEnsure(t);
+  const e = sp.entries[idx];
+  if(!e) return;
+  if(!Array.isArray(e.days)) e.days = [];
+  const i = e.days.indexOf(dayKey);
+  if(i >= 0){ e.days.splice(i,1); el && el.classList.remove('checked'); }
+  else { e.days.push(dayKey); el && el.classList.add('checked'); }
+}
+function _ssSyncFromDOM(teacher){
+  if(!teacher) return;
+  const sp = _ssEnsure(teacher);
+  const cards = document.querySelectorAll('#ssEntriesList .ss-card');
+  cards.forEach(card => {
+    const idx = parseInt(card.dataset.ssIdx, 10);
+    const e = sp.entries[idx];
+    if(!e) return;
+    card.querySelectorAll('[data-ss-field]').forEach(el => {
+      e[el.dataset.ssField] = String(el.value || '').trim();
+    });
+    const dayEls = card.querySelectorAll('[data-ss-day]');
+    const dk = [];
+    dayEls.forEach(el => { if(el.classList.contains('checked')) dk.push(el.dataset.ssDay); });
+    e.days = dk;
+  });
+}
+function renderSpecialSchedule(teacher){
+  const host = document.getElementById('ssEntriesList');
+  const section = document.getElementById('specialScheduleSection');
+  if(!host || !section) return;
+  const sp = _ssEnsure(teacher);
+  const toggle = document.getElementById('ssEnableToggle');
+  const txt = document.getElementById('ssToggleText');
+  const lbl = document.getElementById('ssToggleLabel');
+  if(toggle){ toggle.checked = !!sp.enabled; }
+  if(txt){ txt.textContent = sp.enabled ? 'চালু' : 'সক্রিয় করুন'; }
+  if(lbl){ lbl.classList.toggle('is-on', !!sp.enabled); }
+  section.classList.toggle('ss-collapsed', !sp.enabled);
+  // teacher role → read-only
+  const readonly = (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'teacher');
+  section.classList.toggle('te-readonly', readonly);
+  if(!sp.enabled){ host.innerHTML = ''; return; }
+  if(!sp.entries.length){
+    host.innerHTML = '<div class="ss-empty">কোনো স্পেশাল এন্ট্রি নেই। উপরে <strong>➕ নতুন স্পেশাল এন্ট্রি</strong> চাপুন।</div>';
+    return;
+  }
+  // মাস্টার-নির্বাচিত মান অনুযায়ী dropdown filter (Special Hour rule)
+  const masterSub = _teMasterValues('subject');
+  const masterCls = _teMasterValues('class');
+  const masterSec = _teMasterValues('section');
+  const useSub = masterSub.length ? masterSub : _teOptions('subject');
+  const useCls = masterCls.length ? masterCls : _teOptions('class');
+  const useSec = masterSec.length ? masterSec : _teOptions('section');
+  const slotCols = _teSlotCols();
+  const days = _teActiveDays();
+  host.innerHTML = sp.entries.map((e, idx) => {
+    const optHTML = (arr, cur) => '<option value="">— নির্বাচন —</option>' +
+      arr.map(v => `<option value="${_teEsc(v)}" ${cur===v?'selected':''}>${_teEsc(v)}</option>`).join('');
+    const slotOpt = '<option value="">— ঘন্টা নির্বাচন —</option>' +
+      slotCols.map(c => `<option value="${c.id}" ${e.slotId===c.id?'selected':''}>${_teEsc(c.label||c.id)}</option>`).join('');
+    const sel = new Set(e.days||[]);
+    const dayHTML = days.map(d => `<div class="ss-day-box ${sel.has(d.key)?'checked':''}" data-ss-day="${d.key}" onclick="_ssToggleDay(${idx},'${d.key}',this)">${_teEsc(d.bn)}</div>`).join('');
+    return `<div class="ss-card" data-ss-idx="${idx}">
+      <div class="ss-card-head">
+        <span class="ss-card-num">${_teBnNum(idx+1)}</span> স্পেশাল এন্ট্রি
+        <button type="button" class="ss-card-remove" onclick="_ssRemoveEntry(${idx})">🗑 মুছুন</button>
+      </div>
+      <div class="ss-grid">
+        <div class="ss-field"><label>⏰ ঘন্টা</label>
+          <select data-ss-field="slotId" onchange="_ssUpdateField(${idx},'slotId',this.value)">${slotOpt}</select></div>
+        <div class="ss-field"><label>📖 বিষয়</label>
+          <select data-ss-field="subject" onchange="_ssUpdateField(${idx},'subject',this.value)">${optHTML(useSub, e.subject)}</select></div>
+        <div class="ss-field"><label>🎓 শ্রেণি</label>
+          <select data-ss-field="class" onchange="_ssUpdateField(${idx},'class',this.value)">${optHTML(useCls, e.class)}</select></div>
+      </div>
+      <div class="ss-grid" style="grid-template-columns:1fr 2fr">
+        <div class="ss-field"><label>📑 শাখা</label>
+          <select data-ss-field="section" onchange="_ssUpdateField(${idx},'section',this.value)">${optHTML(useSec, e.section)}</select></div>
+        <div class="ss-field"><label>📝 নোট</label>
+          <input type="text" data-ss-field="notes" value="${_teEsc(e.notes||'')}" oninput="_ssUpdateField(${idx},'notes',this.value)" placeholder="বাংলায় নির্দেশনা..."></div>
+      </div>
+      <div class="ss-field"><label>📅 দিনসমূহ</label>
+        <div class="ss-days">${dayHTML}</div></div>
+    </div>`;
+  }).join('');
+}
+
+/* saveTeacher() থেকে কল হবে — DOM → state */
+function saveSpecialSchedule(teacher){
+  if(!teacher) return;
+  _ssSyncFromDOM(teacher);
+  const sp = _ssEnsure(teacher);
+  sp.entries = sp.entries.filter(e => e && (e.slotId || e.subject || e.class || e.section));
+}
+
+/* Auto Routine — special schedule entries আগে বসিয়ে দেয়; এগুলো লকড */
+function _ssApplyForTeacher(teacher, slotCols, slotTaken){
+  if(!teacher) return 0;
+  const sp = _ssEnsure(teacher);
+  if(!sp.enabled || !sp.entries.length) return 0;
+  if(!teacher.cells || typeof teacher.cells !== 'object') teacher.cells = {};
+  const validSlotIds = new Set(slotCols.map(c => c.id));
+  let placed = 0;
+  sp.entries.forEach(e => {
+    if(!e || !e.slotId || !validSlotIds.has(e.slotId)) return;
+    const cls = e.class || '';
+    const sec = e.section || '';
+    const sub = e.subject || '';
+    if(!cls && !sec && !sub) return;
+    const days = (Array.isArray(e.days) && e.days.length) ? e.days.slice() : ['Sat','Sun','Mon','Tue','Wed','Thu'];
+    teacher.cells[e.slotId] = {
+      class:cls, section:sec, subject:sub,
+      days:days, shared:true, special:true, locked:true
+    };
+    // slotTaken-এ day-ভিত্তিক mark (অন্য শিক্ষক ঐ দিনগুলোতে একই class+section নিতে পারবে না)
+    const taken = slotTaken[e.slotId];
+    if(taken){
+      const base = cls + '||' + sec;
+      if(base !== '||'){
+        days.forEach(d => taken.add(base + '||' + d));
+      }
+    }
+    placed++;
+  });
+  return placed;
+}
+
+/* ───────────── 📊 LIVE DASHBOARD (additive, scoped) ─────────────
+   প্রতি render-এ stats তাজা গণনা — O(teachers × entries), fast.
+   ── teachingEntries থেকে section→class breakdown, period estimate, coverage
+   ── specialSchedule entries-ও যুক্ত হয়
+   ──────────────────────────────────────────────────────────── */
+function _ldComputeStats(){
+  const stats = {
+    sections:{},      // sectionName → {classes:Set, entries:0, periods:0, subjects:Set}
+    classes:{},       // className   → {sections:Set, entries:0, periods:0, subjects:Set}
+    classSection:{},  // 'cls||sec'  → {entries:0, periods:0, subjects:Set, coveredDays:Set, totalSlots:Set}
+    totalTeachers:0, totalEntries:0, totalPeriods:0,
+    totalSlots:0, totalFilled:0,
+    fullClassSections:0, partialClassSections:0, emptyClassSections:0,
+    sharedCount:0, specialCount:0
+  };
+  if(!state || !Array.isArray(state.teachers)) return stats;
+
+  const ensureSec = sec => { if(sec && !stats.sections[sec]) stats.sections[sec]={classes:new Set(),entries:0,periods:0,subjects:new Set()}; };
+  const ensureCls = cls => { if(cls && !stats.classes[cls]) stats.classes[cls]={sections:new Set(),entries:0,periods:0,subjects:new Set()}; };
+  const ensureCs  = (cls,sec) => {
+    const k = (cls||'') + '||' + (sec||'');
+    if(!stats.classSection[k]) stats.classSection[k]={cls,sec,entries:0,periods:0,subjects:new Set(),coveredDays:new Set(),totalSlots:new Set()};
+    return k;
+  };
+  const slotCols = (state.columns||[]).filter(c => c && c.type === 'slot');
+  const slotIds = slotCols.map(c => c.id);
+  const teachers = state.teachers;
+  stats.totalTeachers = teachers.length;
+  stats.totalSlots = teachers.length * slotCols.length;
+
+  teachers.forEach(t => {
+    if(!t) return;
+    // teachingEntries
+    if(Array.isArray(t.teachingEntries)){
+      t.teachingEntries.forEach(e => {
+        if(!e || (!e.class && !e.section && !e.subject)) return;
+        stats.totalEntries++;
+        if(e.shared) stats.sharedCount++;
+        const cls = e.class || '';
+        const sec = e.section || '';
+        const sub = e.subject || '';
+        // periods estimate
+        const slotN = Array.isArray(e.preferredSlots) ? e.preferredSlots.length : 0;
+        const dayN  = Array.isArray(e.days) ? e.days.length : 6;
+        const periods = slotN > 0 ? (slotN * (dayN || 6)) : (dayN || 6);
+        stats.totalPeriods += periods;
+        ensureSec(sec); ensureCls(cls);
+        if(sec){ if(cls) stats.sections[sec].classes.add(cls); stats.sections[sec].entries++; stats.sections[sec].periods+=periods; if(sub) stats.sections[sec].subjects.add(sub); }
+        if(cls){ if(sec) stats.classes[cls].sections.add(sec); stats.classes[cls].entries++; stats.classes[cls].periods+=periods; if(sub) stats.classes[cls].subjects.add(sub); }
+        if(cls || sec){
+          const k = ensureCs(cls,sec);
+          stats.classSection[k].entries++;
+          stats.classSection[k].periods += periods;
+          if(sub) stats.classSection[k].subjects.add(sub);
+          (e.days||[]).forEach(d => stats.classSection[k].coveredDays.add(d));
+          (e.preferredSlots||[]).forEach(sid => stats.classSection[k].totalSlots.add(sid));
+        }
+      });
+    }
+    // specialSchedule
+    if(t.specialSchedule && t.specialSchedule.enabled && Array.isArray(t.specialSchedule.entries)){
+      t.specialSchedule.entries.forEach(e => {
+        if(!e || (!e.class && !e.section && !e.subject)) return;
+        stats.totalEntries++; stats.specialCount++;
+        const cls = e.class || '';
+        const sec = e.section || '';
+        const sub = e.subject || '';
+        const dayN = Array.isArray(e.days) ? e.days.length : 6;
+        stats.totalPeriods += dayN;
+        ensureSec(sec); ensureCls(cls);
+        if(sec){ if(cls) stats.sections[sec].classes.add(cls); stats.sections[sec].entries++; stats.sections[sec].periods+=dayN; if(sub) stats.sections[sec].subjects.add(sub); }
+        if(cls){ if(sec) stats.classes[cls].sections.add(sec); stats.classes[cls].entries++; stats.classes[cls].periods+=dayN; if(sub) stats.classes[cls].subjects.add(sub); }
+        if(cls || sec){
+          const k = ensureCs(cls,sec);
+          stats.classSection[k].entries++;
+          stats.classSection[k].periods += dayN;
+          if(sub) stats.classSection[k].subjects.add(sub);
+          (e.days||[]).forEach(d => stats.classSection[k].coveredDays.add(d));
+          if(e.slotId) stats.classSection[k].totalSlots.add(e.slotId);
+        }
+      });
+    }
+    // filled cells
+    if(t.cells){
+      slotIds.forEach(sid => {
+        const c = t.cells[sid];
+        if(c && (c.subject || c.class)) stats.totalFilled++;
+      });
+    }
+  });
+
+  // classification (per class+section)
+  Object.keys(stats.classSection).forEach(k => {
+    const r = stats.classSection[k];
+    const dCount = r.coveredDays.size;
+    if(dCount >= 6) stats.fullClassSections++;
+    else if(dCount > 0) stats.partialClassSections++;
+    else stats.emptyClassSections++;
+  });
+  return stats;
+}
+
+function renderLiveDashboard(){
+  const host = document.getElementById('ldBody');
+  if(!host) return;
+  const s = _ldComputeStats();
+  const bn = (typeof toBnNum === 'function') ? toBnNum : (x=>String(x));
+  const esc2 = (typeof esc === 'function') ? esc : (x=>String(x).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])));
+  if(!s.totalTeachers && !s.totalEntries){
+    host.innerHTML = '<div class="ld-empty">এখনো কোনো শিক্ষক বা এন্ট্রি নেই।<br>শিক্ষক যোগ করুন → পাঠদান এন্ট্রি দিন → এখানে রিয়েল-টাইম পরিসংখ্যান দেখাবে।</div>';
+    return;
+  }
+  // Top stats grid
+  let html = '<div class="ld-stats">';
+  html += `<div class="ld-stat"><div class="ld-stat-label">শিক্ষক</div><div class="ld-stat-value">${bn(s.totalTeachers)}</div></div>`;
+  html += `<div class="ld-stat"><div class="ld-stat-label">এন্ট্রি</div><div class="ld-stat-value">${bn(s.totalEntries)}</div></div>`;
+  html += `<div class="ld-stat"><div class="ld-stat-label">পিরিয়ড</div><div class="ld-stat-value">${bn(s.totalPeriods)}</div></div>`;
+  html += `<div class="ld-stat"><div class="ld-stat-label">পূরণ</div><div class="ld-stat-value">${bn(s.totalFilled)}<span style="font-size:11px;color:#64748b">/${bn(s.totalSlots)}</span></div></div>`;
+  if(s.sharedCount > 0){
+    html += `<div class="ld-stat" style="background:#fef3c7;border-color:#fde68a"><div class="ld-stat-label" style="color:#92400e">🔀 শেয়ার্ড</div><div class="ld-stat-value" style="color:#78350f">${bn(s.sharedCount)}</div></div>`;
+  }
+  if(s.specialCount > 0){
+    html += `<div class="ld-stat" style="background:#ecfdf5;border-color:#a7f3d0"><div class="ld-stat-label" style="color:#065f46">📌 স্পেশাল</div><div class="ld-stat-value" style="color:#047857">${bn(s.specialCount)}</div></div>`;
+  }
+  html += '</div>';
+
+  // Sections breakdown
+  const secKeys = Object.keys(s.sections).sort();
+  if(secKeys.length){
+    html += `<div class="ld-section-title">📑 শাখাভিত্তিক <span class="ld-count">${bn(secKeys.length)}</span></div>`;
+    secKeys.forEach(sec => {
+      const r = s.sections[sec];
+      html += `<div class="ld-row">
+        <span class="ld-row-name">${esc2(sec)}</span>
+        <span class="ld-row-meta">
+          <span class="ld-tag k-cls" title="শ্রেণি">🎓 ${bn(r.classes.size)}</span>
+          <span class="ld-tag" title="এন্ট্রি">📋 ${bn(r.entries)}</span>
+          <span class="ld-tag k-prd" title="পিরিয়ড">⏰ ${bn(r.periods)}</span>
+        </span>
+      </div>`;
+    });
+  }
+
+  // Class coverage breakdown
+  const csKeys = Object.keys(s.classSection)
+    .filter(k => k !== '||')
+    .sort();
+  if(csKeys.length){
+    html += `<div class="ld-section-title">🎓 শ্রেণি+শাখা coverage <span class="ld-count">${bn(csKeys.length)}</span></div>`;
+    csKeys.forEach(k => {
+      const r = s.classSection[k];
+      const dCount = r.coveredDays.size;
+      const pct = Math.min(100, Math.round((dCount/6)*100));
+      const barCls = dCount >= 6 ? 'full' : (dCount > 0 ? 'warn' : '');
+      const name = (r.cls || '—') + (r.sec ? ' · ' + r.sec : '');
+      html += `<div class="ld-row" style="flex-direction:column;align-items:stretch;gap:3px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+          <span class="ld-row-name">${esc2(name)}</span>
+          <span class="ld-row-meta">
+            <span class="ld-tag" title="বিষয়">📖 ${bn(r.subjects.size)}</span>
+            <span class="ld-tag k-prd" title="পিরিয়ড">⏰ ${bn(r.periods)}</span>
+            <span class="ld-tag ${dCount>=6?'k-cls':'k-sec'}">${bn(dCount)}/৬ দিন</span>
+          </span>
+        </div>
+        <div class="ld-bar"><div class="ld-bar-fill ${barCls}" style="width:${pct}%"></div></div>
+      </div>`;
+    });
+  }
+
+  // Coverage summary footer
+  if(s.fullClassSections + s.partialClassSections + s.emptyClassSections > 0){
+    html += `<div class="ld-section-title">✅ Coverage সারাংশ</div>
+    <div class="ld-row">
+      <span class="ld-row-name">পূর্ণ (৬ দিন)</span>
+      <span class="ld-row-meta"><span class="ld-tag k-cls">${bn(s.fullClassSections)}</span></span>
+    </div>
+    <div class="ld-row">
+      <span class="ld-row-name">আংশিক (১-৫ দিন)</span>
+      <span class="ld-row-meta"><span class="ld-tag k-sec">${bn(s.partialClassSections)}</span></span>
+    </div>`;
+  }
+  host.innerHTML = html;
+}
+
+let _ldRefreshTimer = null;
+function refreshLiveDashboard(){
+  // throttle to batch rapid changes
+  if(_ldRefreshTimer) return;
+  _ldRefreshTimer = setTimeout(() => {
+    _ldRefreshTimer = null;
+    try{ renderLiveDashboard(); }catch(_){}
+  }, 60);
+}
+
+function toggleLiveDashboard(){
+  const el = document.getElementById('liveDashboard');
+  if(!el) return;
+  const collapsing = !el.classList.contains('is-collapsed');
+  el.classList.toggle('is-collapsed');
+  if(!collapsing){
+    // expanding — refresh immediately
+    try{ renderLiveDashboard(); }catch(_){}
+  }
+  try{ localStorage.setItem('ld_collapsed', el.classList.contains('is-collapsed') ? '1' : '0'); }catch(_){}
+}
+
+/* ⏰ Hour Box — slot-প্রতি কোন শিক্ষক/বিষয় শেয়ার্ডভাবে নিচ্ছেন তার compact summary।
+   renderTable() থেকে কল হয় প্রতি column header-এ। */
+function _hourBoxSharedHTML(slotId){
+  if(!state || !Array.isArray(state.teachers)) return '';
+  // map: 'class||section' → [{teacherName, subject, days, shared, special}]
+  const groups = {};
+  state.teachers.forEach(t => {
+    if(!t || !t.cells) return;
+    const cell = t.cells[slotId];
+    if(!cell || (!cell.subject && !cell.class)) return;
+    // only show if there are signs of shared/multi (cell.days OR cell.parts OR cell.shared OR cell.special)
+    const isMulti = (Array.isArray(cell.days) && cell.days.length && cell.days.length < 6)
+                   || (Array.isArray(cell.parts) && cell.parts.length)
+                   || cell.shared || cell.special;
+    if(!isMulti) return;
+    const k = (cell.class||'') + '||' + (cell.section||'');
+    if(!groups[k]) groups[k] = [];
+    groups[k].push({
+      teacherName: t.name || '—',
+      subject: cell.subject || '',
+      days: Array.isArray(cell.days) ? cell.days.slice() : [],
+      shared: !!cell.shared,
+      special: !!cell.special
+    });
+  });
+  const keys = Object.keys(groups).filter(k => groups[k].length > 0);
+  if(!keys.length) return '';
+  // Build compact rows — cap teachers per row at 3, then "+N more"
+  const esc2 = (typeof esc === 'function') ? esc : (x=>String(x));
+  const shortName = n => {
+    n = String(n||'').trim();
+    if(!n) return '—';
+    // First word (Bengali name first part) — concise
+    const parts = n.split(/\s+/);
+    return parts[0].length > 8 ? parts[0].slice(0,7)+'…' : parts[0];
+  };
+  const shortSub = s => {
+    s = String(s||'').trim();
+    if(!s) return '';
+    return s.length > 8 ? s.slice(0,7)+'…' : s;
+  };
+  let html = '<div class="hour-shared-strip" title="শেয়ার্ড/স্প্লিট ক্লাস বিতরণ">';
+  let rowsShown = 0;
+  const maxRows = 3;
+  for(const k of keys){
+    if(rowsShown >= maxRows){
+      html += `<div class="hs-more">+${(keys.length - rowsShown)} আরো</div>`;
+      break;
+    }
+    const arr = groups[k];
+    const [cls, sec] = k.split('||');
+    const csLabel = (cls || sec) ? (esc2(cls||'') + (sec? '·'+esc2(sec):'')) : '';
+    const teacherParts = [];
+    arr.slice(0, 3).forEach(x => {
+      const subPart = x.subject ? ` (${esc2(shortSub(x.subject))})` : '';
+      teacherParts.push(`<span class="hs-teacher">${esc2(shortName(x.teacherName))}</span><span class="hs-subject">${subPart}</span>`);
+    });
+    let joined = teacherParts.join('<span class="hs-plus">+</span>');
+    if(arr.length > 3) joined += `<span class="hs-plus">+${arr.length-3}</span>`;
+    html += `<div class="hs-row">${csLabel?`<span class="hs-cs">${csLabel}</span>`:''}${joined}</div>`;
+    rowsShown++;
+  }
+  html += '</div>';
+  return html;
+}
+
+/* 📊 6-day Coverage analysis — সকল class+section+slot-এর জন্য
+   কত দিন coverage আছে গণনা করে; partial (1-5 দিন) যেগুলো yellow highlight পায় */
+function _ssCoverageMap(){
+  // map: slotId -> 'class||section' -> Set of day-keys covered
+  const m = {};
+  if(!state || !Array.isArray(state.teachers)) return m;
+  state.teachers.forEach(t => {
+    if(!t || !t.cells) return;
+    Object.keys(t.cells).forEach(slotId => {
+      const cell = t.cells[slotId];
+      if(!cell || !cell.class || !cell.subject) return;
+      const csKey = (cell.class||'') + '||' + (cell.section||'');
+      if(!m[slotId]) m[slotId] = {};
+      if(!m[slotId][csKey]) m[slotId][csKey] = new Set();
+      const days = Array.isArray(cell.days) && cell.days.length
+        ? cell.days
+        : ['Sat','Sun','Mon','Tue','Wed','Thu']; // legacy non-shared = full 6
+      days.forEach(d => m[slotId][csKey].add(d));
+    });
+  });
+  return m;
+}
+function getCellCoverageStatus(teacher, slotId){
+  // Returns {covered:N, total:6, status:'full'|'partial'|'empty'} for the teacher's cell's class+section at this slot
+  if(!teacher || !teacher.cells || !teacher.cells[slotId]) return null;
+  const cell = teacher.cells[slotId];
+  if(!cell.class || !cell.subject) return null;
+  const csKey = (cell.class||'') + '||' + (cell.section||'');
+  const m = _ssCoverageMap();
+  if(!m[slotId] || !m[slotId][csKey]) return {covered:0, total:6, status:'empty'};
+  const n = m[slotId][csKey].size;
+  return {covered:n, total:6, status: n >= 6 ? 'full' : (n>0 ? 'partial' : 'empty')};
+}
+
 function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
   if(!teacher || !Array.isArray(teacher.teachingEntries) || !teacher.teachingEntries.length) return null;
   if(!Array.isArray(slotCols) || !slotCols.length) return null;
@@ -8764,8 +9644,12 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
   if(!entries.length) return null;
 
   if(!teacher.cells || typeof teacher.cells !== 'object') teacher.cells = {};
-  // এই শিক্ষকের slot সেলগুলো রিসেট (existing autoGenerateRoutine আচরণ অনুযায়ী)
-  slotCols.forEach(c => { teacher.cells[c.id] = {}; });
+  // এই শিক্ষকের slot সেলগুলো রিসেট — কিন্তু locked/special সেল অক্ষত
+  slotCols.forEach(c => {
+    const cur = teacher.cells[c.id];
+    if(cur && (cur.locked || cur.special)) return; // 🌟 protected
+    teacher.cells[c.id] = {};
+  });
 
   let placed = 0;
   const slotById = {};
@@ -8953,6 +9837,7 @@ function saveTeacher(){
     t.notes = document.getElementById('tEditNotes').value.trim();
     // 📋 Multiple Teaching Entries — DOM → state, options-এ নতুন মান যোগ
     try{ saveTeachingEntries(t); }catch(_){}
+    try{ saveSpecialSchedule(t); }catch(_){}
     // Sync mainSubject into subjects if not already present
     if(t.mainSubject && !t.subjects.includes(t.mainSubject)){
       t.subjects.unshift(t.mainSubject);
@@ -10650,6 +11535,15 @@ function autoGenerateRoutine(){
     teachers.forEach((t, ti) => {
       if(!t.cells) t.cells = {};
 
+      // 🌟 SPECIAL SCHEDULE আগে — এই entries লকড, কখনো overwrite হয় না।
+      // teaching entries ও fallback এদের এড়িয়ে কাজ করে।
+      let specialPlaced = 0;
+      try{
+        if(typeof _ssApplyForTeacher === 'function'){
+          specialPlaced = _ssApplyForTeacher(t, slotCols, slotTaken) || 0;
+        }
+      }catch(_){ specialPlaced = 0; }
+
       // 📋 Multiple Teaching Entries প্রথমে অগ্রাধিকার পায় —
       // entries থাকলে কনফ্লিক্ট-aware ভাবে preferredSlots-এ বসিয়ে দিই,
       // entries না থাকলে নিচের পুরোনো logic-এ ফেরত যাই (অপরিবর্তিত)।
@@ -10660,14 +11554,18 @@ function autoGenerateRoutine(){
         }
       }catch(_){ entriesResult = null; }
 
-      if(entriesResult && entriesResult.placed > 0){
-        filled += entriesResult.placed;
+      if((entriesResult && entriesResult.placed > 0) || specialPlaced > 0){
+        filled += ((entriesResult && entriesResult.placed) || 0) + specialPlaced;
         teachersDone++;
         return; // এই শিক্ষকের জন্য fallback skip
       }
 
-      // এই শিক্ষকের সব slot সেল রিসেট (বিরতি কলাম স্পর্শ করা হয় না)
-      slotCols.forEach(c => { t.cells[c.id] = {}; });
+      // এই শিক্ষকের সব slot সেল রিসেট — কিন্তু locked/special সেল অক্ষত
+      slotCols.forEach(c => {
+        const cur = t.cells[c.id];
+        if(cur && (cur.locked || cur.special)) return; // 🌟 protected
+        t.cells[c.id] = {};
+      });
 
       // শিক্ষকভিত্তিক pool — না থাকলে গ্লোবাল অপশন থেকে fallback
       const subjPool = (Array.isArray(t.subjects) && t.subjects.length) ? t.subjects.filter(Boolean)
@@ -11547,6 +12445,38 @@ function _validateAndNormalizeTeacher(raw, idx, report){
     teacher.subjects = subjects;
     teacher.classes  = classes;
     teacher.sections = sections;
+  }
+
+  // 🌟 Special Schedule — JSON import compat
+  const rawSS = pick('specialSchedule','স্পেশাল_সিডিউল','specialHours','স্পেশাল_ঘন্টা');
+  if(rawSS && typeof rawSS === 'object'){
+    const sp = {enabled: !!(rawSS.enabled || rawSS['সক্রিয়']), entries: []};
+    const arr = Array.isArray(rawSS.entries) ? rawSS.entries
+              : (Array.isArray(rawSS) ? rawSS : []);
+    arr.forEach(r => {
+      if(!r || typeof r !== 'object') return;
+      const slotId = String(r.slotId || r['ঘন্টা_id'] || r.slot || '').trim();
+      const cls = String(r.class || r['শ্রেণি'] || '').trim();
+      const sec = String(r.section || r['শাখা'] || '').trim();
+      const sub = String(r.subject || r['বিষয়'] || '').trim();
+      if(!slotId && !cls && !sec && !sub) return;
+      let days = [];
+      const rd = Array.isArray(r.days) ? r.days : (Array.isArray(r['দিনসমূহ']) ? r['দিনসমূহ'] : []);
+      rd.forEach(d => {
+        const k = String(d).trim();
+        const mapped = dayMap[k.toLowerCase()] || dayMap[k] ||
+                       (['Sat','Sun','Mon','Tue','Wed','Thu'].includes(k) ? k : null);
+        if(mapped) days.push(mapped);
+      });
+      if(!days.length) days = ['Sat','Sun','Mon','Tue','Wed','Thu'];
+      sp.entries.push({
+        id: r.id || ('ss_' + Date.now() + '_' + Math.random().toString(36).slice(2,6)),
+        slotId, class:cls, section:sec, subject:sub, days,
+        notes: String(r.notes || r['নোট'] || '').trim()
+      });
+    });
+    if(sp.entries.length && !sp.enabled) sp.enabled = true;
+    teacher.specialSchedule = sp;
   }
 
   return {ok:true, teacher};
@@ -14019,6 +14949,18 @@ function init(){
 
   // ☁️ Firebase রিয়েল-টাইম সিঙ্ক চালু করো (লগইনের আগেই, যাতে teacher dropdown আপডেট হয়)
   startFirebaseSync();
+
+  // 📊 Live Dashboard — restore collapsed/expanded state + first render
+  try{
+    const el = document.getElementById('liveDashboard');
+    if(el){
+      const saved = localStorage.getItem('ld_collapsed');
+      // ডিফল্ট collapsed; user expand করলে remember
+      if(saved === '0') el.classList.remove('is-collapsed');
+      else el.classList.add('is-collapsed');
+      setTimeout(() => { try{ renderLiveDashboard(); }catch(_){} }, 300);
+    }
+  }catch(_){}
 }
 
 document.addEventListener('DOMContentLoaded', init);
@@ -14049,5 +14991,58 @@ window.addEventListener('beforeunload', () => {saveState()});
      প্যানেলের ভেতরে থাকায় ফাইল ডায়ালগ খোলার পরপরই প্যানেল re-parent হয়ে যেত,
      ফলে change ইভেন্ট হারিয়ে JSON আপলোড হতো না। body-level এ থাকায় এটি কখনো সরে না। -->
 <input type="file" id="importFile" style="display:none" accept=".json,.csv,application/json,text/csv" onchange="handleImport(event)">
+<!-- ════════ 🔒 MANUAL LOCK + 🛠 SMART SOLVE PANEL (additive, scoped #msPanel) ════════ -->
+<div id="msPanel" class="ms-panel" style="display:none">
+  <div class="ms-panel-head">
+    <span class="ms-panel-title">🔒 লক ও সমাধান</span>
+    <button class="ms-panel-collapse" onclick="_msTogglePanel()" title="ছোট/বড়">▾</button>
+  </div>
+  <div class="ms-panel-body">
+    <div class="ms-status-bar" id="msStatusBar">
+      <span class="ms-stat ms-s-locked"   title="LOCKED">🔒 <b id="msC_LOCKED">০</b></span>
+      <span class="ms-stat ms-s-fixed"    title="FIXED">📌 <b id="msC_FIXED">০</b></span>
+      <span class="ms-stat ms-s-filled"   title="FILLED">✅ <b id="msC_FILLED">০</b></span>
+      <span class="ms-stat ms-s-partial"  title="PARTIAL">⏳ <b id="msC_PARTIAL">০</b></span>
+      <span class="ms-stat ms-s-empty"    title="EMPTY">⬜ <b id="msC_EMPTY">০</b></span>
+      <span class="ms-stat ms-s-conflict" title="CONFLICT">⚠️ <b id="msC_CONFLICT">০</b></span>
+    </div>
+    <div class="ms-actions">
+      <button class="ms-btn ms-btn-lock"  id="msBtnLockMode" onclick="_msToggleLockMode()">🔒 লক মোড: <b id="msLockModeState">বন্ধ</b></button>
+      <button class="ms-btn ms-btn-solve" onclick="_msSolve()">🛠 সমাধান</button>
+      <button class="ms-btn ms-btn-undo"  id="msBtnUndo" onclick="_msUndoSolve()" disabled>↺ আনডু</button>
+    </div>
+    <div class="ms-progress" id="msProgress" style="display:none">
+      <div class="ms-progress-bar"><div class="ms-progress-fill" id="msProgressFill"></div></div>
+      <div class="ms-progress-text" id="msProgressText">প্রস্তুতি...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Solve Report Modal -->
+<div id="msReportModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)_msHideReport()">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3>🛠 সমাধান রিপোর্ট</h3>
+      <button class="modal-close" onclick="_msHideReport()">×</button>
+    </div>
+    <div class="modal-body" id="msReportBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="_msUndoSolve();_msHideReport()">↺ আনডু সমাধান</button>
+      <button class="btn btn-primary" onclick="_msHideReport()">ঠিক আছে</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 📊 LIVE DASHBOARD (Floating Panel — scoped #liveDashboard) ════════ -->
+<div id="liveDashboard" class="is-collapsed" role="region" aria-label="Live Dashboard">
+  <div class="ld-head" onclick="toggleLiveDashboard()">
+    <span class="ld-head-title">📊 লাইভ ড্যাশবোর্ড</span>
+    <button type="button" class="ld-toggle" aria-label="ছোট/বড়" onclick="event.stopPropagation();toggleLiveDashboard()">▾</button>
+  </div>
+  <div class="ld-body" id="ldBody">
+    <div class="ld-empty">তথ্য আসছে...</div>
+  </div>
+</div>
+
 </body>
 </html>
