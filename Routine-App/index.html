@@ -2866,7 +2866,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <button class="tool-btn editable-only" data-perm="importExport" onclick="exportJSON();closeToolMenu()">⬇ <span class="lbl">JSON এক্সপোর্ট</span></button>
         <button class="tool-btn editable-only" data-perm="importExport" onclick="exportCSV();closeToolMenu()">⬇ <span class="lbl">CSV এক্সপোর্ট</span></button>
         <button class="tool-btn editable-only" data-perm="importExport" onclick="triggerImport();closeToolMenu()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
-        <button class="tool-btn editable-only" data-perm="manageTeachers" onclick="document.getElementById('importTeacherJSON').click();closeToolMenu()">⬆ <span class="lbl">শিক্ষক JSON আপলোড</span></button>
         <button class="tool-btn" onclick="window.print();closeToolMenu()">🖨 <span class="lbl">প্রিন্ট</span></button>
         <button class="tool-btn editable-only" onclick="shareView();closeToolMenu()">🔗 <span class="lbl">শেয়ার</span></button>
       </div>
@@ -4450,7 +4449,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
 
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
-<input type="file" id="importTeacherJSON" accept=".json" style="display:none" onchange="handleTeacherJSONImport(event)">
+
 <!-- ============================================================
      FIREBASE SDK — Realtime Database integration
      এই অংশটি Firebase সংযোগ স্থাপন করে
@@ -9688,11 +9687,20 @@ function triggerImport(){
 }
 
 function handleImport(e){
-  if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
   if(!requirePerm('importExport')) return;
   const file = e.target.files && e.target.files[0];
   if(!file){ return; }
-  const lname = (file.name || '').toLowerCase();   // case-insensitive (.JSON ও কাজ করবে)
+  const lname = (file.name || '').toLowerCase();
+
+  // অসাধারণ বড় ফাইলে browser hang যেন না হয় — আগে সতর্ক করি
+  if(file.size > 25 * 1024 * 1024){
+    if(!confirm('⚠️ ফাইল আকারে ' + (file.size/1024/1024).toFixed(1) + ' MB — সিস্টেম ধীর হতে পারে। চালিয়ে যাবেন?')){
+      e.target.value = '';
+      return;
+    }
+  }
+
   const reader = new FileReader();
   reader.onerror = () => {
     showToast('❌ ফাইল পড়া যায়নি — আবার চেষ্টা করুন','error');
@@ -9700,45 +9708,602 @@ function handleImport(e){
   };
   reader.onload = ev => {
     try{
-      if(lname.endsWith('.json')){
-        let data;
-        try{
-          data = JSON.parse(ev.target.result);
-        }catch(parseErr){
-          showToast('❌ অবৈধ JSON ফাইল — ফাইলটি ঠিক আছে কিনা দেখুন','error', 5000);
-          e.target.value = '';
-          return;
+      if(lname.endsWith('.csv')){
+        showToast('CSV ইম্পোর্ট সাপোর্ট সীমিত — JSON ব্যবহার করুন','warning');
+        return;
+      }
+      if(!lname.endsWith('.json')){
+        showToast('❌ অসমর্থিত ফাইল — শুধু .json ফাইল ইম্পোর্ট করুন','error');
+        return;
+      }
+
+      const rawText = String(ev.target.result || '');
+      // BOM strip — কিছু Windows editor UTF-8 BOM যোগ করে
+      const cleanText = rawText.replace(/^\uFEFF/, '').trim();
+      if(!cleanText){
+        showToast('❌ ফাইল ফাঁকা — কোনো ডেটা পাওয়া যায়নি','error', 5000);
+        return;
+      }
+
+      // STEP 1: JSON Parse — ত্রুটি হলে লাইন/কলামসহ স্পষ্ট বার্তা
+      let data;
+      try{
+        data = JSON.parse(cleanText);
+      }catch(parseErr){
+        const ctx = _jsonErrorContext(cleanText, parseErr);
+        const userMsg = '❌ অবৈধ JSON ফাইল\n\n' + ctx +
+          '\n\nএকটি নমুনা JSON ফরম্যাট ডাউনলোড করতে চান?';
+        if(confirm(userMsg)){
+          downloadSampleTeachersJSON();
         }
-        if(!data || typeof data !== 'object' || Array.isArray(data)){
-          showToast('❌ JSON কাঠামো সঠিক নয় (অবজেক্ট প্রত্যাশিত)','error', 5000);
-          e.target.value = '';
-          return;
+        return;
+      }
+
+      // STEP 2: ফাইলের ধরন শনাক্ত
+      const shape = _detectImportShape(data);
+
+      if(shape === 'unknown'){
+        if(confirm('❌ JSON কাঠামো চেনা যাচ্ছে না।\n\nএটি কি একটি শিক্ষক-তালিকার ফাইল হওয়ার কথা?\nনমুনা JSON ফরম্যাট ডাউনলোড করতে চান?')){
+          downloadSampleTeachersJSON();
         }
-        if(!confirm('বর্তমান ডেটা প্রতিস্থাপিত হবে। নিশ্চিত?')){
-          e.target.value = '';
+        return;
+      }
+
+      // STEP 3a: সম্পূর্ণ ব্যাকআপ — পুরোনো আচরণ অপরিবর্তিত (state replace)
+      if(shape === 'fullState'){
+        if(!confirm('⚠️ এটি একটি সম্পূর্ণ ব্যাকআপ ফাইল।\nবর্তমান সমস্ত ডেটা (রুটিন, সেটিংস, শিক্ষক) প্রতিস্থাপিত হবে।\n\nনিশ্চিত?')){
           return;
         }
         snapshot();
         Object.assign(state, data);
-        // ইম্পোর্টের পর কাঠামো ভাঙা থাকলে নিরাপদে মেরামত করি (ক্র্যাশ রোধ)
         try{ if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity(); }catch(_){}
         saveState();
         renderAll();
         try{ populateBulk(); }catch(_){}
-        audit('ইম্পোর্ট', file.name);
-        showToast('✅ ইম্পোর্ট সম্পন্ন','success');
-      } else if(lname.endsWith('.csv')){
-        showToast('CSV ইম্পোর্ট সাপোর্ট সীমিত — JSON ব্যবহার করুন','warning');
-      } else {
-        showToast('❌ অসমর্থিত ফাইল — শুধু .json ফাইল ইম্পোর্ট করুন','error');
+        audit('ইম্পোর্ট (পূর্ণ ব্যাকআপ)', file.name);
+        showToast('✅ পূর্ণ ব্যাকআপ ইম্পোর্ট সম্পন্ন','success');
+        return;
       }
+
+      // STEP 3b: শিক্ষক-তালিকা — যাচাই, normalize, merge, auto-fill
+      const rawList = _extractTeachersFromImport(data);
+      if(!rawList.length){
+        showToast('❌ JSON-এ কোনো শিক্ষকের তথ্য পাওয়া যায়নি','error', 5000);
+        return;
+      }
+
+      const report = {
+        ok: [],           // normalized teachers ready to add/update
+        errors: [],       // {index, name, reason}
+        newClasses: [],
+        newSubjects: [],
+        newSections: [],
+        autoFilled: 0
+      };
+
+      // First pass: validate & normalize, একই ফাইলে ডুপ্লিকেট চেক
+      const seenNamesInFile = new Map();
+      rawList.forEach((raw, idx) => {
+        const result = _validateAndNormalizeTeacher(raw, idx, report);
+        if(!result.ok){ return; }
+
+        const nameKey = result.teacher.name.trim().toLowerCase();
+        if(seenNamesInFile.has(nameKey)){
+          report.errors.push({
+            index: idx,
+            name: result.teacher.name,
+            reason: 'একই ফাইলে এই নামে আগেই আছে (লাইন #' + toBnNum(seenNamesInFile.get(nameKey)+1) + ')'
+          });
+          return;
+        }
+        seenNamesInFile.set(nameKey, idx);
+        result.teacher._sourceIndex = idx;
+        result.teacher._sourceRaw = raw;
+        report.ok.push(result.teacher);
+      });
+
+      if(!report.ok.length){
+        const errList = report.errors.slice(0,10).map(e => '• #'+toBnNum(e.index+1)+' '+(e.name||'(নামহীন)')+': '+e.reason).join('\n');
+        alert('❌ কোনো শিক্ষক ইম্পোর্ট করা সম্ভব হয়নি।\n\nত্রুটি:\n'+errList+(report.errors.length>10?'\n... আরও '+toBnNum(report.errors.length-10)+' টি':''));
+        return;
+      }
+
+      // বর্তমান শিক্ষকদের সাথে মিলে যাচ্ছে কিনা (duplicate)
+      const existingByName = new Map();
+      (state.teachers||[]).forEach(t => {
+        if(t && t.name) existingByName.set(t.name.trim().toLowerCase(), t);
+      });
+
+      let updateExisting = false;
+      const conflicts = report.ok.filter(t => existingByName.has(t.name.trim().toLowerCase()));
+      if(conflicts.length){
+        const list = conflicts.slice(0,8).map(t => '• ' + t.name).join('\n');
+        const ans = confirm('⚠️ ' + toBnNum(conflicts.length) + ' জন শিক্ষকের নাম আগে থেকেই আছে:\n\n' + list +
+          (conflicts.length>8 ? '\n... আরও '+toBnNum(conflicts.length-8)+' জন':'') +
+          '\n\n[OK] = আগের তথ্য আপডেট করুন (নতুন ফিল্ড যুক্ত হবে; বিদ্যমান রুটিন সেল অক্ষত থাকবে — শুধু খালি সেলগুলো অটো-পূরণ হবে)\n\n[Cancel] = ডুপ্লিকেট এড়িয়ে যান, শুধু নতুনদের যোগ করুন');
+        updateExisting = ans;
+      }
+
+      // চূড়ান্ত নিশ্চিতকরণ
+      const newCountPreview = report.ok.length - conflicts.length;
+      const updatedPreview = updateExisting ? conflicts.length : 0;
+      const skippedPreview = updateExisting ? 0 : conflicts.length;
+      const summary = '📋 ইম্পোর্ট সারাংশ:\n\n' +
+        '• ফাইলে বৈধ শিক্ষক: ' + toBnNum(report.ok.length) + ' জন\n' +
+        '• ত্রুটিযুক্ত এন্ট্রি: ' + toBnNum(report.errors.length) + ' টি\n' +
+        '• নতুন যোগ হবে: ' + toBnNum(newCountPreview) + ' জন\n' +
+        '• আপডেট হবে: ' + toBnNum(updatedPreview) + ' জন\n' +
+        '• এড়ানো হবে: ' + toBnNum(skippedPreview) + ' জন\n\n' +
+        '⚠️ মূল রুটিন, কলাম-কাঠামো ও সেটিংস অক্ষত থাকবে।\nশুধু শিক্ষক-তালিকা ও খালি সেল অটো-পূরণ হবে।\n\nঅগ্রসর হবেন?';
+      if(!confirm(summary)){
+        return;
+      }
+
+      // STEP 4: পরিবর্তন প্রয়োগ
+      snapshot();
+      ensureStateIntegrity();
+
+      // আগে options extend করি — তাহলে auto-fill সেগুলো ব্যবহার করতে পারবে
+      _extendOptionsFromImport(report.ok, report);
+
+      report.ok.forEach(imported => {
+        const nameKey = imported.name.trim().toLowerCase();
+        const existing = existingByName.get(nameKey);
+        const assignments = (imported._sourceRaw && Array.isArray(imported._sourceRaw.assignments))
+          ? imported._sourceRaw.assignments
+          : (imported._sourceRaw && Array.isArray(imported._sourceRaw['অ্যাসাইনমেন্ট'])
+              ? imported._sourceRaw['অ্যাসাইনমেন্ট']
+              : []);
+
+        // Internal helper fields পরিষ্কার করি
+        delete imported._sourceIndex;
+        delete imported._sourceRaw;
+
+        if(existing && updateExisting){
+          // Merge: id/cells/weeklyAssignments/password সংরক্ষণ; বাকি ফিল্ড আপডেট
+          const preservedId = existing.id;
+          const preservedCells = existing.cells || {};
+          const preservedWeekly = existing.weeklyAssignments || {};
+          const preservedPwd = existing.password;
+
+          Object.keys(imported).forEach(k => {
+            if(k === 'id' || k === 'cells' || k === 'weeklyAssignments' || k === 'password') return;
+            existing[k] = imported[k];
+          });
+          existing.id = preservedId;
+          existing.cells = preservedCells;
+          existing.weeklyAssignments = preservedWeekly;
+          if(preservedPwd) existing.password = preservedPwd;
+
+          // শুধু খালি সেল পূরণ — মূল রুটিন অক্ষত থাকবে
+          if(assignments.length){
+            const filled = _autoFillTeacherCells(existing, assignments, {onlyEmpty:true});
+            report.autoFilled += filled;
+          }
+        } else if(existing && !updateExisting){
+          // skip — গণনায় ইতিমধ্যে আছে
+        } else {
+          // নতুন শিক্ষক
+          state.teachers.push(imported);
+          if(assignments.length){
+            const filled = _autoFillTeacherCells(imported, assignments, {onlyEmpty:true});
+            report.autoFilled += filled;
+          }
+        }
+      });
+
+      ensureStateIntegrity();
+      saveState();
+      renderAll();
+      try{ populateBulk(); }catch(_){}
+      try{ populateLoginTeachers(); }catch(_){}
+
+      audit('শিক্ষক ইম্পোর্ট', file.name + ' (' + report.ok.length + ' জন)');
+
+      const finalMsg = '✅ ইম্পোর্ট সফল!\n\n' +
+        '• নতুন যোগ হয়েছে: ' + toBnNum(newCountPreview) + ' জন\n' +
+        '• আপডেট হয়েছে: ' + toBnNum(updatedPreview) + ' জন\n' +
+        '• এড়ানো হয়েছে: ' + toBnNum(skippedPreview) + ' জন\n' +
+        '• অটো-পূরণ হয়েছে: ' + toBnNum(report.autoFilled) + ' টি খালি সেল\n' +
+        '• নতুন বিষয় যোগ: ' + toBnNum(report.newSubjects.length) + '\n' +
+        '• নতুন শ্রেণি যোগ: ' + toBnNum(report.newClasses.length) + '\n' +
+        '• নতুন শাখা যোগ: ' + toBnNum(report.newSections.length) +
+        (report.errors.length ? '\n\n⚠️ ত্রুটি ' + toBnNum(report.errors.length) + ' টি — বিস্তারিত কনসোলে (F12)' : '');
+
+      if(report.errors.length){
+        console.warn('[Import errors]', report.errors);
+      }
+      alert(finalMsg);
+      showToast('✅ ইম্পোর্ট সম্পন্ন: ' + toBnNum(newCountPreview + updatedPreview) + ' জন শিক্ষক','success', 3500);
+
     }catch(err){
-      showToast('❌ ইম্পোর্ট ব্যর্থ: ' + err.message, 'error', 5000);
+      console.error('[handleImport] unexpected:', err);
+      showToast('❌ ইম্পোর্ট ব্যর্থ: ' + err.message, 'error', 6000);
     }finally{
       e.target.value = '';
     }
   };
-  reader.readAsText(file);
+  // বাংলা টেক্সট সঠিকভাবে পড়ার জন্য সবসময় UTF-8
+  reader.readAsText(file, 'utf-8');
+}
+
+
+/* ───────────────────────────────────────────────────────────────
+   🔧 JSON IMPORT — সহায়ক ফাংশন (শিক্ষক-তথ্য আপলোডের জন্য)
+─────────────────────────────────────────────────────────────── */
+
+/* বাংলা সংখ্যা (০-৯) → ASCII (0-9), যাতে parseInt কাজ করে */
+function _bnToEnDigits(s){
+  return String(s == null ? '' : s).replace(/[০-৯]/g, c => '০১২৩৪৫৬৭৮৯'.indexOf(c));
+}
+
+/* JSON parse error থেকে user-friendly লাইন/কলাম + snippet তৈরি */
+function _jsonErrorContext(rawText, error){
+  const msg = (error && error.message) ? error.message : String(error);
+  let pos = -1;
+  const mPos = msg.match(/position\s+(\d+)/i);
+  if(mPos) pos = parseInt(mPos[1], 10);
+  let line = 0, col = 0;
+  if(pos >= 0){
+    const before = rawText.slice(0, pos);
+    line = (before.match(/\n/g) || []).length + 1;
+    const lastNl = before.lastIndexOf('\n');
+    col = pos - (lastNl < 0 ? -1 : lastNl);
+  } else {
+    const mLine = msg.match(/line\s+(\d+)\s+column\s+(\d+)/i);
+    if(mLine){ line = parseInt(mLine[1],10); col = parseInt(mLine[2],10); }
+  }
+  let location = '';
+  if(line) location = '\n📍 অবস্থান: লাইন ' + toBnNum(line) + (col?', কলাম ' + toBnNum(col):'');
+  let snippet = '';
+  if(pos >= 0){
+    const start = Math.max(0, pos - 40);
+    const end = Math.min(rawText.length, pos + 40);
+    let chunk = rawText.slice(start, end).replace(/\n/g, '⏎').replace(/\t/g, '→');
+    if(chunk.length > 90) chunk = chunk.slice(0, 90) + '…';
+    snippet = '\n📝 আশেপাশের অংশ:\n…' + chunk + '…';
+  }
+  // মূল বার্তাটি Bengali-অনূদিত — সাধারণ ভুলগুলোর জন্য hint
+  let hint = '';
+  if(/Unexpected token/i.test(msg)) hint = '\n💡 সম্ভাব্য কারণ: comma (,) বাদ, অতিরিক্ত comma, অথবা quotation mark ভুল।';
+  else if(/Unexpected end/i.test(msg)) hint = '\n💡 সম্ভাব্য কারণ: শেষে } অথবা ] বাদ পড়েছে।';
+  else if(/Unterminated string/i.test(msg)) hint = '\n💡 সম্ভাব্য কারণ: কোনো একটি " বন্ধ করা হয়নি।';
+  return msg + location + snippet + hint;
+}
+
+/* JSON ডেটার ধরন শনাক্ত: পূর্ণ ব্যাকআপ নাকি শিক্ষক-তালিকা */
+function _detectImportShape(data){
+  if(!data) return 'unknown';
+  if(Array.isArray(data)){
+    if(!data.length) return 'unknown';
+    return data.some(x => x && typeof x === 'object' && (x.name || x['নাম'])) ? 'teacherList' : 'unknown';
+  }
+  if(typeof data !== 'object') return 'unknown';
+
+  const stateKeys = ['teachers','columns','options','settings','branding'];
+  const hasStateKeys = stateKeys.filter(k => k in data).length;
+  if(hasStateKeys >= 3) return 'fullState';
+
+  if(typeof data.type === 'string'){
+    const t = data.type.toLowerCase();
+    if(t === 'teachers' || t === 'teacher_list' || t === 'teacherlist') return 'teacherList';
+    if(t === 'full' || t === 'full_state' || t === 'backup' || t === 'state') return 'fullState';
+  }
+
+  if(Array.isArray(data.teachers)) return 'teacherList';
+  if(data.name || data['নাম']) return 'teacherList';
+
+  return 'unknown';
+}
+
+/* বিভিন্ন আকারের JSON থেকে শিক্ষক-অ্যারে বের করি */
+function _extractTeachersFromImport(data){
+  if(Array.isArray(data)) return data;
+  if(data && Array.isArray(data.teachers)) return data.teachers;
+  if(data && (data.name || data['নাম'])) return [data];
+  return [];
+}
+
+/* একটি শিক্ষক-এন্ট্রি যাচাই ও স্বাভাবিক রূপে রূপান্তর */
+function _validateAndNormalizeTeacher(raw, idx, report){
+  if(!raw || typeof raw !== 'object' || Array.isArray(raw)){
+    report.errors.push({index: idx, name: '', reason: 'একটি অবজেক্ট প্রত্যাশিত'});
+    return {ok:false};
+  }
+
+  // বাংলা ও ইংরেজি — উভয় key support করি
+  const pick = function(){
+    for(let i=0;i<arguments.length;i++){
+      const k = arguments[i];
+      if(raw[k] !== undefined && raw[k] !== null && raw[k] !== '') return raw[k];
+    }
+    return undefined;
+  };
+  const pickArr = function(){
+    for(let i=0;i<arguments.length;i++){
+      const k = arguments[i];
+      const v = raw[k];
+      if(Array.isArray(v)) return v.filter(x => x !== null && x !== undefined && String(x).trim() !== '').map(x => String(x).trim());
+      if(typeof v === 'string' && v.trim()) return v.split(/[,،]/).map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  };
+
+  const name = String(pick('name','নাম','teacherName','শিক্ষকের_নাম','শিক্ষক') || '').trim();
+  if(!name){
+    report.errors.push({index: idx, name: '', reason: '"name" (নাম) ফিল্ড অনুপস্থিত বা খালি'});
+    return {ok:false};
+  }
+  if(name.length > 100){
+    report.errors.push({index: idx, name, reason: 'নাম অত্যন্ত লম্বা (১০০ অক্ষরের বেশি)'});
+    return {ok:false};
+  }
+
+  const teacher = (typeof makeTeacher === 'function') ? makeTeacher(name) : {
+    id: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    name, password:'1234', cells:{}, weeklyAssignments:{}, subjects:[], classes:[], sections:[],
+    slotGroupLimits:{morning:0,lateMorning:0,afternoon:0,evening:0},
+    preferredDays:[], unavailableDays:[], notes:'', weeklyTotal:0
+  };
+  teacher.name = name;
+  teacher.password = String(pick('password','পাসওয়ার্ড') || teacher.password || '1234');
+  teacher.title = String(pick('title','পদবি','designation') || '');
+  teacher.mainSubject = String(pick('mainSubject','main_subject','primarySubject','প্রধান_বিষয়') || '');
+  teacher.mobile1 = String(pick('mobile1','mobile','মোবাইল','ফোন','phone') || '');
+  teacher.mobile2 = String(pick('mobile2','alt_mobile','বিকল্প_মোবাইল') || '');
+  teacher.weeklyNote = String(pick('weeklyNote','note','মন্তব্য') || '');
+  teacher.notes = String(pick('notes','বিশেষ_শর্ত','remarks') || teacher.weeklyNote || '');
+  teacher.onLeave = !!pick('onLeave','ছুটিতে');
+
+  // Multi-value ফিল্ড
+  let subjects = pickArr('subjects','বিষয়সমূহ','subject_list');
+  let classes = pickArr('classes','শ্রেণিসমূহ','class_list');
+  let sections = pickArr('sections','শাখাসমূহ','section_list');
+
+  // assignments থেকেও class/subject/section বের করি
+  const assignments = Array.isArray(raw.assignments) ? raw.assignments
+    : (Array.isArray(raw['অ্যাসাইনমেন্ট']) ? raw['অ্যাসাইনমেন্ট'] : []);
+  if(assignments.length){
+    assignments.forEach(a => {
+      if(!a || typeof a !== 'object') return;
+      const c = String(a.class || a['শ্রেণি'] || '').trim();
+      const s = String(a.subject || a['বিষয়'] || '').trim();
+      const sec = String(a.section || a['শাখা'] || '').trim();
+      if(c && !classes.includes(c)) classes.push(c);
+      if(s && !subjects.includes(s)) subjects.push(s);
+      if(sec && !sections.includes(sec)) sections.push(sec);
+    });
+  }
+  // সিঙ্গেল ফর্মও support
+  if(!subjects.length && teacher.mainSubject) subjects.push(teacher.mainSubject);
+  const sSubj = String(pick('subject','বিষয়') || '').trim();
+  if(sSubj && !subjects.includes(sSubj)) subjects.push(sSubj);
+  const sCls  = String(pick('class','শ্রেণি') || '').trim();
+  if(sCls && !classes.includes(sCls)) classes.push(sCls);
+  const sSec  = String(pick('section','শাখা') || '').trim();
+  if(sSec && !sections.includes(sSec)) sections.push(sSec);
+
+  teacher.subjects = subjects;
+  teacher.classes = classes;
+  teacher.sections = sections;
+  if(!teacher.mainSubject && subjects.length) teacher.mainSubject = subjects[0];
+
+  // weeklyTotal — Bengali digits-ও support করি
+  const wt = pick('weeklyTotal','সপ্তাহিক_মোট','total','মোট_ক্লাস');
+  if(typeof wt === 'number' && wt >= 0) teacher.weeklyTotal = wt;
+  else if(wt !== undefined){
+    const p = parseInt(_bnToEnDigits(wt),10);
+    teacher.weeklyTotal = isNaN(p) ? 0 : p;
+  }
+
+  // slotGroupLimits — object বা preferredTime tokens
+  const sgl = {morning:0, lateMorning:0, afternoon:0, evening:0};
+  const sglRaw = pick('slotGroupLimits','পছন্দের_সময়_সীমা','slotLimits');
+  if(sglRaw && typeof sglRaw === 'object'){
+    ['morning','lateMorning','afternoon','evening'].forEach(k => {
+      if(typeof sglRaw[k] === 'number') sgl[k] = sglRaw[k];
+    });
+    if(typeof sglRaw['সকাল'] === 'number') sgl.morning = sglRaw['সকাল'];
+    if(typeof sglRaw['দুপুর'] === 'number') sgl.lateMorning = sglRaw['দুপুর'];
+    if(typeof sglRaw['বিকাল'] === 'number') sgl.afternoon = sglRaw['বিকাল'];
+    if(typeof sglRaw['সন্ধ্যা'] === 'number') sgl.evening = sglRaw['সন্ধ্যা'];
+    if(typeof sglRaw['রাত'] === 'number') sgl.evening = sglRaw['রাত'];
+  }
+  // preferredTime tokens যেমন "সকাল ২", "দুপুর প্রথম ২", "রাতে ২ লাস্ট" — বাংলা সংখ্যাও ধরা পড়বে
+  const ptArr = pickArr('preferredTime','পছন্দের_সময়');
+  ptArr.forEach(tok => {
+    const s = String(tok);
+    const sEn = _bnToEnDigits(s);
+    const m = sEn.match(/(\d+)/);
+    const n = m ? parseInt(m[1],10) : 2;
+    if(/morning|সকাল|first/i.test(s)) sgl.morning = Math.max(sgl.morning, n);
+    else if(/late|দুপুর|noon|midday/i.test(s)) sgl.lateMorning = Math.max(sgl.lateMorning, n);
+    else if(/after|বিকাল|বিকেল/i.test(s)) sgl.afternoon = Math.max(sgl.afternoon, n);
+    else if(/evening|night|সন্ধ্যা|রাত|last/i.test(s)) sgl.evening = Math.max(sgl.evening, n);
+  });
+  teacher.slotGroupLimits = sgl;
+
+  // দিন মানচিত্র — বাংলা/ইংরেজি
+  const dayMap = {
+    'sat':'Sat','sun':'Sun','mon':'Mon','tue':'Tue','wed':'Wed','thu':'Thu','fri':'Fri',
+    'saturday':'Sat','sunday':'Sun','monday':'Mon','tuesday':'Tue','wednesday':'Wed','thursday':'Thu','friday':'Fri',
+    'শনি':'Sat','রবি':'Sun','সোম':'Mon','মঙ্গল':'Tue','বুধ':'Wed','বৃহস্পতি':'Thu','শুক্র':'Fri',
+    'শনিবার':'Sat','রবিবার':'Sun','সোমবার':'Mon','মঙ্গলবার':'Tue','বুধবার':'Wed','বৃহস্পতিবার':'Thu','শুক্রবার':'Fri'
+  };
+  const mapDays = (arr) => arr.map(d => {
+    const k = String(d).trim();
+    return dayMap[k.toLowerCase()] || dayMap[k] || null;
+  }).filter(Boolean);
+
+  teacher.preferredDays = mapDays(pickArr('preferredDays','পছন্দের_দিন'));
+  teacher.unavailableDays = mapDays(pickArr('unavailableDays','ছুটির_দিন','অপ্রাপ্যদিন'));
+
+  // shift — শুধু note-এ যোগ
+  const shift = String(pick('shift','শিফট') || '').trim();
+  if(shift){
+    teacher.notes = (teacher.notes ? teacher.notes + ' · ' : '') + 'শিফট: ' + shift;
+  }
+
+  return {ok:true, teacher};
+}
+
+/* state.options-এ নতুন class/subject/section যোগ — যাতে cell editor-এ দেখায় */
+function _extendOptionsFromImport(teachers, report){
+  if(!state.options) return;
+  const exClass = new Set((state.options.class||[]).map(s => String(s).trim()));
+  const exSubj  = new Set((state.options.subject||[]).map(s => String(s).trim()));
+  const exSec   = new Set((state.options.section||[]).map(s => String(s).trim()));
+
+  teachers.forEach(t => {
+    (t.classes||[]).forEach(c => {
+      const v = String(c).trim();
+      if(v && !exClass.has(v)){ state.options.class.push(v); exClass.add(v); report.newClasses.push(v); }
+    });
+    (t.subjects||[]).forEach(s => {
+      const v = String(s).trim();
+      if(v && !exSubj.has(v)){ state.options.subject.push(v); exSubj.add(v); report.newSubjects.push(v); }
+    });
+    (t.sections||[]).forEach(s => {
+      const v = String(s).trim();
+      if(v && !exSec.has(v)){ state.options.section.push(v); exSec.add(v); report.newSections.push(v); }
+    });
+  });
+}
+
+/* কলাম-পজিশন থেকে slot-group শনাক্ত (সকাল/দুপুর/বিকাল/সন্ধ্যা) */
+function _slotGroupOf(slotIdx, slotCount){
+  if(slotCount <= 0) return 'morning';
+  const r = slotIdx / slotCount;
+  if(r < 0.25) return 'morning';
+  if(r < 0.50) return 'lateMorning';
+  if(r < 0.75) return 'afternoon';
+  return 'evening';
+}
+
+/* শিক্ষকের জন্য খালি সেল অটো-পূরণ —
+   বিদ্যমান সেলের ডেটা কখনোই overwrite হয় না (onlyEmpty:true ডিফল্ট) */
+function _autoFillTeacherCells(teacher, assignments, opts){
+  if(!teacher || !assignments || !assignments.length) return 0;
+  if(!Array.isArray(state.columns)) return 0;
+  const onlyEmpty = !opts || opts.onlyEmpty !== false;
+
+  const slotCols = state.columns.filter(c => c.type === 'slot');
+  if(!slotCols.length) return 0;
+
+  if(!teacher.cells || typeof teacher.cells !== 'object') teacher.cells = {};
+
+  // assignments স্বাভাবিক রূপে
+  const ASSN = assignments.map(a => ({
+    class:   String((a && (a.class   || a['শ্রেণি'])) || '').trim(),
+    subject: String((a && (a.subject || a['বিষয়'])) || '').trim(),
+    section: String((a && (a.section || a['শাখা'])) || '').trim()
+  })).filter(a => a.subject || a.class || a.section);
+  if(!ASSN.length) return 0;
+
+  const limits = teacher.slotGroupLimits || {morning:0,lateMorning:0,afternoon:0,evening:0};
+  const totalLimit = (limits.morning||0)+(limits.lateMorning||0)+(limits.afternoon||0)+(limits.evening||0);
+
+  const groups = {morning:[], lateMorning:[], afternoon:[], evening:[]};
+  slotCols.forEach((c, i) => {
+    groups[_slotGroupOf(i, slotCols.length)].push(c);
+  });
+
+  let filled = 0;
+  let assnIdx = 0;
+  const pickNext = () => { const a = ASSN[assnIdx % ASSN.length]; assnIdx++; return a; };
+
+  const fillOne = (col) => {
+    const existing = teacher.cells[col.id] || {};
+    const isEmpty = !existing.class && !existing.subject && !existing.section;
+    if(onlyEmpty && !isEmpty) return false;
+    const a = pickNext();
+    teacher.cells[col.id] = Object.assign({}, existing, {
+      class:   a.class   || existing.class   || '',
+      subject: a.subject || existing.subject || '',
+      section: a.section || existing.section || ''
+    });
+    return true;
+  };
+
+  if(totalLimit === 0){
+    // limits নেই — weeklyTotal থাকলে সেটা ব্যবহার, না থাকলে সব slot
+    const cap = teacher.weeklyTotal > 0 ? teacher.weeklyTotal : slotCols.length;
+    let count = 0;
+    for(const col of slotCols){
+      if(count >= cap) break;
+      if(fillOne(col)) { filled++; count++; }
+    }
+    return filled;
+  }
+
+  ['morning','lateMorning','afternoon','evening'].forEach(grp => {
+    const want = limits[grp] || 0;
+    let placed = 0;
+    for(const col of groups[grp]){
+      if(placed >= want) break;
+      if(fillOne(col)) { filled++; placed++; }
+    }
+  });
+  return filled;
+}
+
+/* নমুনা শিক্ষক-JSON ডাউনলোড — ব্যবহারকারী রেফারেন্স হিসেবে দেখে নিতে পারবেন */
+function downloadSampleTeachersJSON(){
+  const sample = {
+    type: 'teachers',
+    note: 'রুটিন ম্যানেজমেন্ট সিস্টেম — শিক্ষক-তথ্য নমুনা JSON। নিজের ডেটা দিয়ে এডিট করে আপলোড করুন।',
+    teachers: [
+      {
+        name: 'জাফর স্যার',
+        title: 'প্রভাষক',
+        mainSubject: 'জীববিজ্ঞান',
+        mobile1: '01700000000',
+        password: '1234',
+        subjects: ['জীববিজ্ঞান','জীববিজ্ঞান প্রথম পত্র','তথ্য ও যোগাযোগ প্রযুক্তি','ইসলাম শিক্ষা'],
+        classes: ['নবম শ্রেণি','দশম শ্রেণি','একাদশ শ্রেণি'],
+        sections: ['নিউটন','আইনস্টাইন','মেয়ে','ছেলে'],
+        weeklyTotal: 14,
+        slotGroupLimits: { morning: 2, lateMorning: 2, afternoon: 2, evening: 2 },
+        preferredDays: ['Sat','Sun','Mon','Tue','Wed'],
+        unavailableDays: ['Fri'],
+        shift: 'morning',
+        notes: 'নবম শ্রেণিতে ICT তিন দিন + ধর্ম তিন দিন (ছেলে শাখা)',
+        assignments: [
+          { class: 'দশম শ্রেণি',   subject: 'জীববিজ্ঞান',                  section: 'নিউটন' },
+          { class: 'একাদশ শ্রেণি', subject: 'জীববিজ্ঞান প্রথম পত্র', section: 'আইনস্টাইন' },
+          { class: 'একাদশ শ্রেণি', subject: 'জীববিজ্ঞান প্রথম পত্র', section: 'মেয়ে' },
+          { class: 'নবম শ্রেণি',   subject: 'তথ্য ও যোগাযোগ প্রযুক্তি',  section: 'ছেলে' }
+        ]
+      },
+      {
+        name: 'করিম স্যার',
+        title: 'সহকারী শিক্ষক',
+        mainSubject: 'গণিত',
+        subjects: ['গণিত','উচ্চতর গণিত'],
+        classes: ['দশম শ্রেণি'],
+        sections: ['নিউটন','আইনস্টাইন'],
+        slotGroupLimits: { morning: 3, lateMorning: 1, afternoon: 0, evening: 0 },
+        preferredDays: ['Sat','Sun','Mon','Tue','Wed','Thu'],
+        assignments: [
+          { class: 'দশম শ্রেণি', subject: 'গণিত', section: 'নিউটন' }
+        ]
+      }
+    ]
+  };
+  try{
+    const blob = new Blob([JSON.stringify(sample, null, 2)], {type:'application/json;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'shikkhok-nomuna-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('✅ নমুনা JSON ডাউনলোড হয়েছে — এটি দিয়ে নিজের ডেটা তৈরি করুন','success', 3500);
+  }catch(e){
+    showToast('❌ নমুনা ডাউনলোড ব্যর্থ: ' + e.message,'error');
+  }
 }
 
 /* ===========================================================
@@ -12020,129 +12585,6 @@ document.addEventListener('keydown', e => {
 
 // Save before unload
 window.addEventListener('beforeunload', () => {saveState()});
-// ====== ডাইনামিক শিক্ষক JSON আপলোড লজিক ======
-function handleTeacherJSONImport(e){
-    if(!canFullEdit()){showToast('অনুমতি নেই','error');return;}
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
-
-    const reader = new FileReader();
-    reader.onerror = () => {
-        showToast('❌ ফাইল পড়া যায়নি, আবার চেষ্টা করুন','error');
-        e.target.value = '';
-    };
-    
-    // বাংলা UTF-8 Support
-    reader.readAsText(file, "UTF-8"); 
-    
-    reader.onload = ev => {
-        try {
-            let data;
-            try {
-                data = JSON.parse(ev.target.result);
-            } catch(err) {
-                // Invalid JSON detect
-                throw new Error("JSON ফাইলের ফরম্যাট ঠিক নেই। কমা বা ব্র্যাকেট চেক করুন।");
-            }
-            
-            if(!Array.isArray(data)){
-                throw new Error("JSON ফাইলের মূল কাঠামো একটি Array ([...]) হতে হবে।");
-            }
-
-            let newAdded = 0;
-            let updated = 0;
-            
-            snapshot(); // মূল স্ট্রাকচার ঠিক রাখতে আনডু করার জন্য বর্তমান অবস্থা সেভ
-
-            data.forEach((item, index) => {
-                // Missing Field Validation
-                if(!item.name) throw new Error(`আইটেম ${index + 1}: শিক্ষকের 'name' (নাম) দেওয়া নেই।`);
-
-                // Duplicate Entry চেক ও Automatic Mapping 
-                let t = state.teachers.find(x => x.name.trim() === item.name.trim());
-                if(t) {
-                    updated++; // আগে থেকে থাকলে শুধু ডেটা আপডেট হবে, রুটিন ভাঙবে না
-                } else {
-                    // নতুন শিক্ষক হলে আপনার সিস্টেমের স্ট্রাকচারে তৈরি করা
-                    t = {
-                        id: uid(),
-                        name: item.name.trim(),
-                        title: item.title || '',
-                        mainSubject: '',
-                        subjects: [],
-                        classes: [],
-                        sections: [],
-                        cells: {},
-                        weeklyTotal: 0,
-                        weeklyAssignments: {},
-                        preferredDays: [],
-                        unavailableDays: [],
-                        slotGroupLimits: {morning:0, lateMorning:0, afternoon:0, evening:0},
-                        notes: '',
-                        password: '1234'
-                    };
-                    state.teachers.push(t);
-                    newAdded++;
-                }
-
-                // ডাইনামিক ম্যাপিং: সাবজেক্ট, ক্লাস এবং সেকশনগুলো
-                const subjects = new Set(t.subjects || []);
-                const classes = new Set(t.classes || []);
-                const sections = new Set(t.sections || []);
-
-                if(Array.isArray(item.classes)){
-                    item.classes.forEach(c => {
-                        if(c.subject) subjects.add(c.subject);
-                        if(c.class_name) classes.add(c.class_name);
-                        if(c.section) sections.add(c.section);
-                    });
-                }
-
-                t.subjects = Array.from(subjects);
-                t.classes = Array.from(classes);
-                t.sections = Array.from(sections);
-                
-                if (t.subjects.length > 0 && !t.mainSubject) {
-                    t.mainSubject = t.subjects[0];
-                }
-
-                // শিফট ও পছন্দনীয় সময় 'নোটে' যুক্ত করা যেন AI রুটিনের সময় কাজে লাগে
-                let notesArr = t.notes ? [t.notes] : [];
-                if(item.shift) notesArr.push(`শিফট: ${item.shift}`);
-                if(Array.isArray(item.preferences)){
-                    notesArr.push(`পছন্দ: ${item.preferences.join(', ')}`);
-                }
-                if (notesArr.length > 0) {
-                    t.notes = notesArr.join('\n');
-                }
-            });
-
-            // ডাটা সেভ ও রিফ্রেশ
-            saveState();
-            renderTable();
-            if(typeof populateLoginTeachers === 'function') populateLoginTeachers();
-            if(typeof populateBulk === 'function') populateBulk();
-
-            showToast(`✅ সফল! নতুন: ${newAdded} জন, আপডেট: ${updated} জন`, 'success');
-            
-            // অটোমেটিক রুটিন তৈরির ট্রিগার
-            setTimeout(() => {
-                if(confirm("শিক্ষকদের তথ্য সফলভাবে আপডেট হয়েছে! আপনি কি এখন এই তথ্য অনুযায়ী 'স্বয়ংক্রিয় রুটিন' জেনারেট করতে চান?")){
-                    if(typeof openAIGenerator === 'function') openAIGenerator();
-                    else if(typeof autoGenerateRoutine === 'function') autoGenerateRoutine();
-                }
-            }, 1000);
-
-        } catch(err) {
-            // App Crash ঠেকানো এবং User-friendly Error
-            console.error("JSON Error:", err);
-            showToast('❌ আপলোড ব্যর্থ: ' + err.message, 'error');
-        } finally {
-            e.target.value = ''; // ইনপুট ক্লিয়ার
-        }
-    };
-}
-// ====== শেষ ======
 </script>
 <!-- 📥 স্থায়ী ইম্পোর্ট ইনপুট — tool-menu প্যানেলের বাইরে body-level এ রাখা হয়েছে।
      কারণ: মোবাইলে tool-menu প্যানেল খুললে DOM-এ portal/restore হয়; আগে input এই
