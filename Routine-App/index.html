@@ -1920,6 +1920,189 @@ input[type="range"]::-moz-range-thumb{
 }
 .te-card-summary b{color:var(--text-1);font-weight:700}
 
+/* ════════════════════════════════════════════════════════════
+   🆕 STICKY LIVE SUMMARY + SOFT-COLORED CARDS + NO-SPLIT BLOCKS
+   Additive scoped styles — পুরোনো কিছু override করে না।
+   ════════════════════════════════════════════════════════════ */
+/* Sticky Live Summary — modal-body scroll-এ উপরে stick করে */
+.tms-summary{
+  position:sticky;top:0;z-index:6;
+  backdrop-filter:saturate(140%) blur(6px);
+  -webkit-backdrop-filter:saturate(140%) blur(6px);
+  box-shadow:0 2px 8px -4px rgba(0,0,0,.18);
+}
+.tms-summary.active{
+  background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+}
+
+/* প্রতিটি Teaching Entry-কে স্বতন্ত্র — কিন্তু লেখা সবসময় স্পষ্ট।
+   White card + colored left strip + colored top-corner accent;
+   pastel background বাদ — text-on-white = highest readability. */
+.te-card{
+  break-inside:avoid;page-break-inside:avoid;
+  background:var(--surface,#fff) !important;
+  color:var(--text-1,#0f172a) !important;
+  border-left-width:4px;
+  position:relative;
+}
+/* প্রতিটি কার্ডে ছোট colored tag (উপরে-ডানে) — entry-আলাদা বোঝা যায়, লেখা ব্যাহত হয় না */
+.te-card::before{
+  content:'';position:absolute;top:0;right:0;
+  width:46px;height:4px;border-radius:0 0 0 4px;
+  opacity:.95;
+}
+.te-card .te-card-num{background:var(--card-accent,#0284c7)}
+.te-card .te-card-summary b{color:var(--text-1,#0f172a) !important}
+.te-card label{color:var(--text-2,#334155) !important}
+
+/* ৮টা accent color — শুধু border-left, top-strip ও entry-num bubble-এ;
+   card body সম্পূর্ণ white → text 100% readable */
+.te-card.te-c-0{border-left-color:#0ea5e9;--card-accent:#0ea5e9}
+.te-card.te-c-0::before{background:#0ea5e9}
+.te-card.te-c-1{border-left-color:#a855f7;--card-accent:#a855f7}
+.te-card.te-c-1::before{background:#a855f7}
+.te-card.te-c-2{border-left-color:#16a34a;--card-accent:#16a34a}
+.te-card.te-c-2::before{background:#16a34a}
+.te-card.te-c-3{border-left-color:#d97706;--card-accent:#d97706}
+.te-card.te-c-3::before{background:#d97706}
+.te-card.te-c-4{border-left-color:#dc2626;--card-accent:#dc2626}
+.te-card.te-c-4::before{background:#dc2626}
+.te-card.te-c-5{border-left-color:#0891b2;--card-accent:#0891b2}
+.te-card.te-c-5::before{background:#0891b2}
+.te-card.te-c-6{border-left-color:#7c3aed;--card-accent:#7c3aed}
+.te-card.te-c-6::before{background:#7c3aed}
+.te-card.te-c-7{border-left-color:#ea580c;--card-accent:#ea580c}
+.te-card.te-c-7::before{background:#ea580c}
+/* duplicate-flag — left border red (অন্য accent override) */
+.te-card.te-flagged.te-c-0,
+.te-card.te-flagged.te-c-1,
+.te-card.te-flagged.te-c-2,
+.te-card.te-flagged.te-c-3,
+.te-card.te-flagged.te-c-4,
+.te-card.te-flagged.te-c-5,
+.te-card.te-flagged.te-c-6,
+.te-card.te-flagged.te-c-7{border-left-color:#ef4444}
+/* inner panels — back to original light surface (card is white now) */
+.te-card .te-day-row,
+.te-card .te-tslot-wrap{background:var(--surface-2)}
+.te-card .te-tslot-group{background:var(--surface)}
+.te-card .te-field select,
+.te-card .te-field input,
+.te-card .te-field textarea{background:var(--surface);color:var(--text-1)}
+/* Print — keep each card together */
+@media print{
+  .te-card{break-inside:avoid;page-break-inside:avoid}
+}
+
+/* ════════════════════════════════════════════════════════════
+   🔀 SHARED / SPLIT TIME SLOT SYSTEM
+   - entry-level toggle
+   - shared-marked card style
+   - bottom summary panel
+   - tiny badge inside main routine table cell (when cell.days exists)
+   ════════════════════════════════════════════════════════════ */
+.te-shared-row{
+  margin-top:8px;padding:8px 10px;
+  background:#fef3c7;border:1px dashed #f59e0b;border-radius:7px;
+}
+.te-shared-toggle{
+  display:flex;align-items:center;gap:8px;cursor:pointer;flex-wrap:wrap;
+}
+.te-shared-toggle input[type="checkbox"]{
+  width:16px;height:16px;cursor:pointer;accent-color:#d97706;flex-shrink:0;
+}
+.te-shared-label{font-size:12.5px;font-weight:700;color:#92400e}
+.te-shared-help{
+  font-size:11px;color:#78350f;font-style:italic;flex:1;min-width:200px;
+}
+.te-shared-help b{font-weight:700;font-style:normal}
+/* Shared card — distinct visual highlight */
+.te-card.te-shared{
+  box-shadow:0 0 0 2px #f59e0b inset, 0 1px 2px rgba(0,0,0,.05);
+  position:relative;
+}
+.te-card.te-shared::after{
+  content:'🔀 SHARED';
+  position:absolute;top:8px;right:54px;
+  background:#f59e0b;color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:.6px;
+  padding:2px 7px;border-radius:10px;
+  pointer-events:none;
+}
+.te-shared-tag-inline{
+  background:#fde68a;color:#78350f;
+  padding:1px 7px;border-radius:9px;
+  font-size:10px;font-weight:700;
+}
+
+/* Shared Slot Summary panel — Teaching tab নিচে */
+.tms-shared-summary{
+  margin-top:14px;padding:12px;
+  background:linear-gradient(180deg,#fffbeb 0%,#fef3c7 100%);
+  border:1.5px solid #f59e0b;border-radius:10px;
+}
+.tms-shared-title{
+  font-size:13px;font-weight:800;color:#78350f;
+  letter-spacing:.3px;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.tms-shared-help{
+  font-size:11px;font-weight:500;color:#92400e;font-style:italic;
+}
+.tms-shared-block{
+  background:#fff;border:1px solid #fde68a;
+  border-radius:8px;padding:9px 11px;margin-bottom:8px;
+  border-left:4px solid #f59e0b;
+}
+.tms-shared-block:last-child{margin-bottom:0}
+.tms-shared-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;flex-wrap:wrap;
+  padding-bottom:6px;margin-bottom:6px;
+  border-bottom:1px dashed #fde68a;
+  font-size:12px;font-weight:700;color:#0f172a;
+}
+.tms-shared-slot{color:#0284c7}
+.tms-shared-cs{color:#166534}
+.tms-shared-body{display:flex;flex-direction:column;gap:4px}
+.tms-shared-line{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  font-size:12px;line-height:1.6;color:#1e293b;
+  padding:3px 6px;border-radius:5px;
+}
+.tms-shared-line:hover{background:#fef3c7}
+.tms-shared-days{
+  background:#dbeafe;color:#1e40af;
+  padding:1px 8px;border-radius:8px;
+  font-weight:700;font-size:11.5px;
+}
+.tms-shared-arrow{color:#94a3b8;font-weight:700}
+.tms-shared-subject{font-weight:700;color:#92400e}
+.tms-shared-teacher{color:#475569;font-size:11.5px}
+.tms-shared-tag{
+  background:#f59e0b;color:#fff;
+  padding:1px 7px;border-radius:9px;
+  font-size:9.5px;font-weight:800;letter-spacing:.5px;
+}
+@media(max-width:560px){
+  .tms-shared-head{flex-direction:column;align-items:flex-start;gap:3px}
+  .tms-shared-line{font-size:11.5px}
+}
+
+/* Main routine table — subtle 🔀 indicator on shared cells (additive — when cell has .days[]) */
+.cell-subject.is-shared-cell{position:relative}
+.cell-subject.is-shared-cell::before{
+  content:'🔀';
+  position:absolute;top:1px;right:2px;
+  font-size:9px;opacity:.85;
+  pointer-events:none;
+  background:#f59e0b;color:#fff;
+  width:14px;height:14px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;font-weight:700;
+  line-height:1;
+}
+
 /* =============================================================
    AI ROUTINE GENERATOR
 ============================================================= */
@@ -4317,6 +4500,10 @@ body[data-role="manager"] .teacher-only{display:none !important}
           </div>
           <div class="te-list" id="teachingEntriesList"></div>
         </div>
+
+        <!-- ════ 🔀 SHARED / SPLIT SLOT SUMMARY ════
+             একই slot-এ ভিন্ন দিনে ভিন্ন বিষয়/শিক্ষক থাকলে এখানে দেখাবে -->
+        <div class="tms-shared-summary" id="sharedSlotSummary" style="display:none"></div>
       </div>
 
       <!-- TAB 3: TIME PREFERENCES (hidden — superseded by per-entry time slots in Teaching tab) -->
@@ -6907,7 +7094,9 @@ function renderTable(){
               <span class="row-label">বিষয়</span><span class="free-text">${esc(freeText)}</span>
             </div></td>`;
         } else {
-          body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}>
+          const isSharedCell = (Array.isArray(cell.days) && cell.days.length) || (Array.isArray(cell.parts) && cell.parts.length);
+          const sharedTitle = isSharedCell ? ` title="🔀 শেয়ার্ড স্লট — পাঠদান ট্যাবে বিস্তারিত দেখুন"` : '';
+          body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}${isSharedCell?' is-shared-cell':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}${sharedTitle}>
             <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
               <span class="row-label">বিষয়</span>${esc(cell.subject||'—')}
             </div></td>`;
@@ -7918,7 +8107,12 @@ function _teNewEntry(){
     // ডিফল্ট ৬ দিন pre-selected — শুক্রবার বাদে (Sat-Thu)
     days: ['Sat','Sun','Mon','Tue','Wed','Thu'],
     preferredSlots: [],
-    notes: ''
+    notes: '',
+    // 🔀 Shared / Split Time Slot — true হলে এই entry-র days[] মানে
+    // এই শিক্ষক/বিষয় শুধু সেই দিনগুলোতেই এই slot দখল করেন; বাকি দিনে
+    // অন্য teacher/subject একই slot ব্যবহার করতে পারে।
+    shared: false,
+    sharedNote: ''
   };
 }
 function _teSanitizeEntry(raw){
@@ -7939,6 +8133,9 @@ function _teSanitizeEntry(raw){
     ? raw.preferredSlots.map(s => String(s).trim()).filter(s => validSlotIds.has(s))
     : [];
   e.notes = String(raw.notes || '').trim();
+  // 🔀 Shared slot — preserve, accept বাংলা/ইংরেজি key
+  e.shared = !!(raw.shared || raw['শেয়ার্ড'] || raw['split'] || raw['স্প্লিট']);
+  e.sharedNote = String(raw.sharedNote || raw['শেয়ার্ড_নোট'] || '').trim();
   return e;
 }
 function _teOptions(kind){
@@ -7984,6 +8181,7 @@ function renderTeachingEntries(teacher){
   // মাস্টার চিপ-এ red-tick ও Live Summary রিফ্রেশ
   try{ _teRefreshMasterIndicators(teacher); }catch(_){}
   try{ renderTeachingLiveSummary(teacher); }catch(_){}
+  try{ renderSharedSlotSummary(); }catch(_){}
 }
 
 function _teRefreshCount(n){
@@ -8016,25 +8214,50 @@ function _teUsageMaps(entries){
   return {sub, cls, sec};
 }
 
-/* Slot কলামগুলোকে ৪ গ্রুপে ভাগ (Morning/Noon/Afternoon/Evening) —
-   _slotGroupOf() থাকলে সেটা ব্যবহার, নাহলে লেবেল থেকে heuristic */
+/* Slot কলামগুলোকে ৪ গ্রুপে ভাগ — বিরতি-অবস্থান ভিত্তিক:
+   • ১ম বিরতির আগের সব স্লট → 🌅 সকাল
+   • ১ম বিরতির পরের স্লটগুলো → ☀️ দুপুর
+   • ২য় বিরতির পরের স্লটগুলো → 🌤️ বিকেল
+   • ৩য় বিরতির পরের স্লটগুলো → 🌆 সন্ধ্যা
+   বিরতি কম থাকলে শেষ অংশ-গ্রুপগুলো খালি থাকে; কোনো বিরতি না থাকলে
+   সব স্লট সকাল-এ যায়। (যদি কোনো legacy কারণে slotCols-ই পাঠানো হয়,
+   index-ভিত্তিক fallback হিসেবে আগের 25/50/75% logic ব্যবহৃত হবে।) */
 function _teSlotsByGroup(slotCols){
   const groups = {
-    morning:    {key:'morning',    label:'🌅 সকাল',       cols:[]},
-    lateMorning:{key:'lateMorning',label:'☀️ দুপুর',       cols:[]},
-    afternoon:  {key:'afternoon',  label:'🌤️ বিকাল',      cols:[]},
-    evening:    {key:'evening',    label:'🌆 সন্ধ্যা/রাত', cols:[]}
+    morning:    {key:'morning',    label:'🌅 সকাল',   cols:[]},
+    lateMorning:{key:'lateMorning',label:'☀️ দুপুর',   cols:[]},
+    afternoon:  {key:'afternoon',  label:'🌤️ বিকেল',  cols:[]},
+    evening:    {key:'evening',    label:'🌆 সন্ধ্যা', cols:[]}
   };
-  const total = slotCols.length;
-  slotCols.forEach((c, i) => {
-    let g = 'morning';
-    if(typeof _slotGroupOf === 'function'){
-      try{ g = _slotGroupOf(i, total) || 'morning'; }catch(_){ g = 'morning'; }
-    } else {
+  const slotSet = new Set((slotCols||[]).map(c => c && c.id).filter(Boolean));
+  const fullCols = (state && Array.isArray(state.columns)) ? state.columns : [];
+
+  // যদি state.columns অনুপস্থিত বা slotCols-এ যেসব slot আছে সেগুলো full-list-এ না থাকে,
+  // তাহলে fallback index-ভিত্তিক ভাগে যাই (legacy safe)
+  const matched = fullCols.filter(c => c && c.type === 'slot' && slotSet.has(c.id));
+  if(!fullCols.length || matched.length === 0){
+    const total = (slotCols||[]).length;
+    (slotCols||[]).forEach((c, i) => {
       const r = total > 0 ? (i/total) : 0;
-      g = r < 0.25 ? 'morning' : r < 0.50 ? 'lateMorning' : r < 0.75 ? 'afternoon' : 'evening';
+      const gk = r < 0.25 ? 'morning' : r < 0.50 ? 'lateMorning' : r < 0.75 ? 'afternoon' : 'evening';
+      groups[gk].cols.push(c);
+    });
+    return groups;
+  }
+
+  // break-ভিত্তিক logic — state.columns ক্রমে হাঁটি, বিরতি দেখলে groupKey পরিবর্তন
+  const order = ['morning','lateMorning','afternoon','evening'];
+  let breakCount = 0;
+  fullCols.forEach(c => {
+    if(!c) return;
+    if(c.type === 'break'){
+      breakCount++;
+      return;
     }
-    (groups[g] || groups.morning).cols.push(c);
+    if(c.type !== 'slot') return;
+    if(!slotSet.has(c.id)) return; // শুধুই দৃশ্যমান/পাঠানো slot
+    const gk = order[Math.min(breakCount, order.length - 1)];
+    groups[gk].cols.push(c);
   });
   return groups;
 }
@@ -8166,12 +8389,28 @@ function _teCardHTML(e, idx, ctx){
   }).join('');
 
   const flagged = isUsedSub || isUsedCls || isUsedSec;
+  const colorClass = 'te-c-' + (idx % 8);  // ৮টা soft color cycle
+  const sharedClass = e.shared ? 'te-shared' : '';
   const cardSummary = (e.subject || e.class || e.section)
-    ? `<div class="te-card-summary"><b>${_teEsc(e.subject||'—')}</b> · ${_teEsc(e.class||'—')} · শাখা ${_teEsc(e.section||'—')} · দিন ${_teBnNum(selDays.size)} · slot ${_teBnNum(selSlots.size)}</div>`
+    ? `<div class="te-card-summary"><b>${_teEsc(e.subject||'—')}</b> · ${_teEsc(e.class||'—')} · শাখা ${_teEsc(e.section||'—')} · দিন ${_teBnNum(selDays.size)} · slot ${_teBnNum(selSlots.size)}${e.shared?' · <span class=\"te-shared-tag-inline\">🔀 শেয়ার্ড</span>':''}</div>`
     : '';
 
+  // Shared-slot toggle + note (additive — collapsed by default if not shared)
+  const sharedBlockHTML = `
+    <div class="te-shared-row">
+      <label class="te-shared-toggle">
+        <input type="checkbox" data-te-field="shared" ${e.shared?'checked':''} onchange="_teToggleShared(${idx}, this.checked)">
+        <span class="te-shared-label">🔀 শেয়ার্ড / স্প্লিট টাইম স্লট</span>
+        <span class="te-shared-help">${e.shared?'<b>সক্রিয়</b> — উপরের নির্বাচিত দিনগুলোতে এই বিষয়; বাকি দিনে অন্য শিক্ষক একই slot ব্যবহার করতে পারবেন।':'একই slot-এ ভিন্ন দিনে ভিন্ন বিষয়/শিক্ষক রাখতে চাইলে enable করুন।'}</span>
+      </label>
+      ${e.shared ? `<div class="te-field" style="margin-top:6px">
+        <label>📝 শেয়ার্ড স্লট বর্ণনা (ঐচ্ছিক — যেমন: "শনি-সোম জীববিজ্ঞান, মঙ্গল-বুধ গণিত")</label>
+        <input type="text" data-te-field="sharedNote" value="${_teEsc(e.sharedNote||'')}" oninput="_teUpdateField(${idx},'sharedNote',this.value)" placeholder="স্প্লিট বর্ণনা লিখুন...">
+      </div>` : ''}
+    </div>`;
+
   return `
-  <div class="te-card ${flagged?'te-flagged':''}" data-te-idx="${idx}">
+  <div class="te-card ${colorClass} ${sharedClass} ${flagged?'te-flagged':''}" data-te-idx="${idx}">
     <div class="te-card-head">
       <div>
         <div class="te-card-title"><span class="te-card-num">${_teBnNum(idx+1)}</span> এন্ট্রি</div>
@@ -8210,6 +8449,7 @@ function _teCardHTML(e, idx, ctx){
       <label>📝 অতিরিক্ত নির্দেশনা (বাংলায় — রুটিন/AI বিবেচনা করবে)</label>
       <textarea rows="2" placeholder="যেমন: এই ক্লাসটি দুপুরের আগে রাখুন, ১:০০-এর পর নয়, ইত্যাদি..." data-te-field="notes" oninput="_teUpdateField(${idx},'notes',this.value)">${_teEsc(e.notes||'')}</textarea>
     </div>
+    ${sharedBlockHTML}
   </div>`;
 }
 
@@ -8310,6 +8550,18 @@ function _teToggleSlot(idx, slotId, chipEl){
   try{ renderTeachingLiveSummary(t); }catch(_){}
 }
 
+/* 🔀 Shared/Split toggle — entry-level */
+function _teToggleShared(idx, checked){
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t || !Array.isArray(t.teachingEntries)) return;
+  const e = t.teachingEntries[idx];
+  if(!e) return;
+  _teSyncFromDOM(t);
+  e.shared = !!checked;
+  renderTeachingEntries(t);
+}
+
 /* DOM থেকে এন্ট্রিগুলোর বর্তমান মান data-এ ফেরত নিই (saveTeacher আগে) */
 function _teSyncFromDOM(teacher){
   if(!teacher || !Array.isArray(teacher.teachingEntries)) return;
@@ -8324,6 +8576,8 @@ function _teSyncFromDOM(teacher){
       if(f === 'daysPerWeek'){
         const n = parseInt(v, 10);
         e.daysPerWeek = (isNaN(n) || n < 0) ? 0 : Math.min(n, 6);
+      } else if(f === 'shared'){
+        e.shared = !!el.checked;
       } else {
         e[f] = String(v || '').trim();
       }
@@ -8374,7 +8628,133 @@ function saveTeachingEntries(teacher){
    teachingEntries থেকে conflict-aware slot assignment তৈরি।
    autoGenerateRoutine() এই ফাংশনটি প্রতি শিক্ষকের জন্য আগে কল করে;
    true ফেরালে সেই শিক্ষকের জন্য fallback logic skip হবে।
+   🔀 Shared slot support — entry.shared=true হলে slot day-ভিত্তিক
+   লক হয়; অন্য শিক্ষক ভিন্ন দিনে একই slot ব্যবহার করতে পারেন।
    =========================================================== */
+
+/* slotTaken[colId] একটি Set; দুই ধরনের key থাকে:
+   - "class||section"           → পুরো slot (non-shared) দখল
+   - "class||section||day"      → শুধু সেই দিন (shared) দখল
+   একটি ক্যান্ডিডেট entry-র (cls,sec) পক্ষে slot ব্যবহার করা যায় কিনা যাচাই: */
+function _teCanUseSlot(takenSet, cls, sec, days, isShared){
+  if(!takenSet) return true;
+  const base = (cls || '') + '||' + (sec || '');
+  if(base === '||') return true; // কোনো conflictKey নেই
+  if(!isShared){
+    // non-shared: কোনো কিছুই (whole or day-specific) ঐ class+sec-এর জন্য আগে থেকে থাকলে block
+    for(const k of takenSet){
+      if(k === base || k.startsWith(base + '||')) return false;
+    }
+    return true;
+  } else {
+    // shared: pure base ("||" বিহীন) মানে non-shared ইতিমধ্যে দখল — block
+    if(takenSet.has(base)) return false;
+    // কোনো অনুরোধিত দিন ইতিমধ্যে অন্য entry-র দখলে কিনা — block
+    if(Array.isArray(days)){
+      for(const d of days){
+        if(takenSet.has(base + '||' + d)) return false;
+      }
+    }
+    return true;
+  }
+}
+function _teMarkSlotTaken(takenSet, cls, sec, days, isShared){
+  if(!takenSet) return;
+  const base = (cls || '') + '||' + (sec || '');
+  if(base === '||') return;
+  if(!isShared){
+    takenSet.add(base);
+  } else if(Array.isArray(days) && days.length){
+    days.forEach(d => takenSet.add(base + '||' + d));
+  } else {
+    takenSet.add(base); // shared কিন্তু দিন না দেওয়া — fallback whole-slot
+  }
+}
+
+/* 🔀 Shared Slot Distribution — সকল শিক্ষকের teachingEntries থেকে
+   slot+class+section ভিত্তিক ভাগ-বিন্যাস গণনা করে।
+   Returns: { slotId: { 'class||section': [ {teacherId, teacherName, subject, days, shared} ... ] } } */
+function _teSharedSlotDistribution(){
+  const out = {};
+  if(!state || !Array.isArray(state.teachers)) return out;
+  state.teachers.forEach(t => {
+    if(!t || !Array.isArray(t.teachingEntries)) return;
+    t.teachingEntries.forEach(raw => {
+      const e = _teSanitizeEntry(raw);
+      if(!e.subject && !e.class && !e.section) return;
+      const csKey = (e.class||'') + '||' + (e.section||'');
+      const slots = Array.isArray(e.preferredSlots) && e.preferredSlots.length
+        ? e.preferredSlots : [];
+      slots.forEach(slotId => {
+        if(!out[slotId]) out[slotId] = {};
+        if(!out[slotId][csKey]) out[slotId][csKey] = [];
+        out[slotId][csKey].push({
+          teacherId: t.id, teacherName: t.name || '—',
+          subject: e.subject, days: (e.days||[]).slice(),
+          shared: !!e.shared,
+          class: e.class, section: e.section
+        });
+      });
+    });
+  });
+  return out;
+}
+
+/* 🔀 Shared Slot Summary রেন্ডার — Teaching tab-এর নিচে।
+   শুধু যেসব slot+class+section-এ shared entry আছে অথবা ২+ entry আছে সেগুলো দেখায়। */
+function renderSharedSlotSummary(){
+  const host = document.getElementById('sharedSlotSummary');
+  if(!host) return;
+  const dist = _teSharedSlotDistribution();
+  const slotCols = (state && Array.isArray(state.columns) ? state.columns : [])
+    .filter(c => c && c.type === 'slot');
+  const slotById = {};
+  slotCols.forEach(c => slotById[c.id] = c);
+  const dayBn = {};
+  (typeof WEEK_DAYS !== 'undefined' ? WEEK_DAYS : []).forEach(d => { if(d && d.key) dayBn[d.key] = d.bn || d.key; });
+  const html = [];
+  Object.keys(dist).forEach(slotId => {
+    const col = slotById[slotId];
+    if(!col) return;
+    Object.keys(dist[slotId]).forEach(csKey => {
+      const arr = dist[slotId][csKey];
+      const hasShared = arr.some(x => x.shared);
+      if(!hasShared && arr.length < 2) return;
+      const [cls, sec] = csKey.split('||');
+      const lines = arr.map(x => {
+        const days = (x.days||[]).map(d => dayBn[d]||d).join(', ') || '—';
+        const tag = x.shared ? '<span class="tms-shared-tag">🔀 শেয়ার্ড</span>' : '';
+        return `<div class="tms-shared-line">
+          <span class="tms-shared-days">${_teEsc(days)}</span>
+          <span class="tms-shared-arrow">→</span>
+          <span class="tms-shared-subject">${_teEsc(x.subject||'—')}</span>
+          <span class="tms-shared-teacher">(${_teEsc(x.teacherName)})</span>
+          ${tag}
+        </div>`;
+      }).join('');
+      html.push(`<div class="tms-shared-block">
+        <div class="tms-shared-head">
+          <span class="tms-shared-slot">⏰ ${_teEsc(col.label||slotId)}</span>
+          <span class="tms-shared-cs">🎓 ${_teEsc(cls||'—')} · শাখা ${_teEsc(sec||'—')}</span>
+        </div>
+        <div class="tms-shared-body">${lines}</div>
+      </div>`);
+    });
+  });
+  if(!html.length){
+    host.style.display = 'none';
+    host.innerHTML = '';
+    return;
+  }
+  host.style.display = 'block';
+  host.innerHTML = `
+    <div class="tms-shared-title">🔀 শেয়ার্ড / স্প্লিট স্লট সারাংশ
+      <span class="tms-shared-help">একই slot-এ ভিন্ন দিনে ভিন্ন বিষয়/শিক্ষক</span>
+    </div>
+    ${html.join('')}
+  `;
+}
+
 function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
   if(!teacher || !Array.isArray(teacher.teachingEntries) || !teacher.teachingEntries.length) return null;
   if(!Array.isArray(slotCols) || !slotCols.length) return null;
@@ -8392,7 +8772,6 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
   slotCols.forEach(c => { slotById[c.id] = c; });
 
   // প্রতি এন্ট্রির জন্য কয়টি slot — daysPerWeek > 0 হলে সেটা; নাহলে preferredSlots.length অথবা ১
-  // (এই ফিল্ড গ্রিডে দিন-ভিত্তিক নয়, slot-ভিত্তিক হওয়ায় daysPerWeek = কতগুলো slot ক্লাস)
   entries.forEach(e => {
     const want = e.daysPerWeek > 0 ? e.daysPerWeek
                 : (e.preferredSlots.length > 0 ? e.preferredSlots.length : 1);
@@ -8400,7 +8779,8 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
     const sec = e.section || '';
     const sub = e.subject || '';
     if(!sub && !cls && !sec) return;
-    const conflictKey = (cls || sec) ? (cls + '||' + sec) : null;
+    const isShared = !!e.shared;
+    const eDays = Array.isArray(e.days) ? e.days : [];
 
     // চেষ্টা ১: preferredSlots অগ্রাধিকার
     const tryOrder = [];
@@ -8413,12 +8793,45 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
       if(count >= want) break;
       const taken = slotTaken[col.id];
       const cur = teacher.cells[col.id] || {};
-      // এই শিক্ষকের এই slot ইতিমধ্যে পূরণ — overwrite নয়
-      if(cur.class || cur.subject || cur.section) continue;
-      // অন্য শিক্ষক একই class+section ইতিমধ্যে নিয়েছে — কনফ্লিক্ট, পরের slot
-      if(conflictKey && taken && taken.has(conflictKey)) continue;
-      teacher.cells[col.id] = {class: cls, section: sec, subject: sub};
-      if(conflictKey && taken) taken.add(conflictKey);
+      // এই শিক্ষকের এই slot ইতিমধ্যে পূরণ — non-shared হলে overwrite নয়;
+      // shared হলে cur.days দেখি, দিন overlap থাকলে skip
+      if(cur.class || cur.subject || cur.section){
+        if(!isShared || !Array.isArray(cur.days)) continue;
+        // shared — দিন overlap চেক
+        const overlap = eDays.some(d => cur.days.indexOf(d) >= 0);
+        if(overlap) continue;
+        // overlap নেই → multi-part cell (legacy single + new part)
+        // সরাসরি cells overwrite না করে parts[]-এ যোগ
+        if(!Array.isArray(cur.parts)){
+          // আগে non-shared হলে parts নয়; কিন্তু আমাদের cur ইতিমধ্যে shared (cur.days আছে)
+          // তাই parts তৈরি করি
+          teacher.cells[col.id] = {
+            class: cur.class, section: cur.section, subject: cur.subject,
+            days: cur.days, parts: [
+              {subject: cur.subject, days: cur.days.slice()}
+            ]
+          };
+        }
+        const cell = teacher.cells[col.id];
+        cell.parts.push({subject: sub, days: eDays.slice()});
+        // top-level fields-এ সর্বশেষ part রাখি (legacy reader compat)
+        cell.subject = sub;
+        cell.days = (cell.days||[]).concat(eDays);
+        if(_teCanUseSlot(taken, cls, sec, eDays, true)){
+          _teMarkSlotTaken(taken, cls, sec, eDays, true);
+          count++; placed++;
+        }
+        continue;
+      }
+      // অন্য শিক্ষক একই class+section ইতিমধ্যে নিয়েছে — কনফ্লিক্ট check
+      if(!_teCanUseSlot(taken, cls, sec, eDays, isShared)) continue;
+      // স্থাপন
+      if(isShared){
+        teacher.cells[col.id] = {class: cls, section: sec, subject: sub, days: eDays.slice(), shared: true};
+      } else {
+        teacher.cells[col.id] = {class: cls, section: sec, subject: sub};
+      }
+      _teMarkSlotTaken(taken, cls, sec, eDays, isShared);
       count++; placed++;
     }
 
@@ -11119,7 +11532,10 @@ function _validateAndNormalizeTeacher(raw, idx, report){
         daysPerWeek: (isNaN(dpw) || dpw < 0) ? days.length : Math.min(dpw, 6),
         days: days,
         preferredSlots: slots,
-        notes: String(r.notes || r['নির্দেশনা'] || '').trim()
+        notes: String(r.notes || r['নির্দেশনা'] || '').trim(),
+        // 🔀 Shared/Split slot fields
+        shared: !!(r.shared || r['শেয়ার্ড'] || r['split'] || r['স্প্লিট']),
+        sharedNote: String(r.sharedNote || r['শেয়ার্ড_নোট'] || '').trim()
       };
     }).filter(Boolean);
     // teachingEntries থেকে subjects/classes/sections-এ যোগ (Master Selection-এ দেখাতে)
