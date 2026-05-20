@@ -1646,6 +1646,355 @@ input[type="range"]::-moz-range-thumb{
 }
 
 /* =============================================================
+   📋 MULTIPLE TEACHING ENTRY SYSTEM — Teacher Modal Tab 2
+   সম্পূর্ণ scoped .te-* classes — কোনো বিদ্যমান style override
+   করে না; ভবিষ্যতে AI scheduling-এর জন্য reusable
+============================================================= */
+.te-section{
+  margin-top:18px;padding-top:14px;
+  border-top:2px dashed var(--border);
+}
+.te-section .te-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;gap:8px;flex-wrap:wrap;
+}
+.te-section .te-header h4{
+  margin:0;font-size:13px;font-weight:700;
+  color:var(--text-1);text-transform:uppercase;letter-spacing:.5px;
+  display:flex;align-items:center;gap:6px;
+}
+.te-count-badge{
+  background:var(--primary,#0284c7);color:#fff;
+  padding:2px 9px;border-radius:10px;
+  font-size:11px;font-weight:700;
+  min-width:22px;text-align:center;
+}
+.te-add-btn{
+  background:var(--primary,#0284c7);color:#fff;border:none;
+  padding:6px 12px;border-radius:6px;
+  font-size:12.5px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:5px;
+  transition:.15s;
+}
+.te-add-btn:hover{filter:brightness(1.1)}
+.te-add-btn:disabled{opacity:.5;cursor:not-allowed}
+.te-list{display:flex;flex-direction:column;gap:10px}
+.te-empty{
+  text-align:center;padding:18px 12px;
+  background:var(--surface-2);border:1px dashed var(--border);
+  border-radius:8px;color:var(--text-3);font-size:12.5px;font-style:italic;
+}
+.te-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-left:3px solid var(--primary,#0284c7);
+  border-radius:8px;padding:11px 12px 12px;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.te-card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;gap:8px;
+}
+.te-card-title{
+  font-size:12.5px;font-weight:700;color:var(--text-1);
+  display:flex;align-items:center;gap:7px;
+}
+.te-card-num{
+  background:var(--primary,#0284c7);color:#fff;
+  width:22px;height:22px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+.te-card-remove{
+  background:transparent;border:1px solid var(--danger,#dc2626);
+  color:var(--danger,#dc2626);
+  padding:3px 9px;border-radius:6px;
+  cursor:pointer;font-size:12px;font-weight:600;
+}
+.te-card-remove:hover{background:var(--danger,#dc2626);color:#fff}
+.te-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.te-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+@media(max-width:560px){
+  .te-grid-3{grid-template-columns:1fr}
+  .te-grid-2{grid-template-columns:1fr}
+}
+.te-field label{
+  display:block;font-size:11px;font-weight:600;
+  color:var(--text-2);margin-bottom:4px;
+}
+.te-field select,
+.te-field input,
+.te-field textarea{
+  width:100%;padding:6px 8px;font-size:12.5px;
+  border:1px solid var(--border);border-radius:6px;
+  background:var(--surface);color:var(--text-1);
+  font-family:inherit;
+}
+.te-field textarea{resize:vertical;min-height:42px;line-height:1.5}
+.te-mini-row{margin-bottom:8px}
+.te-mini-row > label{
+  display:block;font-size:11px;font-weight:600;
+  color:var(--text-2);margin-bottom:4px;
+}
+.te-mini-chips{
+  display:flex;flex-wrap:wrap;gap:4px;
+  background:var(--surface-2);padding:6px;
+  border-radius:6px;border:1px solid var(--border);
+  max-height:120px;overflow-y:auto;
+}
+.te-mini-chip{
+  display:inline-flex;align-items:center;
+  padding:4px 10px;border-radius:14px;
+  background:var(--surface);border:1px solid var(--border);
+  font-size:11.5px;cursor:pointer;user-select:none;
+  transition:.12s;font-weight:500;color:var(--text-1);
+}
+.te-mini-chip:hover{border-color:var(--primary,#0284c7)}
+.te-mini-chip.selected{
+  background:var(--primary,#0284c7);color:#fff;border-color:var(--primary,#0284c7);
+  font-weight:600;
+}
+.te-readonly .te-card-remove,
+.te-readonly .te-add-btn{display:none}
+.te-readonly .te-mini-chip,
+.te-readonly .te-field select,
+.te-readonly .te-field input,
+.te-readonly .te-field textarea{pointer-events:none;opacity:.78}
+
+/* ════════════════════════════════════════════════════════════
+   🎯 TEACHING INFORMATION SYSTEM v2
+   Master Selection Area + Live Summary + filtered dropdowns +
+   day-checkbox row + grouped time-slot picker + red indicators
+   সব class scoped (.tms-*, .te-day-*, .te-tslot-*) — কোনো
+   existing style override করে না।
+   ════════════════════════════════════════════════════════════ */
+.tms-master{
+  background:linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:12px 12px 6px;margin-bottom:14px;
+  position:relative;
+}
+.tms-master-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;flex-wrap:wrap;
+  font-size:12.5px;font-weight:700;color:var(--text-1);
+  margin-bottom:10px;letter-spacing:.3px;
+}
+.tms-master-hint{
+  font-size:11px;font-weight:500;color:var(--text-3);font-style:italic;
+}
+/* Red dot indicator — মাস্টার চিপ-এ ইতিমধ্যে এন্ট্রি আছে কিনা */
+.chip-picker .chip.has-entry{
+  position:relative;
+  box-shadow:0 0 0 1.5px #ef4444 inset;
+}
+.chip-picker .chip.has-entry::after{
+  content:'';
+  position:absolute;top:-3px;right:-3px;
+  width:10px;height:10px;border-radius:50%;
+  background:#ef4444;border:2px solid var(--surface);
+  box-shadow:0 0 0 1px #ef4444;
+}
+
+/* Live Summary */
+.tms-summary{
+  margin-bottom:14px;border-radius:10px;
+  background:var(--surface-2);border:1px solid var(--border);
+  padding:10px 12px;
+  display:none;
+}
+.tms-summary.active{display:block}
+.tms-summary-head{
+  font-size:11.5px;font-weight:700;color:var(--text-2);
+  text-transform:uppercase;letter-spacing:.4px;
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+.tms-summary-stats{
+  display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;
+}
+.tms-stat{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:5px 9px;
+  font-size:11.5px;font-weight:600;color:var(--text-1);
+  display:inline-flex;align-items:center;gap:5px;
+}
+.tms-stat strong{color:var(--primary,#0284c7);font-weight:800}
+.tms-summary-chips{display:flex;flex-wrap:wrap;gap:4px}
+.tms-sum-chip{
+  background:#fef3c7;border:1px solid #fde68a;color:#92400e;
+  padding:2px 8px;border-radius:10px;
+  font-size:11px;font-weight:600;
+}
+.tms-sum-chip.k-cls{background:#dbeafe;border-color:#bfdbfe;color:#1e40af}
+.tms-sum-chip.k-sec{background:#dcfce7;border-color:#bbf7d0;color:#166534}
+.tms-sum-chip.k-sub{background:#fef3c7;border-color:#fde68a;color:#92400e}
+
+/* Filtered dropdown — entry-এর select-এ option-এ already-entered indicator */
+.te-field select option.te-used{color:#dc2626;font-weight:700}
+.te-field.te-used-field select{border-color:#fca5a5}
+.te-field.te-used-field::after{
+  content:'';display:inline-block;width:7px;height:7px;
+  background:#ef4444;border-radius:50%;
+  position:relative;top:-12px;left:-8px;float:right;
+}
+.te-field-help{
+  font-size:10.5px;color:#dc2626;margin-top:2px;
+  display:none;font-weight:500;
+}
+.te-field.te-used-field .te-field-help{display:block}
+
+/* Day checkbox row (6 days, default all-checked) */
+.te-day-row{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:5px;
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:6px;
+}
+@media(max-width:560px){.te-day-row{grid-template-columns:repeat(3,1fr)}}
+.te-day-box{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:6px;padding:6px 4px;cursor:pointer;
+  transition:.12s;user-select:none;text-align:center;
+}
+.te-day-box:hover{border-color:var(--primary,#0284c7)}
+.te-day-box .te-day-name{font-size:11px;font-weight:600;color:var(--text-2)}
+.te-day-box.checked{
+  background:var(--primary,#0284c7);border-color:var(--primary,#0284c7);
+}
+.te-day-box.checked .te-day-name{color:#fff;font-weight:700}
+.te-day-box .te-day-tick{
+  font-size:10px;color:transparent;margin-top:1px;
+}
+.te-day-box.checked .te-day-tick{color:#fff}
+.te-day-count{
+  font-size:11.5px;font-weight:600;color:var(--text-2);
+  margin-top:4px;text-align:right;
+}
+.te-day-count strong{color:var(--primary,#0284c7);font-weight:800}
+
+/* Grouped time-slot picker — Morning / Noon / Afternoon / Evening */
+.te-tslot-wrap{
+  display:flex;flex-direction:column;gap:7px;
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:8px;
+}
+.te-tslot-group{
+  display:flex;flex-direction:column;gap:5px;
+  padding:6px 7px;background:var(--surface);
+  border:1px solid var(--border);border-radius:6px;
+  border-left:3px solid var(--primary,#0284c7);
+}
+.te-tslot-group.g-morning{border-left-color:#f59e0b}
+.te-tslot-group.g-noon{border-left-color:#22c55e}
+.te-tslot-group.g-afternoon{border-left-color:#0ea5e9}
+.te-tslot-group.g-evening{border-left-color:#7c3aed}
+.te-tslot-glabel{
+  font-size:11px;font-weight:700;color:var(--text-2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.te-tslot-glabel .te-tslot-count{
+  font-size:10.5px;color:var(--text-3);font-weight:600;
+}
+.te-tslot-chips{display:flex;flex-wrap:wrap;gap:4px}
+.te-tslot-chip{
+  background:var(--surface-2);border:1px solid var(--border);
+  padding:4px 8px;border-radius:14px;cursor:pointer;
+  font-size:11px;font-weight:600;color:var(--text-1);
+  transition:.12s;user-select:none;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.te-tslot-chip:hover{border-color:var(--primary,#0284c7)}
+.te-tslot-chip.selected{
+  background:var(--primary,#0284c7);color:#fff;border-color:var(--primary,#0284c7);
+}
+.te-tslot-chip .te-tslot-tick{font-size:9px;opacity:0}
+.te-tslot-chip.selected .te-tslot-tick{opacity:1}
+.te-tslot-empty{
+  font-size:11px;color:var(--text-3);font-style:italic;padding:4px 2px;
+}
+
+/* Card header tweak — show entry summary inline */
+.te-card.te-flagged{border-left-color:#ef4444}
+.te-card-summary{
+  font-size:11px;color:var(--text-3);font-weight:500;
+  margin-top:2px;line-height:1.4;
+}
+.te-card-summary b{color:var(--text-1);font-weight:700}
+
+/* ════════════════════════════════════════════════════════════
+   🆕 STICKY LIVE SUMMARY + SOFT-COLORED CARDS + NO-SPLIT BLOCKS
+   Additive scoped styles — পুরোনো কিছু override করে না।
+   ════════════════════════════════════════════════════════════ */
+/* Sticky Live Summary — modal-body scroll-এ উপরে stick করে */
+.tms-summary{
+  position:sticky;top:0;z-index:6;
+  backdrop-filter:saturate(140%) blur(6px);
+  -webkit-backdrop-filter:saturate(140%) blur(6px);
+  box-shadow:0 2px 8px -4px rgba(0,0,0,.18);
+}
+.tms-summary.active{
+  background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+}
+
+/* প্রতিটি Teaching Entry-কে স্বতন্ত্র — কিন্তু লেখা সবসময় স্পষ্ট।
+   White card + colored left strip + colored top-corner accent;
+   pastel background বাদ — text-on-white = highest readability. */
+.te-card{
+  break-inside:avoid;page-break-inside:avoid;
+  background:var(--surface,#fff) !important;
+  color:var(--text-1,#0f172a) !important;
+  border-left-width:4px;
+  position:relative;
+}
+/* প্রতিটি কার্ডে ছোট colored tag (উপরে-ডানে) — entry-আলাদা বোঝা যায়, লেখা ব্যাহত হয় না */
+.te-card::before{
+  content:'';position:absolute;top:0;right:0;
+  width:46px;height:4px;border-radius:0 0 0 4px;
+  opacity:.95;
+}
+.te-card .te-card-num{background:var(--card-accent,#0284c7)}
+.te-card .te-card-summary b{color:var(--text-1,#0f172a) !important}
+.te-card label{color:var(--text-2,#334155) !important}
+
+/* ৮টা accent color — শুধু border-left, top-strip ও entry-num bubble-এ;
+   card body সম্পূর্ণ white → text 100% readable */
+.te-card.te-c-0{border-left-color:#0ea5e9;--card-accent:#0ea5e9}
+.te-card.te-c-0::before{background:#0ea5e9}
+.te-card.te-c-1{border-left-color:#a855f7;--card-accent:#a855f7}
+.te-card.te-c-1::before{background:#a855f7}
+.te-card.te-c-2{border-left-color:#16a34a;--card-accent:#16a34a}
+.te-card.te-c-2::before{background:#16a34a}
+.te-card.te-c-3{border-left-color:#d97706;--card-accent:#d97706}
+.te-card.te-c-3::before{background:#d97706}
+.te-card.te-c-4{border-left-color:#dc2626;--card-accent:#dc2626}
+.te-card.te-c-4::before{background:#dc2626}
+.te-card.te-c-5{border-left-color:#0891b2;--card-accent:#0891b2}
+.te-card.te-c-5::before{background:#0891b2}
+.te-card.te-c-6{border-left-color:#7c3aed;--card-accent:#7c3aed}
+.te-card.te-c-6::before{background:#7c3aed}
+.te-card.te-c-7{border-left-color:#ea580c;--card-accent:#ea580c}
+.te-card.te-c-7::before{background:#ea580c}
+/* duplicate-flag — left border red (অন্য accent override) */
+.te-card.te-flagged.te-c-0,
+.te-card.te-flagged.te-c-1,
+.te-card.te-flagged.te-c-2,
+.te-card.te-flagged.te-c-3,
+.te-card.te-flagged.te-c-4,
+.te-card.te-flagged.te-c-5,
+.te-card.te-flagged.te-c-6,
+.te-card.te-flagged.te-c-7{border-left-color:#ef4444}
+/* inner panels — back to original light surface (card is white now) */
+.te-card .te-day-row,
+.te-card .te-tslot-wrap{background:var(--surface-2)}
+.te-card .te-tslot-group{background:var(--surface)}
+.te-card .te-field select,
+.te-card .te-field input,
+.te-card .te-field textarea{background:var(--surface);color:var(--text-1)}
+/* Print — keep each card together */
+@media print{
+  .te-card{break-inside:avoid;page-break-inside:avoid}
+}
+
+/* =============================================================
    AI ROUTINE GENERATOR
 ============================================================= */
 .ai-steps{
@@ -3955,7 +4304,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <div class="tch-tabs">
         <button class="tch-tab active" data-tab="basic" onclick="switchTeacherTab('basic')">📝 মৌলিক তথ্য</button>
         <button class="tch-tab" data-tab="teaching" onclick="switchTeacherTab('teaching')">📚 পাঠদান</button>
-        <button class="tch-tab" data-tab="time" onclick="switchTeacherTab('time')">⏰ সময়সূচি</button>
+        <button class="tch-tab" data-tab="time" onclick="switchTeacherTab('time')" style="display:none">⏰ সময়সূচি</button>
         <button class="tch-tab" data-tab="weekly" onclick="switchTeacherTab('weekly')">📅 সাপ্তাহিক</button>
       </div>
 
@@ -4002,30 +4351,50 @@ body[data-role="manager"] .teacher-only{display:none !important}
         </div>
       </div>
 
-      <!-- TAB 2: TEACHING -->
+      <!-- TAB 2: TEACHING (Teaching Information System — Master + Live Summary + Entries) -->
       <div class="tch-pane" data-pane="teaching">
-        <div class="info-banner">
-          📚 কোন কোন <strong>বিষয়</strong>, <strong>শ্রেণি</strong> ও <strong>শাখায়</strong> এই শিক্ষক ক্লাস নেবেন তা নির্বাচন করুন। একাধিক select করতে পারবেন। AI এই তথ্য থেকে রুটিন বানাবে।
+
+        <!-- ════ 🎯 TEACHER MASTER SELECTION AREA ════ -->
+        <div class="tms-master" id="teachingMasterArea">
+          <div class="tms-master-head">
+            <span>🎯 মাস্টার নির্বাচন</span>
+            <span class="tms-master-hint">এন্ট্রি শুরুর আগে এগুলো নির্বাচন করুন — এখান থেকেই dropdown ভরবে</span>
+          </div>
+          <div class="field" style="margin-bottom:10px">
+            <label>📖 যে বিষয়গুলো পড়ান (একাধিক)</label>
+            <div class="chip-picker" id="subjectsPicker"></div>
+          </div>
+          <div class="field" style="margin-bottom:10px">
+            <label>🎓 যে শ্রেণিগুলোতে পড়ান (একাধিক)</label>
+            <div class="chip-picker" id="classesPicker"></div>
+          </div>
+          <div class="field" style="margin-bottom:4px">
+            <label>📑 যে শাখাগুলোতে পড়ান (একাধিক)</label>
+            <div class="chip-picker" id="sectionsPicker"></div>
+          </div>
         </div>
 
-        <div class="field">
-          <label>📖 যে বিষয়গুলো পড়ান (একাধিক)</label>
-          <div class="chip-picker" id="subjectsPicker"></div>
-        </div>
+        <!-- ════ 📊 LIVE SUMMARY ════ -->
+        <div class="tms-summary" id="teachingLiveSummary"></div>
 
-        <div class="field">
-          <label>🎓 যে শ্রেণিগুলোতে পড়ান (একাধিক)</label>
-          <div class="chip-picker" id="classesPicker"></div>
-        </div>
-
-        <div class="field">
-          <label>📑 যে শাখাগুলোতে পড়ান (একাধিক)</label>
-          <div class="chip-picker" id="sectionsPicker"></div>
+        <!-- ════ 📋 MULTIPLE TEACHING ENTRY SYSTEM ════
+             প্রতিটি শিক্ষকের জন্য একাধিক class+section+subject এন্ট্রি;
+             dropdown শুধু মাস্টার-নির্বাচিত আইটেম দেখায়।
+             স্বয়ংক্রিয় রুটিন এই এন্ট্রিগুলোকে অগ্রাধিকার দেয়। -->
+        <div class="te-section" id="teachingEntriesSection">
+          <div class="te-header">
+            <h4>📋 পাঠদান এন্ট্রি <span class="te-count-badge" id="teEntriesCount">০</span></h4>
+            <button type="button" class="te-add-btn" id="teAddBtn" onclick="addTeachingEntry()">➕ নতুন এন্ট্রি</button>
+          </div>
+          <div class="info-banner" style="font-size:12px;margin-bottom:10px">
+            💡 প্রতিটি এন্ট্রিতে <strong>বিষয় / শ্রেণি / শাখা</strong>, <strong>কোন দিনে</strong> ও <strong>কোন সময়ে</strong> ক্লাস হবে তা নির্দিষ্ট করুন। ডিফল্টে ৬ দিন নির্বাচিত — প্রয়োজন হলে টিক তুলে দিন।
+          </div>
+          <div class="te-list" id="teachingEntriesList"></div>
         </div>
       </div>
 
-      <!-- TAB 3: TIME PREFERENCES -->
-      <div class="tch-pane" data-pane="time">
+      <!-- TAB 3: TIME PREFERENCES (hidden — superseded by per-entry time slots in Teaching tab) -->
+      <div class="tch-pane" data-pane="time" style="display:none">
         <div class="info-banner">
           ⏰ একজন শিক্ষক <strong>সপ্তাহে কতগুলো ক্লাস</strong> নেবেন এবং <strong>কোন সময়ে</strong> কয়টি ক্লাস নিতে স্বাচ্ছন্দ্যবোধ করেন তা নির্দিষ্ট করুন।
         </div>
@@ -7528,6 +7897,9 @@ function editTeacher(tid){
   renderChipPicker('classesPicker', (state.options && state.options.class) || [], t.classes || []);
   renderChipPicker('sectionsPicker', (state.options && state.options.section) || [], t.sections || []);
 
+  // 📋 Multiple Teaching Entries — পাঠদান ট্যাবের নতুন সেকশন
+  try{ renderTeachingEntries(t); }catch(_){}
+
   // Time preferences
   document.getElementById('tEditWeeklyTotal').value = t.weeklyTotal || '';
   const sg = t.slotGroupLimits || {};
@@ -7589,6 +7961,579 @@ function switchTeacherTab(tabName){
   });
 }
 
+/* ===========================================================
+   📋 MULTIPLE TEACHING ENTRY SYSTEM
+   ----------------------------------------------------------
+   Reusable, scoped to Teacher Modal → পাঠদান tab.
+   Data shape (additive — পুরোনো ফিল্ড অপরিবর্তিত):
+     t.teachingEntries = [{
+        id, class, section, subject,
+        daysPerWeek, days:['Sat',...], preferredSlots:['c1',...],
+        notes
+     }, ...]
+   Helpers prefixed `_te*` for namespace safety.
+   ভবিষ্যতে AI scheduling-এর জন্য একই data shape ব্যবহার করা যাবে।
+   =========================================================== */
+
+/* Friday বাদ — ৬ দিন: শনি/রবি/সোম/মঙ্গল/বুধ/বৃহস্পতি */
+function _teActiveDays(){
+  return (typeof WEEK_DAYS !== 'undefined' ? WEEK_DAYS : [])
+    .filter(d => d && d.key !== 'Fri');
+}
+/* slot কলামসমূহ — শুধু type='slot', বিরতি কলাম বাদ */
+function _teSlotCols(){
+  return ((state && state.columns) || []).filter(c => c && c.type === 'slot');
+}
+function _teNewEntry(){
+  return {
+    id: 'te_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    class: '', section: '', subject: '',
+    daysPerWeek: 6,
+    // ডিফল্ট ৬ দিন pre-selected — শুক্রবার বাদে (Sat-Thu)
+    days: ['Sat','Sun','Mon','Tue','Wed','Thu'],
+    preferredSlots: [],
+    notes: ''
+  };
+}
+function _teSanitizeEntry(raw){
+  const e = _teNewEntry();
+  if(!raw || typeof raw !== 'object') return e;
+  if(raw.id && typeof raw.id === 'string') e.id = raw.id;
+  e.class   = String(raw.class   || raw['শ্রেণি'] || '').trim();
+  e.section = String(raw.section || raw['শাখা']  || '').trim();
+  e.subject = String(raw.subject || raw['বিষয়']  || '').trim();
+  const dpw = parseInt(raw.daysPerWeek, 10);
+  e.daysPerWeek = (isNaN(dpw) || dpw < 0) ? 0 : Math.min(dpw, 6);
+  const validDayKeys = new Set(_teActiveDays().map(d => d.key));
+  e.days = Array.isArray(raw.days)
+    ? raw.days.map(d => String(d).trim()).filter(d => validDayKeys.has(d))
+    : [];
+  const validSlotIds = new Set(_teSlotCols().map(c => c.id));
+  e.preferredSlots = Array.isArray(raw.preferredSlots)
+    ? raw.preferredSlots.map(s => String(s).trim()).filter(s => validSlotIds.has(s))
+    : [];
+  e.notes = String(raw.notes || '').trim();
+  return e;
+}
+function _teOptions(kind){
+  const opt = (state && state.options) || {};
+  return Array.isArray(opt[kind]) ? opt[kind].filter(Boolean) : [];
+}
+function _teBnNum(n){
+  try{ if(typeof toBnNum === 'function') return toBnNum(n); }catch(_){}
+  return String(n);
+}
+function _teEsc(s){
+  try{ if(typeof esc === 'function') return esc(s); }catch(_){}
+  return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+/* এডিট মোডালে ডেটা থেকে এন্ট্রি UI রেন্ডার */
+function renderTeachingEntries(teacher){
+  const host = document.getElementById('teachingEntriesList');
+  if(!host) return;
+  const section = document.getElementById('teachingEntriesSection');
+  const readonly = (typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'teacher');
+  if(section){ section.classList.toggle('te-readonly', readonly); }
+
+  if(!teacher.teachingEntries || !Array.isArray(teacher.teachingEntries)){
+    teacher.teachingEntries = [];
+  }
+  const entries = teacher.teachingEntries;
+  _teRefreshCount(entries.length);
+
+  if(!entries.length){
+    host.innerHTML = '<div class="te-empty">এখনো কোনো এন্ট্রি যোগ করা হয়নি। উপরে <strong>➕ নতুন এন্ট্রি</strong> বাটনে ক্লিক করুন।</div>';
+  } else {
+    // মাস্টার নির্বাচন + usage map — সব কার্ডে একই ctx পাঠাই
+    const ctx = {
+      masterSub: _teMasterValues('subject'),
+      masterCls: _teMasterValues('class'),
+      masterSec: _teMasterValues('section'),
+      usage: _teUsageMaps(entries)
+    };
+    host.innerHTML = entries.map((e, idx) => _teCardHTML(_teSanitizeEntry(e), idx, ctx)).join('');
+  }
+
+  // মাস্টার চিপ-এ red-tick ও Live Summary রিফ্রেশ
+  try{ _teRefreshMasterIndicators(teacher); }catch(_){}
+  try{ renderTeachingLiveSummary(teacher); }catch(_){}
+}
+
+function _teRefreshCount(n){
+  const badge = document.getElementById('teEntriesCount');
+  if(badge) badge.textContent = _teBnNum(n);
+}
+
+/* ───────────── Helpers for v2 layout ───────────── */
+
+/* মাস্টার চিপ-পিকার থেকে বর্তমান নির্বাচিত মান (DOM থেকে — তাজা) */
+function _teMasterValues(kind){
+  const id = kind === 'class' ? 'classesPicker'
+           : kind === 'section' ? 'sectionsPicker'
+           : 'subjectsPicker';
+  const el = document.getElementById(id);
+  if(!el) return [];
+  const arr = Array.from(el.querySelectorAll('.chip.selected')).map(c => c.dataset.val);
+  return arr.filter(Boolean);
+}
+
+/* এন্ট্রিগুলোর ব্যবহার-ম্যাপ — কোন subject/class/section কয়বার ব্যবহৃত */
+function _teUsageMaps(entries){
+  const sub = new Map(), cls = new Map(), sec = new Map();
+  (entries||[]).forEach(e => {
+    if(!e) return;
+    if(e.subject) sub.set(e.subject, (sub.get(e.subject)||0)+1);
+    if(e.class)   cls.set(e.class,   (cls.get(e.class)||0)+1);
+    if(e.section) sec.set(e.section, (sec.get(e.section)||0)+1);
+  });
+  return {sub, cls, sec};
+}
+
+/* Slot কলামগুলোকে ৪ গ্রুপে ভাগ — বিরতি-অবস্থান ভিত্তিক:
+   • ১ম বিরতির আগের সব স্লট → 🌅 সকাল
+   • ১ম বিরতির পরের স্লটগুলো → ☀️ দুপুর
+   • ২য় বিরতির পরের স্লটগুলো → 🌤️ বিকেল
+   • ৩য় বিরতির পরের স্লটগুলো → 🌆 সন্ধ্যা
+   বিরতি কম থাকলে শেষ অংশ-গ্রুপগুলো খালি থাকে; কোনো বিরতি না থাকলে
+   সব স্লট সকাল-এ যায়। (যদি কোনো legacy কারণে slotCols-ই পাঠানো হয়,
+   index-ভিত্তিক fallback হিসেবে আগের 25/50/75% logic ব্যবহৃত হবে।) */
+function _teSlotsByGroup(slotCols){
+  const groups = {
+    morning:    {key:'morning',    label:'🌅 সকাল',   cols:[]},
+    lateMorning:{key:'lateMorning',label:'☀️ দুপুর',   cols:[]},
+    afternoon:  {key:'afternoon',  label:'🌤️ বিকেল',  cols:[]},
+    evening:    {key:'evening',    label:'🌆 সন্ধ্যা', cols:[]}
+  };
+  const slotSet = new Set((slotCols||[]).map(c => c && c.id).filter(Boolean));
+  const fullCols = (state && Array.isArray(state.columns)) ? state.columns : [];
+
+  // যদি state.columns অনুপস্থিত বা slotCols-এ যেসব slot আছে সেগুলো full-list-এ না থাকে,
+  // তাহলে fallback index-ভিত্তিক ভাগে যাই (legacy safe)
+  const matched = fullCols.filter(c => c && c.type === 'slot' && slotSet.has(c.id));
+  if(!fullCols.length || matched.length === 0){
+    const total = (slotCols||[]).length;
+    (slotCols||[]).forEach((c, i) => {
+      const r = total > 0 ? (i/total) : 0;
+      const gk = r < 0.25 ? 'morning' : r < 0.50 ? 'lateMorning' : r < 0.75 ? 'afternoon' : 'evening';
+      groups[gk].cols.push(c);
+    });
+    return groups;
+  }
+
+  // break-ভিত্তিক logic — state.columns ক্রমে হাঁটি, বিরতি দেখলে groupKey পরিবর্তন
+  const order = ['morning','lateMorning','afternoon','evening'];
+  let breakCount = 0;
+  fullCols.forEach(c => {
+    if(!c) return;
+    if(c.type === 'break'){
+      breakCount++;
+      return;
+    }
+    if(c.type !== 'slot') return;
+    if(!slotSet.has(c.id)) return; // শুধুই দৃশ্যমান/পাঠানো slot
+    const gk = order[Math.min(breakCount, order.length - 1)];
+    groups[gk].cols.push(c);
+  });
+  return groups;
+}
+
+/* মাস্টার চিপ-পিকারে red-tick — কোন chip-এর জন্য এন্ট্রি আছে */
+function _teRefreshMasterIndicators(teacher){
+  if(!teacher || !Array.isArray(teacher.teachingEntries)) return;
+  const u = _teUsageMaps(teacher.teachingEntries);
+  const apply = (pickerId, usageMap) => {
+    const el = document.getElementById(pickerId);
+    if(!el) return;
+    el.querySelectorAll('.chip').forEach(chip => {
+      const v = chip.dataset.val;
+      const used = v && usageMap.has(v);
+      chip.classList.toggle('has-entry', !!used);
+      if(used){
+        chip.setAttribute('title', _teBnNum(usageMap.get(v)) + ' টি এন্ট্রিতে ব্যবহৃত');
+      } else {
+        chip.removeAttribute('title');
+      }
+    });
+  };
+  apply('subjectsPicker', u.sub);
+  apply('classesPicker',  u.cls);
+  apply('sectionsPicker', u.sec);
+}
+
+/* Live Summary box — উপরে */
+function renderTeachingLiveSummary(teacher){
+  const host = document.getElementById('teachingLiveSummary');
+  if(!host) return;
+  const entries = (teacher && Array.isArray(teacher.teachingEntries)) ? teacher.teachingEntries : [];
+  if(!entries.length){
+    host.className = 'tms-summary';
+    host.innerHTML = '';
+    return;
+  }
+  const u = _teUsageMaps(entries);
+  // মোট পিরিয়ড গণনা — প্রতিটি এন্ট্রির preferredSlots বা days ভিত্তিক
+  let totalPeriods = 0;
+  entries.forEach(e => {
+    const s = (e && Array.isArray(e.preferredSlots)) ? e.preferredSlots.length : 0;
+    const d = (e && Array.isArray(e.days)) ? e.days.length : 0;
+    totalPeriods += s > 0 ? s : (d > 0 ? d : 1);
+  });
+  const mkChips = (m, kls) => Array.from(m.entries()).map(([k,v]) =>
+    `<span class="tms-sum-chip ${kls}">${_teEsc(k)} ×${_teBnNum(v)}</span>`).join('');
+  host.className = 'tms-summary active';
+  host.innerHTML = `
+    <div class="tms-summary-head">📊 লাইভ সারাংশ</div>
+    <div class="tms-summary-stats">
+      <span class="tms-stat">এন্ট্রি: <strong>${_teBnNum(entries.length)}</strong></span>
+      <span class="tms-stat">বিষয়: <strong>${_teBnNum(u.sub.size)}</strong></span>
+      <span class="tms-stat">শ্রেণি: <strong>${_teBnNum(u.cls.size)}</strong></span>
+      <span class="tms-stat">শাখা: <strong>${_teBnNum(u.sec.size)}</strong></span>
+      <span class="tms-stat">আনুমানিক পিরিয়ড: <strong>${_teBnNum(totalPeriods)}</strong></span>
+    </div>
+    <div class="tms-summary-chips">
+      ${mkChips(u.sub,'k-sub')}${mkChips(u.cls,'k-cls')}${mkChips(u.sec,'k-sec')}
+    </div>
+  `;
+}
+
+/* একটি এন্ট্রি কার্ডের HTML — v2 লেআউট */
+function _teCardHTML(e, idx, ctx){
+  ctx = ctx || {};
+  // dropdown শুধুমাত্র মাস্টার-নির্বাচিত মান থেকে ভরে — fallback: যদি কিছুই select না করা হয়,
+  // তখন options থেকে সব দেখাও (যাতে dead-end না হয়)
+  const masterSub = (ctx.masterSub && ctx.masterSub.length) ? ctx.masterSub : _teOptions('subject');
+  const masterCls = (ctx.masterCls && ctx.masterCls.length) ? ctx.masterCls : _teOptions('class');
+  const masterSec = (ctx.masterSec && ctx.masterSec.length) ? ctx.masterSec : _teOptions('section');
+  // বর্তমান মান masterList-এ না থাকলেও যোগ করি (যাতে edit-এ আগের data হারিয়ে না যায়)
+  const ensure = (arr, v) => (v && !arr.includes(v)) ? arr.concat([v]) : arr;
+  const subjArr = ensure(masterSub.slice(), e.subject);
+  const clsArr  = ensure(masterCls.slice(), e.class);
+  const secArr  = ensure(masterSec.slice(), e.section);
+
+  const usage = ctx.usage || _teUsageMaps([]);
+  const isUsedSub = e.subject && (usage.sub.get(e.subject)||0) > 1;
+  const isUsedCls = e.class   && (usage.cls.get(e.class)||0)   > 1;
+  const isUsedSec = e.section && (usage.sec.get(e.section)||0) > 1;
+
+  const days  = _teActiveDays();
+  const slotCols = _teSlotCols();
+  const groups = _teSlotsByGroup(slotCols);
+  const selDays  = new Set(e.days || []);
+  const selSlots = new Set(e.preferredSlots || []);
+
+  // dropdown option — কোন value-গুলো ইতিমধ্যে অন্য এন্ট্রি দ্বারা ব্যবহৃত (অন্য places-এ duplicate)
+  const optHTML = (arr, current, usageMap) => '<option value="">— নির্বাচন —</option>' +
+    arr.map(v => {
+      const isUsed = usageMap && usageMap.has(v) && current !== v;
+      return `<option value="${_teEsc(v)}" ${current===v?'selected':''} class="${isUsed?'te-used':''}">${_teEsc(v)}${isUsed?' • ব্যবহৃত':''}</option>`;
+    }).join('');
+
+  // Day checkbox row
+  const daysHTML = days.map(d => {
+    const on = selDays.has(d.key);
+    return `<div class="te-day-box ${on?'checked':''}" data-te-day="${d.key}" onclick="_teToggleDay(${idx}, '${d.key}', this)">
+      <span class="te-day-name">${_teEsc(d.bn)}</span>
+      <span class="te-day-tick">✓</span>
+    </div>`;
+  }).join('');
+
+  // Time-slot grouped picker
+  const groupHTML = ['morning','lateMorning','afternoon','evening'].map(gk => {
+    const g = groups[gk];
+    if(!g) return '';
+    if(!g.cols.length){
+      return `<div class="te-tslot-group g-${gk}">
+        <div class="te-tslot-glabel"><span>${g.label}</span></div>
+        <div class="te-tslot-empty">— এই সময়ে কোনো পিরিয়ড নেই —</div>
+      </div>`;
+    }
+    const selInGroup = g.cols.filter(c => selSlots.has(c.id)).length;
+    const chips = g.cols.map(c => {
+      const sel = selSlots.has(c.id);
+      return `<span class="te-tslot-chip ${sel?'selected':''}" data-te-slot="${c.id}" onclick="_teToggleSlot(${idx}, '${c.id}', this)" title="${_teEsc(c.label||'')}">
+        <span class="te-tslot-tick">✓</span>${_teEsc(c.label || c.id)}
+      </span>`;
+    }).join('');
+    return `<div class="te-tslot-group g-${gk}">
+      <div class="te-tslot-glabel">
+        <span>${g.label}</span>
+        <span class="te-tslot-count" data-te-tslot-count="${gk}">নির্বাচিত ${_teBnNum(selInGroup)} / ${_teBnNum(g.cols.length)}</span>
+      </div>
+      <div class="te-tslot-chips">${chips}</div>
+    </div>`;
+  }).join('');
+
+  const flagged = isUsedSub || isUsedCls || isUsedSec;
+  const colorClass = 'te-c-' + (idx % 8);  // ৮টা soft color cycle
+  const cardSummary = (e.subject || e.class || e.section)
+    ? `<div class="te-card-summary"><b>${_teEsc(e.subject||'—')}</b> · ${_teEsc(e.class||'—')} · শাখা ${_teEsc(e.section||'—')} · দিন ${_teBnNum(selDays.size)} · slot ${_teBnNum(selSlots.size)}</div>`
+    : '';
+
+  return `
+  <div class="te-card ${colorClass} ${flagged?'te-flagged':''}" data-te-idx="${idx}">
+    <div class="te-card-head">
+      <div>
+        <div class="te-card-title"><span class="te-card-num">${_teBnNum(idx+1)}</span> এন্ট্রি</div>
+        ${cardSummary}
+      </div>
+      <button type="button" class="te-card-remove" onclick="removeTeachingEntry(${idx})" title="এই এন্ট্রি মুছুন">🗑 মুছুন</button>
+    </div>
+    <div class="te-grid-3">
+      <div class="te-field ${isUsedSub?'te-used-field':''}">
+        <label>📖 বিষয়</label>
+        <select data-te-field="subject" onchange="_teUpdateField(${idx},'subject',this.value)">${optHTML(subjArr, e.subject, usage.sub)}</select>
+        <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
+      </div>
+      <div class="te-field ${isUsedCls?'te-used-field':''}">
+        <label>🎓 শ্রেণি</label>
+        <select data-te-field="class" onchange="_teUpdateField(${idx},'class',this.value)">${optHTML(clsArr, e.class, usage.cls)}</select>
+        <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
+      </div>
+      <div class="te-field ${isUsedSec?'te-used-field':''}">
+        <label>📑 শাখা</label>
+        <select data-te-field="section" onchange="_teUpdateField(${idx},'section',this.value)">${optHTML(secArr, e.section, usage.sec)}</select>
+        <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
+      </div>
+    </div>
+    <div class="te-mini-row">
+      <label>📅 সপ্তাহে কোন বার ক্লাস (ডিফল্ট ৬ দিন — টিক তুলে বাদ দিন)</label>
+      <div class="te-day-row" data-te-days>${daysHTML}</div>
+      <div class="te-day-count">নির্বাচিত: <strong id="teSelDays_${idx}">${_teBnNum(selDays.size)}</strong> দিন</div>
+    </div>
+    <div class="te-mini-row">
+      <label>⏰ পছন্দের সময় (চেক করুন — Morning / Noon / Afternoon / Evening)</label>
+      <div class="te-tslot-wrap" data-te-slots>${groupHTML}</div>
+      <div class="te-day-count">পছন্দের slot: <strong id="teSelSlots_${idx}">${_teBnNum(selSlots.size)}</strong></div>
+    </div>
+    <div class="te-field">
+      <label>📝 অতিরিক্ত নির্দেশনা (বাংলায় — রুটিন/AI বিবেচনা করবে)</label>
+      <textarea rows="2" placeholder="যেমন: এই ক্লাসটি দুপুরের আগে রাখুন, ১:০০-এর পর নয়, ইত্যাদি..." data-te-field="notes" oninput="_teUpdateField(${idx},'notes',this.value)">${_teEsc(e.notes||'')}</textarea>
+    </div>
+  </div>`;
+}
+
+/* এন্ট্রি যোগ — modal-এ বর্তমান শিক্ষকের teachingEntries-এ */
+function addTeachingEntry(){
+  if(typeof blockIfViewOnly === 'function' && blockIfViewOnly('পাঠদান এন্ট্রি যোগ')) return;
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t){ try{ showToast('শিক্ষক পাওয়া যায়নি','error'); }catch(_){} return; }
+  if(typeof canEditTeacher === 'function' && !canEditTeacher(tid)){
+    try{ showToast('অনুমতি নেই','error'); }catch(_){} return;
+  }
+  if(!Array.isArray(t.teachingEntries)) t.teachingEntries = [];
+  // আগের এন্ট্রিগুলোর বর্তমান UI স্টেট ডেটায় বসিয়ে নিই — যাতে rerender-এ হারিয়ে না যায়
+  _teSyncFromDOM(t);
+  t.teachingEntries.push(_teNewEntry());
+  renderTeachingEntries(t);
+}
+
+/* এন্ট্রি মুছুন */
+function removeTeachingEntry(idx){
+  if(typeof blockIfViewOnly === 'function' && blockIfViewOnly('এন্ট্রি মুছুন')) return;
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t || !Array.isArray(t.teachingEntries)) return;
+  if(idx < 0 || idx >= t.teachingEntries.length) return;
+  _teSyncFromDOM(t);
+  if(!confirm('এই এন্ট্রি মুছে ফেলবেন?')) return;
+  t.teachingEntries.splice(idx, 1);
+  renderTeachingEntries(t);
+}
+
+/* field-এর মান বদলালে in-memory ডেটা আপডেট + live refresh */
+function _teUpdateField(idx, field, value){
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t || !Array.isArray(t.teachingEntries)) return;
+  const e = t.teachingEntries[idx];
+  if(!e) return;
+  if(field === 'daysPerWeek'){
+    const n = parseInt(value, 10);
+    e.daysPerWeek = (isNaN(n) || n < 0) ? 0 : Math.min(n, 6);
+  } else {
+    e[field] = String(value || '').trim();
+  }
+  // dropdown change → full re-render (red-tick / duplicate-flag আপডেটের জন্য)
+  // textarea notes → শুধু summary refresh
+  if(field === 'subject' || field === 'class' || field === 'section'){
+    renderTeachingEntries(t);
+  } else {
+    try{ renderTeachingLiveSummary(t); }catch(_){}
+  }
+}
+
+/* দিন চিপ toggle */
+function _teToggleDay(idx, dayKey, chipEl){
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t || !Array.isArray(t.teachingEntries)) return;
+  const e = t.teachingEntries[idx];
+  if(!e) return;
+  if(!Array.isArray(e.days)) e.days = [];
+  const i = e.days.indexOf(dayKey);
+  if(i >= 0){ e.days.splice(i,1); chipEl && chipEl.classList.remove('checked','selected'); }
+  else { e.days.push(dayKey); chipEl && chipEl.classList.add('checked'); }
+  e.daysPerWeek = e.days.length; // sync derived count
+  const cnt = document.getElementById('teSelDays_'+idx);
+  if(cnt) cnt.textContent = _teBnNum(e.days.length);
+  try{ renderTeachingLiveSummary(t); }catch(_){}
+}
+
+/* slot চিপ toggle */
+function _teToggleSlot(idx, slotId, chipEl){
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t || !Array.isArray(t.teachingEntries)) return;
+  const e = t.teachingEntries[idx];
+  if(!e) return;
+  if(!Array.isArray(e.preferredSlots)) e.preferredSlots = [];
+  const i = e.preferredSlots.indexOf(slotId);
+  if(i >= 0){ e.preferredSlots.splice(i,1); chipEl && chipEl.classList.remove('selected'); }
+  else { e.preferredSlots.push(slotId); chipEl && chipEl.classList.add('selected'); }
+  const cnt = document.getElementById('teSelSlots_'+idx);
+  if(cnt) cnt.textContent = _teBnNum(e.preferredSlots.length);
+  // group count update — তাজা গণনা করি
+  try{
+    const slotCols = _teSlotCols();
+    const groups = _teSlotsByGroup(slotCols);
+    const selSet = new Set(e.preferredSlots);
+    ['morning','lateMorning','afternoon','evening'].forEach(gk => {
+      const g = groups[gk];
+      if(!g) return;
+      const cnt = g.cols.filter(c => selSet.has(c.id)).length;
+      const lbl = document.querySelector('.te-card[data-te-idx="'+idx+'"] [data-te-tslot-count="'+gk+'"]');
+      if(lbl) lbl.textContent = 'নির্বাচিত ' + _teBnNum(cnt) + ' / ' + _teBnNum(g.cols.length);
+    });
+  }catch(_){}
+  try{ renderTeachingLiveSummary(t); }catch(_){}
+}
+
+/* DOM থেকে এন্ট্রিগুলোর বর্তমান মান data-এ ফেরত নিই (saveTeacher আগে) */
+function _teSyncFromDOM(teacher){
+  if(!teacher || !Array.isArray(teacher.teachingEntries)) return;
+  const cards = document.querySelectorAll('#teachingEntriesList .te-card');
+  cards.forEach(card => {
+    const idx = parseInt(card.dataset.teIdx, 10);
+    const e = teacher.teachingEntries[idx];
+    if(!e) return;
+    card.querySelectorAll('[data-te-field]').forEach(el => {
+      const f = el.dataset.teField;
+      let v = el.value;
+      if(f === 'daysPerWeek'){
+        const n = parseInt(v, 10);
+        e.daysPerWeek = (isNaN(n) || n < 0) ? 0 : Math.min(n, 6);
+      } else {
+        e[f] = String(v || '').trim();
+      }
+    });
+    // Day boxes (new) — checked class
+    const daySel = card.querySelectorAll('[data-te-day]');
+    const dayKeys = [];
+    daySel.forEach(el => {
+      if(el.classList.contains('checked') || el.classList.contains('selected')){
+        dayKeys.push(el.dataset.teDay);
+      }
+    });
+    e.days = dayKeys;
+    e.daysPerWeek = dayKeys.length;
+    // Slot chips
+    const slotSel = card.querySelectorAll('[data-te-slot].selected');
+    e.preferredSlots = Array.from(slotSel).map(el => el.dataset.teSlot);
+  });
+}
+
+/* saveTeacher() থেকে কল হবে — DOM → state, এবং options-এ নতুন মান যোগ */
+function saveTeachingEntries(teacher){
+  if(!teacher) return;
+  _teSyncFromDOM(teacher);
+  if(!Array.isArray(teacher.teachingEntries)) return;
+  // খালি এন্ট্রি (যেখানে class/section/subject কিছুই নেই) ফিল্টার আউট
+  teacher.teachingEntries = teacher.teachingEntries
+    .map(e => _teSanitizeEntry(e))
+    .filter(e => e.class || e.section || e.subject || e.notes || e.days.length || e.preferredSlots.length);
+
+  // options-এ নতুন মান যুক্ত (যাতে dropdown-এ দেখায়)
+  if(state && state.options){
+    const addOpt = (kind, v) => {
+      if(!v) return;
+      if(!Array.isArray(state.options[kind])) state.options[kind] = [];
+      if(!state.options[kind].includes(v)) state.options[kind].push(v);
+    };
+    teacher.teachingEntries.forEach(e => {
+      addOpt('class',   e.class);
+      addOpt('section', e.section);
+      addOpt('subject', e.subject);
+    });
+  }
+}
+
+/* ===========================================================
+   🔗 AUTO-ROUTINE INTEGRATION
+   teachingEntries থেকে conflict-aware slot assignment তৈরি।
+   autoGenerateRoutine() এই ফাংশনটি প্রতি শিক্ষকের জন্য আগে কল করে;
+   true ফেরালে সেই শিক্ষকের জন্য fallback logic skip হবে।
+   =========================================================== */
+function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
+  if(!teacher || !Array.isArray(teacher.teachingEntries) || !teacher.teachingEntries.length) return null;
+  if(!Array.isArray(slotCols) || !slotCols.length) return null;
+  const entries = teacher.teachingEntries
+    .map(e => _teSanitizeEntry(e))
+    .filter(e => (e.class || e.subject || e.section));
+  if(!entries.length) return null;
+
+  if(!teacher.cells || typeof teacher.cells !== 'object') teacher.cells = {};
+  // এই শিক্ষকের slot সেলগুলো রিসেট (existing autoGenerateRoutine আচরণ অনুযায়ী)
+  slotCols.forEach(c => { teacher.cells[c.id] = {}; });
+
+  let placed = 0;
+  const slotById = {};
+  slotCols.forEach(c => { slotById[c.id] = c; });
+
+  // প্রতি এন্ট্রির জন্য কয়টি slot — daysPerWeek > 0 হলে সেটা; নাহলে preferredSlots.length অথবা ১
+  // (এই ফিল্ড গ্রিডে দিন-ভিত্তিক নয়, slot-ভিত্তিক হওয়ায় daysPerWeek = কতগুলো slot ক্লাস)
+  entries.forEach(e => {
+    const want = e.daysPerWeek > 0 ? e.daysPerWeek
+                : (e.preferredSlots.length > 0 ? e.preferredSlots.length : 1);
+    const cls = e.class || '';
+    const sec = e.section || '';
+    const sub = e.subject || '';
+    if(!sub && !cls && !sec) return;
+    const conflictKey = (cls || sec) ? (cls + '||' + sec) : null;
+
+    // চেষ্টা ১: preferredSlots অগ্রাধিকার
+    const tryOrder = [];
+    e.preferredSlots.forEach(sid => { if(slotById[sid]) tryOrder.push(slotById[sid]); });
+    // চেষ্টা ২: বাকি সব slot fallback
+    slotCols.forEach(c => { if(!e.preferredSlots.includes(c.id)) tryOrder.push(c); });
+
+    let count = 0;
+    for(const col of tryOrder){
+      if(count >= want) break;
+      const taken = slotTaken[col.id];
+      const cur = teacher.cells[col.id] || {};
+      // এই শিক্ষকের এই slot ইতিমধ্যে পূরণ — overwrite নয়
+      if(cur.class || cur.subject || cur.section) continue;
+      // অন্য শিক্ষক একই class+section ইতিমধ্যে নিয়েছে — কনফ্লিক্ট, পরের slot
+      if(conflictKey && taken && taken.has(conflictKey)) continue;
+      teacher.cells[col.id] = {class: cls, section: sec, subject: sub};
+      if(conflictKey && taken) taken.add(conflictKey);
+      count++; placed++;
+    }
+
+    // weeklyAssignments-এ এন্ট্রির দিনগুলোতে বিষয় বসিয়ে দিই (খালি দিনে)
+    if(sub && Array.isArray(e.days) && e.days.length){
+      if(!teacher.weeklyAssignments || typeof teacher.weeklyAssignments !== 'object') teacher.weeklyAssignments = {};
+      e.days.forEach(d => {
+        if(!teacher.weeklyAssignments[d]) teacher.weeklyAssignments[d] = sub;
+      });
+    }
+  });
+
+  return {placed, usedEntries: entries.length};
+}
+
 function renderChipPicker(elementId, options, selected){
   const el = document.getElementById(elementId);
   if(!el) return;
@@ -7605,6 +8550,21 @@ function renderChipPicker(elementId, options, selected){
 
 function toggleChip(chipEl){
   chipEl.classList.toggle('selected');
+  // 🎯 মাস্টার চিপ-এ পরিবর্তন হলে — শুধু যদি এটা subjects/classes/sections-Picker হয় এবং
+  // টিচার মোডাল ওপেন থাকে — তাহলে এন্ট্রি কার্ডের dropdown ও indicators refresh
+  try{
+    const parent = chipEl && chipEl.parentElement;
+    if(!parent) return;
+    const pid = parent.id;
+    if(pid !== 'subjectsPicker' && pid !== 'classesPicker' && pid !== 'sectionsPicker') return;
+    const tEditIdEl = document.getElementById('tEditId');
+    if(!tEditIdEl || !tEditIdEl.value) return;
+    const t = (state.teachers||[]).find(x => x.id === tEditIdEl.value);
+    if(t && typeof renderTeachingEntries === 'function'){
+      _teSyncFromDOM(t);
+      renderTeachingEntries(t);
+    }
+  }catch(_){}
 }
 
 function getChipPickerValues(elementId){
@@ -7678,6 +8638,8 @@ function saveTeacher(){
     t.preferredDays = getDayPickerValues('preferredDaysPicker');
     t.unavailableDays = getDayPickerValues('unavailableDaysPicker');
     t.notes = document.getElementById('tEditNotes').value.trim();
+    // 📋 Multiple Teaching Entries — DOM → state, options-এ নতুন মান যোগ
+    try{ saveTeachingEntries(t); }catch(_){}
     // Sync mainSubject into subjects if not already present
     if(t.mainSubject && !t.subjects.includes(t.mainSubject)){
       t.subjects.unshift(t.mainSubject);
@@ -9374,6 +10336,23 @@ function autoGenerateRoutine(){
 
     teachers.forEach((t, ti) => {
       if(!t.cells) t.cells = {};
+
+      // 📋 Multiple Teaching Entries প্রথমে অগ্রাধিকার পায় —
+      // entries থাকলে কনফ্লিক্ট-aware ভাবে preferredSlots-এ বসিয়ে দিই,
+      // entries না থাকলে নিচের পুরোনো logic-এ ফেরত যাই (অপরিবর্তিত)।
+      let entriesResult = null;
+      try{
+        if(typeof _teApplyEntriesForTeacher === 'function'){
+          entriesResult = _teApplyEntriesForTeacher(t, slotCols, slotTaken);
+        }
+      }catch(_){ entriesResult = null; }
+
+      if(entriesResult && entriesResult.placed > 0){
+        filled += entriesResult.placed;
+        teachersDone++;
+        return; // এই শিক্ষকের জন্য fallback skip
+      }
+
       // এই শিক্ষকের সব slot সেল রিসেট (বিরতি কলাম স্পর্শ করা হয় না)
       slotCols.forEach(c => { t.cells[c.id] = {}; });
 
@@ -9849,22 +10828,24 @@ function handleImport(e){
       report.ok.forEach(imported => {
         const nameKey = imported.name.trim().toLowerCase();
         const existing = existingByName.get(nameKey);
-        const assignments = (imported._sourceRaw && Array.isArray(imported._sourceRaw.assignments))
-          ? imported._sourceRaw.assignments
-          : (imported._sourceRaw && Array.isArray(imported._sourceRaw['অ্যাসাইনমেন্ট'])
-              ? imported._sourceRaw['অ্যাসাইনমেন্ট']
-              : []);
+        const rawSource = imported._sourceRaw || {};
 
-        // Internal helper fields পরিষ্কার করি
+        // Internal helper fields পরিষ্কার (আগে কাজে লাগিয়েছি)
         delete imported._sourceIndex;
         delete imported._sourceRaw;
 
+        // কার্যকর assignments — যেকোনো ডেটা থেকে গঠন করা হয়
+        const effAssn = _buildEffectiveAssignments(rawSource, imported);
+
         if(existing && updateExisting){
           // Merge: id/cells/weeklyAssignments/password সংরক্ষণ; বাকি ফিল্ড আপডেট
-          const preservedId = existing.id;
-          const preservedCells = existing.cells || {};
+          const preservedId     = existing.id;
+          const preservedCells  = existing.cells || {};
           const preservedWeekly = existing.weeklyAssignments || {};
-          const preservedPwd = existing.password;
+          const preservedPwd    = existing.password;
+          // imported থেকে আসা explicit cells/weeklyAssignments আলাদা করে রাখি
+          const importedCells   = (imported.cells && typeof imported.cells === 'object') ? imported.cells : null;
+          const importedWeekly  = (imported.weeklyAssignments && typeof imported.weeklyAssignments === 'object') ? imported.weeklyAssignments : null;
 
           Object.keys(imported).forEach(k => {
             if(k === 'id' || k === 'cells' || k === 'weeklyAssignments' || k === 'password') return;
@@ -9875,18 +10856,36 @@ function handleImport(e){
           existing.weeklyAssignments = preservedWeekly;
           if(preservedPwd) existing.password = preservedPwd;
 
-          // শুধু খালি সেল পূরণ — মূল রুটিন অক্ষত থাকবে
-          if(assignments.length){
-            const filled = _autoFillTeacherCells(existing, assignments, {onlyEmpty:true});
+          // imported weeklyAssignments — শুধু খালি দিন পূরণ
+          if(importedWeekly){
+            Object.keys(importedWeekly).forEach(d => {
+              if(!existing.weeklyAssignments[d]) existing.weeklyAssignments[d] = importedWeekly[d];
+            });
+          }
+          // imported cells — শুধু খালি সেল পূরণ (বিদ্যমান অক্ষত)
+          if(importedCells){
+            Object.keys(importedCells).forEach(colId => {
+              const ex = existing.cells[colId];
+              const empty = !ex || (!ex.class && !ex.subject && !ex.section);
+              if(empty){
+                existing.cells[colId] = importedCells[colId];
+                report.autoFilled++;
+              }
+            });
+          }
+          // অবশিষ্ট খালি সেল assignments থেকে অটো-পূরণ — সবসময় চেষ্টা করা হয়
+          if(effAssn.length){
+            const filled = _autoFillTeacherCells(existing, effAssn, {onlyEmpty:true});
             report.autoFilled += filled;
           }
         } else if(existing && !updateExisting){
           // skip — গণনায় ইতিমধ্যে আছে
         } else {
-          // নতুন শিক্ষক
+          // নতুন শিক্ষক — imported-এ explicit cells/weeklyAssignments আগেই বসানো হয়েছে normalize-এ
           state.teachers.push(imported);
-          if(assignments.length){
-            const filled = _autoFillTeacherCells(imported, assignments, {onlyEmpty:true});
+          // অবশিষ্ট খালি সেল assignments থেকে অটো-পূরণ — সবসময় চেষ্টা করা হয়
+          if(effAssn.length){
+            const filled = _autoFillTeacherCells(imported, effAssn, {onlyEmpty:true});
             report.autoFilled += filled;
           }
         }
@@ -10144,6 +11143,96 @@ function _validateAndNormalizeTeacher(raw, idx, report){
     teacher.notes = (teacher.notes ? teacher.notes + ' · ' : '') + 'শিফট: ' + shift;
   }
 
+  // সরাসরি cells আপলোড — ব্যবহারকারী cells:{c1:{class,subject,section},...} দিতে পারেন
+  // এতে রুটিনের পুরো সেল-ম্যাপ JSON থেকে আসবে
+  const rawCells = pick('cells','সেলসমূহ','রুটিনসেল','রুটিন_সেল');
+  if(rawCells && typeof rawCells === 'object' && !Array.isArray(rawCells)){
+    const cellsOut = {};
+    Object.keys(rawCells).forEach(k => {
+      const v = rawCells[k];
+      if(v && typeof v === 'object' && !Array.isArray(v)){
+        const c   = String(v.class   || v['শ্রেণি'] || '').trim();
+        const s   = String(v.subject || v['বিষয়']  || '').trim();
+        const sec = String(v.section || v['শাখা']  || '').trim();
+        if(c || s || sec){
+          cellsOut[String(k).trim()] = {class:c, subject:s, section:sec};
+          // options-এ পরে যাবে, তাই teacher.classes/subjects/sections-এ যোগ
+          if(c   && !classes.includes(c))   classes.push(c);
+          if(s   && !subjects.includes(s))  subjects.push(s);
+          if(sec && !sections.includes(sec))sections.push(sec);
+        }
+      }
+    });
+    teacher.cells = cellsOut;
+  }
+
+  // সরাসরি weeklyAssignments — {Sat:"ICT", Sun:"ICT", ...}
+  const rawWeekly = pick('weeklyAssignments','সাপ্তাহিক_অ্যাসাইনমেন্ট','দিনপ্রতি_বিষয়','দিনপ্রতি');
+  if(rawWeekly && typeof rawWeekly === 'object' && !Array.isArray(rawWeekly)){
+    const waOut = {};
+    Object.keys(rawWeekly).forEach(k => {
+      const kn = String(k).trim();
+      const mapped = dayMap[kn.toLowerCase()] || dayMap[kn] ||
+                     (['Sat','Sun','Mon','Tue','Wed','Thu','Fri'].includes(kn) ? kn : null);
+      const val = String(rawWeekly[k] || '').trim();
+      if(mapped && val) waOut[mapped] = val;
+    });
+    teacher.weeklyAssignments = waOut;
+  }
+
+  // 📋 Teaching Entries — JSON Import compatibility (নতুন data shape)
+  const rawTE = pick('teachingEntries','পাঠদান_এন্ট্রি','পাঠদান','teaching_entries');
+  if(Array.isArray(rawTE)){
+    const validDayKeys = new Set(['Sat','Sun','Mon','Tue','Wed','Thu']);
+    const validSlotIds = new Set((Array.isArray(state.columns) ? state.columns : [])
+      .filter(c => c && c.type === 'slot').map(c => c.id));
+    teacher.teachingEntries = rawTE.map(r => {
+      if(!r || typeof r !== 'object') return null;
+      const cls = String(r.class   || r['শ্রেণি'] || '').trim();
+      const sec = String(r.section || r['শাখা']  || '').trim();
+      const sub = String(r.subject || r['বিষয়']  || '').trim();
+      // empty entry skip
+      if(!cls && !sec && !sub) return null;
+      // days — বাংলা/ইংরেজি ম্যাপ
+      let days = [];
+      if(Array.isArray(r.days)){
+        days = r.days.map(d => {
+          const k = String(d).trim();
+          return dayMap[k.toLowerCase()] || dayMap[k] || (validDayKeys.has(k) ? k : null);
+        }).filter(Boolean);
+      } else if(Array.isArray(r['দিনসমূহ'])){
+        days = r['দিনসমূহ'].map(d => {
+          const k = String(d).trim();
+          return dayMap[k.toLowerCase()] || dayMap[k] || (validDayKeys.has(k) ? k : null);
+        }).filter(Boolean);
+      }
+      // ডিফল্ট ৬ দিন যদি কিছুই না দেয়
+      if(!days.length) days = ['Sat','Sun','Mon','Tue','Wed','Thu'];
+      // preferredSlots
+      const ps = Array.isArray(r.preferredSlots) ? r.preferredSlots
+               : (Array.isArray(r['পছন্দের_slot']) ? r['পছন্দের_slot'] : []);
+      const slots = ps.map(s => String(s).trim()).filter(s => validSlotIds.has(s));
+      const dpw = parseInt(_bnToEnDigits(r.daysPerWeek != null ? r.daysPerWeek : days.length), 10);
+      return {
+        id: r.id && typeof r.id === 'string' ? r.id : ('te_' + Date.now() + '_' + Math.random().toString(36).slice(2,6)),
+        class: cls, section: sec, subject: sub,
+        daysPerWeek: (isNaN(dpw) || dpw < 0) ? days.length : Math.min(dpw, 6),
+        days: days,
+        preferredSlots: slots,
+        notes: String(r.notes || r['নির্দেশনা'] || '').trim()
+      };
+    }).filter(Boolean);
+    // teachingEntries থেকে subjects/classes/sections-এ যোগ (Master Selection-এ দেখাতে)
+    teacher.teachingEntries.forEach(e => {
+      if(e.subject && !subjects.includes(e.subject)) subjects.push(e.subject);
+      if(e.class   && !classes.includes(e.class))   classes.push(e.class);
+      if(e.section && !sections.includes(e.section))sections.push(e.section);
+    });
+    teacher.subjects = subjects;
+    teacher.classes  = classes;
+    teacher.sections = sections;
+  }
+
   return {ok:true, teacher};
 }
 
@@ -10178,6 +11267,59 @@ function _slotGroupOf(slotIdx, slotCount){
   if(r < 0.50) return 'lateMorning';
   if(r < 0.75) return 'afternoon';
   return 'evening';
+}
+
+/* যেকোনো সোর্স থেকে কার্যকর assignment-তালিকা তৈরি —
+   ১) explicit assignments[]  ২) subjects×classes×sections combo
+   ৩) শুধু subjects  ৪) mainSubject — কোনোটা পেলেই auto-fill কাজ করবে */
+function _buildEffectiveAssignments(rawTeacher, normTeacher){
+  const out = [];
+  const seen = new Set();
+  const push = (c, s, sec) => {
+    const cls = String(c||'').trim();
+    const sub = String(s||'').trim();
+    const sct = String(sec||'').trim();
+    if(!cls && !sub && !sct) return;
+    const key = cls+'|'+sub+'|'+sct;
+    if(seen.has(key)) return;
+    seen.add(key);
+    out.push({class:cls, subject:sub, section:sct});
+  };
+
+  // ১. explicit assignments (বাংলা/ইংরেজি key)
+  const expl = (rawTeacher && Array.isArray(rawTeacher.assignments)) ? rawTeacher.assignments
+             : (rawTeacher && Array.isArray(rawTeacher['অ্যাসাইনমেন্ট']) ? rawTeacher['অ্যাসাইনমেন্ট']
+             : (rawTeacher && Array.isArray(rawTeacher['দায়িত্ব']) ? rawTeacher['দায়িত্ব'] : []));
+  if(expl.length){
+    expl.forEach(a => {
+      if(a && typeof a === 'object'){
+        push(a.class || a['শ্রেণি'], a.subject || a['বিষয়'], a.section || a['শাখা']);
+      }
+    });
+    if(out.length) return out;
+  }
+
+  // ২. subjects × classes × sections — zip-rotation (longest array drives)
+  const subs = (normTeacher.subjects || []).filter(Boolean);
+  const cls  = (normTeacher.classes  || []).filter(Boolean);
+  const secs = (normTeacher.sections || []).filter(Boolean);
+  const max  = Math.max(subs.length, cls.length, secs.length);
+  if(max > 0){
+    for(let i=0;i<max;i++){
+      push(
+        cls.length  ? cls[i % cls.length]   : '',
+        subs.length ? subs[i % subs.length] : '',
+        secs.length ? secs[i % secs.length] : ''
+      );
+    }
+    if(out.length) return out;
+  }
+
+  // ৩. mainSubject fallback
+  if(normTeacher.mainSubject){
+    push('', normTeacher.mainSubject, '');
+  }
+  return out;
 }
 
 /* শিক্ষকের জন্য খালি সেল অটো-পূরণ —
