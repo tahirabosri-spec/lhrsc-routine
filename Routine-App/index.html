@@ -1252,6 +1252,44 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
 }
 .modal-close:hover{background:var(--danger-soft);color:var(--danger)}
 .modal-body{padding:20px;max-height:70vh;overflow-y:auto}
+
+/* 🆕 শিক্ষক modal header — sticky teacher info badge */
+.teacher-modal-header{
+  align-items:flex-start !important;
+  position:sticky;top:0;z-index:30;
+  background:linear-gradient(180deg, var(--surface-2) 0%, var(--surface-2) 60%, rgba(255,255,255,0) 100%);
+}
+.teacher-modal-head-row{
+  display:flex;flex-direction:column;gap:5px;flex:1;min-width:0;
+}
+.teacher-modal-badge{
+  display:flex;flex-wrap:wrap;align-items:center;gap:7px;
+  background:linear-gradient(135deg, var(--primary,#0f766e) 0%, #14b8a6 100%);
+  color:#fff;border-radius:10px;
+  padding:7px 12px;
+  box-shadow:0 2px 6px rgba(15,118,110,.18);
+  font-size:13px;font-weight:600;
+  max-width:100%;
+}
+.teacher-modal-badge .tmb-name{
+  font-size:15.5px;font-weight:800;letter-spacing:.2px;
+  word-break:break-word;
+}
+.teacher-modal-badge .tmb-sep{opacity:.6;font-weight:400}
+.teacher-modal-badge .tmb-title,
+.teacher-modal-badge .tmb-subject{
+  font-weight:600;
+  background:rgba(255,255,255,.18);
+  padding:2px 8px;border-radius:99px;
+  font-size:12px;
+}
+@media(max-width:560px){
+  .teacher-modal-badge{padding:6px 10px;font-size:12px;gap:5px}
+  .teacher-modal-badge .tmb-name{font-size:14px}
+  .teacher-modal-badge .tmb-title,
+  .teacher-modal-badge .tmb-subject{font-size:11px;padding:1px 7px}
+}
+
 .modal-footer{
   display:flex;gap:8px;justify-content:flex-end;
   padding:14px 20px;
@@ -1682,7 +1720,30 @@ input[type="range"]::-moz-range-thumb{
 }
 .te-add-btn:hover{filter:brightness(1.1)}
 .te-add-btn:disabled{opacity:.5;cursor:not-allowed}
-.te-list{display:flex;flex-direction:column;gap:10px}
+
+/* 🆕 Expand/Collapse All buttons */
+.te-toggle-all-btn{
+  background:var(--surface-2);color:var(--text-1);
+  border:1px solid var(--border);
+  padding:5px 10px;border-radius:6px;
+  font-size:11.5px;font-weight:600;cursor:pointer;
+  transition:.12s;
+}
+.te-toggle-all-btn:hover{
+  background:var(--primary-soft,rgba(2,132,199,.1));
+  border-color:var(--primary,#0284c7);color:var(--primary,#0284c7);
+}
+
+/* 🆕 Entries grid — পাশাপাশি (২ কলাম desktop, ১ কলাম mobile) */
+.te-list{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:10px;
+  align-items:start;
+}
+@media(max-width:760px){
+  .te-list{grid-template-columns:1fr}
+}
 .te-empty{
   text-align:center;padding:18px 12px;
   background:var(--surface-2);border:1px dashed var(--border);
@@ -1693,14 +1754,87 @@ input[type="range"]::-moz-range-thumb{
   border-left:3px solid var(--primary,#0284c7);
   border-radius:8px;padding:11px 12px 12px;
   box-shadow:0 1px 2px rgba(0,0,0,.04);
+  transition:padding .15s ease;
 }
 .te-card-head{
   display:flex;align-items:center;justify-content:space-between;
   margin-bottom:10px;gap:8px;
 }
+
+/* 🆕 Clickable card head (dropdown-style entry) */
+.te-card-head-clickable{
+  cursor:pointer;
+  user-select:none;
+  margin-bottom:10px;
+  padding:2px 0;
+  transition:.15s;
+}
+.te-card-head-clickable:hover .te-card-title{color:var(--primary,#0284c7)}
+.te-card-caret{
+  display:inline-block;font-size:11px;
+  transition:transform .2s ease;
+  color:var(--text-3,#94a3b8);
+  margin-right:2px;
+}
+.te-card.te-collapsed .te-card-caret{transform:rotate(-90deg)}
+.te-card.te-collapsed .te-card-head{margin-bottom:0}
+.te-card.te-collapsed .te-card-body{display:none}
+.te-card.te-collapsed{padding-bottom:11px}
+.te-card-body{animation:teExpand .18s ease-out}
+@keyframes teExpand{
+  from{opacity:0;transform:translateY(-3px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* 🆕 Inner sub-section dropdown (days, slots, notes, shared, fixed) */
+.te-sub{
+  background:var(--surface-2,#f1f5f9);
+  border:1px solid var(--border);
+  border-radius:7px;
+  margin-top:7px;
+  overflow:hidden;
+}
+.te-sub-head{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;
+  cursor:pointer;user-select:none;
+  font-size:12px;font-weight:700;color:var(--text-1);
+  transition:.12s;
+}
+.te-sub-head:hover{background:var(--surface,#fff)}
+.te-sub-caret{
+  display:inline-block;font-size:10px;
+  transition:transform .2s ease;
+  color:var(--text-3,#94a3b8);
+}
+.te-sub.te-sub-collapsed .te-sub-caret{transform:rotate(-90deg)}
+.te-sub-label{flex-shrink:0}
+.te-sub-summary{
+  margin-left:auto;font-size:11.5px;font-weight:500;
+  color:var(--text-3,#64748b);
+  text-align:right;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  max-width:60%;
+}
+.te-sub-summary strong{color:var(--primary,#0284c7);font-weight:800}
+.te-sub-yes{color:#16a34a;font-weight:800}
+.te-sub-no{color:var(--text-3,#94a3b8);font-style:italic}
+.te-sub-hint{font-size:11px;color:var(--text-3,#64748b);margin-bottom:5px}
+.te-sub-body{
+  padding:8px 10px 10px;
+  background:var(--surface,#fff);
+  border-top:1px solid var(--border);
+  animation:teExpand .15s ease-out;
+}
+.te-sub.te-sub-collapsed .te-sub-body{display:none}
+.te-sub.te-sub-active{border-color:var(--primary,#0284c7)}
+.te-sub.te-sub-active .te-sub-head{
+  background:linear-gradient(90deg, var(--primary-soft,rgba(2,132,199,.08)) 0%, transparent 80%);
+}
+
 .te-card-title{
   font-size:12.5px;font-weight:700;color:var(--text-1);
-  display:flex;align-items:center;gap:7px;
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
 }
 .te-card-num{
   background:var(--primary,#0284c7);color:#fff;
@@ -1715,11 +1849,12 @@ input[type="range"]::-moz-range-thumb{
   cursor:pointer;font-size:12px;font-weight:600;
 }
 .te-card-remove:hover{background:var(--danger,#dc2626);color:#fff}
-.te-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
-.te-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-@media(max-width:560px){
-  .te-grid-3{grid-template-columns:1fr}
-  .te-grid-2{grid-template-columns:1fr}
+/* 🆕 Entries side-by-side হলে cramped space — গ্রিড একটা single col-এ stack হয় */
+.te-grid-3{display:grid;grid-template-columns:1fr;gap:7px;margin-bottom:8px}
+.te-grid-2{display:grid;grid-template-columns:1fr;gap:7px;margin-bottom:8px}
+/* বড় screen-এ যদি একটাই entry থাকে অথবা parent wide হয় — তবে 3-col allow */
+@media(min-width:1100px){
+  .te-card{font-size:12.5px}
 }
 .te-field label{
   display:block;font-size:11px;font-weight:600;
@@ -4640,31 +4775,39 @@ body[data-role="manager"] .teacher-only{display:none !important}
 <!-- Teacher Edit Modal -->
 <div class="modal-overlay" id="teacherModal">
   <div class="modal wide">
-    <div class="modal-header">
-      <h2>👤 শিক্ষক তথ্য</h2>
+    <div class="modal-header teacher-modal-header">
+      <div class="teacher-modal-head-row">
+        <h2 style="margin:0">👤 শিক্ষক তথ্য</h2>
+        <!-- 🆕 শিক্ষকের নাম/পদবি/প্রধান বিষয় — header-এ সরাসরি, sticky -->
+        <div class="teacher-modal-badge" id="teacherModalBadge">
+          <span class="tmb-name" id="tmbName">— শিক্ষকের নাম —</span>
+          <span class="tmb-sep" id="tmbSep1" style="display:none">·</span>
+          <span class="tmb-title" id="tmbTitle" style="display:none">—</span>
+          <span class="tmb-sep" id="tmbSep2" style="display:none">·</span>
+          <span class="tmb-subject" id="tmbSubject" style="display:none">—</span>
+        </div>
+      </div>
       <button class="modal-close" onclick="closeModal('teacherModal')">×</button>
     </div>
     <div class="modal-body" style="padding-top:0">
       <input type="hidden" id="tEditId">
 
-      <!-- TABS -->
+      <!-- TABS — পাঠদান প্রথমে, মৌলিক তথ্য পরে -->
       <div class="tch-tabs">
-        <button class="tch-tab active" data-tab="basic" onclick="switchTeacherTab('basic')">📝 মৌলিক তথ্য</button>
-        <button class="tch-tab" data-tab="teaching" onclick="switchTeacherTab('teaching')">📚 পাঠদান</button>
+        <button class="tch-tab active" data-tab="teaching" onclick="switchTeacherTab('teaching')">📚 পাঠদান</button>
+        <button class="tch-tab" data-tab="basic" onclick="switchTeacherTab('basic')">📝 মৌলিক তথ্য</button>
         <button class="tch-tab" data-tab="time" onclick="switchTeacherTab('time')" style="display:none">⏰ সময়সূচি</button>
       </div>
 
-      <!-- TAB 1: BASIC -->
-      <div class="tch-pane active" data-pane="basic">
-        <!-- 🆕 Live Teacher Display — uppercase name + title + main subject preview -->
-        <div class="live-teacher-display" id="liveTeacherDisplay">
-          <div class="ltd-name" id="ltdName">— শিক্ষকের নাম —</div>
-          <div class="ltd-meta">
-            <span id="ltdTitleWrap" style="display:none">🎖 <span id="ltdTitle">—</span></span>
-            <span id="ltdSubjectWrap" style="display:none">📖 <span id="ltdSubject">—</span></span>
-            <span class="ltd-empty" id="ltdEmpty" style="display:none">— পদবি / প্রধান বিষয় নির্বাচন করুন —</span>
-          </div>
-        </div>
+      <!-- TAB 1: BASIC (now second visually — pane order intact for JS safety) -->
+      <div class="tch-pane" data-pane="basic">
+        <!-- 🔻 আগের live-teacher-display এখানে ছিল — modal header-এ সরিয়ে নেওয়া হলো।
+             পুরোনো JS reference (ltdName, ltdTitle, ltdSubject, ltdEmpty) যাতে break না করে,
+             hidden placeholder রাখা হলো — _updateLiveTeacherDisplay() এখনও safely চলবে। -->
+        <span id="ltdName" style="display:none"></span>
+        <span id="ltdTitleWrap" style="display:none"><span id="ltdTitle"></span></span>
+        <span id="ltdSubjectWrap" style="display:none"><span id="ltdSubject"></span></span>
+        <span id="ltdEmpty" style="display:none"></span>
         <div class="field"><label>শিক্ষকের নাম</label><input id="tEditName" type="text" oninput="_updateLiveTeacherDisplay()"></div>
         <div class="field-row">
           <div class="field">
@@ -4707,7 +4850,15 @@ body[data-role="manager"] .teacher-only{display:none !important}
       </div>
 
       <!-- TAB 2: TEACHING (Teaching Information System — Master + Live Summary + Entries) -->
-      <div class="tch-pane" data-pane="teaching">
+      <!-- 🆕 default এই tab-টাই active — শিক্ষক-row ক্লিক করলে প্রথমে পাঠদান আসবে -->
+      <div class="tch-pane active" data-pane="teaching">
+
+        <!-- 🔻 পাঠদান tab-এর live display modal header-এ সরানো হলো।
+             hidden placeholders রাখা হলো যাতে _updateLiveTeacherDisplay() break না করে। -->
+        <span id="ltdNameTeaching" style="display:none"></span>
+        <span id="ltdTitleWrapTeaching" style="display:none"><span id="ltdTitleTeaching"></span></span>
+        <span id="ltdSubjectWrapTeaching" style="display:none"><span id="ltdSubjectTeaching"></span></span>
+        <span id="ltdEmptyTeaching" style="display:none"></span>
 
         <!-- ════ 🎯 TEACHER MASTER SELECTION AREA ════ -->
         <div class="tms-master" id="teachingMasterArea">
@@ -4739,10 +4890,14 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <div class="te-section" id="teachingEntriesSection">
           <div class="te-header">
             <h4>📋 পাঠদান এন্ট্রি <span class="te-count-badge" id="teEntriesCount">০</span></h4>
-            <button type="button" class="te-add-btn" id="teAddBtn" onclick="addTeachingEntry()">➕ নতুন এন্ট্রি</button>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <button type="button" class="te-toggle-all-btn" onclick="_teExpandAll()" title="সব এন্ট্রি একসাথে খুলুন">▾ সব খুলুন</button>
+              <button type="button" class="te-toggle-all-btn" onclick="_teCollapseAll()" title="সব এন্ট্রি একসাথে বন্ধ করুন">▸ সব বন্ধ করুন</button>
+              <button type="button" class="te-add-btn" id="teAddBtn" onclick="addTeachingEntry()">➕ নতুন এন্ট্রি</button>
+            </div>
           </div>
           <div class="info-banner" style="font-size:12px;margin-bottom:10px">
-            💡 প্রতিটি এন্ট্রিতে <strong>বিষয় / শ্রেণি / শাখা</strong>, <strong>কোন দিনে</strong> ও <strong>কোন সময়ে</strong> ক্লাস হবে তা নির্দিষ্ট করুন। ডিফল্টে ৬ দিন নির্বাচিত — প্রয়োজন হলে টিক তুলে দিন।
+            💡 প্রতিটি এন্ট্রিতে <strong>বিষয় / শ্রেণি / শাখা</strong>, <strong>কোন দিনে</strong> ও <strong>কোন সময়ে</strong> ক্লাস হবে তা নির্দিষ্ট করুন। ডিফল্টে ৬ দিন নির্বাচিত — প্রয়োজন হলে টিক তুলে দিন। <strong>এন্ট্রি কার্ডে ক্লিক করলে dropdown-এর মতো খুলবে / বন্ধ হবে।</strong>
           </div>
           <div class="te-list" id="teachingEntriesList"></div>
         </div>
@@ -8122,27 +8277,59 @@ function _updateLiveTeacherDisplay(){
     const titleVal = titleSel ? titleSel.value : '';
     const subjVal  = subjSel  ? subjSel.value : '';
 
+    // ── Basic tab + Teaching tab mirror — দুটোই একসাথে আপডেট হবে ──
+    const nameTxt = name.trim() || '— শিক্ষকের নাম —';
     const ltdName = document.getElementById('ltdName');
-    if(ltdName) ltdName.textContent = name.trim() || '— শিক্ষকের নাম —';
+    if(ltdName) ltdName.textContent = nameTxt;
+    const ltdNameT = document.getElementById('ltdNameTeaching');
+    if(ltdNameT) ltdNameT.textContent = nameTxt;
 
-    const titleWrap = document.getElementById('ltdTitleWrap');
-    const titleTxt  = document.getElementById('ltdTitle');
-    const subjWrap  = document.getElementById('ltdSubjectWrap');
-    const subjTxt   = document.getElementById('ltdSubject');
-    const emptyEl   = document.getElementById('ltdEmpty');
+    // helper — ২টা wrap (basic + teaching) আপডেট
+    const updMeta = (wrapId, txtId, wrapIdT, txtIdT, val, label) => {
+      const wrap = document.getElementById(wrapId);
+      const txt  = document.getElementById(txtId);
+      const wrapT = document.getElementById(wrapIdT);
+      const txtT  = document.getElementById(txtIdT);
+      const visible = !!(val && label && label !== '— নির্বাচন করুন —');
+      if(wrap && txt){
+        if(visible){ txt.textContent = label; wrap.style.display = ''; }
+        else { wrap.style.display = 'none'; }
+      }
+      if(wrapT && txtT){
+        if(visible){ txtT.textContent = label; wrapT.style.display = ''; }
+        else { wrapT.style.display = 'none'; }
+      }
+      return visible;
+    };
 
-    let anyMeta = false;
-    if(titleWrap && titleTxt){
-      if(titleVal && title && title !== '— নির্বাচন করুন —'){
-        titleTxt.textContent = title; titleWrap.style.display=''; anyMeta = true;
-      } else { titleWrap.style.display='none'; }
-    }
-    if(subjWrap && subjTxt){
-      if(subjVal && subj && subj !== '— নির্বাচন করুন —'){
-        subjTxt.textContent = subj; subjWrap.style.display=''; anyMeta = true;
-      } else { subjWrap.style.display='none'; }
-    }
+    const hasTitle = updMeta('ltdTitleWrap','ltdTitle','ltdTitleWrapTeaching','ltdTitleTeaching', titleVal, title);
+    const hasSubj  = updMeta('ltdSubjectWrap','ltdSubject','ltdSubjectWrapTeaching','ltdSubjectTeaching', subjVal, subj);
+    const anyMeta = hasTitle || hasSubj;
+
+    const emptyEl = document.getElementById('ltdEmpty');
     if(emptyEl) emptyEl.style.display = anyMeta ? 'none' : '';
+    const emptyElT = document.getElementById('ltdEmptyTeaching');
+    if(emptyElT) emptyElT.style.display = anyMeta ? 'none' : '';
+
+    // 🆕 Modal Header Badge — নাম/পদবি/প্রধান বিষয় sticky modal-হেডারে
+    const tmbName = document.getElementById('tmbName');
+    if(tmbName) tmbName.textContent = nameTxt;
+    const tmbTitle = document.getElementById('tmbTitle');
+    const tmbSubject = document.getElementById('tmbSubject');
+    const tmbSep1 = document.getElementById('tmbSep1');
+    const tmbSep2 = document.getElementById('tmbSep2');
+    const titleVisible = !!(titleVal && title && title !== '— নির্বাচন করুন —');
+    const subjVisible  = !!(subjVal && subj && subj !== '— নির্বাচন করুন —');
+    if(tmbTitle){
+      if(titleVisible){ tmbTitle.textContent = '🎖 ' + title; tmbTitle.style.display = ''; }
+      else { tmbTitle.style.display = 'none'; }
+    }
+    if(tmbSubject){
+      if(subjVisible){ tmbSubject.textContent = '📖 ' + subj; tmbSubject.style.display = ''; }
+      else { tmbSubject.style.display = 'none'; }
+    }
+    if(tmbSep1) tmbSep1.style.display = titleVisible ? '' : 'none';
+    if(tmbSep2) tmbSep2.style.display = (titleVisible && subjVisible) ? '' : (subjVisible ? '' : 'none');
   }catch(_){ /* silent */ }
 }
 
@@ -8214,8 +8401,8 @@ function editTeacher(tid){
     }).join('');
   }
 
-  // Reset to first tab
-  switchTeacherTab('basic');
+  // 🆕 ডিফল্ট পাঠদান tab — শিক্ষক row ক্লিক করলে প্রথমে পাঠদান section আসবে
+  switchTeacherTab('teaching');
 
   // Teacher role: only show name (readonly) + leave toggle
   const teacherOnly = (currentUser.role === 'teacher');
@@ -8374,6 +8561,18 @@ function renderTeachingEntries(teacher){
       prefSlotCount: prefSlotCount
     };
     host.innerHTML = entries.map((e, idx) => _teCardHTML(_teSanitizeEntry(e), idx, ctx)).join('');
+
+    // 🆕 অসম্পূর্ণ এন্ট্রি (subject/class/section কিছুই দেওয়া নেই) auto-expand
+    // যাতে user সাথে সাথে fields ভরতে পারেন
+    try{
+      entries.forEach((e, idx) => {
+        const se = _teSanitizeEntry(e);
+        if(!se.subject && !se.class && !se.section){
+          const card = host.querySelector('.te-card[data-te-idx="'+idx+'"]');
+          if(card) card.classList.remove('te-collapsed');
+        }
+      });
+    }catch(_){}
   }
 
   // মাস্টার চিপ-এ red-tick ও Live Summary রিফ্রেশ
@@ -8628,14 +8827,22 @@ function _teCardHTML(e, idx, ctx){
     </div>`;
 
   return `
-  <div class="te-card ${colorClass} ${sharedClass} ${fixedClass} ${flagged?'te-flagged':''}" data-te-idx="${idx}">
-    <div class="te-card-head">
-      <div>
-        <div class="te-card-title"><span class="te-card-num">${_teBnNum(idx+1)}</span> এন্ট্রি</div>
+  <div class="te-card ${colorClass} ${sharedClass} ${fixedClass} ${flagged?'te-flagged':''} te-collapsed" data-te-idx="${idx}">
+    <div class="te-card-head te-card-head-clickable" onclick="_teToggleCard(${idx}, event)" title="ক্লিক করে এন্ট্রি বিস্তারিত খুলুন/বন্ধ করুন">
+      <div style="flex:1;min-width:0">
+        <div class="te-card-title">
+          <span class="te-card-num">${_teBnNum(idx+1)}</span>
+          <span class="te-card-caret">▾</span>
+          এন্ট্রি
+          ${e.fixed?'<span class="te-fixed-tag-inline" style="margin-left:6px">🔒 ফিক্সড</span>':''}
+          ${e.shared?'<span class="te-shared-tag-inline" style="margin-left:6px">🔀 শেয়ার্ড</span>':''}
+        </div>
         ${cardSummary}
       </div>
-      <button type="button" class="te-card-remove" onclick="removeTeachingEntry(${idx})" title="এই এন্ট্রি মুছুন">🗑 মুছুন</button>
+      <button type="button" class="te-card-remove" onclick="event.stopPropagation();removeTeachingEntry(${idx})" title="এই এন্ট্রি মুছুন">🗑 মুছুন</button>
     </div>
+    <div class="te-card-body">
+    <!-- ── বিষয় / শ্রেণি / শাখা — primary fields (always visible at top) ── -->
     <div class="te-grid-3">
       <div class="te-field ${isUsedSub?'te-used-field':''}">
         <label>📖 বিষয়</label>
@@ -8653,22 +8860,70 @@ function _teCardHTML(e, idx, ctx){
         <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
       </div>
     </div>
-    <div class="te-mini-row">
-      <label>📅 সপ্তাহে কোন বার ক্লাস (ডিফল্ট ৬ দিন — টিক তুলে বাদ দিন)</label>
-      <div class="te-day-row" data-te-days>${daysHTML}</div>
-      <div class="te-day-count">নির্বাচিত: <strong id="teSelDays_${idx}">${_teBnNum(selDays.size)}</strong> দিন</div>
+
+    <!-- ── 📅 দিন — dropdown sub-section ── -->
+    <div class="te-sub te-sub-collapsed" data-te-sub="days">
+      <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'days', this)">
+        <span class="te-sub-caret">▾</span>
+        <span class="te-sub-label">📅 দিন</span>
+        <span class="te-sub-summary">নির্বাচিত: <strong>${_teBnNum(selDays.size)}</strong> দিন</span>
+      </div>
+      <div class="te-sub-body">
+        <div class="te-day-row" data-te-days>${daysHTML}</div>
+        <div class="te-day-count">নির্বাচিত: <strong id="teSelDays_${idx}">${_teBnNum(selDays.size)}</strong> দিন (ডিফল্ট ৬ দিন — টিক তুলে বাদ দিন)</div>
+      </div>
     </div>
-    <div class="te-mini-row">
-      <label>⏰ পছন্দের সময় (চেক করুন — Morning / Noon / Afternoon / Evening) — <span style="color:#dc2626;font-weight:600">লাল সংখ্যা = অন্য শিক্ষকও এই slot prefer করছেন</span></label>
-      <div class="te-tslot-wrap" data-te-slots>${groupHTML}</div>
-      <div class="te-day-count">পছন্দের slot: <strong id="teSelSlots_${idx}">${_teBnNum(selSlots.size)}</strong></div>
+
+    <!-- ── ⏰ সময় (পছন্দের slot) — dropdown sub-section ── -->
+    <div class="te-sub te-sub-collapsed" data-te-sub="slots">
+      <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'slots', this)">
+        <span class="te-sub-caret">▾</span>
+        <span class="te-sub-label">⏰ পছন্দের সময়</span>
+        <span class="te-sub-summary">নির্বাচিত: <strong>${_teBnNum(selSlots.size)}</strong> slot</span>
+      </div>
+      <div class="te-sub-body">
+        <div class="te-sub-hint"><span style="color:#dc2626;font-weight:600">লাল সংখ্যা</span> = অন্য শিক্ষকও এই slot prefer করছেন</div>
+        <div class="te-tslot-wrap" data-te-slots>${groupHTML}</div>
+        <div class="te-day-count">পছন্দের slot: <strong id="teSelSlots_${idx}">${_teBnNum(selSlots.size)}</strong></div>
+      </div>
     </div>
-    <div class="te-field">
-      <label>📝 অতিরিক্ত নির্দেশনা (বাংলায় — রুটিন/AI বিবেচনা করবে)</label>
-      <textarea rows="2" placeholder="যেমন: এই ক্লাসটি দুপুরের আগে রাখুন, ১:০০-এর পর নয়, ইত্যাদি..." data-te-field="notes" oninput="_teUpdateField(${idx},'notes',this.value)">${_teEsc(e.notes||'')}</textarea>
+
+    <!-- ── 📝 অতিরিক্ত নির্দেশনা — dropdown sub-section ── -->
+    <div class="te-sub te-sub-collapsed" data-te-sub="notes">
+      <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'notes', this)">
+        <span class="te-sub-caret">▾</span>
+        <span class="te-sub-label">📝 অতিরিক্ত নির্দেশনা</span>
+        <span class="te-sub-summary">${e.notes && e.notes.trim() ? '<em>'+_teEsc((e.notes||'').slice(0,30))+(e.notes.length>30?'...':'')+'</em>' : '—'}</span>
+      </div>
+      <div class="te-sub-body">
+        <textarea rows="2" placeholder="যেমন: এই ক্লাসটি দুপুরের আগে রাখুন, ১:০০-এর পর নয়, ইত্যাদি..." data-te-field="notes" oninput="_teUpdateField(${idx},'notes',this.value)">${_teEsc(e.notes||'')}</textarea>
+      </div>
     </div>
-    ${sharedBlockHTML}
-    ${fixedBlockHTML}
+
+    <!-- ── 🔀 শেয়ার্ড / স্প্লিট — dropdown sub-section ── -->
+    <div class="te-sub te-sub-collapsed${e.shared?' te-sub-active':''}" data-te-sub="shared">
+      <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'shared', this)">
+        <span class="te-sub-caret">▾</span>
+        <span class="te-sub-label">🔀 শেয়ার্ড / স্প্লিট</span>
+        <span class="te-sub-summary">${e.shared?'<span class="te-sub-yes">✓ সক্রিয়</span>':'<span class="te-sub-no">নিষ্ক্রিয়</span>'}</span>
+      </div>
+      <div class="te-sub-body">
+        ${sharedBlockHTML}
+      </div>
+    </div>
+
+    <!-- ── 🔒 ফিক্সড স্লট — dropdown sub-section ── -->
+    <div class="te-sub te-sub-collapsed${e.fixed?' te-sub-active':''}" data-te-sub="fixed">
+      <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'fixed', this)">
+        <span class="te-sub-caret">▾</span>
+        <span class="te-sub-label">🔒 ফিক্সড স্লট</span>
+        <span class="te-sub-summary">${e.fixed?'<span class="te-sub-yes">✓ সক্রিয়</span>':'<span class="te-sub-no">নিষ্ক্রিয়</span>'}</span>
+      </div>
+      <div class="te-sub-body">
+        ${fixedBlockHTML}
+      </div>
+    </div>
+    </div>
   </div>`;
 }
 
@@ -8685,7 +8940,18 @@ function addTeachingEntry(){
   // আগের এন্ট্রিগুলোর বর্তমান UI স্টেট ডেটায় বসিয়ে নিই — যাতে rerender-এ হারিয়ে না যায়
   _teSyncFromDOM(t);
   t.teachingEntries.push(_teNewEntry());
+  const newIdx = t.teachingEntries.length - 1;
   renderTeachingEntries(t);
+  // নতুন এন্ট্রি কার্ড auto-expand + scroll into view
+  try{
+    setTimeout(()=>{
+      const newCard = document.querySelector('#teachingEntriesList .te-card[data-te-idx="'+newIdx+'"]');
+      if(newCard){
+        newCard.classList.remove('te-collapsed');
+        newCard.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+    }, 40);
+  }catch(_){}
 }
 
 /* এন্ট্রি মুছুন */
@@ -8725,6 +8991,45 @@ function _teUpdateField(idx, field, value){
   } else {
     try{ renderTeachingLiveSummary(t); }catch(_){}
   }
+}
+
+/* 🆕 এন্ট্রি কার্ড collapse/expand toggle — dropdown-style accordion */
+function _teToggleCard(idx, ev){
+  try{
+    if(ev){
+      // remove button বা inner field-এ ক্লিক হলে toggle হবে না
+      const target = ev.target;
+      if(target && (target.closest('.te-card-remove') || target.tagName === 'SELECT' ||
+                    target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
+                    target.tagName === 'BUTTON' || target.tagName === 'LABEL')){
+        return;
+      }
+    }
+    const card = document.querySelector('#teachingEntriesList .te-card[data-te-idx="'+idx+'"]');
+    if(!card) return;
+    card.classList.toggle('te-collapsed');
+  }catch(_){}
+}
+
+/* সব এন্ট্রি একসাথে expand/collapse */
+function _teExpandAll(){
+  document.querySelectorAll('#teachingEntriesList .te-card').forEach(c => c.classList.remove('te-collapsed'));
+}
+function _teCollapseAll(){
+  document.querySelectorAll('#teachingEntriesList .te-card').forEach(c => c.classList.add('te-collapsed'));
+}
+
+/* 🆕 প্রতি sub-section (days/slots/notes/shared/fixed) collapse/expand toggle */
+function _teToggleSub(idx, subKey, headEl){
+  try{
+    if(!headEl){
+      headEl = document.querySelector('#teachingEntriesList .te-card[data-te-idx="'+idx+'"] .te-sub[data-te-sub="'+subKey+'"] .te-sub-head');
+    }
+    if(!headEl) return;
+    const sub = headEl.closest('.te-sub');
+    if(!sub) return;
+    sub.classList.toggle('te-sub-collapsed');
+  }catch(_){}
 }
 
 /* দিন চিপ toggle */
@@ -9243,10 +9548,11 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
     return af - bf;
   });
 
-  // প্রতি এন্ট্রির জন্য কয়টি slot — daysPerWeek > 0 হলে সেটা; নাহলে preferredSlots.length অথবা ১
+  // 🚨 CRITICAL: প্রতি entry = ঠিক ১টা slot column বসবে (পুরো সপ্তাহে)।
+  // entry.days[] সেই slot-এর dimension — কোন কোন দিনে ক্লাস হবে; এটা slot সংখ্যা নয়।
+  // (পুরোনো ভুল ছিল: daysPerWeek=6 → একই entry ৬ বার বসত → ৬ entry × ৬ = ৩৬ wants)
   fixedFirst.forEach(e => {
-    const want = e.daysPerWeek > 0 ? e.daysPerWeek
-                : (e.preferredSlots.length > 0 ? e.preferredSlots.length : 1);
+    const want = 1;             // ⛔ HARD-LOCKED — ১ entry = ১ slot, NEVER more
     const cls = e.class || '';
     const sec = e.section || '';
     const sub = e.subject || '';
@@ -9259,8 +9565,9 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
     const tryOrder = [];
     e.preferredSlots.forEach(sid => { if(slotById[sid]) tryOrder.push(slotById[sid]); });
     // চেষ্টা ২: 🔒 fixed হলে rotate করবো না — শুধু preferredSlots-ই চেষ্টা করবো।
-    // fixed না হলে fallback হিসেবে বাকি সব slot যোগ করবো।
-    if(!isFixed){
+    // fixed না হলে fallback হিসেবে বাকি সব slot যোগ করবো (কনফ্লিক্ট থাকলে অন্য slot)।
+    // Safety: fixed কিন্তু preferredSlots একদম খালি → rotate allow (নাহলে entry-ই বসবে না)।
+    if(!isFixed || tryOrder.length === 0){
       slotCols.forEach(c => { if(!e.preferredSlots.includes(c.id)) tryOrder.push(c); });
     }
 
@@ -9325,6 +9632,11 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
     }
   });
 
+  // 🛡 DEFENSE: placed কখনই entries.length ছাড়াতে পারবে না।
+  // এটা একটা invariant — কখনই break হওয়ার কথা নয়, কিন্তু future regression থেকে রক্ষা।
+  if(placed > entries.length){
+    console.warn('[_teApplyEntriesForTeacher] placed('+placed+') > entries('+entries.length+') — invariant violated for teacher', teacher && teacher.name);
+  }
   return {placed, usedEntries: entries.length};
 }
 
@@ -11110,11 +11422,13 @@ function autoGenerateRoutine(){
     if(!confirm(
         `⚙️ স্বয়ংক্রিয় রুটিন তৈরি\n\n` +
         `• ${toBnNum(teachers.length)} জন শিক্ষকের রুটিন তৈরি হবে\n` +
-        `• ${toBnNum(slotCols.length)} টি পিরিয়ড কলামে শুধু entry-অনুযায়ী ক্লাস বসবে\n` +
-        `• 🔒 লক করা ও ছুটিতে থাকা শিক্ষক অপরিবর্তিত থাকবে\n` +
-        `• 📌 Special Entry সর্বোচ্চ priority — overwrite হবে না\n` +
-        `• 🎯 প্রতিটি class entry = ১টি independent class slot\n` +
-        `• ⚠️ entry না থাকলে slot empty থাকবে (imaginary class তৈরি হবে না)\n\n` +
+        `• 🎯 প্রতি class entry = ঠিক ১টি স্বতন্ত্র slot (বেশি কখনই নয়)\n` +
+        `• ⏰ পছন্দের সময় (Preferred Time) প্রাধান্য পাবে\n` +
+        `• ⚠️ কনফ্লিক্ট হলে পছন্দ কার্যকর হবে না, অন্য slot-এ বসবে\n` +
+        `• 🔒 Fixed entry-গুলো পছন্দের slot-এই লক থাকবে (rotate হবে না)\n` +
+        `• 📌 Special Entry সর্বোচ্চ priority\n` +
+        `• ⚠️ entry না থাকলে slot empty থাকবে (imaginary class তৈরি হবে না)\n` +
+        `• 🔒 লক করা ও ছুটিতে থাকা শিক্ষক অপরিবর্তিত থাকবে\n\n` +
         `চালিয়ে যাবেন?`)){
       return;
     }
@@ -11127,6 +11441,8 @@ function autoGenerateRoutine(){
 
     let filled = 0, teachersDone = 0;
     let skippedNoEntry = 0;
+    let totalEntries = 0;      // 🆕 সব শিক্ষকের total teaching entries (target)
+    let conflictSkipped = 0;   // 🆕 কতটি entry conflict-এর কারণে বসেনি
 
     teachers.forEach((t, ti) => {
       if(!t.cells) t.cells = {};
@@ -11150,6 +11466,13 @@ function autoGenerateRoutine(){
       }catch(_){ entriesResult = null; }
 
       const placedHere = ((entriesResult && entriesResult.placed) || 0) + specialPlaced;
+      const tEntries = (entriesResult && entriesResult.usedEntries) || 0;
+      totalEntries += tEntries;
+      // কত entry conflict-এর কারণে বসাতে পারিনি (placed-এর মধ্যে শুধু regular entries — special আলাদা)
+      const tRegularPlaced = (entriesResult && entriesResult.placed) || 0;
+      if(tEntries > tRegularPlaced){
+        conflictSkipped += (tEntries - tRegularPlaced);
+      }
 
       if(placedHere > 0){
         filled += placedHere;
@@ -11173,12 +11496,15 @@ function autoGenerateRoutine(){
     renderTable();
     try{ populateBulk(); }catch(_){}
     try{ if(typeof refreshDashboardSilent === 'function') refreshDashboardSilent(false); }catch(_){}
-    audit('স্বয়ংক্রিয় রুটিন', `${teachersDone} শিক্ষক, ${filled} পিরিয়ড পূরণ${skippedNoEntry?', '+skippedNoEntry+' জনের entry নেই':''}`);
-    let msg = `✅ স্বয়ংক্রিয় রুটিন তৈরি — ${toBnNum(teachersDone)} জন শিক্ষক, ${toBnNum(filled)} টি পিরিয়ড`;
+    audit('স্বয়ংক্রিয় রুটিন', `${teachersDone} শিক্ষক, ${totalEntries} entries → ${filled} পিরিয়ড পূরণ${conflictSkipped?', '+conflictSkipped+' কনফ্লিক্ট skip':''}${skippedNoEntry?', '+skippedNoEntry+' জনের entry নেই':''}`);
+    let msg = `✅ স্বয়ংক্রিয় রুটিন তৈরি — ${toBnNum(teachersDone)} জন শিক্ষক, ${toBnNum(totalEntries)} টি entry থেকে ${toBnNum(filled)} টি পিরিয়ড বসানো হয়েছে`;
+    if(conflictSkipped > 0){
+      msg += ` (⚠️ ${toBnNum(conflictSkipped)} টি entry কনফ্লিক্টের কারণে বসেনি)`;
+    }
     if(skippedNoEntry > 0){
       msg += ` (⚠️ ${toBnNum(skippedNoEntry)} জনের কোনো entry নেই — slot empty রাখা হলো)`;
     }
-    showToast(msg, 'success', 5500);
+    showToast(msg, 'success', 6500);
   }catch(err){
     console.error('❌ autoGenerateRoutine error:', err);
     showToast('❌ স্বয়ংক্রিয় রুটিন ব্যর্থ: ' + err.message, 'error', 5000);
