@@ -1909,7 +1909,7 @@ input[type="range"]::-moz-range-thumb{
 .tms-master{
   background:linear-gradient(180deg, var(--surface-2) 0%, var(--surface) 100%);
   border:1.5px solid var(--border);border-radius:10px;
-  padding:12px 12px 6px;margin-bottom:14px;
+  padding:12px 12px 10px;margin-bottom:14px;
   position:relative;
 }
 .tms-master-head{
@@ -1920,6 +1920,30 @@ input[type="range"]::-moz-range-thumb{
 }
 .tms-master-hint{
   font-size:11px;font-weight:500;color:var(--text-3);font-style:italic;
+}
+/* 🆕 ৩টা picker পাশাপাশি ৩ কলামে — ১১২০px-এর নিচে ১ কলামে stack */
+.tms-master-grid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  gap:12px;
+  align-items:start;
+}
+.tms-master-grid .field{margin-bottom:0}
+.tms-master-grid .field label{
+  font-size:11.5px;font-weight:700;color:var(--text-1);
+  margin-bottom:6px;display:block;
+}
+.tms-master-grid .chip-picker{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:6px;
+  min-height:60px;
+  max-height:140px;overflow-y:auto;
+}
+@media(max-width:920px){
+  .tms-master-grid{grid-template-columns:1fr;gap:10px}
+  .tms-master-grid .chip-picker{max-height:none}
 }
 /* Red dot indicator — মাস্টার চিপ-এ ইতিমধ্যে এন্ট্রি আছে কিনা */
 .chip-picker .chip.has-entry{
@@ -4866,17 +4890,20 @@ body[data-role="manager"] .teacher-only{display:none !important}
             <span>🎯 মাস্টার নির্বাচন</span>
             <span class="tms-master-hint">এন্ট্রি শুরুর আগে এগুলো নির্বাচন করুন — এখান থেকেই dropdown ভরবে</span>
           </div>
-          <div class="field" style="margin-bottom:10px">
-            <label>📖 যে বিষয়গুলো পড়ান (একাধিক)</label>
-            <div class="chip-picker" id="subjectsPicker"></div>
-          </div>
-          <div class="field" style="margin-bottom:10px">
-            <label>🎓 যে শ্রেণিগুলোতে পড়ান (একাধিক)</label>
-            <div class="chip-picker" id="classesPicker"></div>
-          </div>
-          <div class="field" style="margin-bottom:4px">
-            <label>📑 যে শাখাগুলোতে পড়ান (একাধিক)</label>
-            <div class="chip-picker" id="sectionsPicker"></div>
+          <!-- 🆕 ৩টা picker পাশাপাশি ৩ কলামে — মোবাইলে ১ কলামে stack হবে -->
+          <div class="tms-master-grid">
+            <div class="field">
+              <label>📖 যে বিষয়গুলো পড়ান</label>
+              <div class="chip-picker" id="subjectsPicker"></div>
+            </div>
+            <div class="field">
+              <label>🎓 যে শ্রেণিগুলোতে পড়ান</label>
+              <div class="chip-picker" id="classesPicker"></div>
+            </div>
+            <div class="field">
+              <label>📑 যে শাখাগুলোতে পড়ান</label>
+              <div class="chip-picker" id="sectionsPicker"></div>
+            </div>
           </div>
         </div>
 
@@ -4902,25 +4929,16 @@ body[data-role="manager"] .teacher-only{display:none !important}
           <div class="te-list" id="teachingEntriesList"></div>
         </div>
 
-        <!-- ════ 🔀 SHARED / SPLIT SLOT SUMMARY ════
-             একই slot-এ ভিন্ন দিনে ভিন্ন বিষয়/শিক্ষক থাকলে এখানে দেখাবে -->
-        <div class="tms-shared-summary" id="sharedSlotSummary" style="display:none"></div>
-
-        <!-- ════ 🌟 SPECIAL HOUR / CLASS CONTROL ════
-             নির্দিষ্ট ঘন্টা+ক্লাস লক — Auto Routine এগুলো overwrite করতে পারবে না -->
-        <div class="ss-section" id="specialScheduleSection">
-          <div class="ss-header">
-            <div class="ss-title">🌟 স্পেশাল ঘন্টা / ক্লাস কন্ট্রোল</div>
-            <label class="ss-toggle" id="ssToggleLabel">
-              <input type="checkbox" id="ssEnableToggle" onchange="_ssToggleEnable(this.checked)">
-              <span id="ssToggleText">সক্রিয় করুন</span>
-            </label>
-          </div>
-          <div class="ss-help">
-            📌 এই section-এর প্রতিটি entry লক — Auto Routine বা Smart Solve কখনই এগুলো নাড়াতে/ওভাররাইট করতে পারবে না; বরং এগুলোর সাথে মিল রেখে বাকি রুটিন তৈরি হবে। dropdown শুধু উপরের মাস্টার-নির্বাচিত আইটেম দেখায়।
-          </div>
-          <button type="button" class="ss-add-btn" onclick="_ssAddEntry()">➕ নতুন স্পেশাল এন্ট্রি</button>
-          <div class="ss-list" id="ssEntriesList" style="margin-top:8px"></div>
+        <!-- 🔻 শেয়ার্ড / স্প্লিট স্লট সারাংশ এবং স্পেশাল ঘণ্টা / ক্লাস কন্ট্রোল
+             এই সেকশন দুটি বাদ দেওয়া হলো — কারণ এই কাজ প্রতি এন্ট্রির মধ্যেই রাখা আছে।
+             পুরোনো JS reference (sharedSlotSummary, ssEnableToggle, ssEntriesList, ইত্যাদি)
+             যাতে break না করে — তাই hidden placeholder রাখা হলো। -->
+        <div id="sharedSlotSummary" style="display:none"></div>
+        <div id="specialScheduleSection" style="display:none">
+          <input type="checkbox" id="ssEnableToggle" style="display:none">
+          <span id="ssToggleText" style="display:none"></span>
+          <span id="ssToggleLabel" style="display:none"></span>
+          <div id="ssEntriesList" style="display:none"></div>
         </div>
       </div>
 
@@ -7298,12 +7316,12 @@ function renderTable(){
     </td>`;
     // Req #6: Leave badge in name cell — schedule cells stay visible for proxy assignment
     const leaveBadgeHtml = t.onLeave ? `<div class="leave-badge" title="ছুটিতে আছেন — প্রক্সির জন্য ক্লাস তালিকা দৃশ্যমান">${esc(leaveText)}</div>` : '';
+    // 🔻 weekly badges (সপ্তাহের বিভিন্ন দিনের subject) সরানো হলো — শুধু নাম/পদবি/প্রধান বিষয় থাকবে
     const nameCellHtml = `<td class="col-name${teacherLocked?' is-locked':''}${t.onLeave?' is-on-leave':''}" rowspan="3"${nameBodyStyle} onclick="${teacherCanEdit?`editTeacher('${t.id}')`:''}">
       <div class="t-name">${esc(t.name)}</div>
       ${t.title?`<div class="t-meta">${esc(t.title)}</div>`:''}
       ${t.mainSubject?`<div class="t-meta">📚 ${esc(t.mainSubject)}</div>`:''}
       ${leaveBadgeHtml}
-      ${renderWeeklyBadges(t)}
     </td>`;
     body += swapped ? (nameCellHtml + slCellHtml) : (slCellHtml + nameCellHtml);
     state.columns.forEach(c=>{
