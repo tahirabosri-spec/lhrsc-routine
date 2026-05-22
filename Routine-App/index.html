@@ -474,8 +474,8 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   margin:0 auto 16px;
   box-shadow:var(--shadow);
 }
-.login-title{text-align:center;font-size:18px;font-weight:700;margin:0 0 4px;color:var(--text)}
-.login-subtitle{text-align:center;color:var(--text-2);font-size:13px;margin:0 0 24px}
+.login-title{text-align:center;font-size:21px;font-weight:800;margin:0 0 4px;color:var(--text);line-height:1.25;letter-spacing:.2px}
+.login-subtitle{text-align:center;color:var(--text-2);font-size:13.5px;font-weight:600;margin:0 0 24px}
 .login-card .field{margin-bottom:14px}
 .login-card label{display:block;font-size:12px;color:var(--text-2);margin-bottom:6px;font-weight:500}
 .login-card input,.login-card select{
@@ -528,9 +528,13 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   font-weight:700;font-size:18px;flex-shrink:0;
   backdrop-filter:blur(10px);
 }
-.brand-text{min-width:0}
-.brand-text h1{margin:0;font-size:15px;line-height:1.2;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.brand-text .sub{font-size:12px;opacity:.92;font-weight:500}
+.brand-text{min-width:0;flex:1}
+.brand-text h1{margin:0;font-size:22px;line-height:1.25;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}
+.brand-text .sub{font-size:13.5px;opacity:.95;font-weight:600;margin-top:2px}
+@media (max-width:680px){
+  .brand-text h1{font-size:16px;white-space:normal;line-height:1.2}
+  .brand-text .sub{font-size:12px}
+}
 .user-chip{
   display:flex;align-items:center;gap:8px;
   padding:6px 12px;
@@ -1901,6 +1905,7 @@ input[type="range"]::-moz-range-thumb{
   font-size:11px;font-weight:600;color:var(--text-1);
   transition:.12s;user-select:none;
   display:inline-flex;align-items:center;gap:4px;
+  position:relative;
 }
 .te-tslot-chip:hover{border-color:var(--primary,#0284c7)}
 .te-tslot-chip.selected{
@@ -1908,9 +1913,54 @@ input[type="range"]::-moz-range-thumb{
 }
 .te-tslot-chip .te-tslot-tick{font-size:9px;opacity:0}
 .te-tslot-chip.selected .te-tslot-tick{opacity:1}
+
+/* 🆕 Preferred-time conflict indicator — কতজন অন্য শিক্ষক এই slot prefer করছেন */
+.te-tslot-chip.has-conflict{
+  border-color:#fca5a5;
+  box-shadow:0 0 0 1px rgba(220,38,38,.15) inset;
+}
+.te-tslot-chip.has-conflict.selected{
+  border-color:#fff;
+  box-shadow:0 0 0 2px #dc2626 inset;
+}
+.te-tslot-pref-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:16px;height:16px;padding:0 4px;
+  background:#dc2626;color:#fff;
+  border-radius:99px;font-size:10px;font-weight:800;
+  margin-left:3px;line-height:1;
+  box-shadow:0 1px 2px rgba(0,0,0,.2);
+}
+.te-tslot-chip.selected .te-tslot-pref-badge{background:#fff;color:#dc2626}
+
 .te-tslot-empty{
   font-size:11px;color:var(--text-3);font-style:italic;padding:4px 2px;
 }
+
+/* 🆕 Preferred-time conflict badge — অন্য শিক্ষকেরাও এই slot prefer করছেন */
+.te-tslot-chip.has-conflict{border-color:#fca5a5;background:#fef2f2}
+.te-tslot-chip.has-conflict.selected{background:var(--primary,#0284c7);color:#fff;border-color:var(--primary,#0284c7)}
+.te-tslot-pref-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:16px;height:16px;padding:0 4px;
+  background:#dc2626;color:#fff;
+  border-radius:8px;font-size:10px;font-weight:800;
+  margin-left:4px;line-height:1;
+  box-shadow:0 0 0 2px #fff;
+}
+.te-tslot-chip.selected .te-tslot-pref-badge{
+  background:#fff;color:#dc2626;box-shadow:0 0 0 1.5px #dc2626;
+}
+
+/* 🔒 Fixed entry styles */
+.te-card.te-fixed{border-left:4px solid #f59e0b;background:linear-gradient(to right,#fffbeb 0%,transparent 50%)}
+.te-fixed-tag-inline{
+  display:inline-block;padding:1px 6px;border-radius:8px;
+  background:#fef3c7;color:#92400e;font-weight:800;font-size:10.5px;
+  border:1px solid #fde68a;
+}
+.te-fixed-row{background:#fef3c7;border-color:#fde68a !important}
+.te-fixed-row .te-shared-label{color:#92400e}
 
 /* Card header tweak — show entry summary inline */
 .te-card.te-flagged{border-left-color:#ef4444}
@@ -2034,6 +2084,11 @@ input[type="range"]::-moz-range-thumb{
   padding:1px 7px;border-radius:9px;
   font-size:10px;font-weight:700;
 }
+/* 🔒 Fixed-slot CSS — original definitions at lines ~1955 are used. Duplicates removed. */
+
+/* 🌟 SPECIAL ENTRY & 🔒 FIXED CELL CSS — original definitions at lines ~2325+
+   ডুপ্লিকেট সরানো হলো যাতে conflict না হয়। */
+
 
 /* Shared Slot Summary panel — Teaching tab নিচে */
 .tms-shared-summary{
@@ -2232,6 +2287,65 @@ input[type="range"]::-moz-range-thumb{
   display:flex;align-items:center;justify-content:center;
   border-radius:50%;
   pointer-events:none;line-height:1;
+}
+/* 🆕 Special Entry — visible "Special Entry" badge so users instantly see priority cells */
+.cell-subject.is-special-cell::before{
+  content:'Special Entry';
+  position:absolute;top:1px;right:2px;
+  font-size:8px;font-weight:800;
+  background:#10b981;color:#fff;
+  padding:1px 5px;border-radius:7px;
+  line-height:1.2;letter-spacing:.2px;
+  pointer-events:none;
+  box-shadow:0 1px 2px rgba(0,0,0,.15);
+  z-index:2;
+}
+/* 🆕 Fixed-entry cell — golden corner marker so admin sees fixed cells */
+.cell-subject.is-fixed-cell{position:relative}
+.cell-subject.is-fixed-cell::before{
+  content:'🔒';
+  position:absolute;top:1px;right:2px;
+  font-size:9px;
+  background:#f59e0b;color:#fff;
+  width:14px;height:14px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  pointer-events:none;line-height:1;
+}
+.cell-subject.is-fixed-cell.is-special-cell::before{
+  /* both special and fixed → keep "Special Entry" badge winning */
+  content:'Special Entry';
+  font-size:8px;font-weight:800;width:auto;height:auto;
+  padding:1px 5px;border-radius:7px;background:#10b981;
+}
+
+/* 🆕 Live Teacher Display — basic tab-এ teacher select-এর পরে বড় করে দেখানো */
+.live-teacher-display{
+  background:linear-gradient(135deg,var(--primary,#0f766e) 0%,#14b8a6 100%);
+  color:#fff;border-radius:14px;padding:16px 18px;margin-bottom:14px;
+  box-shadow:0 4px 12px rgba(15,118,110,.18);
+}
+.live-teacher-display .ltd-name{
+  font-size:24px;font-weight:800;line-height:1.2;
+  margin:0 0 6px 0;letter-spacing:.2px;
+  word-break:break-word;
+}
+.live-teacher-display .ltd-meta{
+  display:flex;flex-wrap:wrap;gap:10px;
+  font-size:14px;font-weight:500;opacity:.95;
+}
+.live-teacher-display .ltd-meta span{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.16);padding:4px 10px;border-radius:99px;
+  backdrop-filter:blur(8px);
+}
+.live-teacher-display .ltd-meta .ltd-empty{
+  background:transparent;font-style:italic;opacity:.7;
+}
+@media (max-width:520px){
+  .live-teacher-display{padding:12px 14px}
+  .live-teacher-display .ltd-name{font-size:19px}
+  .live-teacher-display .ltd-meta{font-size:12.5px;gap:6px}
 }
 
 /* 🟡 Yellow partial-coverage highlight — 6-দিনের নিচে coverage থাকলে */
@@ -3313,68 +3427,27 @@ body[data-role="manager"] .teacher-only{display:none !important}
      LOGIN SCREEN
 ============================================ -->
 <!-- 🏫 প্রতিষ্ঠান সেটআপ স্ক্রিন — প্রথমবার / কোড সেট না থাকলে -->
-<div class="login-bg" id="setupScreen" style="display:none">
-  <div class="login-card">
-    <div class="login-logo" id="setupLogo">রু</div>
-    <div class="login-title">রুটিন ম্যানেজমেন্ট সিস্টেম</div>
-    <div class="login-subtitle">আপনার প্রতিষ্ঠানের জন্য সেটআপ করুন</div>
-
-    <div id="setupChoiceView">
-      <div style="font-size:13px;color:var(--text-2);line-height:1.7;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:16px">
-        🏫 প্রতিটি প্রতিষ্ঠানের তথ্য সম্পূর্ণ আলাদা ও নিরাপদ থাকে। নতুন প্রতিষ্ঠান হলে কোড তৈরি করুন; আগের কোড থাকলে সেটি দিয়ে যুক্ত হোন।
-      </div>
-      <button class="tool-btn primary" style="width:100%;margin-bottom:10px;padding:13px" onclick="setupShowCreate()">🆕 নতুন প্রতিষ্ঠান তৈরি করুন</button>
-      <button class="tool-btn" style="width:100%;padding:13px" onclick="setupShowJoin()">🔑 বিদ্যমান কোড দিয়ে যুক্ত হোন</button>
-    </div>
-
-    <div id="setupCreateView" style="display:none">
-      <div class="field">
-        <label>প্রতিষ্ঠানের নাম <span style="color:#dc2626">*</span></label>
-        <input id="setupOrgName" type="text" autocomplete="off" placeholder="যেমন: ঢাকা মডেল স্কুল">
-      </div>
-      <div class="field">
-        <label>লোগো অক্ষর <span style="color:var(--text-3,#94a3b8);font-weight:400">(ঐচ্ছিক — সর্বোচ্চ ৩ অক্ষর)</span></label>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input id="setupOrgLogo" type="text" maxlength="3" autocomplete="off" placeholder="যেমন: ঢা" style="flex:1" oninput="setupLogoPreview()">
-          <div id="setupLogoPrev" style="width:48px;height:48px;border:1.5px solid var(--border);border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);font-weight:800;font-size:18px;flex:none">রু</div>
-        </div>
-      </div>
-      <div class="field">
-        <label>পরিচালক/অধ্যক্ষের নাম <span style="color:var(--text-3,#94a3b8);font-weight:400">(ঐচ্ছিক)</span></label>
-        <input id="setupOrgPrincipal" type="text" autocomplete="off" placeholder="যেমন: অধ্যক্ষ মোঃ রহিম">
-      </div>
-      <div style="font-size:11.5px;color:var(--text-3,#94a3b8);line-height:1.6;margin:-2px 0 12px">পরে সেটিংস → ব্র্যান্ডিং থেকে লোগো ছবি, রঙ ও সব তথ্য পরিবর্তন করতে পারবেন।</div>
-      <button class="tool-btn primary" style="width:100%;padding:13px;margin-bottom:8px" onclick="setupCreateOrg()">✅ কোড তৈরি করে শুরু করুন</button>
-      <button class="tool-btn" style="width:100%" onclick="setupBackToChoice()">← পেছনে</button>
-    </div>
-
-    <div id="setupCreatedView" style="display:none">
-      <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:8px">আপনার প্রতিষ্ঠানের কোড তৈরি হয়েছে। <strong style="color:#b45309">এই কোডটি সংরক্ষণ করে রাখুন</strong> — অন্য ডিভাইস/মোবাইলে যুক্ত হতে এটি লাগবে।</div>
-      <div style="display:flex;align-items:center;gap:8px;background:var(--surface-2);border:2px dashed var(--primary);border-radius:10px;padding:14px;margin-bottom:12px">
-        <code id="setupNewCode" style="font-size:20px;font-weight:800;letter-spacing:1px;color:var(--primary);flex:1;text-align:center;word-break:break-all"></code>
-        <button class="tool-btn" type="button" onclick="setupCopyCode()" title="কপি করুন">📋</button>
-      </div>
-      <button class="tool-btn primary" style="width:100%;padding:13px" onclick="setupFinish()">শুরু করুন →</button>
-    </div>
-
-    <div id="setupJoinView" style="display:none">
-      <div class="field">
-        <label>প্রতিষ্ঠান কোড</label>
-        <input id="setupJoinCode" type="text" autocomplete="off" placeholder="যেমন: DHAK-K7M2X9" style="text-transform:uppercase">
-      </div>
-      <button class="tool-btn primary" style="width:100%;padding:13px;margin-bottom:8px" onclick="setupJoinOrg()">🔑 যুক্ত হোন</button>
-      <button class="tool-btn" style="width:100%" onclick="setupBackToChoice()">← পেছনে</button>
-    </div>
-
-    <div id="setupError" class="login-error" style="margin-top:12px"></div>
-  </div>
+<!-- 🚫 Multi-school setup screen পুরোপুরি disable করা হয়েছে।
+     পুরোনো ID গুলো hidden placeholder হিসেবে রাখা হলো যাতে পুরোনো JS reference break না করে। -->
+<div class="login-bg" id="setupScreen" style="display:none !important">
+  <div id="setupChoiceView" style="display:none"></div>
+  <div id="setupCreateView" style="display:none"></div>
+  <div id="setupCreatedView" style="display:none"></div>
+  <div id="setupJoinView" style="display:none"></div>
+  <input type="hidden" id="setupOrgName">
+  <input type="hidden" id="setupOrgLogo">
+  <input type="hidden" id="setupOrgPrincipal">
+  <input type="hidden" id="setupJoinCode">
+  <div id="setupNewCode" style="display:none"></div>
+  <div id="setupLogoPrev" style="display:none"></div>
+  <div id="setupError" style="display:none"></div>
 </div>
 
 <div class="login-bg" id="loginScreen">
   <div class="login-card">
     <div class="login-logo" id="loginLogo">রু</div>
-    <div class="login-title" id="loginTitle">রুটিন ম্যানেজমেন্ট সিস্টেম</div>
-    <div class="login-subtitle" id="loginSubtitle">লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ</div>
+    <div class="login-title" id="loginTitle">লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ</div>
+    <div class="login-subtitle" id="loginSubtitle">রুটিন ম্যানেজমেন্ট সিস্টেম</div>
     <div class="field">
       <label>ভূমিকা নির্বাচন করুন</label>
       <select id="loginRole">
@@ -4579,16 +4652,24 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <button class="tch-tab active" data-tab="basic" onclick="switchTeacherTab('basic')">📝 মৌলিক তথ্য</button>
         <button class="tch-tab" data-tab="teaching" onclick="switchTeacherTab('teaching')">📚 পাঠদান</button>
         <button class="tch-tab" data-tab="time" onclick="switchTeacherTab('time')" style="display:none">⏰ সময়সূচি</button>
-        <button class="tch-tab" data-tab="weekly" onclick="switchTeacherTab('weekly')">📅 সাপ্তাহিক</button>
       </div>
 
       <!-- TAB 1: BASIC -->
       <div class="tch-pane active" data-pane="basic">
-        <div class="field"><label>শিক্ষকের নাম</label><input id="tEditName" type="text"></div>
+        <!-- 🆕 Live Teacher Display — uppercase name + title + main subject preview -->
+        <div class="live-teacher-display" id="liveTeacherDisplay">
+          <div class="ltd-name" id="ltdName">— শিক্ষকের নাম —</div>
+          <div class="ltd-meta">
+            <span id="ltdTitleWrap" style="display:none">🎖 <span id="ltdTitle">—</span></span>
+            <span id="ltdSubjectWrap" style="display:none">📖 <span id="ltdSubject">—</span></span>
+            <span class="ltd-empty" id="ltdEmpty" style="display:none">— পদবি / প্রধান বিষয় নির্বাচন করুন —</span>
+          </div>
+        </div>
+        <div class="field"><label>শিক্ষকের নাম</label><input id="tEditName" type="text" oninput="_updateLiveTeacherDisplay()"></div>
         <div class="field-row">
           <div class="field">
             <label>পদবি (Designation)</label>
-            <select id="tEditTitle">
+            <select id="tEditTitle" onchange="_updateLiveTeacherDisplay()">
               <option value="">— নির্বাচন করুন —</option>
               <option value="Lecturer">Lecturer (প্রভাষক)</option>
               <option value="Senior Teacher">Senior Teacher (সিনিয়র শিক্ষক)</option>
@@ -4598,7 +4679,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
           </div>
           <div class="field">
             <label>প্রধান বিষয় (Primary)</label>
-            <select id="tEditSubject">
+            <select id="tEditSubject" onchange="_updateLiveTeacherDisplay()">
               <option value="">— নির্বাচন করুন —</option>
             </select>
           </div>
@@ -4742,16 +4823,10 @@ body[data-role="manager"] .teacher-only{display:none !important}
       </div>
 
       <!-- TAB 4: WEEKLY ASSIGNMENTS (existing) -->
-      <div class="tch-pane" data-pane="weekly">
-        <div class="info-banner">
-          📅 প্রতিদিনের জন্য বিশেষ বিষয় নির্ধারণ (নাম এর পাশে দেখাবে)
-        </div>
-        <div class="weekly-grid" id="tEditWeeklyGrid"></div>
-
-        <div class="divider"></div>
-        <div class="field"><label>অন্যান্য নোট (ঐচ্ছিক)</label>
-          <textarea id="tEditWeekly" placeholder="যেকোনো বাড়তি তথ্য..." rows="2"></textarea>
-        </div>
+      <div class="tch-pane" data-pane="weekly" style="display:none !important">
+        <!-- সাপ্তাহিক সেকশন remove করা হয়েছে — কিন্তু পুরোনো JS reference (tEditWeekly, tEditWeeklyGrid) যাতে break না করে তাই hidden placeholder রাখা হলো -->
+        <textarea id="tEditWeekly" style="display:none"></textarea>
+        <div id="tEditWeeklyGrid" style="display:none"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -5162,63 +5237,32 @@ const STORAGE_KEY = 'lhrsc_routine_v1';
 const BACKUP_KEY = 'lhrsc_routine_backups';
 
 /* ===========================================================
-   🏫 মাল্টি-টেন্যান্ট: প্রতিষ্ঠান-কোড অনুযায়ী আলাদা ডেটা-পথ
+   🏫 SINGLE-TENANT MODE (Multi-school support removed)
    ───────────────────────────────────────────────────────────
-   • প্রতিষ্ঠান-কোড থাকে localStorage-এ (ডিভাইস-নির্দিষ্ট, কখনো
-     Firebase-এ সিঙ্ক হয় না — তাই কোনো লুপ/সংঘর্ষ নেই)।
-   • কোড না থাকলে পুরোনো 'routineData' পথই ব্যবহৃত হয় →
-     বর্তমান LHRSC স্কুলের ডেটা ১০০% অক্ষত, কিছুই হারাবে না।
-   • কোড থাকলে ডেটা যায় 'schools/CODE'-তে → প্রতিটি প্রতিষ্ঠান
-     সম্পূর্ণ আলাদা ঘরে, কেউ কারো ডেটা দেখবে না।
+   • আগে multi-school code এর জন্য getOrgCode/setOrgCode/setup*
+     functions ছিল। সেগুলো এখন no-op হয়ে গেছে যাতে কোনো leftover
+     caller break না করে — কিন্তু সব ডেটা পুরোনো পথেই থাকছে।
+   • fbDataPath() সব সময় LEGACY_FB_PATH ('routineData') ফেরত দেয়
+     → বর্তমান স্কুলের সব ডেটা ১০০% intact।
+   • localStorage key, Firebase path, teacher info, routine engine
+     — কিছুই পরিবর্তন হয়নি।
 =========================================================== */
-const ORG_CODE_KEY = 'routineOrgCode';      // localStorage key (device-local)
-const LEGACY_FB_PATH = 'routineData';        // পুরোনো একক পথ (ব্যাকওয়ার্ড-সেফ)
+const ORG_CODE_KEY = 'routineOrgCode';      // legacy key — retained but unused
+const LEGACY_FB_PATH = 'routineData';        // একমাত্র Firebase path
 
-/* বর্তমান প্রতিষ্ঠান-কোড (না থাকলে খালি স্ট্রিং = লিগ্যাসি মোড) */
-function getOrgCode(){
-  try{
-    const c = localStorage.getItem(ORG_CODE_KEY);
-    return (typeof c === 'string' && c.trim()) ? c.trim() : '';
-  }catch(e){ return ''; }
-}
+/* No-op: সব সময় খালি string → single-tenant */
+function getOrgCode(){ return ''; }
 
-/* প্রতিষ্ঠান-কোড সেট/মুছা (শুধু localStorage — Firebase নয়) */
-function setOrgCode(code){
-  try{
-    if(code && String(code).trim()){
-      localStorage.setItem(ORG_CODE_KEY, String(code).trim());
-    } else {
-      localStorage.removeItem(ORG_CODE_KEY);
-    }
-  }catch(e){ console.warn('setOrgCode failed:', e); }
-}
+/* No-op: কোনো কিছু সেট করে না */
+function setOrgCode(code){ /* disabled — single-tenant mode */ }
 
-/* Firebase ডেটা-পথ — কোড থাকলে schools/CODE, নাহলে পুরোনো পথ।
-   সব Firebase কল (save / read / reset) এই একটিই ফাংশন ব্যবহার করে,
-   ফলে পথ কখনো অসামঞ্জস্য হবে না (বাগ-মুক্ত)। */
+/* সর্বদা legacy path — সব ডেটা একই জায়গায় */
 function fbDataPath(){
-  const code = getOrgCode();
-  if(!code) return LEGACY_FB_PATH;
-  // কোড স্যানিটাইজ: Firebase পাথে . # $ [ ] / অনুমোদিত নয়
-  const safe = code.replace(/[.#$\[\]\/\s]/g, '_');
-  return 'schools/' + safe;
+  return LEGACY_FB_PATH;
 }
 
-/* নতুন প্রতিষ্ঠানের জন্য সংঘর্ষমুক্ত ইউনিক কোড তৈরি।
-   ফরম্যাট: PREFIX-XXXX (নাম থেকে প্রিফিক্স + র‍্যান্ডম, অস্পষ্ট অক্ষর বাদ) */
-function generateOrgCode(orgName){
-  const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // I,O,0,1 বাদ (বিভ্রান্তি এড়াতে)
-  let prefix = '';
-  const cleaned = String(orgName || '').toUpperCase().replace(/[^A-Z]/g, '');
-  prefix = cleaned.slice(0, 4) || 'SCHL';
-  let rand = '';
-  for(let i=0;i<5;i++){
-    rand += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
-  }
-  // সময়-ভিত্তিক বাড়তি অংশ — একই মুহূর্তেও সংঘর্ষ এড়াতে
-  const t = Date.now().toString(36).toUpperCase().slice(-3);
-  return prefix + '-' + rand + t;
-}
+/* No-op stub — কেউ কল করলে empty string ফেরত */
+function generateOrgCode(orgName){ return ''; }
 
 
 /* Weekday constants */
@@ -6008,144 +6052,30 @@ function applyPermissionVisibility(){
 }
 
 /* ===========================================================
-   🏫 প্রতিষ্ঠান সেটআপ স্ক্রিন — কন্ট্রোলার
+   🏫 SETUP SCREEN CONTROLLERS (single-tenant — no-op stubs)
+   পুরোনো multi-school setup logic পুরোপুরি removed; এই ফাংশনগুলো
+   শুধু safety stub হিসেবে আছে যাতে পুরোনো reference break না করে।
 =========================================================== */
-function _setupShow(viewId){
-  ['setupChoiceView','setupCreateView','setupCreatedView','setupJoinView'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.style.display = (id === viewId) ? 'block' : 'none';
-  });
-  const err = document.getElementById('setupError');
-  if(err){ err.textContent = ''; err.classList.remove('show'); }
-}
-function _setupErr(msg){
-  const err = document.getElementById('setupError');
-  if(err){ err.textContent = msg; err.classList.add('show'); }
-}
-function setupShowCreate(){ _setupShow('setupCreateView'); setupLogoPreview(); setTimeout(()=>{ const i=document.getElementById('setupOrgName'); if(i) i.focus(); }, 50); }
-function setupShowJoin(){ _setupShow('setupJoinView'); setTimeout(()=>{ const i=document.getElementById('setupJoinCode'); if(i) i.focus(); }, 50); }
-function setupBackToChoice(){ _setupShow('setupChoiceView'); }
-
-/* সেটআপ স্ক্রিনে লোগো অক্ষরের লাইভ প্রিভিউ */
-function setupLogoPreview(){
-  const inp = document.getElementById('setupOrgLogo');
-  const prev = document.getElementById('setupLogoPrev');
-  if(!prev) return;
-  const v = (inp ? inp.value : '').trim();
-  prev.textContent = v || 'রু';
-}
-
+function _setupShow(viewId){ /* no-op */ }
+function _setupErr(msg){ /* no-op */ }
+function setupShowCreate(){ /* no-op */ }
+function setupShowJoin(){ /* no-op */ }
+function setupBackToChoice(){ /* no-op */ }
+function setupLogoPreview(){ /* no-op */ }
 let _pendingNewCode = '';
-function setupCreateOrg(){
-  const nameEl = document.getElementById('setupOrgName');
-  const name = (nameEl ? nameEl.value : '').trim();
-  if(!name){ _setupErr('প্রতিষ্ঠানের নাম লিখুন'); return; }
-  if(name.length < 2){ _setupErr('নামটি খুব ছোট'); return; }
-  _pendingNewCode = generateOrgCode(name);
-  // নতুন প্রতিষ্ঠানের প্রাথমিক ব্র্যান্ডিং (নাম + ঐচ্ছিক লোগো/পরিচালক)।
-  // পরে সেটিংস → ব্র্যান্ডিং থেকে সব বদলানো যাবে।
-  try{
-    if(!state.branding || typeof state.branding !== 'object') state.branding = {};
-    state.branding.schoolName = name;
-    const logoV = (document.getElementById('setupOrgLogo')||{}).value;
-    const princV = (document.getElementById('setupOrgPrincipal')||{}).value;
-    if(logoV && logoV.trim()) state.branding.logo = logoV.trim().slice(0,3);
-    if(princV && princV.trim()) state.branding.principal = princV.trim();
-  }catch(_){}
-  const codeEl = document.getElementById('setupNewCode');
-  if(codeEl) codeEl.textContent = _pendingNewCode;
-  _setupShow('setupCreatedView');
-}
+function setupCreateOrg(){ /* no-op */ }
+function setupCopyCode(){ /* no-op */ }
+function _setupFallbackCopy(text){ /* no-op */ }
+function setupCreatedFinishGuard(){ return false; }
+function setupFinish(){ /* no-op */ }
+function setupJoinOrg(){ /* no-op */ }
+function _applyPendingBrandingIfAny(){ /* no-op */ }
 
-function setupCopyCode(){
-  const code = _pendingNewCode || (document.getElementById('setupNewCode')||{}).textContent || '';
-  if(!code) return;
-  try{
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(code).then(
-        ()=> showToast('📋 কোড কপি হয়েছে','success',2000),
-        ()=> _setupFallbackCopy(code)
-      );
-    } else { _setupFallbackCopy(code); }
-  }catch(e){ _setupFallbackCopy(code); }
-}
-function _setupFallbackCopy(text){
-  try{
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    showToast('📋 কোড কপি হয়েছে','success',2000);
-  }catch(e){ showToast('কপি করা গেল না — কোডটি হাতে লিখে রাখুন','warning',3000); }
-}
-
-function setupCreatedFinishGuard(){ return !!_pendingNewCode; }
-function setupFinish(){
-  if(!_pendingNewCode){ _setupErr('কোড তৈরি হয়নি'); return; }
-  // নতুন প্রতিষ্ঠানের ব্র্যান্ডিং অস্থায়ীভাবে সংরক্ষণ করি — reload-এর পর
-  // localStorage মুছে যাওয়ায় এটি না রাখলে নাম/লোগো হারিয়ে যেত (বাগ)।
-  try{
-    const seed = {
-      schoolName: (state.branding && state.branding.schoolName) || '',
-      logo: (state.branding && state.branding.logo) || '',
-      principal: (state.branding && state.branding.principal) || ''
-    };
-    localStorage.setItem('routinePendingBranding', JSON.stringify(seed));
-  }catch(_){}
-  setOrgCode(_pendingNewCode);
-  // নতুন আলাদা ওয়ার্কস্পেস — পরিষ্কার অবস্থা থেকে শুরু (লিগ্যাসি ডেটা মিশবে না)
-  try{ localStorage.removeItem(STORAGE_KEY); }catch(_){}
-  location.reload();
-}
-
-function setupJoinOrg(){
-  const el = document.getElementById('setupJoinCode');
-  let code = (el ? el.value : '').trim().toUpperCase();
-  if(!code){ _setupErr('প্রতিষ্ঠান কোড লিখুন'); return; }
-  if(code.length < 4){ _setupErr('কোডটি সঠিক নয়'); return; }
-  setOrgCode(code);
-  try{ localStorage.removeItem(STORAGE_KEY); }catch(_){}
-  location.reload();
-}
-
-/* নতুন প্রতিষ্ঠান সেটআপের পর reload হলে — setupFinish() যে অস্থায়ী
-   ব্র্যান্ডিং রেখেছিল তা state-এ বসাই ও একবার সংরক্ষণ করি, তারপর
-   অস্থায়ী কী মুছে দিই (একবারই চলবে)। ডেটা/কাঠামোয় কোনো ঝুঁকি নেই —
-   শুধু branding অবজেক্টের ৩টি ফিল্ড সেট হয়। */
-function _applyPendingBrandingIfAny(){
-  let seed = null;
-  try{
-    const raw = localStorage.getItem('routinePendingBranding');
-    if(raw) seed = JSON.parse(raw);
-  }catch(_){ seed = null; }
-  if(!seed || typeof seed !== 'object') return;
-  try{
-    if(!state.branding || typeof state.branding !== 'object') state.branding = {};
-    if(seed.schoolName) state.branding.schoolName = String(seed.schoolName);
-    if(seed.logo) state.branding.logo = String(seed.logo).slice(0,3);
-    if(seed.principal) state.branding.principal = String(seed.principal);
-    // অস্থায়ী কী মুছে দাও — যাতে ভবিষ্যতে আর প্রয়োগ না হয়
-    localStorage.removeItem('routinePendingBranding');
-    // লোকালি সংরক্ষণ (Firebase সিঙ্ক লগইনের পর স্বাভাবিকভাবে হবে)
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(_){}
-  }catch(e){ console.warn('apply pending branding failed:', e); }
-}
-
-/* অ্যাপ চালুর সময় — কোড সেট না থাকলে সেটআপ স্ক্রিন দেখাও।
-   কোড থাকলে false ফেরত → স্বাভাবিক লগইন/অটো-লগইন চলবে। */
+/* অ্যাপ চালুর সময় — single-tenant mode-এ কখনই setup screen দেখাব না। */
 function maybeShowSetupScreen(){
-  if(getOrgCode()) return false;          // কোড আছে — সেটআপ লাগবে না
-  // লিগ্যাসি সুরক্ষা: পুরোনো LHRSC ডিভাইসে ইতিমধ্যে ডেটা থাকলে সেটআপ
-  // স্ক্রিন দেখিয়ে বিভ্রান্ত করব না — পুরোনো পথেই স্বাভাবিক চলবে।
-  let hasLegacyData = false;
-  try{ hasLegacyData = !!localStorage.getItem(STORAGE_KEY); }catch(_){}
-  if(hasLegacyData) return false;
   const ss = document.getElementById('setupScreen');
-  const ls = document.getElementById('loginScreen');
-  if(ss) ss.style.display = 'flex';
-  if(ls) ls.style.display = 'none';
-  _setupShow('setupChoiceView');
-  return true;
+  if(ss) ss.style.display = 'none';
+  return false;
 }
 
 /* ---- লগইন: বিশ্বস্ত ডিভাইস যাচাই ---- */
@@ -7060,8 +6990,8 @@ function renderBranding(){
   // 🏷️ হোয়াইট-লেবেল: লগইন ও সেটআপ স্ক্রিনেও প্রতিষ্ঠানের নিজস্ব পরিচয়
   _applyLogoTo(document.getElementById('loginLogo'), b);
   _applyLogoTo(document.getElementById('setupLogo'), b);
-  setTxt('loginTitle', b.systemName);
-  setTxt('loginSubtitle', b.schoolName);
+  setTxt('loginTitle', b.schoolName);
+  setTxt('loginSubtitle', b.systemName);
   const hdr = document.querySelector('.app-header');
   if(hdr && b.headerGradient) hdr.style.background = b.headerGradient;
   if(b.headerGradient) document.documentElement.style.setProperty('--header-bg', b.headerGradient);
@@ -7278,6 +7208,7 @@ function renderTable(){
         } else {
           const isSharedCell = (Array.isArray(cell.days) && cell.days.length) || (Array.isArray(cell.parts) && cell.parts.length);
           const isSpecialCell = !!(cell.special || cell.locked);
+          const isFixedCell   = !!cell.fixed;
           // 6-day coverage check (only meaningful if cell has class+subject)
           let isPartial = false, coverageN = 0;
           try{
@@ -7286,13 +7217,18 @@ function renderTable(){
               if(cv && cv.status === 'partial'){ isPartial = true; coverageN = cv.covered; }
             }
           }catch(_){}
-          const sharedTitle = isSharedCell ? ` title="🔀 শেয়ার্ড স্লট — পাঠদান ট্যাবে বিস্তারিত দেখুন"`
-                            : (isSpecialCell ? ` title="📌 স্পেশাল লকড — স্বয়ংক্রিয় রুটিন এটি পরিবর্তন করে না"`
-                            : (isPartial ? ` title="🟡 আংশিক — ${coverageN}/6 দিন coverage; অন্য শিক্ষক প্রয়োজন"` : ''));
+          const sharedTitle = isSharedCell ? ` title="🔀 শেয়ার্ড স্লট — পাঠদান ট্যাবে বিস্তারিত দেখুন${cell.sharedNote?' • '+cell.sharedNote.replace(/"/g,'&quot;'):''}"`
+                            : (isSpecialCell ? ` title="📌 Special Entry — সর্বোচ্চ priority, স্বয়ংক্রিয় রুটিন এটি পরিবর্তন করে না"`
+                            : (isFixedCell ? ` title="🔒 ফিক্সড স্লট — entry-তে preferred slot লক করা"`
+                            : (isPartial ? ` title="🟡 আংশিক — ${coverageN}/6 দিন coverage; অন্য শিক্ষক প্রয়োজন"` : '')));
           const covData = isPartial ? ` data-cov="${toBnNum(coverageN)}/৬"` : '';
-          body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}${isSharedCell?' is-shared-cell':''}${isSpecialCell?' is-special-cell':''}${isPartial?' is-partial-coverage':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}${sharedTitle}${covData}>
+          // 🆕 শেয়ার্ড slot-এ custom লেবেল থাকলে সেটাই render হবে (যেমন "English + ICT")
+          const displaySubject = (isSharedCell && cell.sharedNote && cell.sharedNote.trim())
+                                   ? cell.sharedNote
+                                   : (cell.subject || '—');
+          body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}${isSharedCell?' is-shared-cell':''}${isSpecialCell?' is-special-cell':''}${isFixedCell && !isSpecialCell?' is-fixed-cell':''}${isPartial?' is-partial-coverage':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}${sharedTitle}${covData}>
             <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
-              <span class="row-label">বিষয়</span>${esc(cell.subject||'—')}
+              <span class="row-label">বিষয়</span>${esc(displaySubject)}
             </div></td>`;
         }
       });
@@ -8174,6 +8110,42 @@ function addTeacher(){
   }
 }
 
+/* 🆕 Live Teacher Display — basic tab-এর উপরে বড় করে নাম + পদবি + প্রধান বিষয় দেখায়।
+   tEditName / tEditTitle / tEditSubject পরিবর্তিত হলেই এই function called হয়। */
+function _updateLiveTeacherDisplay(){
+  try{
+    const name  = (document.getElementById('tEditName')||{}).value || '';
+    const titleSel = document.getElementById('tEditTitle');
+    const subjSel  = document.getElementById('tEditSubject');
+    const title = titleSel ? (titleSel.options[titleSel.selectedIndex]||{}).text || '' : '';
+    const subj  = subjSel  ? (subjSel.options[subjSel.selectedIndex]||{}).text || '' : '';
+    const titleVal = titleSel ? titleSel.value : '';
+    const subjVal  = subjSel  ? subjSel.value : '';
+
+    const ltdName = document.getElementById('ltdName');
+    if(ltdName) ltdName.textContent = name.trim() || '— শিক্ষকের নাম —';
+
+    const titleWrap = document.getElementById('ltdTitleWrap');
+    const titleTxt  = document.getElementById('ltdTitle');
+    const subjWrap  = document.getElementById('ltdSubjectWrap');
+    const subjTxt   = document.getElementById('ltdSubject');
+    const emptyEl   = document.getElementById('ltdEmpty');
+
+    let anyMeta = false;
+    if(titleWrap && titleTxt){
+      if(titleVal && title && title !== '— নির্বাচন করুন —'){
+        titleTxt.textContent = title; titleWrap.style.display=''; anyMeta = true;
+      } else { titleWrap.style.display='none'; }
+    }
+    if(subjWrap && subjTxt){
+      if(subjVal && subj && subj !== '— নির্বাচন করুন —'){
+        subjTxt.textContent = subj; subjWrap.style.display=''; anyMeta = true;
+      } else { subjWrap.style.display='none'; }
+    }
+    if(emptyEl) emptyEl.style.display = anyMeta ? 'none' : '';
+  }catch(_){ /* silent */ }
+}
+
 function editTeacher(tid){
   if(routineLocked() && canFullEdit()){showToast('🔒 রুটিন লক করা আছে — আনলক করে এডিট করুন','warning',2200);return}
   if(!canEditTeacher(tid)){showToast('অনুমতি নেই','error');return}
@@ -8225,19 +8197,22 @@ function editTeacher(tid){
   // Additional notes
   document.getElementById('tEditNotes').value = t.notes || '';
 
-  // Weekly assignments grid
+  // Weekly assignments grid (📅 সাপ্তাহিক সেকশন removed from UI, but hidden placeholder preserved
+  //   so legacy logic doesn't break — write only if element exists)
   const grid = document.getElementById('tEditWeeklyGrid');
   if(!t.weeklyAssignments) t.weeklyAssignments = {};
-  grid.innerHTML = WEEK_DAYS.map(d=>{
-    const cur = t.weeklyAssignments[d.key] || '';
-    return `<div class="weekly-row">
-      <div class="weekly-day">${d.bn}<span class="weekly-day-en">${d.short}</span></div>
-      <select class="weekly-subject" data-day="${d.key}">
-        <option value="">— কোনো বিষয় না —</option>
-        ${SUBJECT_LIST.map(s=>`<option value="${esc(s)}" ${cur===s?'selected':''}>${esc(s)}</option>`).join('')}
-      </select>
-    </div>`;
-  }).join('');
+  if(grid){
+    grid.innerHTML = WEEK_DAYS.map(d=>{
+      const cur = t.weeklyAssignments[d.key] || '';
+      return `<div class="weekly-row">
+        <div class="weekly-day">${d.bn}<span class="weekly-day-en">${d.short}</span></div>
+        <select class="weekly-subject" data-day="${d.key}">
+          <option value="">— কোনো বিষয় না —</option>
+          ${SUBJECT_LIST.map(s=>`<option value="${esc(s)}" ${cur===s?'selected':''}>${esc(s)}</option>`).join('')}
+        </select>
+      </div>`;
+    }).join('');
+  }
 
   // Reset to first tab
   switchTeacherTab('basic');
@@ -8247,17 +8222,20 @@ function editTeacher(tid){
   document.getElementById('tEditName').readOnly = teacherOnly;
   document.getElementById('tEditTitle').disabled = teacherOnly;
   document.getElementById('tEditSubject').disabled = teacherOnly;
-  document.getElementById('tEditWeekly').readOnly = teacherOnly;
+  const tew = document.getElementById('tEditWeekly'); if(tew) tew.readOnly = teacherOnly;
   document.getElementById('tEditNotes').readOnly = teacherOnly;
   document.getElementById('tEditWeeklyTotal').readOnly = teacherOnly;
   // Req #4: mobile fields readonly for teacher role
   document.getElementById('tEditMobile1').readOnly = teacherOnly;
   document.getElementById('tEditMobile2').readOnly = teacherOnly;
   ['tEditSlotMorning','tEditSlotLateMorning','tEditSlotAfternoon','tEditSlotEvening'].forEach(id => {
-    document.getElementById(id).readOnly = teacherOnly;
+    const el = document.getElementById(id); if(el) el.readOnly = teacherOnly;
   });
-  grid.querySelectorAll('select').forEach(s=>{ s.disabled = teacherOnly; });
+  if(grid){ grid.querySelectorAll('select').forEach(s=>{ s.disabled = teacherOnly; }); }
   document.getElementById('tDeleteBtn').style.display = canFullEdit() ? '' : 'none';
+
+  // 🆕 Update Live Teacher Display once fields are filled
+  try{ _updateLiveTeacherDisplay(); }catch(_){}
 
   openModal('teacherModal');
 }
@@ -8307,7 +8285,11 @@ function _teNewEntry(){
     // এই শিক্ষক/বিষয় শুধু সেই দিনগুলোতেই এই slot দখল করেন; বাকি দিনে
     // অন্য teacher/subject একই slot ব্যবহার করতে পারে।
     shared: false,
-    sharedNote: ''
+    sharedNote: '',
+    // 🔒 FIXED SLOT — true হলে এই entry-র preferredSlots লকড থাকবে।
+    // স্বয়ংক্রিয় রুটিন কখনই এই slot পরিবর্তন করতে পারবে না।
+    // অন্য slot-এ rotate-ও হবে না — শুধু preferredSlots-এই বসবে।
+    fixed: false
   };
 }
 function _teSanitizeEntry(raw){
@@ -8331,6 +8313,8 @@ function _teSanitizeEntry(raw){
   // 🔀 Shared slot — preserve, accept বাংলা/ইংরেজি key
   e.shared = !!(raw.shared || raw['শেয়ার্ড'] || raw['split'] || raw['স্প্লিট']);
   e.sharedNote = String(raw.sharedNote || raw['শেয়ার্ড_নোট'] || '').trim();
+  // 🔒 Fixed slot — preserve flag (auto-generator never moves these)
+  e.fixed = !!(raw.fixed || raw['ফিক্সড'] || raw['locked'] || raw['স্থির']);
   return e;
 }
 function _teOptions(kind){
@@ -8363,12 +8347,31 @@ function renderTeachingEntries(teacher){
   if(!entries.length){
     host.innerHTML = '<div class="te-empty">এখনো কোনো এন্ট্রি যোগ করা হয়নি। উপরে <strong>➕ নতুন এন্ট্রি</strong> বাটনে ক্লিক করুন।</div>';
   } else {
-    // মাস্টার নির্বাচন + usage map — সব কার্ডে একই ctx পাঠাই
+    // 🆕 প্রতি slot-এ অন্যান্য শিক্ষকের প্রেফারেন্স গণনা (current teacher বাদ)
+    const prefSlotCount = new Map();
+    try{
+      (state.teachers || []).forEach(other => {
+        if(!other || other.id === teacher.id) return;
+        if(!Array.isArray(other.teachingEntries)) return;
+        const slotSeen = new Set();  // একই শিক্ষকের একই slot একাধিক entry-তে থাকলেও ১বার গণনা
+        other.teachingEntries.forEach(raw => {
+          const ee = _teSanitizeEntry(raw);
+          (ee.preferredSlots || []).forEach(sid => {
+            if(slotSeen.has(sid)) return;
+            slotSeen.add(sid);
+            prefSlotCount.set(sid, (prefSlotCount.get(sid) || 0) + 1);
+          });
+        });
+      });
+    }catch(_){}
+
+    // মাস্টার নির্বাচন + usage map + slot-preference count — সব কার্ডে একই ctx পাঠাই
     const ctx = {
       masterSub: _teMasterValues('subject'),
       masterCls: _teMasterValues('class'),
       masterSec: _teMasterValues('section'),
-      usage: _teUsageMaps(entries)
+      usage: _teUsageMaps(entries),
+      prefSlotCount: prefSlotCount
     };
     host.innerHTML = entries.map((e, idx) => _teCardHTML(_teSanitizeEntry(e), idx, ctx)).join('');
   }
@@ -8557,6 +8560,10 @@ function _teCardHTML(e, idx, ctx){
     </div>`;
   }).join('');
 
+  // 🆕 Preferred-time conflict count — কতজন অন্য শিক্ষক এই slot prefer করছেন
+  // ctx.prefSlotCount: Map slotId → count (current teacher বাদ দিয়ে গণনা)
+  const prefCount = (ctx && ctx.prefSlotCount) || new Map();
+
   // Time-slot grouped picker
   const groupHTML = ['morning','lateMorning','afternoon','evening'].map(gk => {
     const g = groups[gk];
@@ -8570,8 +8577,12 @@ function _teCardHTML(e, idx, ctx){
     const selInGroup = g.cols.filter(c => selSlots.has(c.id)).length;
     const chips = g.cols.map(c => {
       const sel = selSlots.has(c.id);
-      return `<span class="te-tslot-chip ${sel?'selected':''}" data-te-slot="${c.id}" onclick="_teToggleSlot(${idx}, '${c.id}', this)" title="${_teEsc(c.label||'')}">
-        <span class="te-tslot-tick">✓</span>${_teEsc(c.label || c.id)}
+      const n = prefCount.get(c.id) || 0;
+      const indicator = n > 0
+        ? `<span class="te-tslot-pref-badge" title="${_teBnNum(n)} জন অন্য শিক্ষকও এই সময় prefer করেছেন">${_teBnNum(n)}</span>`
+        : '';
+      return `<span class="te-tslot-chip ${sel?'selected':''} ${n>0?'has-conflict':''}" data-te-slot="${c.id}" onclick="_teToggleSlot(${idx}, '${c.id}', this)" title="${_teEsc(c.label||'')}${n>0?' — '+n+' জন অন্য শিক্ষকও prefer করছেন':''}">
+        <span class="te-tslot-tick">✓</span>${_teEsc(c.label || c.id)}${indicator}
       </span>`;
     }).join('');
     return `<div class="te-tslot-group g-${gk}">
@@ -8586,8 +8597,9 @@ function _teCardHTML(e, idx, ctx){
   const flagged = isUsedSub || isUsedCls || isUsedSec;
   const colorClass = 'te-c-' + (idx % 8);  // ৮টা soft color cycle
   const sharedClass = e.shared ? 'te-shared' : '';
+  const fixedClass  = e.fixed  ? 'te-fixed' : '';
   const cardSummary = (e.subject || e.class || e.section)
-    ? `<div class="te-card-summary"><b>${_teEsc(e.subject||'—')}</b> · ${_teEsc(e.class||'—')} · শাখা ${_teEsc(e.section||'—')} · দিন ${_teBnNum(selDays.size)} · slot ${_teBnNum(selSlots.size)}${e.shared?' · <span class=\"te-shared-tag-inline\">🔀 শেয়ার্ড</span>':''}</div>`
+    ? `<div class="te-card-summary"><b>${_teEsc(e.subject||'—')}</b> · ${_teEsc(e.class||'—')} · শাখা ${_teEsc(e.section||'—')} · দিন ${_teBnNum(selDays.size)} · slot ${_teBnNum(selSlots.size)}${e.shared?' · <span class=\"te-shared-tag-inline\">🔀 শেয়ার্ড</span>':''}${e.fixed?' · <span class=\"te-fixed-tag-inline\">🔒 ফিক্সড</span>':''}</div>`
     : '';
 
   // Shared-slot toggle + note (additive — collapsed by default if not shared)
@@ -8599,13 +8611,24 @@ function _teCardHTML(e, idx, ctx){
         <span class="te-shared-help">${e.shared?'<b>সক্রিয়</b> — উপরের নির্বাচিত দিনগুলোতে এই বিষয়; বাকি দিনে অন্য শিক্ষক একই slot ব্যবহার করতে পারবেন।':'একই slot-এ ভিন্ন দিনে ভিন্ন বিষয়/শিক্ষক রাখতে চাইলে enable করুন।'}</span>
       </label>
       ${e.shared ? `<div class="te-field" style="margin-top:6px">
-        <label>📝 শেয়ার্ড স্লট বর্ণনা (ঐচ্ছিক — যেমন: "শনি-সোম জীববিজ্ঞান, মঙ্গল-বুধ গণিত")</label>
-        <input type="text" data-te-field="sharedNote" value="${_teEsc(e.sharedNote||'')}" oninput="_teUpdateField(${idx},'sharedNote',this.value)" placeholder="স্প্লিট বর্ণনা লিখুন...">
+        <label>📝 শেয়ার্ড / স্প্লিট স্লট কাস্টম লেবেল (ঐচ্ছিক — যেমন: "English + ICT" বা "বাংলা + ধর্ম")</label>
+        <input type="text" data-te-field="sharedNote" value="${_teEsc(e.sharedNote||'')}" oninput="_teUpdateField(${idx},'sharedNote',this.value)" placeholder="যেভাবে লিখবেন রুটিনে ঠিক সেভাবেই দেখাবে...">
+        <div class="te-field-help" style="display:block;color:var(--text-3,#94a3b8);font-size:11px;margin-top:3px">💡 এই লেখাই রুটিনের cell-এ render হবে</div>
       </div>` : ''}
     </div>`;
 
+  // 🔒 Fixed-slot toggle (additive) — preferred slot fixed হলে auto-routine rotate করবে না
+  const fixedBlockHTML = `
+    <div class="te-shared-row te-fixed-row">
+      <label class="te-shared-toggle">
+        <input type="checkbox" data-te-field="fixed" ${e.fixed?'checked':''} onchange="_teUpdateField(${idx},'fixed',this.checked)">
+        <span class="te-shared-label">🔒 ফিক্সড স্লট (এই entry-র preferred slot লক)</span>
+        <span class="te-shared-help">${e.fixed?'<b>সক্রিয়</b> — স্বয়ংক্রিয় রুটিন এই entry-কে শুধু উপরের নির্বাচিত preferred slot-এই বসাবে; কখনো rotate করবে না।':'enable করলে স্বয়ংক্রিয় রুটিন এই entry-কে পছন্দের slot-এই লক রাখবে; অন্য কোথাও বসাবে না।'}</span>
+      </label>
+    </div>`;
+
   return `
-  <div class="te-card ${colorClass} ${sharedClass} ${flagged?'te-flagged':''}" data-te-idx="${idx}">
+  <div class="te-card ${colorClass} ${sharedClass} ${fixedClass} ${flagged?'te-flagged':''}" data-te-idx="${idx}">
     <div class="te-card-head">
       <div>
         <div class="te-card-title"><span class="te-card-num">${_teBnNum(idx+1)}</span> এন্ট্রি</div>
@@ -8636,7 +8659,7 @@ function _teCardHTML(e, idx, ctx){
       <div class="te-day-count">নির্বাচিত: <strong id="teSelDays_${idx}">${_teBnNum(selDays.size)}</strong> দিন</div>
     </div>
     <div class="te-mini-row">
-      <label>⏰ পছন্দের সময় (চেক করুন — Morning / Noon / Afternoon / Evening)</label>
+      <label>⏰ পছন্দের সময় (চেক করুন — Morning / Noon / Afternoon / Evening) — <span style="color:#dc2626;font-weight:600">লাল সংখ্যা = অন্য শিক্ষকও এই slot prefer করছেন</span></label>
       <div class="te-tslot-wrap" data-te-slots>${groupHTML}</div>
       <div class="te-day-count">পছন্দের slot: <strong id="teSelSlots_${idx}">${_teBnNum(selSlots.size)}</strong></div>
     </div>
@@ -8645,6 +8668,7 @@ function _teCardHTML(e, idx, ctx){
       <textarea rows="2" placeholder="যেমন: এই ক্লাসটি দুপুরের আগে রাখুন, ১:০০-এর পর নয়, ইত্যাদি..." data-te-field="notes" oninput="_teUpdateField(${idx},'notes',this.value)">${_teEsc(e.notes||'')}</textarea>
     </div>
     ${sharedBlockHTML}
+    ${fixedBlockHTML}
   </div>`;
 }
 
@@ -8687,12 +8711,16 @@ function _teUpdateField(idx, field, value){
   if(field === 'daysPerWeek'){
     const n = parseInt(value, 10);
     e.daysPerWeek = (isNaN(n) || n < 0) ? 0 : Math.min(n, 6);
+  } else if(field === 'fixed' || field === 'shared'){
+    // boolean toggles — value may be a checkbox bool or string
+    e[field] = (value === true || value === 'true' || value === 'on' || value === '1');
   } else {
     e[field] = String(value || '').trim();
   }
   // dropdown change → full re-render (red-tick / duplicate-flag আপডেটের জন্য)
-  // textarea notes → শুধু summary refresh
-  if(field === 'subject' || field === 'class' || field === 'section'){
+  // fixed toggle change → re-render দরকার (help-text / class update)
+  if(field === 'subject' || field === 'class' || field === 'section' || field === 'fixed'){
+    _teSyncFromDOM(t);
     renderTeachingEntries(t);
   } else {
     try{ renderTeachingLiveSummary(t); }catch(_){}
@@ -8773,6 +8801,8 @@ function _teSyncFromDOM(teacher){
         e.daysPerWeek = (isNaN(n) || n < 0) ? 0 : Math.min(n, 6);
       } else if(f === 'shared'){
         e.shared = !!el.checked;
+      } else if(f === 'fixed'){
+        e.fixed = !!el.checked;
       } else {
         e[f] = String(v || '').trim();
       }
@@ -9203,8 +9233,18 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
   const slotById = {};
   slotCols.forEach(c => { slotById[c.id] = c; });
 
+  // 🔒 FIXED entries আগে — preferred slot-এ লক হয়ে যাবে, কখনো rotate হবে না।
+  // তারপর general entries — preferred slot-এ priority, কিন্তু rotate-ও করতে পারে।
+  // 🔁 full-teacher fixed mode: যদি teacher.allFixed true হয়, সব entry fixed হিসেবে কাজ করবে।
+  const allFixed = !!teacher.allFixed;
+  const fixedFirst = entries.slice().sort((a,b) => {
+    const af = (allFixed || a.fixed) ? 0 : 1;
+    const bf = (allFixed || b.fixed) ? 0 : 1;
+    return af - bf;
+  });
+
   // প্রতি এন্ট্রির জন্য কয়টি slot — daysPerWeek > 0 হলে সেটা; নাহলে preferredSlots.length অথবা ১
-  entries.forEach(e => {
+  fixedFirst.forEach(e => {
     const want = e.daysPerWeek > 0 ? e.daysPerWeek
                 : (e.preferredSlots.length > 0 ? e.preferredSlots.length : 1);
     const cls = e.class || '';
@@ -9212,13 +9252,17 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
     const sub = e.subject || '';
     if(!sub && !cls && !sec) return;
     const isShared = !!e.shared;
+    const isFixed = !!(e.fixed || allFixed);
     const eDays = Array.isArray(e.days) ? e.days : [];
 
     // চেষ্টা ১: preferredSlots অগ্রাধিকার
     const tryOrder = [];
     e.preferredSlots.forEach(sid => { if(slotById[sid]) tryOrder.push(slotById[sid]); });
-    // চেষ্টা ২: বাকি সব slot fallback
-    slotCols.forEach(c => { if(!e.preferredSlots.includes(c.id)) tryOrder.push(c); });
+    // চেষ্টা ২: 🔒 fixed হলে rotate করবো না — শুধু preferredSlots-ই চেষ্টা করবো।
+    // fixed না হলে fallback হিসেবে বাকি সব slot যোগ করবো।
+    if(!isFixed){
+      slotCols.forEach(c => { if(!e.preferredSlots.includes(c.id)) tryOrder.push(c); });
+    }
 
     let count = 0;
     for(const col of tryOrder){
@@ -9245,10 +9289,12 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
           };
         }
         const cell = teacher.cells[col.id];
-        cell.parts.push({subject: sub, days: eDays.slice()});
+        cell.parts.push({subject: sub, days: eDays.slice(), sharedNote: e.sharedNote||''});
         // top-level fields-এ সর্বশেষ part রাখি (legacy reader compat)
         cell.subject = sub;
         cell.days = (cell.days||[]).concat(eDays);
+        if(e.sharedNote) cell.sharedNote = e.sharedNote;
+        if(isFixed) cell.fixed = true;
         if(_teCanUseSlot(taken, cls, sec, eDays, true)){
           _teMarkSlotTaken(taken, cls, sec, eDays, true);
           count++; placed++;
@@ -9257,12 +9303,15 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
       }
       // অন্য শিক্ষক একই class+section ইতিমধ্যে নিয়েছে — কনফ্লিক্ট check
       if(!_teCanUseSlot(taken, cls, sec, eDays, isShared)) continue;
-      // স্থাপন
+      // স্থাপন — sharedNote ও fixed flag cell-এ যোগ করি (UI render-এর জন্য)
+      const newCell = {class: cls, section: sec, subject: sub};
       if(isShared){
-        teacher.cells[col.id] = {class: cls, section: sec, subject: sub, days: eDays.slice(), shared: true};
-      } else {
-        teacher.cells[col.id] = {class: cls, section: sec, subject: sub};
+        newCell.days = eDays.slice();
+        newCell.shared = true;
+        if(e.sharedNote) newCell.sharedNote = e.sharedNote;
       }
+      if(isFixed) newCell.fixed = true;
+      teacher.cells[col.id] = newCell;
       _teMarkSlotTaken(taken, cls, sec, eDays, isShared);
       count++; placed++;
     }
@@ -11056,34 +11105,33 @@ function autoGenerateRoutine(){
       return;
     }
 
+    // 🆕 NEW BEHAVIOR: শুধু teachingEntries + special schedule দিয়ে রুটিন বসবে।
+    // কোনো imaginary/মনগড়া class তৈরি হবে না। entry না থাকলে slot empty থাকবে।
     if(!confirm(
         `⚙️ স্বয়ংক্রিয় রুটিন তৈরি\n\n` +
         `• ${toBnNum(teachers.length)} জন শিক্ষকের রুটিন তৈরি হবে\n` +
-        `• ${toBnNum(slotCols.length)} টি পিরিয়ড কলাম পূরণ হবে\n` +
+        `• ${toBnNum(slotCols.length)} টি পিরিয়ড কলামে শুধু entry-অনুযায়ী ক্লাস বসবে\n` +
         `• 🔒 লক করা ও ছুটিতে থাকা শিক্ষক অপরিবর্তিত থাকবে\n` +
-        `• একই সময়ে একই শ্রেণি+শাখায় দুজন শিক্ষক বসবেন না (কনফ্লিক্ট-মুক্ত)\n` +
-        `• প্রতিটি শিক্ষকের পুরনো পিরিয়ড মুছে নতুন রুটিন বসবে\n\n` +
+        `• 📌 Special Entry সর্বোচ্চ priority — overwrite হবে না\n` +
+        `• 🎯 প্রতিটি class entry = ১টি independent class slot\n` +
+        `• ⚠️ entry না থাকলে slot empty থাকবে (imaginary class তৈরি হবে না)\n\n` +
         `চালিয়ে যাবেন?`)){
       return;
     }
 
     snapshot();
 
-    const opt = state.options || {};
-    const allClasses  = Array.isArray(opt.class)   ? opt.class.filter(Boolean)                 : [];
-    const allSections = Array.isArray(opt.section) ? opt.section.filter(Boolean)               : [];
-    const allSubjects = Array.isArray(opt.subject) ? opt.subject.filter(x=>x && x!=='Free')    : [];
-
     // প্রতি পিরিয়ডে যে "শ্রেণি||শাখা" ইতিমধ্যে নেওয়া হয়েছে — কনফ্লিক্ট গার্ড
     const slotTaken = {};
     slotCols.forEach(c => { slotTaken[c.id] = new Set(); });
 
     let filled = 0, teachersDone = 0;
+    let skippedNoEntry = 0;
 
     teachers.forEach((t, ti) => {
       if(!t.cells) t.cells = {};
 
-      // 🌟 SPECIAL SCHEDULE আগে — এই entries লকড, কখনো overwrite হয় না।
+      // 🌟 SPECIAL SCHEDULE সর্বাগ্রে — এই entries লকড ও সর্বোচ্চ priority।
       // teaching entries ও fallback এদের এড়িয়ে কাজ করে।
       let specialPlaced = 0;
       try{
@@ -11092,9 +11140,8 @@ function autoGenerateRoutine(){
         }
       }catch(_){ specialPlaced = 0; }
 
-      // 📋 Multiple Teaching Entries প্রথমে অগ্রাধিকার পায় —
-      // entries থাকলে কনফ্লিক্ট-aware ভাবে preferredSlots-এ বসিয়ে দিই,
-      // entries না থাকলে নিচের পুরোনো logic-এ ফেরত যাই (অপরিবর্তিত)।
+      // 📋 Multiple Teaching Entries — conflict-aware ভাবে preferredSlots-এ বসিয়ে দিই।
+      // fixed slot entry গুলো নির্দিষ্ট slot-এ লক হয়ে যাবে।
       let entriesResult = null;
       try{
         if(typeof _teApplyEntriesForTeacher === 'function'){
@@ -11102,62 +11149,21 @@ function autoGenerateRoutine(){
         }
       }catch(_){ entriesResult = null; }
 
-      if((entriesResult && entriesResult.placed > 0) || specialPlaced > 0){
-        filled += ((entriesResult && entriesResult.placed) || 0) + specialPlaced;
+      const placedHere = ((entriesResult && entriesResult.placed) || 0) + specialPlaced;
+
+      if(placedHere > 0){
+        filled += placedHere;
         teachersDone++;
-        return; // এই শিক্ষকের জন্য fallback skip
+      } else {
+        // 🚫 কোনো entry নেই — fallback round-robin আর চলবে না।
+        // entry না থাকলে শিক্ষকের সব non-locked slot empty রেখে দিই।
+        slotCols.forEach(c => {
+          const cur = t.cells[c.id];
+          if(cur && (cur.locked || cur.special)) return; // 🌟 locked/special রক্ষিত
+          t.cells[c.id] = {};
+        });
+        skippedNoEntry++;
       }
-
-      // এই শিক্ষকের সব slot সেল রিসেট — কিন্তু locked/special সেল অক্ষত
-      slotCols.forEach(c => {
-        const cur = t.cells[c.id];
-        if(cur && (cur.locked || cur.special)) return; // 🌟 protected
-        t.cells[c.id] = {};
-      });
-
-      // শিক্ষকভিত্তিক pool — না থাকলে গ্লোবাল অপশন থেকে fallback
-      const subjPool = (Array.isArray(t.subjects) && t.subjects.length) ? t.subjects.filter(Boolean)
-                     : (t.mainSubject ? [t.mainSubject]
-                     : (allSubjects.length ? allSubjects.slice() : ['সাধারণ']));
-      const classPool = (Array.isArray(t.classes) && t.classes.length) ? t.classes.filter(Boolean)
-                      : (allClasses.length ? allClasses.slice() : ['শ্রেণি ১']);
-      const sectPool  = (Array.isArray(t.sections) && t.sections.length) ? t.sections.filter(Boolean)
-                      : (allSections.length ? allSections.slice() : ['ক']);
-
-      if(!subjPool.length)  subjPool.push('সাধারণ');
-      if(!classPool.length) classPool.push('শ্রেণি ১');
-      if(!sectPool.length)  sectPool.push('ক');
-
-      // এই শিক্ষকের জন্য কয়টি পিরিয়ড পূরণ হবে
-      let target = (typeof t.weeklyTotal === 'number' && t.weeklyTotal > 0)
-                   ? t.weeklyTotal : slotCols.length;
-      if(target > slotCols.length) target = slotCols.length;
-      if(target < 0) target = 0;
-
-      let comboIdx = ti;          // শুরুর অবস্থান stagger — সবাই slot ১-এ collide করবে না
-      let placed = 0;
-
-      for(let si = 0; si < slotCols.length && placed < target; si++){
-        const col   = slotCols[si];
-        const taken = slotTaken[col.id];
-        const maxTry = Math.max(classPool.length * sectPool.length, 1);
-        let assigned = false;
-
-        for(let attempt = 0; attempt < maxTry && !assigned; attempt++){
-          const cls = classPool[comboIdx % classPool.length];
-          const sec = sectPool[Math.floor(comboIdx / classPool.length) % sectPool.length];
-          comboIdx++;
-          const key = cls + '||' + sec;
-          if(taken.has(key)) continue;   // এই পিরিয়ডে অন্য শিক্ষক ইতিমধ্যে নিয়েছে
-          const subj = subjPool[(si + ti) % subjPool.length] || subjPool[0];
-          t.cells[col.id] = { class: cls, section: sec, subject: subj };
-          taken.add(key);
-          assigned = true;
-          placed++; filled++;
-        }
-        // সব combo নেওয়া থাকলে সেলটি ফ্রি থাকবে (কোনো কনফ্লিক্ট নয়)
-      }
-      if(placed > 0) teachersDone++;
     });
 
     if(!state.aiSettings) state.aiSettings = {};
@@ -11167,8 +11173,12 @@ function autoGenerateRoutine(){
     renderTable();
     try{ populateBulk(); }catch(_){}
     try{ if(typeof refreshDashboardSilent === 'function') refreshDashboardSilent(false); }catch(_){}
-    audit('স্বয়ংক্রিয় রুটিন', `${teachersDone} শিক্ষক, ${filled} পিরিয়ড পূরণ`);
-    showToast(`✅ স্বয়ংক্রিয় রুটিন তৈরি — ${toBnNum(teachersDone)} জন শিক্ষক, ${toBnNum(filled)} টি পিরিয়ড`, 'success', 4500);
+    audit('স্বয়ংক্রিয় রুটিন', `${teachersDone} শিক্ষক, ${filled} পিরিয়ড পূরণ${skippedNoEntry?', '+skippedNoEntry+' জনের entry নেই':''}`);
+    let msg = `✅ স্বয়ংক্রিয় রুটিন তৈরি — ${toBnNum(teachersDone)} জন শিক্ষক, ${toBnNum(filled)} টি পিরিয়ড`;
+    if(skippedNoEntry > 0){
+      msg += ` (⚠️ ${toBnNum(skippedNoEntry)} জনের কোনো entry নেই — slot empty রাখা হলো)`;
+    }
+    showToast(msg, 'success', 5500);
   }catch(err){
     console.error('❌ autoGenerateRoutine error:', err);
     showToast('❌ স্বয়ংক্রিয় রুটিন ব্যর্থ: ' + err.message, 'error', 5000);
