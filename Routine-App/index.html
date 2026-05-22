@@ -1734,15 +1734,10 @@ input[type="range"]::-moz-range-thumb{
   border-color:var(--primary,#0284c7);color:var(--primary,#0284c7);
 }
 
-/* 🆕 Entries grid — পাশাপাশি (২ কলাম desktop, ১ কলাম mobile) */
+/* 🆕 Entries — প্রতি entry full-width (single column)
+   যাতে ভেতরের ৩টা dropdown (বিষয়/শ্রেণি/শাখা) পাশাপাশি comfortably বসে */
 .te-list{
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0,1fr));
-  gap:10px;
-  align-items:start;
-}
-@media(max-width:760px){
-  .te-list{grid-template-columns:1fr}
+  display:flex;flex-direction:column;gap:10px;
 }
 .te-empty{
   text-align:center;padding:18px 12px;
@@ -1793,6 +1788,229 @@ input[type="range"]::-moz-range-thumb{
   border-radius:7px;
   margin-top:7px;
   overflow:hidden;
+}
+
+/* 🆕 Picker Trigger Button (replaces native select) — same look as select but click → Big Picker */
+.te-picker-trigger{
+  width:100%;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  background:var(--surface,#fff);
+  border:1.5px solid var(--border);
+  border-radius:6px;
+  padding:7px 10px;
+  font-size:12.5px;font-weight:600;color:var(--text-1);
+  cursor:pointer;text-align:left;
+  transition:.12s;min-height:34px;
+}
+.te-picker-trigger:hover{border-color:var(--primary,#0284c7);background:var(--primary-soft,rgba(2,132,199,.04))}
+.te-picker-trigger.empty .tpt-val{color:var(--text-3,#94a3b8);font-weight:500;font-style:italic}
+.te-picker-trigger .tpt-val{
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.te-picker-trigger .tpt-caret{
+  font-size:11px;color:var(--text-3,#64748b);flex-shrink:0;
+}
+.te-picker-trigger.has-value{
+  border-color:var(--primary,#0284c7);
+  background:linear-gradient(90deg, rgba(2,132,199,.06) 0%, var(--surface) 100%);
+}
+
+/* 🆕 BIG PICKER MODAL — large dropdown overlay */
+.bp-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(15,23,42,.55);
+  backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.bp-overlay.open{display:flex;animation:bpFade .15s ease-out}
+@keyframes bpFade{from{opacity:0}to{opacity:1}}
+.bp-modal{
+  background:var(--surface,#fff);
+  border-radius:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  width:100%;max-width:480px;
+  max-height:80vh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  animation:bpPop .18s ease-out;
+}
+@keyframes bpPop{
+  from{opacity:0;transform:scale(.94)}
+  to{opacity:1;transform:scale(1)}
+}
+.bp-head{
+  padding:14px 18px;
+  background:linear-gradient(135deg, var(--primary,#0f766e) 0%, #14b8a6 100%);
+  color:#fff;
+}
+.bp-title{font-size:16px;font-weight:800;letter-spacing:.2px}
+.bp-search-row{padding:10px 14px 8px;border-bottom:1px solid var(--border)}
+.bp-search{
+  width:100%;
+  border:1.5px solid var(--border);
+  border-radius:8px;
+  padding:9px 12px;
+  font-size:14px;
+  outline:none;transition:.15s;
+}
+.bp-search:focus{border-color:var(--primary,#0284c7);box-shadow:0 0 0 3px rgba(2,132,199,.15)}
+.bp-options{
+  flex:1;overflow-y:auto;
+  padding:6px 8px;
+  background:var(--surface,#fff);
+}
+.bp-opt{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:7px;
+  font-size:14px;font-weight:600;color:var(--text-1);
+  cursor:pointer;
+  transition:.1s;margin-bottom:2px;
+}
+.bp-opt:hover{background:var(--surface-2,#f1f5f9)}
+.bp-opt.selected{
+  background:linear-gradient(90deg, var(--primary,#0284c7) 0%, #14b8a6 100%);
+  color:#fff;
+}
+.bp-opt-tick{
+  width:20px;height:20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;
+  flex-shrink:0;
+}
+.bp-opt-text{flex:1;word-break:break-word}
+.bp-empty{padding:20px;text-align:center;color:var(--text-3);font-style:italic;font-size:13px}
+.bp-foot{
+  padding:12px 14px;
+  background:var(--surface-2,#f8fafc);
+  border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:8px;
+}
+.bp-cancel,.bp-ok{
+  padding:9px 18px;border-radius:8px;
+  font-size:13.5px;font-weight:700;cursor:pointer;border:none;
+  transition:.12s;
+}
+.bp-cancel{
+  background:var(--surface,#fff);
+  border:1.5px solid var(--border);color:var(--text-2);
+}
+.bp-cancel:hover{background:var(--surface-2);border-color:var(--text-3)}
+.bp-ok{
+  background:linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color:#fff;
+  box-shadow:0 2px 6px rgba(22,163,74,.3);
+}
+.bp-ok:hover{filter:brightness(1.1);transform:translateY(-1px)}
+@media(max-width:560px){
+  .bp-overlay{padding:10px}
+  .bp-modal{max-height:88vh;border-radius:11px}
+  .bp-head{padding:12px 14px}
+  .bp-title{font-size:14.5px}
+}
+
+/* 🆕 PRIORITY MODAL — auto-routine কনফ্লিক্টে user-কে winner বেছে নিতে দাও */
+.pm-overlay{
+  position:fixed;inset:0;z-index:9998;
+  background:rgba(15,23,42,.55);
+  backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;animation:bpFade .15s ease-out;
+}
+.pm-modal{
+  background:var(--surface,#fff);
+  border-radius:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  width:100%;max-width:640px;
+  max-height:88vh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  animation:bpPop .18s ease-out;
+}
+.pm-head{
+  padding:14px 18px;
+  background:linear-gradient(135deg, #b45309 0%, #d97706 100%);
+  color:#fff;
+}
+.pm-title{font-size:15.5px;font-weight:800}
+.pm-body{flex:1;overflow-y:auto;padding:12px 14px}
+.pm-help{
+  background:#fef3c7;border:1px solid #fcd34d;
+  color:#78350f;
+  padding:10px 12px;border-radius:8px;
+  font-size:12.5px;line-height:1.55;margin-bottom:12px;
+}
+.pm-list{display:flex;flex-direction:column;gap:10px}
+.pm-item{
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  padding:10px 12px;
+  background:var(--surface,#fff);
+}
+.pm-item-head{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:12.5px;font-weight:700;color:var(--text-1);
+  margin-bottom:8px;padding-bottom:6px;
+  border-bottom:1px dashed var(--border);
+}
+.pm-item-num{
+  width:22px;height:22px;flex-shrink:0;
+  background:linear-gradient(135deg, #d97706, #b45309);color:#fff;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;
+}
+.pm-item-cs{flex:1;min-width:100px;color:var(--primary,#0284c7)}
+.pm-item-slot{
+  background:var(--surface-2);
+  padding:2px 8px;border-radius:99px;
+  font-size:11.5px;font-weight:700;
+}
+.pm-options{display:flex;flex-direction:column;gap:5px}
+.pm-option{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;border-radius:7px;
+  background:var(--surface-2,#f8fafc);
+  border:1.5px solid transparent;
+  cursor:pointer;transition:.12s;
+}
+.pm-option:hover{background:var(--primary-soft, rgba(2,132,199,.05));border-color:var(--border)}
+.pm-option.selected{
+  background:linear-gradient(90deg, rgba(2,132,199,.12) 0%, rgba(20,184,166,.08) 100%);
+  border-color:var(--primary,#0284c7);
+}
+.pm-option input[type="radio"]{
+  width:18px;height:18px;flex-shrink:0;cursor:pointer;
+  accent-color:var(--primary,#0284c7);
+}
+.pm-opt-text{flex:1;display:flex;flex-direction:column;gap:2px}
+.pm-opt-name{font-size:13px;font-weight:700;color:var(--text-1)}
+.pm-opt-meta{font-size:11.5px;font-weight:500;color:var(--text-3)}
+.pm-foot{
+  padding:12px 14px;
+  background:var(--surface-2,#f8fafc);
+  border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:8px;
+}
+.pm-cancel,.pm-ok{
+  padding:9px 18px;border-radius:8px;
+  font-size:13.5px;font-weight:700;cursor:pointer;border:none;
+  transition:.12s;
+}
+.pm-cancel{
+  background:var(--surface,#fff);
+  border:1.5px solid var(--border);color:var(--text-2);
+}
+.pm-cancel:hover{background:var(--surface-2);border-color:var(--text-3)}
+.pm-ok{
+  background:linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color:#fff;
+  box-shadow:0 2px 6px rgba(217,119,6,.3);
+}
+.pm-ok:hover{filter:brightness(1.1);transform:translateY(-1px)}
+@media(max-width:560px){
+  .pm-overlay{padding:8px}
+  .pm-modal{max-height:94vh}
 }
 .te-sub-head{
   display:flex;align-items:center;gap:8px;
@@ -1849,12 +2067,13 @@ input[type="range"]::-moz-range-thumb{
   cursor:pointer;font-size:12px;font-weight:600;
 }
 .te-card-remove:hover{background:var(--danger,#dc2626);color:#fff}
-/* 🆕 Entries side-by-side হলে cramped space — গ্রিড একটা single col-এ stack হয় */
-.te-grid-3{display:grid;grid-template-columns:1fr;gap:7px;margin-bottom:8px}
-.te-grid-2{display:grid;grid-template-columns:1fr;gap:7px;margin-bottom:8px}
-/* বড় screen-এ যদি একটাই entry থাকে অথবা parent wide হয় — তবে 3-col allow */
-@media(min-width:1100px){
-  .te-card{font-size:12.5px}
+/* 🆕 প্রতি entry-র ভেতরে সব dropdown পাশাপাশি — ৩ কলামে stable */
+.te-grid-3{display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:7px;margin-bottom:8px}
+.te-grid-2{display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:7px;margin-bottom:8px}
+/* খুব ছোট mobile-এ stack — না হলে field-গুলো crash করবে */
+@media(max-width:480px){
+  .te-grid-3{grid-template-columns:1fr}
+  .te-grid-2{grid-template-columns:1fr}
 }
 .te-field label{
   display:block;font-size:11px;font-weight:600;
@@ -2316,6 +2535,43 @@ input[type="range"]::-moz-range-thumb{
   border-radius:50%;font-weight:700;
   line-height:1;
 }
+
+/* 🆕 শেয়ার্ড ক্লাস coverage-ভিত্তিক রং:
+   - হালকা হলুদ: ৩+ দিন কিন্তু ৬ দিন পূর্ণ না (অসম্পূর্ণ shared)
+   - হালকা সবুজ: ৬ দিন পূর্ণ (সম্পূর্ণ shared) */
+.cell-subject.is-shared-half{
+  background:#fef9c3 !important;        /* হালকা হলুদ */
+}
+.cell-subject.is-shared-full{
+  background:#dcfce7 !important;        /* হালকা সবুজ */
+}
+.cell-subject.is-shared-full::before{
+  background:#16a34a;                    /* badge রঙ সবুজ */
+  content:'✓';
+}
+
+/* 🆕 Cell-এ subject নাম + sharedNote ২ লাইনে */
+.cell-subject .cell-main-subject{
+  display:block;
+  font-weight:700;
+  line-height:1.2;
+}
+.cell-subject .cell-shared-note{
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:calc(var(--subject-font, 13px) - 3px);
+  font-weight:500;
+  font-style:italic;
+  color:#92400e;
+  line-height:1.25;
+  margin-top:2px;
+  max-height:2.6em;
+  word-break:break-word;
+}
+.cell-subject.is-shared-full .cell-shared-note{color:#166534}
 
 /* ════════════════════════════════════════════════════════════
    🆕 EXPANDED TEACHER MODAL + SPECIAL SCHEDULE + YELLOW HIGHLIGHT
@@ -5402,6 +5658,24 @@ body[data-role="manager"] .teacher-only{display:none !important}
   }
 </script>
 
+<!-- 🆕 বড় Picker Modal — যেকোনো entry dropdown ক্লিক করলে এটি খুলবে।
+     OK button না চাপলে close হবে না। মূল <select> hidden থাকে, value শুধু এখান থেকে বদলায়। -->
+<div class="bp-overlay" id="bigPickerOverlay">
+  <div class="bp-modal" role="dialog" aria-modal="true">
+    <div class="bp-head">
+      <div class="bp-title" id="bigPickerTitle">নির্বাচন করুন</div>
+    </div>
+    <div class="bp-search-row">
+      <input type="text" class="bp-search" id="bigPickerSearch" placeholder="🔍 খুঁজুন..." oninput="_bpFilterOptions()">
+    </div>
+    <div class="bp-options" id="bigPickerOptions"></div>
+    <div class="bp-foot">
+      <button type="button" class="bp-cancel" onclick="_bpCancel()">বাতিল</button>
+      <button type="button" class="bp-ok" id="bigPickerOK" onclick="_bpConfirm()">✓ ওকে</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ===========================================================
    GLOBAL STATE & CONSTANTS
@@ -7384,24 +7658,39 @@ function renderTable(){
           const isFixedCell   = !!cell.fixed;
           // 6-day coverage check (only meaningful if cell has class+subject)
           let isPartial = false, coverageN = 0;
+          let isFullShared = false;   // 🆕 ৬ দিন পূর্ণ → হালকা সবুজ
+          let isHalfShared = false;   // 🆕 ৩+ দিন (full নয়) → হালকা হলুদ
           try{
             if(typeof getCellCoverageStatus === 'function'){
               const cv = getCellCoverageStatus(t, c.id);
               if(cv && cv.status === 'partial'){ isPartial = true; coverageN = cv.covered; }
+              if(cv && cv.status === 'full'){ isFullShared = true; coverageN = cv.covered; }
+              if(isSharedCell && cv){
+                if(cv.covered >= 6) isFullShared = true;
+                else if(cv.covered >= 3) isHalfShared = true;
+                else if(cv.covered > 0) isHalfShared = true; // ১-২ দিনও হলুদ
+              }
             }
           }catch(_){}
-          const sharedTitle = isSharedCell ? ` title="🔀 শেয়ার্ড স্লট — পাঠদান ট্যাবে বিস্তারিত দেখুন${cell.sharedNote?' • '+cell.sharedNote.replace(/"/g,'&quot;'):''}"`
+          const sharedTitle = isSharedCell ? ` title="🔀 শেয়ার্ড স্লট — ${toBnNum(coverageN||0)}/৬ দিন${cell.sharedNote?' • '+cell.sharedNote.replace(/"/g,'&quot;'):''}"`
                             : (isSpecialCell ? ` title="📌 Special Entry — সর্বোচ্চ priority, স্বয়ংক্রিয় রুটিন এটি পরিবর্তন করে না"`
                             : (isFixedCell ? ` title="🔒 ফিক্সড স্লট — entry-তে preferred slot লক করা"`
                             : (isPartial ? ` title="🟡 আংশিক — ${coverageN}/6 দিন coverage; অন্য শিক্ষক প্রয়োজন"` : '')));
           const covData = isPartial ? ` data-cov="${toBnNum(coverageN)}/৬"` : '';
-          // 🆕 শেয়ার্ড slot-এ custom লেবেল থাকলে সেটাই render হবে (যেমন "English + ICT")
-          const displaySubject = (isSharedCell && cell.sharedNote && cell.sharedNote.trim())
-                                   ? cell.sharedNote
-                                   : (cell.subject || '—');
-          body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}${isSharedCell?' is-shared-cell':''}${isSpecialCell?' is-special-cell':''}${isFixedCell && !isSpecialCell?' is-fixed-cell':''}${isPartial?' is-partial-coverage':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}${sharedTitle}${covData}>
+          // 🆕 শেয়ার্ড slot:
+          //  - subject নাম সবসময় বড় করে দেখাবে (আগে sharedNote-এ overwrite হত — ভুল)
+          //  - sharedNote subject-এর নিচে ছোট ২ লাইনে দেখাবে
+          //  - ৩+ দিন coverage → হালকা হলুদ ক্লাস; ৬ দিন → হালকা সবুজ ক্লাস
+          const mainSubject = cell.subject || '—';
+          const noteHTML = (isSharedCell && cell.sharedNote && cell.sharedNote.trim())
+                          ? `<div class="cell-shared-note" title="${esc(cell.sharedNote)}">${esc(cell.sharedNote)}</div>`
+                          : '';
+          const sharedCovCls = isFullShared ? ' is-shared-full' : (isHalfShared ? ' is-shared-half' : '');
+          body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}${isSharedCell?' is-shared-cell':''}${sharedCovCls}${isSpecialCell?' is-special-cell':''}${isFixedCell && !isSpecialCell?' is-fixed-cell':''}${isPartial && !isSharedCell?' is-partial-coverage':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}${sharedTitle}${covData}>
             <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
-              <span class="row-label">বিষয়</span>${esc(displaySubject)}
+              <span class="row-label">বিষয়</span>
+              <span class="cell-main-subject">${esc(mainSubject)}</span>
+              ${noteHTML}
             </div></td>`;
         }
       });
@@ -8552,31 +8841,44 @@ function renderTeachingEntries(teacher){
   if(!entries.length){
     host.innerHTML = '<div class="te-empty">এখনো কোনো এন্ট্রি যোগ করা হয়নি। উপরে <strong>➕ নতুন এন্ট্রি</strong> বাটনে ক্লিক করুন।</div>';
   } else {
-    // 🆕 প্রতি slot-এ অন্যান্য শিক্ষকের প্রেফারেন্স গণনা (current teacher বাদ)
-    const prefSlotCount = new Map();
+    // 🆕 প্রতি (class+section) → প্রতি slot-এ অন্যান্য শিক্ষকের প্রেফারেন্স গণনা।
+    // শুধু একই class+section হলেই count হবে — ভিন্ন class/section হলে নয়।
+    // Format: Map<"cls||sec", Map<slotId, count>>
+    const prefByCS = new Map();
+    const ensureCS = (key) => {
+      if(!prefByCS.has(key)) prefByCS.set(key, new Map());
+      return prefByCS.get(key);
+    };
     try{
       (state.teachers || []).forEach(other => {
         if(!other || other.id === teacher.id) return;
         if(!Array.isArray(other.teachingEntries)) return;
-        const slotSeen = new Set();  // একই শিক্ষকের একই slot একাধিক entry-তে থাকলেও ১বার গণনা
+        // একই শিক্ষকের একই (cs+slot) একাধিক entry-তে থাকলেও ১বার গণনা
+        const seen = new Set();
         other.teachingEntries.forEach(raw => {
           const ee = _teSanitizeEntry(raw);
+          const cls = (ee.class || '').trim();
+          const sec = (ee.section || '').trim();
+          if(!cls || !sec) return;             // class বা section না দিলে count করবো না
+          const csKey = cls + '||' + sec;
           (ee.preferredSlots || []).forEach(sid => {
-            if(slotSeen.has(sid)) return;
-            slotSeen.add(sid);
-            prefSlotCount.set(sid, (prefSlotCount.get(sid) || 0) + 1);
+            const seenKey = csKey + '||' + sid;
+            if(seen.has(seenKey)) return;
+            seen.add(seenKey);
+            const m = ensureCS(csKey);
+            m.set(sid, (m.get(sid) || 0) + 1);
           });
         });
       });
     }catch(_){}
 
-    // মাস্টার নির্বাচন + usage map + slot-preference count — সব কার্ডে একই ctx পাঠাই
+    // মাস্টার নির্বাচন + usage map + slot-preference count by class+section
     const ctx = {
       masterSub: _teMasterValues('subject'),
       masterCls: _teMasterValues('class'),
       masterSec: _teMasterValues('section'),
       usage: _teUsageMaps(entries),
-      prefSlotCount: prefSlotCount
+      prefByCS: prefByCS
     };
     host.innerHTML = entries.map((e, idx) => _teCardHTML(_teSanitizeEntry(e), idx, ctx)).join('');
 
@@ -8777,9 +9079,16 @@ function _teCardHTML(e, idx, ctx){
     </div>`;
   }).join('');
 
-  // 🆕 Preferred-time conflict count — কতজন অন্য শিক্ষক এই slot prefer করছেন
-  // ctx.prefSlotCount: Map slotId → count (current teacher বাদ দিয়ে গণনা)
-  const prefCount = (ctx && ctx.prefSlotCount) || new Map();
+  // 🆕 Preferred-time conflict count — শুধু একই class+section হলে count
+  // ctx.prefByCS: Map<"cls||sec", Map<slotId, count>>
+  // current entry-র class+section না দিলে count দেখাবো না — তাই empty map।
+  let prefCount;
+  if(ctx && ctx.prefByCS && e.class && e.section){
+    const csKey = (e.class || '').trim() + '||' + (e.section || '').trim();
+    prefCount = ctx.prefByCS.get(csKey) || new Map();
+  } else {
+    prefCount = new Map();
+  }
 
   // Time-slot grouped picker
   const groupHTML = ['morning','lateMorning','afternoon','evening'].map(gk => {
@@ -8864,17 +9173,30 @@ function _teCardHTML(e, idx, ctx){
     <div class="te-grid-3">
       <div class="te-field ${isUsedSub?'te-used-field':''}">
         <label>📖 বিষয়</label>
-        <select data-te-field="subject" onchange="_teUpdateField(${idx},'subject',this.value)">${optHTML(subjArr, e.subject, usage.sub)}</select>
+        <!-- 🆕 select hidden — display button → Big Picker খুলবে -->
+        <select data-te-field="subject" onchange="_teUpdateField(${idx},'subject',this.value)" style="display:none">${optHTML(subjArr, e.subject, usage.sub)}</select>
+        <button type="button" class="te-picker-trigger ${e.subject?'has-value':'empty'}" onclick="_teOpenPicker(${idx},'subject',this)" title="ক্লিক করে বিষয় নির্বাচন করুন">
+          <span class="tpt-val">${e.subject ? _teEsc(e.subject) : '— নির্বাচন করুন —'}</span>
+          <span class="tpt-caret">▾</span>
+        </button>
         <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
       </div>
       <div class="te-field ${isUsedCls?'te-used-field':''}">
         <label>🎓 শ্রেণি</label>
-        <select data-te-field="class" onchange="_teUpdateField(${idx},'class',this.value)">${optHTML(clsArr, e.class, usage.cls)}</select>
+        <select data-te-field="class" onchange="_teUpdateField(${idx},'class',this.value)" style="display:none">${optHTML(clsArr, e.class, usage.cls)}</select>
+        <button type="button" class="te-picker-trigger ${e.class?'has-value':'empty'}" onclick="_teOpenPicker(${idx},'class',this)" title="ক্লিক করে শ্রেণি নির্বাচন করুন">
+          <span class="tpt-val">${e.class ? _teEsc(e.class) : '— নির্বাচন করুন —'}</span>
+          <span class="tpt-caret">▾</span>
+        </button>
         <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
       </div>
       <div class="te-field ${isUsedSec?'te-used-field':''}">
         <label>📑 শাখা</label>
-        <select data-te-field="section" onchange="_teUpdateField(${idx},'section',this.value)">${optHTML(secArr, e.section, usage.sec)}</select>
+        <select data-te-field="section" onchange="_teUpdateField(${idx},'section',this.value)" style="display:none">${optHTML(secArr, e.section, usage.sec)}</select>
+        <button type="button" class="te-picker-trigger ${e.section?'has-value':'empty'}" onclick="_teOpenPicker(${idx},'section',this)" title="ক্লিক করে শাখা নির্বাচন করুন">
+          <span class="tpt-val">${e.section ? _teEsc(e.section) : '— নির্বাচন করুন —'}</span>
+          <span class="tpt-caret">▾</span>
+        </button>
         <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
       </div>
     </div>
@@ -8943,6 +9265,119 @@ function _teCardHTML(e, idx, ctx){
     </div>
     </div>
   </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   🆕 BIG PICKER — বড় modal-style dropdown
+   • যে কোনো <select>-এর জন্য ব্যবহারযোগ্য
+   • OK না চাপলে close হবে না (modal locked)
+   • Search-সহ
+═══════════════════════════════════════════════════════════ */
+let _bpState = null;
+function _bpOpen(opts){
+  // opts = {title, options:[value...], current, onConfirm:(value)=>{}}
+  if(!opts || !Array.isArray(opts.options)) return;
+  _bpState = {
+    options: opts.options.slice(),
+    current: opts.current || '',
+    selected: opts.current || '',
+    onConfirm: opts.onConfirm || function(){},
+    onCancel: opts.onCancel || function(){}
+  };
+  const titleEl = document.getElementById('bigPickerTitle');
+  if(titleEl) titleEl.textContent = opts.title || 'নির্বাচন করুন';
+  const search = document.getElementById('bigPickerSearch');
+  if(search){ search.value = ''; }
+  _bpRenderOptions('');
+  const ov = document.getElementById('bigPickerOverlay');
+  if(ov){ ov.classList.add('open'); }
+  // background scroll block
+  document.body.style.overflow = 'hidden';
+  // focus search
+  setTimeout(()=>{ if(search) try{ search.focus(); }catch(_){} }, 60);
+}
+function _bpRenderOptions(filter){
+  const host = document.getElementById('bigPickerOptions');
+  if(!host || !_bpState) return;
+  const q = (filter || '').toLowerCase().trim();
+  const items = _bpState.options
+    .filter(v => !q || String(v).toLowerCase().includes(q))
+    .map(v => {
+      const sel = (v === _bpState.selected);
+      return `<div class="bp-opt ${sel?'selected':''}" data-bp-val="${_teEsc(v)}" onclick="_bpSelectOption(this)">
+        <span class="bp-opt-tick">${sel?'✓':''}</span>
+        <span class="bp-opt-text">${_teEsc(v) || '<em style=\"opacity:.6\">(খালি)</em>'}</span>
+      </div>`;
+    });
+  if(!items.length){
+    host.innerHTML = '<div class="bp-empty">কোনো অপশন পাওয়া যায়নি</div>';
+  } else {
+    host.innerHTML = items.join('');
+  }
+}
+function _bpFilterOptions(){
+  const search = document.getElementById('bigPickerSearch');
+  _bpRenderOptions(search ? search.value : '');
+}
+function _bpSelectOption(el){
+  if(!el || !_bpState) return;
+  _bpState.selected = el.dataset.bpVal;
+  // update tick markers in DOM
+  document.querySelectorAll('#bigPickerOptions .bp-opt').forEach(o => {
+    const isSel = (o.dataset.bpVal === _bpState.selected);
+    o.classList.toggle('selected', isSel);
+    const tick = o.querySelector('.bp-opt-tick');
+    if(tick) tick.textContent = isSel ? '✓' : '';
+  });
+}
+function _bpConfirm(){
+  if(!_bpState) return;
+  const v = _bpState.selected;
+  const cb = _bpState.onConfirm;
+  _bpClose();
+  try{ cb(v); }catch(e){ console.warn('bp confirm error', e); }
+}
+function _bpCancel(){
+  if(!_bpState) return;
+  const cb = _bpState.onCancel;
+  _bpClose();
+  try{ cb(); }catch(_){}
+}
+function _bpClose(){
+  const ov = document.getElementById('bigPickerOverlay');
+  if(ov) ov.classList.remove('open');
+  document.body.style.overflow = '';
+  _bpState = null;
+}
+
+/* 🆕 Entry dropdown click এ Big Picker খুলবে — class/subject/section তিনটার জন্যই */
+function _teOpenPicker(idx, field, fromEl){
+  try{
+    const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+    const t = (state.teachers||[]).find(x => x.id === tid);
+    if(!t || !Array.isArray(t.teachingEntries)) return;
+    const e = t.teachingEntries[idx];
+    if(!e) return;
+    // available options from master selection
+    const opts = {
+      subject: _teMasterValues('subject'),
+      class: _teMasterValues('class'),
+      section: _teMasterValues('section')
+    }[field] || [];
+    if(!opts.length){
+      try{ showToast('আগে উপরে মাস্টার নির্বাচন থেকে এই category-র items বেছে নিন', 'warning', 4000); }catch(_){}
+      return;
+    }
+    const titleMap = {subject:'📖 বিষয় নির্বাচন', class:'🎓 শ্রেণি নির্বাচন', section:'📑 শাখা নির্বাচন'};
+    _bpOpen({
+      title: titleMap[field] || 'নির্বাচন করুন',
+      options: opts,
+      current: e[field] || '',
+      onConfirm: function(val){
+        _teUpdateField(idx, field, val);
+      }
+    });
+  }catch(err){ console.warn('_teOpenPicker error', err); }
 }
 
 /* এন্ট্রি যোগ — modal-এ বর্তমান শিক্ষকের teachingEntries-এ */
@@ -9536,7 +9971,7 @@ function getCellCoverageStatus(teacher, slotId){
   return {covered:n, total:6, status: n >= 6 ? 'full' : (n>0 ? 'partial' : 'empty')};
 }
 
-function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
+function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
   if(!teacher || !Array.isArray(teacher.teachingEntries) || !teacher.teachingEntries.length) return null;
   if(!Array.isArray(slotCols) || !slotCols.length) return null;
   const entries = teacher.teachingEntries
@@ -9579,14 +10014,25 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken){
     const isFixed = !!(e.fixed || allFixed);
     const eDays = Array.isArray(e.days) ? e.days : [];
 
-    // চেষ্টা ১: preferredSlots অগ্রাধিকার
+    // চেষ্টা ১: preferredSlots অগ্রাধিকার — কিন্তু priority অনুযায়ী filter
+    // যেকোনো conflict-এ যদি এই teacher loser হয়, ঐ slot preferred থেকে বাদ দেই
+    // (অন্য slot-এ rotate হবে যদি fixed না হয়)
+    const filteredPreferred = e.preferredSlots.filter(sid => {
+      if(!prioritySet || !prioritySet.size) return true;
+      if(!cls || !sec) return true;
+      const key = cls + '||' + sec + '||' + sid;
+      if(!prioritySet.has(key)) return true;
+      // এই key conflict-এ আছে — winner হলে রাখো, না হলে বাদ
+      return prioritySet.get(key) === teacher.id;
+    });
+
     const tryOrder = [];
-    e.preferredSlots.forEach(sid => { if(slotById[sid]) tryOrder.push(slotById[sid]); });
+    filteredPreferred.forEach(sid => { if(slotById[sid]) tryOrder.push(slotById[sid]); });
     // চেষ্টা ২: 🔒 fixed হলে rotate করবো না — শুধু preferredSlots-ই চেষ্টা করবো।
     // fixed না হলে fallback হিসেবে বাকি সব slot যোগ করবো (কনফ্লিক্ট থাকলে অন্য slot)।
     // Safety: fixed কিন্তু preferredSlots একদম খালি → rotate allow (নাহলে entry-ই বসবে না)।
     if(!isFixed || tryOrder.length === 0){
-      slotCols.forEach(c => { if(!e.preferredSlots.includes(c.id)) tryOrder.push(c); });
+      slotCols.forEach(c => { if(!filteredPreferred.includes(c.id)) tryOrder.push(c); });
     }
 
     let count = 0;
@@ -11435,14 +11881,173 @@ function autoGenerateRoutine(){
       return;
     }
 
-    // 🆕 NEW BEHAVIOR: শুধু teachingEntries + special schedule দিয়ে রুটিন বসবে।
-    // কোনো imaginary/মনগড়া class তৈরি হবে না। entry না থাকলে slot empty থাকবে।
+    // 🆕 ধাপ ১: কনফ্লিক্ট detect — একই class+section+slot এ একাধিক শিক্ষকের preferred slot
+    // Map: "cls||sec||slotId" → [{teacherId, teacherName, entryIdx, subject, fixed}, ...]
+    const conflicts = _detectPreferredConflicts(teachers);
+    if(conflicts.length > 0){
+      // user-কে আগে priority দিতে হবে — modal খুলবে
+      _openPriorityModal(conflicts, function(prioritySet){
+        // prioritySet: Map "cls||sec||slotId" → winnerTeacherId
+        // user OK চাপলে নিচের গণনা চলবে এই prioritySet দিয়ে
+        _runAutoRoutineCore(teachers, slotCols, prioritySet);
+      });
+      return;
+    }
+
+    // কোনো কনফ্লিক্ট নেই — সরাসরি চালাও
+    _runAutoRoutineCore(teachers, slotCols, null);
+  }catch(err){
+    console.error('❌ autoGenerateRoutine error:', err);
+    showToast('❌ স্বয়ংক্রিয় রুটিন ব্যর্থ: ' + err.message, 'error', 5000);
+  }
+}
+
+/* 🆕 conflict detection — একই class+section+slot-এ একাধিক শিক্ষক prefer করছেন কিনা */
+function _detectPreferredConflicts(teachers){
+  // Map: "cls||sec||slotId" → array of contestants
+  const map = new Map();
+  teachers.forEach(t => {
+    if(!t || !Array.isArray(t.teachingEntries)) return;
+    t.teachingEntries.forEach((raw, eidx) => {
+      const e = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : raw;
+      const cls = (e.class || '').trim();
+      const sec = (e.section || '').trim();
+      if(!cls || !sec) return;
+      if(!Array.isArray(e.preferredSlots) || !e.preferredSlots.length) return;
+      e.preferredSlots.forEach(sid => {
+        const key = cls + '||' + sec + '||' + sid;
+        if(!map.has(key)) map.set(key, []);
+        map.get(key).push({
+          teacherId: t.id,
+          teacherName: t.name || '—',
+          teacherTitle: t.title || '',
+          entryIdx: eidx,
+          subject: e.subject || '',
+          fixed: !!e.fixed
+        });
+      });
+    });
+  });
+  // শুধু সেগুলো ফেরত দাও যেখানে ২+ শিক্ষক
+  const out = [];
+  map.forEach((arr, key) => {
+    if(arr.length >= 2){
+      const [cls, sec, slotId] = key.split('||');
+      const slotCol = (state.columns||[]).find(c => c.id === slotId);
+      out.push({
+        key, cls, sec, slotId,
+        slotLabel: slotCol ? (slotCol.label || slotCol.id) : slotId,
+        contestants: arr
+      });
+    }
+  });
+  return out;
+}
+
+/* 🆕 Priority Modal — কনফ্লিক্ট আছে এমন কেস-এ user-কে winner select করতে দাও */
+function _openPriorityModal(conflicts, onResolved){
+  // existing priority overrides থেকে default winner প্রি-সিলেক্ট
+  const saved = (state.aiSettings && state.aiSettings.priorityOverrides) || {};
+  const html = `
+    <div class="pm-overlay" id="priorityModal" style="display:flex">
+      <div class="pm-modal">
+        <div class="pm-head">
+          <div class="pm-title">⚖️ পছন্দের সময় কনফ্লিক্ট — কাকে অগ্রাধিকার দেবেন?</div>
+        </div>
+        <div class="pm-body">
+          <div class="pm-help">
+            একই <strong>শ্রেণি + শাখা + সময়</strong>-এর জন্য একাধিক শিক্ষক preferred time নির্বাচন করেছেন। প্রতিটি কনফ্লিক্টে একজনকে বেছে নিন — তিনিই ঐ slot পাবেন। অন্যদের ক্ষেত্রে preferred slot fail হবে, তারা অন্য slot-এ rotate হবেন (যদি fixed না হয়)।
+          </div>
+          <div class="pm-list">
+            ${conflicts.map((conf, ci) => `
+              <div class="pm-item" data-pm-key="${_teEsc(conf.key)}">
+                <div class="pm-item-head">
+                  <span class="pm-item-num">${toBnNum(ci+1)}</span>
+                  <span class="pm-item-cs">${_teEsc(conf.cls)} • শাখা ${_teEsc(conf.sec)}</span>
+                  <span class="pm-item-slot">⏰ ${_teEsc(conf.slotLabel)}</span>
+                </div>
+                <div class="pm-options">
+                  ${conf.contestants.map((c,ci2) => {
+                    const def = saved[conf.key];
+                    const checked = def ? (def === c.teacherId) : (ci2 === 0);
+                    return `<label class="pm-option ${checked?'selected':''}">
+                      <input type="radio" name="pm_${ci}" value="${_teEsc(c.teacherId)}" ${checked?'checked':''} onchange="_pmUpdateOption(this)">
+                      <span class="pm-opt-text">
+                        <span class="pm-opt-name">${_teEsc(c.teacherName)}${c.teacherTitle?' <small>('+_teEsc(c.teacherTitle)+')</small>':''}</span>
+                        <span class="pm-opt-meta">${c.subject?'📖 '+_teEsc(c.subject):''} ${c.fixed?'· 🔒 ফিক্সড':''}</span>
+                      </span>
+                    </label>`;
+                  }).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="pm-foot">
+          <button type="button" class="pm-cancel" onclick="_pmCancel()">বাতিল</button>
+          <button type="button" class="pm-ok" onclick="_pmConfirm()">✓ অগ্রাধিকার অনুমোদন করুন</button>
+        </div>
+      </div>
+    </div>`;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = html;
+  document.body.appendChild(wrap.firstElementChild);
+  document.body.style.overflow = 'hidden';
+  // store callback
+  window._pmCallback = onResolved;
+  window._pmConflicts = conflicts;
+}
+function _pmUpdateOption(radio){
+  // visual selected state
+  const parent = radio.closest('.pm-options');
+  if(!parent) return;
+  parent.querySelectorAll('.pm-option').forEach(o => o.classList.remove('selected'));
+  const opt = radio.closest('.pm-option');
+  if(opt) opt.classList.add('selected');
+}
+function _pmConfirm(){
+  const modal = document.getElementById('priorityModal');
+  if(!modal) return;
+  const winners = new Map();         // Map key → teacherId
+  const overridesToSave = {};
+  modal.querySelectorAll('.pm-item').forEach(item => {
+    const key = item.dataset.pmKey;
+    const checked = item.querySelector('input[type="radio"]:checked');
+    if(key && checked){
+      winners.set(key, checked.value);
+      overridesToSave[key] = checked.value;
+    }
+  });
+  // state-এ সংরক্ষণ করে রাখি যাতে পরের generation-এ default ঐটাই থাকে
+  if(!state.aiSettings) state.aiSettings = {};
+  state.aiSettings.priorityOverrides = Object.assign({}, state.aiSettings.priorityOverrides || {}, overridesToSave);
+  // close modal
+  modal.remove();
+  document.body.style.overflow = '';
+  const cb = window._pmCallback;
+  window._pmCallback = null;
+  window._pmConflicts = null;
+  if(typeof cb === 'function') cb(winners);
+}
+function _pmCancel(){
+  const modal = document.getElementById('priorityModal');
+  if(modal) modal.remove();
+  document.body.style.overflow = '';
+  window._pmCallback = null;
+  window._pmConflicts = null;
+  try{ showToast('স্বয়ংক্রিয় রুটিন বাতিল করা হয়েছে', 'info', 2500); }catch(_){}
+}
+
+/* 🆕 প্রকৃত placement engine — priority-aware। আগের autoGenerateRoutine body সরিয়ে এখানে আনা হলো। */
+function _runAutoRoutineCore(teachers, slotCols, prioritySet){
+  try{
     if(!confirm(
         `⚙️ স্বয়ংক্রিয় রুটিন তৈরি\n\n` +
         `• ${toBnNum(teachers.length)} জন শিক্ষকের রুটিন তৈরি হবে\n` +
         `• 🎯 প্রতি class entry = ঠিক ১টি স্বতন্ত্র slot (বেশি কখনই নয়)\n` +
         `• ⏰ পছন্দের সময় (Preferred Time) প্রাধান্য পাবে\n` +
-        `• ⚠️ কনফ্লিক্ট হলে পছন্দ কার্যকর হবে না, অন্য slot-এ বসবে\n` +
+        `${prioritySet && prioritySet.size ? `• ⚖️ ${toBnNum(prioritySet.size)} টি কনফ্লিক্টে আপনার অনুমোদিত অগ্রাধিকার প্রয়োগ হবে\n` : ''}` +
+        `• ⚠️ কনফ্লিক্ট হলে অগ্রাধিকার-পাওয়া শিক্ষক বসবেন; অন্যরা অন্য slot-এ rotate হবেন\n` +
         `• 🔒 Fixed entry-গুলো পছন্দের slot-এই লক থাকবে (rotate হবে না)\n` +
         `• 📌 Special Entry সর্বোচ্চ priority\n` +
         `• ⚠️ entry না থাকলে slot empty থাকবে (imaginary class তৈরি হবে না)\n` +
@@ -11459,14 +12064,25 @@ function autoGenerateRoutine(){
 
     let filled = 0, teachersDone = 0;
     let skippedNoEntry = 0;
-    let totalEntries = 0;      // 🆕 সব শিক্ষকের total teaching entries (target)
-    let conflictSkipped = 0;   // 🆕 কতটি entry conflict-এর কারণে বসেনি
+    let totalEntries = 0;
+    let conflictSkipped = 0;
 
-    teachers.forEach((t, ti) => {
+    // 🆕 priority-aware order: যাদের কোনো conflict-এ winner সেটে আছে — তারা আগে যাবে
+    // অন্য teachers loser হবে priority-set অনুযায়ী
+    const winnerTeacherIds = new Set();
+    if(prioritySet && prioritySet.size){
+      prioritySet.forEach(tid => winnerTeacherIds.add(tid));
+    }
+    const orderedTeachers = teachers.slice().sort((a,b) => {
+      const aw = winnerTeacherIds.has(a.id) ? 0 : 1;
+      const bw = winnerTeacherIds.has(b.id) ? 0 : 1;
+      return aw - bw;
+    });
+
+    orderedTeachers.forEach((t, ti) => {
       if(!t.cells) t.cells = {};
 
-      // 🌟 SPECIAL SCHEDULE সর্বাগ্রে — এই entries লকড ও সর্বোচ্চ priority।
-      // teaching entries ও fallback এদের এড়িয়ে কাজ করে।
+      // SPECIAL SCHEDULE সর্বাগ্রে
       let specialPlaced = 0;
       try{
         if(typeof _ssApplyForTeacher === 'function'){
@@ -11474,19 +12090,17 @@ function autoGenerateRoutine(){
         }
       }catch(_){ specialPlaced = 0; }
 
-      // 📋 Multiple Teaching Entries — conflict-aware ভাবে preferredSlots-এ বসিয়ে দিই।
-      // fixed slot entry গুলো নির্দিষ্ট slot-এ লক হয়ে যাবে।
+      // Teaching entries — priority-aware ভাবে
       let entriesResult = null;
       try{
         if(typeof _teApplyEntriesForTeacher === 'function'){
-          entriesResult = _teApplyEntriesForTeacher(t, slotCols, slotTaken);
+          entriesResult = _teApplyEntriesForTeacher(t, slotCols, slotTaken, prioritySet);
         }
       }catch(_){ entriesResult = null; }
 
       const placedHere = ((entriesResult && entriesResult.placed) || 0) + specialPlaced;
       const tEntries = (entriesResult && entriesResult.usedEntries) || 0;
       totalEntries += tEntries;
-      // কত entry conflict-এর কারণে বসাতে পারিনি (placed-এর মধ্যে শুধু regular entries — special আলাদা)
       const tRegularPlaced = (entriesResult && entriesResult.placed) || 0;
       if(tEntries > tRegularPlaced){
         conflictSkipped += (tEntries - tRegularPlaced);
@@ -11496,11 +12110,9 @@ function autoGenerateRoutine(){
         filled += placedHere;
         teachersDone++;
       } else {
-        // 🚫 কোনো entry নেই — fallback round-robin আর চলবে না।
-        // entry না থাকলে শিক্ষকের সব non-locked slot empty রেখে দিই।
         slotCols.forEach(c => {
           const cur = t.cells[c.id];
-          if(cur && (cur.locked || cur.special)) return; // 🌟 locked/special রক্ষিত
+          if(cur && (cur.locked || cur.special)) return;
           t.cells[c.id] = {};
         });
         skippedNoEntry++;
@@ -11516,15 +12128,18 @@ function autoGenerateRoutine(){
     try{ if(typeof refreshDashboardSilent === 'function') refreshDashboardSilent(false); }catch(_){}
     audit('স্বয়ংক্রিয় রুটিন', `${teachersDone} শিক্ষক, ${totalEntries} entries → ${filled} পিরিয়ড পূরণ${conflictSkipped?', '+conflictSkipped+' কনফ্লিক্ট skip':''}${skippedNoEntry?', '+skippedNoEntry+' জনের entry নেই':''}`);
     let msg = `✅ স্বয়ংক্রিয় রুটিন তৈরি — ${toBnNum(teachersDone)} জন শিক্ষক, ${toBnNum(totalEntries)} টি entry থেকে ${toBnNum(filled)} টি পিরিয়ড বসানো হয়েছে`;
+    if(prioritySet && prioritySet.size){
+      msg += ` (⚖️ ${toBnNum(prioritySet.size)} টি অগ্রাধিকার প্রয়োগ হয়েছে)`;
+    }
     if(conflictSkipped > 0){
       msg += ` (⚠️ ${toBnNum(conflictSkipped)} টি entry কনফ্লিক্টের কারণে বসেনি)`;
     }
     if(skippedNoEntry > 0){
       msg += ` (⚠️ ${toBnNum(skippedNoEntry)} জনের কোনো entry নেই — slot empty রাখা হলো)`;
     }
-    showToast(msg, 'success', 6500);
+    showToast(msg, 'success', 7000);
   }catch(err){
-    console.error('❌ autoGenerateRoutine error:', err);
+    console.error('❌ _runAutoRoutineCore error:', err);
     showToast('❌ স্বয়ংক্রিয় রুটিন ব্যর্থ: ' + err.message, 'error', 5000);
   }
 }
