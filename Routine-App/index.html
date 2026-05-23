@@ -1835,6 +1835,15 @@ input[type="range"]::-moz-range-thumb{
   overflow:hidden;
   animation:bpPop .18s ease-out;
 }
+/* 🆕 outside click এ subtle shake — user বুঝতে পারবে modal locked */
+.bp-modal.bp-shake{animation:bpShake .35s ease-out}
+@keyframes bpShake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(5px)}
+  60%{transform:translateX(-3px)}
+  80%{transform:translateX(2px)}
+}
 @keyframes bpPop{
   from{opacity:0;transform:scale(.94)}
   to{opacity:1;transform:scale(1)}
@@ -2067,14 +2076,10 @@ input[type="range"]::-moz-range-thumb{
   cursor:pointer;font-size:12px;font-weight:600;
 }
 .te-card-remove:hover{background:var(--danger,#dc2626);color:#fff}
-/* 🆕 প্রতি entry-র ভেতরে সব dropdown পাশাপাশি — ৩ কলামে stable */
-.te-grid-3{display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:7px;margin-bottom:8px}
-.te-grid-2{display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:7px;margin-bottom:8px}
-/* খুব ছোট mobile-এ stack — না হলে field-গুলো crash করবে */
-@media(max-width:480px){
-  .te-grid-3{grid-template-columns:1fr}
-  .te-grid-2{grid-template-columns:1fr}
-}
+/* 🆕 প্রতি entry-র সব dropdown VERTICAL (|||) — একটার নিচে একটা
+   (আগের horizontal layout বাদ — user স্পষ্টভাবে vertical চেয়েছেন) */
+.te-grid-3{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.te-grid-2{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
 .te-field label{
   display:block;font-size:11px;font-weight:600;
   color:var(--text-2);margin-bottom:4px;
@@ -8843,34 +8848,67 @@ function renderTeachingEntries(teacher){
   } else {
     // 🆕 প্রতি (class+section) → প্রতি slot-এ অন্যান্য শিক্ষকের প্রেফারেন্স গণনা।
     // শুধু একই class+section হলেই count হবে — ভিন্ন class/section হলে নয়।
+    // 🆕 SHARED CLASS RULE: যদি current teacher-এর entry shared হয় এবং অন্য
+    // contestants-ও shared হয় (এবং দিন overlap নাই + মোট ৬ দিন পূর্ণ), তবে
+    // ঐ slot-কে কনফ্লিক্ট গণনা থেকে বাদ দিই।
     // Format: Map<"cls||sec", Map<slotId, count>>
     const prefByCS = new Map();
     const ensureCS = (key) => {
       if(!prefByCS.has(key)) prefByCS.set(key, new Map());
       return prefByCS.get(key);
     };
+    // সব teachers (current সহ) থেকে contestants build — পরে current teacher বাদ দিয়ে count করব
+    const contestantsByCSSlot = new Map(); // "cls||sec||slot" → [{teacherId, shared, days[]}]
     try{
       (state.teachers || []).forEach(other => {
-        if(!other || other.id === teacher.id) return;
-        if(!Array.isArray(other.teachingEntries)) return;
-        // একই শিক্ষকের একই (cs+slot) একাধিক entry-তে থাকলেও ১বার গণনা
+        if(!other || !Array.isArray(other.teachingEntries)) return;
         const seen = new Set();
         other.teachingEntries.forEach(raw => {
           const ee = _teSanitizeEntry(raw);
           const cls = (ee.class || '').trim();
           const sec = (ee.section || '').trim();
-          if(!cls || !sec) return;             // class বা section না দিলে count করবো না
+          if(!cls || !sec) return;
           const csKey = cls + '||' + sec;
           (ee.preferredSlots || []).forEach(sid => {
             const seenKey = csKey + '||' + sid;
             if(seen.has(seenKey)) return;
             seen.add(seenKey);
-            const m = ensureCS(csKey);
-            m.set(sid, (m.get(sid) || 0) + 1);
+            const k3 = csKey + '||' + sid;
+            if(!contestantsByCSSlot.has(k3)) contestantsByCSSlot.set(k3, []);
+            contestantsByCSSlot.get(k3).push({
+              teacherId: other.id,
+              shared: !!ee.shared,
+              days: Array.isArray(ee.days) ? ee.days.slice() : []
+            });
           });
         });
       });
     }catch(_){}
+
+    // এখন count: প্রতি (cs, slot) → অন্য শিক্ষকদের সংখ্যা — কিন্তু valid shared scenario বাদ
+    contestantsByCSSlot.forEach((arr, k3) => {
+      const parts = k3.split('||');
+      const csKey = parts[0] + '||' + parts[1];
+      const sid = parts[2];
+      // অন্য teachers (current teacher বাদ দিয়ে)
+      const others = arr.filter(x => x.teacherId !== teacher.id);
+      if(!others.length) return;
+      // valid shared check: সব participant (current+others) shared হলে এবং day-union ৬ ও overlap নেই → কনফ্লিক্ট নয়
+      const allParticipants = arr;
+      const allShared = allParticipants.every(x => x.shared && x.days.length);
+      if(allShared){
+        const seen = new Set(); let overlap = false;
+        allParticipants.forEach(x => x.days.forEach(d => {
+          if(seen.has(d)) overlap = true;
+          seen.add(d);
+        }));
+        if(!overlap && seen.size >= 6){
+          return; // valid shared — counter বাড়াবো না
+        }
+      }
+      const m = ensureCS(csKey);
+      m.set(sid, (m.get(sid) || 0) + others.length);
+    });
 
     // মাস্টার নির্বাচন + usage map + slot-preference count by class+section
     const ctx = {
@@ -9274,6 +9312,7 @@ function _teCardHTML(e, idx, ctx){
    • Search-সহ
 ═══════════════════════════════════════════════════════════ */
 let _bpState = null;
+let _bpEscHandler = null;
 function _bpOpen(opts){
   // opts = {title, options:[value...], current, onConfirm:(value)=>{}}
   if(!opts || !Array.isArray(opts.options)) return;
@@ -9290,7 +9329,30 @@ function _bpOpen(opts){
   if(search){ search.value = ''; }
   _bpRenderOptions('');
   const ov = document.getElementById('bigPickerOverlay');
-  if(ov){ ov.classList.add('open'); }
+  if(ov){
+    ov.classList.add('open');
+    // 🆕 outside click (overlay/backdrop) এ close হবে না — শুধু flash effect
+    ov.onclick = function(ev){
+      if(ev.target === ov){
+        // shake the modal slightly so user knows
+        const modal = ov.querySelector('.bp-modal');
+        if(modal){
+          modal.classList.remove('bp-shake');
+          // force reflow
+          void modal.offsetWidth;
+          modal.classList.add('bp-shake');
+        }
+      }
+    };
+  }
+  // 🆕 ESC key দিয়েও close হবে না — user explicit click ছাড়া বন্ধ হবে না
+  _bpEscHandler = function(ev){
+    if(ev.key === 'Escape'){
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+  };
+  document.addEventListener('keydown', _bpEscHandler, true);
   // background scroll block
   document.body.style.overflow = 'hidden';
   // focus search
@@ -9345,7 +9407,11 @@ function _bpCancel(){
 }
 function _bpClose(){
   const ov = document.getElementById('bigPickerOverlay');
-  if(ov) ov.classList.remove('open');
+  if(ov){ ov.classList.remove('open'); ov.onclick = null; }
+  if(_bpEscHandler){
+    document.removeEventListener('keydown', _bpEscHandler, true);
+    _bpEscHandler = null;
+  }
   document.body.style.overflow = '';
   _bpState = null;
 }
@@ -10017,7 +10083,10 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
     // চেষ্টা ১: preferredSlots অগ্রাধিকার — কিন্তু priority অনুযায়ী filter
     // যেকোনো conflict-এ যদি এই teacher loser হয়, ঐ slot preferred থেকে বাদ দেই
     // (অন্য slot-এ rotate হবে যদি fixed না হয়)
+    // 🆕 SHARED CLASS RULE: shared entries LOCKED — class/section/slot/partner পরিবর্তন
+    // করা যাবে না। তাই priorityOverrides shared entries-এ apply হবে না।
     const filteredPreferred = e.preferredSlots.filter(sid => {
+      if(isShared) return true;             // 🔒 shared = LOCKED, priority filter skip
       if(!prioritySet || !prioritySet.size) return true;
       if(!cls || !sec) return true;
       const key = cls + '||' + sec + '||' + sid;
@@ -10029,9 +10098,11 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
     const tryOrder = [];
     filteredPreferred.forEach(sid => { if(slotById[sid]) tryOrder.push(slotById[sid]); });
     // চেষ্টা ২: 🔒 fixed হলে rotate করবো না — শুধু preferredSlots-ই চেষ্টা করবো।
-    // fixed না হলে fallback হিসেবে বাকি সব slot যোগ করবো (কনফ্লিক্ট থাকলে অন্য slot)।
-    // Safety: fixed কিন্তু preferredSlots একদম খালি → rotate allow (নাহলে entry-ই বসবে না)।
-    if(!isFixed || tryOrder.length === 0){
+    // 🆕 SHARED হলেও rotate করবো না — shared class slot LOCKED।
+    // fixed/shared না হলে fallback হিসেবে বাকি সব slot যোগ করবো (কনফ্লিক্ট থাকলে অন্য slot)।
+    // Safety: fixed/shared কিন্তু preferredSlots একদম খালি → rotate allow (নাহলে entry-ই বসবে না)।
+    const blockRotation = (isFixed || isShared);
+    if(!blockRotation || tryOrder.length === 0){
       slotCols.forEach(c => { if(!filteredPreferred.includes(c.id)) tryOrder.push(c); });
     }
 
@@ -10368,12 +10439,36 @@ function detectConflicts(){
       if(!cell || !cell.class || !cell.subject || cell.subject==='Free') return;
       const key = (cell.class||'')+'|'+(cell.section||'');
       if(!map[key]) map[key] = [];
-      map[key].push(t.id);
+      // 🆕 shared/days info সংরক্ষণ — পরে coverage check-এ লাগবে
+      map[key].push({tid: t.id, cell: cell});
     });
-    Object.entries(map).forEach(([k, tids])=>{
-      if(tids.length > 1){
-        tids.forEach(tid => conflicts.add(tid+'_'+c.id));
+    Object.entries(map).forEach(([k, arr])=>{
+      if(arr.length <= 1) return;          // ১ জন → কনফ্লিক্ট নয়
+      // 🆕 SHARED CLASS RULE:
+      // যদি সব contestants shared হয় (each has days[]) এবং সব দিন union করে ৬ দিন
+      // পূর্ণ হয় ও কোনো day overlap না থাকে — তাহলে এটা valid shared class, কনফ্লিক্ট নয়।
+      const allShared = arr.every(x => Array.isArray(x.cell.days) && x.cell.days.length > 0);
+      if(allShared){
+        // দিন union ও overlap check
+        const allDays = [];
+        let hasOverlap = false;
+        const seenDays = new Set();
+        arr.forEach(x => {
+          (x.cell.days||[]).forEach(d => {
+            if(seenDays.has(d)) hasOverlap = true;
+            seenDays.add(d);
+            allDays.push(d);
+          });
+        });
+        // ৬ দিন পূর্ণ ও কোনো overlap নাই → valid shared class, কনফ্লিক্ট নয়
+        if(!hasOverlap && seenDays.size >= 6){
+          return; // skip — কনফ্লিক্ট মার্ক করবো না
+        }
+        // overlap থাকলে শুধু সেই teachers কনফ্লিক্ট (যাদের দিন collide করছে)
+        // আংশিক (৬ দিন পূর্ণ না) হলে সবাই কনফ্লিক্ট
       }
+      // অন্য সব ক্ষেত্র — কনফ্লিক্ট মার্ক
+      arr.forEach(x => conflicts.add(x.tid + '_' + c.id));
     });
   });
   return conflicts;
@@ -11923,23 +12018,39 @@ function _detectPreferredConflicts(teachers){
           teacherTitle: t.title || '',
           entryIdx: eidx,
           subject: e.subject || '',
-          fixed: !!e.fixed
+          fixed: !!e.fixed,
+          shared: !!e.shared,                       // 🆕 shared flag
+          days: Array.isArray(e.days) ? e.days : []
         });
       });
     });
   });
-  // শুধু সেগুলো ফেরত দাও যেখানে ২+ শিক্ষক
+  // শুধু সেগুলো ফেরত দাও যেখানে ২+ শিক্ষক — এবং shared class scenario বাদ
   const out = [];
   map.forEach((arr, key) => {
-    if(arr.length >= 2){
-      const [cls, sec, slotId] = key.split('||');
-      const slotCol = (state.columns||[]).find(c => c.id === slotId);
-      out.push({
-        key, cls, sec, slotId,
-        slotLabel: slotCol ? (slotCol.label || slotCol.id) : slotId,
-        contestants: arr
-      });
+    if(arr.length < 2) return;
+    // 🆕 SHARED CLASS RULE: সব contestants shared এবং দিন overlap নাই ও ৬ দিন
+    // ছোঁবে — এটা valid shared class, কোনো কনফ্লিক্ট নয়।
+    const allShared = arr.every(x => x.shared && Array.isArray(x.days) && x.days.length);
+    if(allShared){
+      const seen = new Set();
+      let overlap = false;
+      arr.forEach(x => (x.days||[]).forEach(d => {
+        if(seen.has(d)) overlap = true;
+        seen.add(d);
+      }));
+      if(!overlap && seen.size >= 6){
+        return; // valid shared — কোনো priority prompt লাগবে না
+      }
     }
+    // অন্য কেস — কনফ্লিক্ট হিসেবে list-এ যোগ
+    const [cls, sec, slotId] = key.split('||');
+    const slotCol = (state.columns||[]).find(c => c.id === slotId);
+    out.push({
+      key, cls, sec, slotId,
+      slotLabel: slotCol ? (slotCol.label || slotCol.id) : slotId,
+      contestants: arr
+    });
   });
   return out;
 }
