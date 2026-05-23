@@ -1854,6 +1854,10 @@ input[type="range"]::-moz-range-thumb{
   color:#fff;
 }
 .bp-title{font-size:16px;font-weight:800;letter-spacing:.2px}
+.bp-subtitle{
+  font-size:11.5px;font-weight:500;
+  opacity:.92;margin-top:3px;font-style:italic;
+}
 .bp-search-row{padding:10px 14px 8px;border-bottom:1px solid var(--border)}
 .bp-search{
   width:100%;
@@ -2345,6 +2349,17 @@ input[type="range"]::-moz-range-thumb{
 .te-fixed-row{background:#fef3c7;border-color:#fde68a !important}
 .te-fixed-row .te-shared-label{color:#92400e}
 
+/* 🆕 Entry status badges (✓ প্রস্তুত / ⚠ অসম্পূর্ণ) */
+.te-status-badge{
+  display:inline-block;padding:1px 7px;border-radius:99px;
+  font-size:10px;font-weight:800;letter-spacing:.2px;
+  margin-left:6px;
+}
+.te-status-ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.te-status-warn{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+/* Complete card-এ subtle green tint */
+.te-card.te-card-complete{border-left-color:#22c55e}
+
 /* Card header tweak — show entry summary inline */
 .te-card.te-flagged{border-left-color:#ef4444}
 .te-card-summary{
@@ -2582,14 +2597,14 @@ input[type="range"]::-moz-range-thumb{
    🆕 EXPANDED TEACHER MODAL + SPECIAL SCHEDULE + YELLOW HIGHLIGHT
    + 6-DAY COVERAGE WARNING — সব additive scoped styles
    ════════════════════════════════════════════════════════════ */
-/* শিক্ষক তথ্য মোডাল ডিফল্টেই বড় হয়ে খোলে — easier data entry */
+/* শিক্ষক তথ্য মোডাল — আকারে কমপ্যাক্ট ও সুন্দর (আগে অনেক বড় ছিল) */
 #teacherModal .modal.wide{
-  max-width:min(1180px, 96vw) !important;
-  width:96vw;
+  max-width:min(720px, 92vw) !important;
+  width:auto;
 }
 #teacherModal .modal-body{
-  max-height:calc(100vh - 170px) !important;
-  min-height:60vh;
+  max-height:calc(100vh - 180px) !important;
+  min-height:auto;
 }
 @media(max-width:760px){
   #teacherModal .modal.wide{
@@ -5663,20 +5678,21 @@ body[data-role="manager"] .teacher-only{display:none !important}
   }
 </script>
 
-<!-- 🆕 বড় Picker Modal — যেকোনো entry dropdown ক্লিক করলে এটি খুলবে।
-     OK button না চাপলে close হবে না। মূল <select> hidden থাকে, value শুধু এখান থেকে বদলায়। -->
+<!-- 🆕 বড় Picker Modal — option-এ click করলেই auto-select+close।
+     আলাদা "ওকে" বাটন বাদ — entire entry form-এর চূড়ান্ত OK আগের মতোই থাকবে।
+     শুধু "বাতিল" বাটন রাখা হলো যেন user মনে বদল করলে বের হতে পারে। -->
 <div class="bp-overlay" id="bigPickerOverlay">
   <div class="bp-modal" role="dialog" aria-modal="true">
     <div class="bp-head">
       <div class="bp-title" id="bigPickerTitle">নির্বাচন করুন</div>
+      <div class="bp-subtitle">👆 ক্লিক করলেই সাথে সাথে নির্বাচন হয়ে যাবে</div>
     </div>
     <div class="bp-search-row">
       <input type="text" class="bp-search" id="bigPickerSearch" placeholder="🔍 খুঁজুন..." oninput="_bpFilterOptions()">
     </div>
     <div class="bp-options" id="bigPickerOptions"></div>
     <div class="bp-foot">
-      <button type="button" class="bp-cancel" onclick="_bpCancel()">বাতিল</button>
-      <button type="button" class="bp-ok" id="bigPickerOK" onclick="_bpConfirm()">✓ ওকে</button>
+      <button type="button" class="bp-cancel" onclick="_bpCancel()">✕ বন্ধ করুন</button>
     </div>
   </div>
 </div>
@@ -9191,14 +9207,21 @@ function _teCardHTML(e, idx, ctx){
       </label>
     </div>`;
 
+  // 🆕 entry completion status — সব ৩টা field পূরণ ও কমপক্ষে ১ দিন থাকলে complete
+  const isComplete = !!(e.subject && e.class && e.section && selDays.size > 0);
+  const statusBadge = isComplete
+    ? '<span class="te-status-badge te-status-ok" title="সম্পূর্ণ — auto-routine-এ বসবে">✓ প্রস্তুত</span>'
+    : '<span class="te-status-badge te-status-warn" title="অসম্পূর্ণ — কিছু field বাকি">⚠ অসম্পূর্ণ</span>';
+
   return `
-  <div class="te-card ${colorClass} ${sharedClass} ${fixedClass} ${flagged?'te-flagged':''} te-collapsed" data-te-idx="${idx}">
+  <div class="te-card ${colorClass} ${sharedClass} ${fixedClass} ${flagged?'te-flagged':''} te-collapsed${isComplete?' te-card-complete':''}" data-te-idx="${idx}">
     <div class="te-card-head te-card-head-clickable" onclick="_teToggleCard(${idx}, event)" title="ক্লিক করে এন্ট্রি বিস্তারিত খুলুন/বন্ধ করুন">
       <div style="flex:1;min-width:0">
         <div class="te-card-title">
           <span class="te-card-num">${_teBnNum(idx+1)}</span>
           <span class="te-card-caret">▾</span>
           এন্ট্রি
+          ${statusBadge}
           ${e.fixed?'<span class="te-fixed-tag-inline" style="margin-left:6px">🔒 ফিক্সড</span>':''}
           ${e.shared?'<span class="te-shared-tag-inline" style="margin-left:6px">🔀 শেয়ার্ড</span>':''}
         </div>
@@ -9239,8 +9262,8 @@ function _teCardHTML(e, idx, ctx){
       </div>
     </div>
 
-    <!-- ── 📅 দিন — dropdown sub-section ── -->
-    <div class="te-sub te-sub-collapsed" data-te-sub="days">
+    <!-- ── 📅 দিন — sub-section (default EXPANDED — primary input) ── -->
+    <div class="te-sub" data-te-sub="days">
       <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'days', this)">
         <span class="te-sub-caret">▾</span>
         <span class="te-sub-label">📅 দিন</span>
@@ -9252,15 +9275,15 @@ function _teCardHTML(e, idx, ctx){
       </div>
     </div>
 
-    <!-- ── ⏰ সময় (পছন্দের slot) — dropdown sub-section ── -->
-    <div class="te-sub te-sub-collapsed" data-te-sub="slots">
+    <!-- ── ⏰ সময় (পছন্দের slot) — sub-section (default EXPANDED — primary input) ── -->
+    <div class="te-sub" data-te-sub="slots">
       <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'slots', this)">
         <span class="te-sub-caret">▾</span>
         <span class="te-sub-label">⏰ পছন্দের সময়</span>
         <span class="te-sub-summary">নির্বাচিত: <strong>${_teBnNum(selSlots.size)}</strong> slot</span>
       </div>
       <div class="te-sub-body">
-        <div class="te-sub-hint"><span style="color:#dc2626;font-weight:600">লাল সংখ্যা</span> = অন্য শিক্ষকও এই slot prefer করছেন</div>
+        <div class="te-sub-hint"><span style="color:#dc2626;font-weight:600">লাল সংখ্যা</span> = অন্য শিক্ষকও একই শ্রেণি+শাখার জন্য এই slot prefer করছেন</div>
         <div class="te-tslot-wrap" data-te-slots>${groupHTML}</div>
         <div class="te-day-count">পছন্দের slot: <strong id="teSelSlots_${idx}">${_teBnNum(selSlots.size)}</strong></div>
       </div>
@@ -9384,13 +9407,17 @@ function _bpFilterOptions(){
 function _bpSelectOption(el){
   if(!el || !_bpState) return;
   _bpState.selected = el.dataset.bpVal;
-  // update tick markers in DOM
+  // 🆕 INSTANT SELECT: option ক্লিক করার সাথে সাথে select+save+close
+  // (আলাদা "ওকে" আর লাগবে না — entire entry form-এর OK আগের মতোই থাকবে)
+  // visual tick update আগে (যাতে close animation-এর আগে ক্ষণিকের জন্য দেখা যায়)
   document.querySelectorAll('#bigPickerOptions .bp-opt').forEach(o => {
     const isSel = (o.dataset.bpVal === _bpState.selected);
     o.classList.toggle('selected', isSel);
     const tick = o.querySelector('.bp-opt-tick');
     if(tick) tick.textContent = isSel ? '✓' : '';
   });
+  // ছোট্ট delay দিয়ে confirm — যাতে tick visible হয়ে close হয়
+  setTimeout(() => { try{ _bpConfirm(); }catch(_){} }, 80);
 }
 function _bpConfirm(){
   if(!_bpState) return;
@@ -10056,123 +10083,195 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
   let placed = 0;
   const slotById = {};
   slotCols.forEach(c => { slotById[c.id] = c; });
-
-  // 🔒 FIXED entries আগে — preferred slot-এ লক হয়ে যাবে, কখনো rotate হবে না।
-  // তারপর general entries — preferred slot-এ priority, কিন্তু rotate-ও করতে পারে।
-  // 🔁 full-teacher fixed mode: যদি teacher.allFixed true হয়, সব entry fixed হিসেবে কাজ করবে।
   const allFixed = !!teacher.allFixed;
-  const fixedFirst = entries.slice().sort((a,b) => {
-    const af = (allFixed || a.fixed) ? 0 : 1;
-    const bf = (allFixed || b.fixed) ? 0 : 1;
-    return af - bf;
-  });
 
-  // 🚨 CRITICAL: প্রতি entry = ঠিক ১টা slot column বসবে (পুরো সপ্তাহে)।
-  // entry.days[] সেই slot-এর dimension — কোন কোন দিনে ক্লাস হবে; এটা slot সংখ্যা নয়।
-  // (পুরোনো ভুল ছিল: daysPerWeek=6 → একই entry ৬ বার বসত → ৬ entry × ৬ = ৩৬ wants)
-  fixedFirst.forEach(e => {
-    const want = 1;             // ⛔ HARD-LOCKED — ১ entry = ১ slot, NEVER more
+  /* ═══════════════════════════════════════════════════════════════════
+     🎯 PLACEMENT POLICY (apex-engineer rewrite)
+     ───────────────────────────────────────────────────────────────────
+     • প্রতি entry = ঠিক ১টা slot — কখনও বেশি না, কখনও কম না।
+     • Priority order: SHARED → FIXED → preferred-আছে → preferred-নেই
+     • প্রথমে preferred slots-এ try; fail হলে এই entry এই round-এ
+       বসবে না — অপ্রত্যাশিত slot-এ "rotate" করে user-কে বিভ্রান্ত
+       করবে না।
+     • দ্বিতীয় pass: যেসব entry-তে কোনো preferred slot নেই,
+       সেগুলো খালি slot-এ বসবে (predictable order)।
+     • Status tracking: প্রতি entry-র জন্য কেন placed/skipped হলো
+       তা রেকর্ড — toast-এ পরিষ্কার দেখাবে।
+     ═══════════════════════════════════════════════════════════════════ */
+
+  // Rank: shared=0, fixed=1, has-preferred=2, no-preferred=3
+  const _rank = (e) => {
+    if(e.shared) return 0;
+    if(allFixed || e.fixed) return 1;
+    if(Array.isArray(e.preferredSlots) && e.preferredSlots.length) return 2;
+    return 3;
+  };
+  const ordered = entries.slice().sort((a,b) => _rank(a) - _rank(b));
+
+  // Per-entry status — diagnostic data
+  const entryStatus = [];
+
+  // ┌─ try to place a single entry in a given slot ─────────────────┐
+  const _tryPlaceEntry = (e, col) => {
     const cls = e.class || '';
     const sec = e.section || '';
     const sub = e.subject || '';
-    if(!sub && !cls && !sec) return;
+    const isShared = !!e.shared;
+    const eDays = Array.isArray(e.days) ? e.days : [];
+    const taken = slotTaken[col.id];
+    const cur = teacher.cells[col.id] || {};
+
+    // এই teacher-এর এই slot already পূরণ?
+    if(cur.class || cur.subject || cur.section){
+      // Non-shared overlap → reject
+      if(!isShared || !Array.isArray(cur.days)) return false;
+      // Shared + day overlap → reject
+      const overlap = eDays.some(d => cur.days.indexOf(d) >= 0);
+      if(overlap) return false;
+      // Shared + no overlap → can co-exist as multi-part
+      if(!_teCanUseSlot(taken, cls, sec, eDays, true)) return false;
+      if(!Array.isArray(cur.parts)){
+        teacher.cells[col.id] = {
+          class: cur.class, section: cur.section, subject: cur.subject,
+          days: cur.days, shared: true,
+          parts: [{subject: cur.subject, days: cur.days.slice()}]
+        };
+      }
+      const cell = teacher.cells[col.id];
+      cell.parts.push({subject: sub, days: eDays.slice(), sharedNote: e.sharedNote||''});
+      cell.subject = sub;
+      cell.days = (cell.days||[]).concat(eDays);
+      if(e.sharedNote) cell.sharedNote = e.sharedNote;
+      _teMarkSlotTaken(taken, cls, sec, eDays, true);
+      return true;
+    }
+
+    // অন্য শিক্ষক ইতিমধ্যে একই class+section নিয়েছেন এই slot-এ?
+    if(!_teCanUseSlot(taken, cls, sec, eDays, isShared)) return false;
+
+    // স্থাপন — entry exactly যেভাবে ইনপুট করা হয়েছে
+    const newCell = {class: cls, section: sec, subject: sub};
+    if(isShared){
+      newCell.days = eDays.slice();
+      newCell.shared = true;
+      if(e.sharedNote) newCell.sharedNote = e.sharedNote;
+    } else if(eDays.length && eDays.length < 6){
+      // non-shared কিন্তু selective days — days[] রেকর্ড করি (display info)
+      newCell.days = eDays.slice();
+    }
+    if(e.fixed || allFixed) newCell.fixed = true;
+    teacher.cells[col.id] = newCell;
+    _teMarkSlotTaken(taken, cls, sec, eDays, isShared);
+    return true;
+  };
+  // └────────────────────────────────────────────────────────────────┘
+
+  // ╔═ PASS 1: শুধুমাত্র preferred slots-এ চেষ্টা ═════════════════════╗
+  ordered.forEach((e, eIdx) => {
+    const cls = e.class || '';
+    const sec = e.section || '';
+    const sub = e.subject || '';
+    if(!sub && !cls && !sec){ entryStatus.push({entry:e, status:'empty'}); return; }
+
     const isShared = !!e.shared;
     const isFixed = !!(e.fixed || allFixed);
-    const eDays = Array.isArray(e.days) ? e.days : [];
+    const hasPreferred = Array.isArray(e.preferredSlots) && e.preferredSlots.length > 0;
 
-    // চেষ্টা ১: preferredSlots অগ্রাধিকার — কিন্তু priority অনুযায়ী filter
-    // যেকোনো conflict-এ যদি এই teacher loser হয়, ঐ slot preferred থেকে বাদ দেই
-    // (অন্য slot-এ rotate হবে যদি fixed না হয়)
-    // 🆕 SHARED CLASS RULE: shared entries LOCKED — class/section/slot/partner পরিবর্তন
-    // করা যাবে না। তাই priorityOverrides shared entries-এ apply হবে না।
+    if(!hasPreferred){
+      // PASS 1 skip — PASS 2-এ deal করব
+      entryStatus.push({entry:e, status:'pending-pass2', idx:eIdx});
+      return;
+    }
+
+    // Priority filter: যদি conflict-এ user অন্য teacher-কে winner বেছেছেন,
+    // এই teacher-এর জন্য সেই slot বাদ। SHARED entries এই filter থেকে exempt
+    // (shared = LOCKED structure, priority overrides apply হবে না)।
     const filteredPreferred = e.preferredSlots.filter(sid => {
-      if(isShared) return true;             // 🔒 shared = LOCKED, priority filter skip
+      if(isShared) return true;
       if(!prioritySet || !prioritySet.size) return true;
       if(!cls || !sec) return true;
       const key = cls + '||' + sec + '||' + sid;
       if(!prioritySet.has(key)) return true;
-      // এই key conflict-এ আছে — winner হলে রাখো, না হলে বাদ
       return prioritySet.get(key) === teacher.id;
     });
 
-    const tryOrder = [];
-    filteredPreferred.forEach(sid => { if(slotById[sid]) tryOrder.push(slotById[sid]); });
-    // চেষ্টা ২: 🔒 fixed হলে rotate করবো না — শুধু preferredSlots-ই চেষ্টা করবো।
-    // 🆕 SHARED হলেও rotate করবো না — shared class slot LOCKED।
-    // fixed/shared না হলে fallback হিসেবে বাকি সব slot যোগ করবো (কনফ্লিক্ট থাকলে অন্য slot)।
-    // Safety: fixed/shared কিন্তু preferredSlots একদম খালি → rotate allow (নাহলে entry-ই বসবে না)।
-    const blockRotation = (isFixed || isShared);
-    if(!blockRotation || tryOrder.length === 0){
-      slotCols.forEach(c => { if(!filteredPreferred.includes(c.id)) tryOrder.push(c); });
+    // চেষ্টা: শুধু preferred slot-গুলো (input order রক্ষা)
+    let success = false;
+    for(const sid of filteredPreferred){
+      const col = slotById[sid];
+      if(!col) continue;
+      if(_tryPlaceEntry(e, col)){
+        success = true;
+        placed++;
+        break;            // ⛔ ১ entry = ১ slot — placement হলেই break
+      }
+    }
+    entryStatus.push({
+      entry:e,
+      status: success ? 'placed-preferred' : (isFixed ? 'skipped-fixed-conflict' : 'pending-fallback'),
+      idx: eIdx
+    });
+  });
+  // ╚═══════════════════════════════════════════════════════════════════╝
+
+  // ╔═ PASS 2: যেসব entry placed হয়নি ═══════════════════════════════╗
+  // Rule:
+  //   • SHARED entry placement fail হলে — কখনই অন্য slot-এ rotate করবো না
+  //     (slot/partner LOCKED structure)। User-কে toast-এ জানাব।
+  //   • FIXED entry fail হলে — preferred slot-এই লক, rotate বন্ধ।
+  //   • No-preferred entries → পরিবর্তে যেকোনো খালি slot-এ বসবে।
+  //   • Preferred-নেই-পেল-conflict (general) → fallback rotation
+  //     শুধু যদি `prioritySet` থেকে এই entry "loser" হিসেবে চিহ্নিত হয়।
+  //     অন্যথায় skip — entry যেভাবে চেয়েছেন সেভাবেই থাকবে।
+  // ═══════════════════════════════════════════════════════════════════
+  entryStatus.forEach(st => {
+    if(st.status !== 'pending-pass2' && st.status !== 'pending-fallback') return;
+    const e = st.entry;
+    const isShared = !!e.shared;
+    const isFixed = !!(e.fixed || allFixed);
+    const cls = e.class || '';
+    const sec = e.section || '';
+
+    // SHARED ও FIXED — fallback rotation নিষিদ্ধ
+    if(isShared){ st.status = 'skipped-shared-conflict'; return; }
+    if(isFixed && st.status === 'pending-fallback'){ st.status = 'skipped-fixed-conflict'; return; }
+
+    // General entry, no-preferred → যেকোনো খালি slot
+    if(st.status === 'pending-pass2'){
+      let success = false;
+      for(const col of slotCols){
+        if(_tryPlaceEntry(e, col)){ success = true; placed++; break; }
+      }
+      st.status = success ? 'placed-fallback' : 'skipped-no-slot';
+      return;
     }
 
-    let count = 0;
-    for(const col of tryOrder){
-      if(count >= want) break;
-      const taken = slotTaken[col.id];
-      const cur = teacher.cells[col.id] || {};
-      // এই শিক্ষকের এই slot ইতিমধ্যে পূরণ — non-shared হলে overwrite নয়;
-      // shared হলে cur.days দেখি, দিন overlap থাকলে skip
-      if(cur.class || cur.subject || cur.section){
-        if(!isShared || !Array.isArray(cur.days)) continue;
-        // shared — দিন overlap চেক
-        const overlap = eDays.some(d => cur.days.indexOf(d) >= 0);
-        if(overlap) continue;
-        // overlap নেই → multi-part cell (legacy single + new part)
-        // সরাসরি cells overwrite না করে parts[]-এ যোগ
-        if(!Array.isArray(cur.parts)){
-          // আগে non-shared হলে parts নয়; কিন্তু আমাদের cur ইতিমধ্যে shared (cur.days আছে)
-          // তাই parts তৈরি করি
-          teacher.cells[col.id] = {
-            class: cur.class, section: cur.section, subject: cur.subject,
-            days: cur.days, parts: [
-              {subject: cur.subject, days: cur.days.slice()}
-            ]
-          };
-        }
-        const cell = teacher.cells[col.id];
-        cell.parts.push({subject: sub, days: eDays.slice(), sharedNote: e.sharedNote||''});
-        // top-level fields-এ সর্বশেষ part রাখি (legacy reader compat)
-        cell.subject = sub;
-        cell.days = (cell.days||[]).concat(eDays);
-        if(e.sharedNote) cell.sharedNote = e.sharedNote;
-        if(isFixed) cell.fixed = true;
-        if(_teCanUseSlot(taken, cls, sec, eDays, true)){
-          _teMarkSlotTaken(taken, cls, sec, eDays, true);
-          count++; placed++;
-        }
-        continue;
-      }
-      // অন্য শিক্ষক একই class+section ইতিমধ্যে নিয়েছে — কনফ্লিক্ট check
-      if(!_teCanUseSlot(taken, cls, sec, eDays, isShared)) continue;
-      // স্থাপন — sharedNote ও fixed flag cell-এ যোগ করি (UI render-এর জন্য)
-      const newCell = {class: cls, section: sec, subject: sub};
-      if(isShared){
-        newCell.days = eDays.slice();
-        newCell.shared = true;
-        if(e.sharedNote) newCell.sharedNote = e.sharedNote;
-      }
-      if(isFixed) newCell.fixed = true;
-      teacher.cells[col.id] = newCell;
-      _teMarkSlotTaken(taken, cls, sec, eDays, isShared);
-      count++; placed++;
-    }
-
-    // weeklyAssignments-এ এন্ট্রির দিনগুলোতে বিষয় বসিয়ে দিই (খালি দিনে)
-    if(sub && Array.isArray(e.days) && e.days.length){
-      if(!teacher.weeklyAssignments || typeof teacher.weeklyAssignments !== 'object') teacher.weeklyAssignments = {};
-      e.days.forEach(d => {
-        if(!teacher.weeklyAssignments[d]) teacher.weeklyAssignments[d] = sub;
+    // pending-fallback (preferred ছিল, কিন্তু সবগুলো conflict-এ অন্য teacher winner)
+    // → priority-loser হিসেবে — অন্য slot fallback allow
+    const isPriorityLoser = (prioritySet && prioritySet.size && cls && sec)
+      && e.preferredSlots.some(sid => {
+        const key = cls + '||' + sec + '||' + sid;
+        return prioritySet.has(key) && prioritySet.get(key) !== teacher.id;
       });
+    if(isPriorityLoser){
+      let success = false;
+      for(const col of slotCols){
+        if(e.preferredSlots.includes(col.id)) continue; // আগেই try করা
+        if(_tryPlaceEntry(e, col)){ success = true; placed++; break; }
+      }
+      st.status = success ? 'placed-fallback' : 'skipped-no-slot';
+    } else {
+      // অন্যথায় skip — user-এর preferred slot-গুলো সব unavailable
+      st.status = 'skipped-preferred-unavailable';
     }
   });
+  // ╚═══════════════════════════════════════════════════════════════════╝
 
-  // 🛡 DEFENSE: placed কখনই entries.length ছাড়াতে পারবে না।
-  // এটা একটা invariant — কখনই break হওয়ার কথা নয়, কিন্তু future regression থেকে রক্ষা।
+  // 🛡 invariant: placed কখনই entries.length ছাড়ানো উচিত নয়
   if(placed > entries.length){
-    console.warn('[_teApplyEntriesForTeacher] placed('+placed+') > entries('+entries.length+') — invariant violated for teacher', teacher && teacher.name);
+    console.warn('[_teApplyEntriesForTeacher] placed('+placed+') > entries('+entries.length+') — invariant violated for', teacher && teacher.name);
   }
-  return {placed, usedEntries: entries.length};
+  return {placed, usedEntries: entries.length, statuses: entryStatus};
 }
 
 function renderChipPicker(elementId, options, selected){
@@ -12154,15 +12253,15 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
   try{
     if(!confirm(
         `⚙️ স্বয়ংক্রিয় রুটিন তৈরি\n\n` +
-        `• ${toBnNum(teachers.length)} জন শিক্ষকের রুটিন তৈরি হবে\n` +
-        `• 🎯 প্রতি class entry = ঠিক ১টি স্বতন্ত্র slot (বেশি কখনই নয়)\n` +
-        `• ⏰ পছন্দের সময় (Preferred Time) প্রাধান্য পাবে\n` +
-        `${prioritySet && prioritySet.size ? `• ⚖️ ${toBnNum(prioritySet.size)} টি কনফ্লিক্টে আপনার অনুমোদিত অগ্রাধিকার প্রয়োগ হবে\n` : ''}` +
-        `• ⚠️ কনফ্লিক্ট হলে অগ্রাধিকার-পাওয়া শিক্ষক বসবেন; অন্যরা অন্য slot-এ rotate হবেন\n` +
-        `• 🔒 Fixed entry-গুলো পছন্দের slot-এই লক থাকবে (rotate হবে না)\n` +
-        `• 📌 Special Entry সর্বোচ্চ priority\n` +
-        `• ⚠️ entry না থাকলে slot empty থাকবে (imaginary class তৈরি হবে না)\n` +
-        `• 🔒 লক করা ও ছুটিতে থাকা শিক্ষক অপরিবর্তিত থাকবে\n\n` +
+        `📐 কাজের নিয়ম:\n` +
+        `• প্রতি teaching entry = ঠিক ১টি পিরিয়ড/ঘণ্টা\n` +
+        `• যেভাবে input করেছেন — সেভাবেই রুটিনে বসবে\n` +
+        `• পছন্দের সময় থাকলে সেখানেই বসবে; না বসলে অন্য entry-র দিকে যাবে না\n` +
+        `${prioritySet && prioritySet.size ? `• ⚖️ ${toBnNum(prioritySet.size)} টি কনফ্লিক্টে আপনার অনুমোদন প্রয়োগ হবে\n` : ''}` +
+        `• 🔒 Fixed entry: পছন্দের slot ছাড়া কোথাও যাবে না\n` +
+        `• 🔀 Shared entry: slot/partner/class/section কিছুই পরিবর্তন হবে না\n` +
+        `• 📌 Special Entry: সর্বোচ্চ priority\n` +
+        `• ⏸ লক করা ও ছুটিতে থাকা শিক্ষক অপরিবর্তিত\n\n` +
         `চালিয়ে যাবেন?`)){
       return;
     }
@@ -12176,10 +12275,10 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
     let filled = 0, teachersDone = 0;
     let skippedNoEntry = 0;
     let totalEntries = 0;
-    let conflictSkipped = 0;
+    let totalSkipped = 0;
+    const skipDetails = [];   // 🆕 কোন entry কেন skip হয়েছে — toast/log-এ দেখাব
 
     // 🆕 priority-aware order: যাদের কোনো conflict-এ winner সেটে আছে — তারা আগে যাবে
-    // অন্য teachers loser হবে priority-set অনুযায়ী
     const winnerTeacherIds = new Set();
     if(prioritySet && prioritySet.size){
       prioritySet.forEach(tid => winnerTeacherIds.add(tid));
@@ -12213,8 +12312,22 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
       const tEntries = (entriesResult && entriesResult.usedEntries) || 0;
       totalEntries += tEntries;
       const tRegularPlaced = (entriesResult && entriesResult.placed) || 0;
-      if(tEntries > tRegularPlaced){
-        conflictSkipped += (tEntries - tRegularPlaced);
+      const tSkipped = Math.max(0, tEntries - tRegularPlaced);
+      if(tSkipped > 0){
+        totalSkipped += tSkipped;
+        // 🆕 কোন কারণে কোন entry skip — diagnostic info
+        if(entriesResult && Array.isArray(entriesResult.statuses)){
+          entriesResult.statuses.forEach(s => {
+            if(s.status && s.status.startsWith('skipped')){
+              const e = s.entry || {};
+              skipDetails.push({
+                teacher: t.name || '—',
+                entry: (e.subject||'—') + ' / ' + (e.class||'—') + '-' + (e.section||'—'),
+                reason: s.status
+              });
+            }
+          });
+        }
       }
 
       if(placedHere > 0){
@@ -12226,7 +12339,7 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
           if(cur && (cur.locked || cur.special)) return;
           t.cells[c.id] = {};
         });
-        skippedNoEntry++;
+        if(tEntries === 0) skippedNoEntry++;
       }
     });
 
@@ -12237,18 +12350,37 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
     renderTable();
     try{ populateBulk(); }catch(_){}
     try{ if(typeof refreshDashboardSilent === 'function') refreshDashboardSilent(false); }catch(_){}
-    audit('স্বয়ংক্রিয় রুটিন', `${teachersDone} শিক্ষক, ${totalEntries} entries → ${filled} পিরিয়ড পূরণ${conflictSkipped?', '+conflictSkipped+' কনফ্লিক্ট skip':''}${skippedNoEntry?', '+skippedNoEntry+' জনের entry নেই':''}`);
-    let msg = `✅ স্বয়ংক্রিয় রুটিন তৈরি — ${toBnNum(teachersDone)} জন শিক্ষক, ${toBnNum(totalEntries)} টি entry থেকে ${toBnNum(filled)} টি পিরিয়ড বসানো হয়েছে`;
+    audit('স্বয়ংক্রিয় রুটিন', `${teachersDone} শিক্ষক · ${totalEntries} entries → ${filled} placed · ${totalSkipped} skipped · ${skippedNoEntry} no-entry`);
+
+    let msg = `✅ ${toBnNum(totalEntries)} টি entry → ${toBnNum(filled)} টি পিরিয়ড বসানো হয়েছে`;
     if(prioritySet && prioritySet.size){
-      msg += ` (⚖️ ${toBnNum(prioritySet.size)} টি অগ্রাধিকার প্রয়োগ হয়েছে)`;
+      msg += ` ⚖️ ${toBnNum(prioritySet.size)} টি অগ্রাধিকার প্রয়োগ`;
     }
-    if(conflictSkipped > 0){
-      msg += ` (⚠️ ${toBnNum(conflictSkipped)} টি entry কনফ্লিক্টের কারণে বসেনি)`;
+    if(totalSkipped > 0){
+      msg += ` ⚠️ ${toBnNum(totalSkipped)} টি entry বসেনি`;
     }
     if(skippedNoEntry > 0){
-      msg += ` (⚠️ ${toBnNum(skippedNoEntry)} জনের কোনো entry নেই — slot empty রাখা হলো)`;
+      msg += ` (${toBnNum(skippedNoEntry)} জনের entry নেই)`;
     }
     showToast(msg, 'success', 7000);
+
+    // 🆕 যদি কেউ skip হয়, বিস্তারিত report দেখাই (max 8 entries)
+    if(skipDetails.length > 0){
+      const reasonMap = {
+        'skipped-shared-conflict': 'শেয়ার্ড slot conflict (LOCKED)',
+        'skipped-fixed-conflict': 'ফিক্সড slot conflict (rotate বন্ধ)',
+        'skipped-preferred-unavailable': 'সব preferred slot অন্য entry দখলে',
+        'skipped-no-slot': 'কোনো খালি slot নেই',
+        'empty': 'খালি entry'
+      };
+      const lines = skipDetails.slice(0, 8).map((d,i) =>
+        `${toBnNum(i+1)}. ${d.teacher} — ${d.entry}\n   কারণ: ${reasonMap[d.reason] || d.reason}`
+      ).join('\n\n');
+      const extra = skipDetails.length > 8 ? `\n\n…এবং আরো ${toBnNum(skipDetails.length - 8)} টি entry` : '';
+      setTimeout(() => {
+        alert(`⚠️ যে ${toBnNum(skipDetails.length)} টি entry বসেনি:\n\n${lines}${extra}\n\n💡 পছন্দের সময় বা শ্রেণি/শাখা পরিবর্তন করে আবার চেষ্টা করুন।`);
+      }, 500);
+    }
   }catch(err){
     console.error('❌ _runAutoRoutineCore error:', err);
     showToast('❌ স্বয়ংক্রিয় রুটিন ব্যর্থ: ' + err.message, 'error', 5000);
