@@ -2999,6 +2999,96 @@ input[type="range"]::-moz-range-thumb{
 }
 
 /* =============================================================
+   📚 CURRICULUM MODAL (ধাপ ১) — scoped .cur-* prefix
+============================================================= */
+.cur-help{
+  background:var(--primary-soft);
+  color:var(--text);
+  border-left:3px solid var(--primary);
+  padding:10px 12px;border-radius:8px;
+  font-size:12.5px;line-height:1.6;
+  margin-bottom:12px;
+}
+.cur-help b{font-weight:700}
+.cur-toolbar{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;padding:8px 10px;
+  background:var(--surface-2);border-radius:8px;
+}
+.cur-class-picker{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cur-class-picker label{font-size:12.5px;font-weight:600;color:var(--text-2)}
+.cur-class-picker select{
+  padding:6px 10px;border:1px solid var(--border);border-radius:6px;
+  background:var(--surface);font-size:13px;color:var(--text);min-width:140px;
+}
+.cur-actions{display:flex;gap:6px;flex-wrap:wrap}
+.cur-summary{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  padding:10px 12px;border-radius:8px;
+  font-size:13px;font-weight:600;
+  margin-bottom:10px;
+  border:1px solid var(--border);
+}
+.cur-summary.ok{background:#dcfce7;color:#166534;border-color:#86efac}
+.cur-summary.warn{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.cur-summary.error{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.cur-summary .cs-meta{font-size:11.5px;font-weight:500;opacity:.85}
+.cur-editor{
+  display:flex;flex-direction:column;gap:6px;
+  max-height:50vh;overflow-y:auto;
+  padding:4px;
+}
+.cur-row{
+  display:grid;grid-template-columns:1fr 110px 36px;gap:8px;align-items:center;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:8px;padding:8px 10px;
+}
+.cur-row .cur-subj{font-weight:600;font-size:13.5px;color:var(--text)}
+.cur-row .cur-input-wrap{
+  display:flex;align-items:center;gap:4px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:2px 4px;
+}
+.cur-row .cur-input-wrap input{
+  width:46px;border:none;outline:none;background:transparent;
+  text-align:center;font-size:14px;font-weight:700;color:var(--text);
+  padding:4px 2px;
+}
+.cur-row .cur-input-wrap .cur-unit{font-size:10.5px;color:var(--text-2);font-weight:500;white-space:nowrap}
+.cur-row .cur-step-btn{
+  width:24px;height:24px;border-radius:5px;
+  background:var(--primary-soft);color:var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;line-height:1;
+  border:1px solid transparent;
+  transition:var(--transition);
+}
+.cur-row .cur-step-btn:hover{background:var(--primary);color:#fff}
+.cur-row .cur-del-btn{
+  width:30px;height:30px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--danger);font-size:14px;font-weight:700;
+  transition:var(--transition);
+}
+.cur-row .cur-del-btn:hover{background:var(--danger-soft)}
+.cur-row.is-zero{opacity:.55}
+.cur-empty-msg{
+  text-align:center;color:var(--text-2);font-size:13px;
+  padding:24px 12px;background:var(--surface-2);border-radius:8px;
+  border:1px dashed var(--border);
+}
+@media (max-width:560px){
+  .cur-row{grid-template-columns:1fr 96px 32px;gap:6px;padding:6px 8px}
+  .cur-row .cur-subj{font-size:12.5px}
+  .cur-row .cur-input-wrap input{width:36px;font-size:13px}
+  .cur-toolbar{flex-direction:column;align-items:stretch}
+  .cur-actions{justify-content:flex-start}
+}
+
+/* =============================================================
    TOAST
 ============================================================= */
 .toast-container{
@@ -3991,6 +4081,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <button class="tool-btn editable-only" data-perm="routineLock" id="routineLockBtn" data-locked="false" onclick="toggleRoutineLock();closeToolMenu()" title="রুটিন লক/আনলক — এলোমেলো ক্লিক থেকে সুরক্ষা">🔓 <span class="lbl">রুটিন লক</span></button>
         <div class="tool-divider"></div>
         <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openModal('optionsModal');closeToolMenu()">📝 <span class="lbl">অপশন</span></button>
+        <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openCurriculumModal();closeToolMenu()" title="প্রতি শ্রেণিতে কোন বিষয় সপ্তাহে কত পিরিয়ড — স্বয়ংক্রিয় রুটিনের ভিত্তি">📚 <span class="lbl">পাঠ্যসূচি</span></button>
         <button class="tool-btn editable-only" data-perm="bulkEdit" onclick="openModal('bulkModal');closeToolMenu()">✂️ <span class="lbl">বাল্ক এডিট</span></button>
         <button class="tool-btn" data-perm="auditLog" onclick="openModal('auditModal');renderAudit();closeToolMenu()">📜 <span class="lbl">অডিট লগ</span></button>
         <div class="tool-divider"></div>
@@ -4935,6 +5026,45 @@ body[data-role="manager"] .teacher-only{display:none !important}
     <div class="modal-footer">
       <button class="tool-btn" onclick="closeModal('optionsModal')">বন্ধ</button>
       <button class="tool-btn primary" onclick="saveOptions()">সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- 📚 পাঠ্যসূচি (Curriculum / Weekly Demand Setup) Modal — ধাপ ১ -->
+<div class="modal-overlay" id="curriculumModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h2>📚 পাঠ্যসূচি — সাপ্তাহিক বিষয় বণ্টন</h2>
+      <button class="modal-close" onclick="closeModal('curriculumModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="cur-help">
+        প্রতিটি শ্রেণির জন্য সাপ্তাহিক বিষয় বরাদ্দ ঠিক করুন। স্বয়ংক্রিয় রুটিন এই হিসাব ধরে চাহিদা ও কভারেজ যাচাই করবে।
+        <br><b>নিয়ম:</b> মোট পিরিয়ড = পিরিয়ড কলামের সংখ্যা × ৬ দিন (শুক্রবার বাদে)। প্রতিটি শ্রেণির বরাদ্দ এই মোটের সমান হওয়া উচিত।
+      </div>
+
+      <div class="cur-toolbar">
+        <div class="cur-class-picker">
+          <label for="curClassSelect">শ্রেণি:</label>
+          <select id="curClassSelect" onchange="_curSelectClass(this.value)"></select>
+          <label for="curSectionSelect" style="margin-left:8px">শাখা:</label>
+          <select id="curSectionSelect" onchange="_curSelectSection(this.value)">
+            <option value="GLOBAL">সব শাখার জন্য একই</option>
+          </select>
+        </div>
+        <div class="cur-actions">
+          <button type="button" class="tool-btn" onclick="_curApplyToAllSections()" title="বর্তমান বরাদ্দ এই শ্রেণির সব শাখায় কপি">📋 সব শাখায়</button>
+          <button type="button" class="tool-btn" onclick="_curApplyToAllClasses()" title="বর্তমান বরাদ্দ সব শ্রেণিতে কপি">📋 সব শ্রেণিতে</button>
+          <button type="button" class="tool-btn" onclick="_curAutoFillFromTeachers()" title="শিক্ষকদের teaching entries থেকে স্বয়ংক্রিয়ভাবে বরাদ্দ গণনা">🔄 শিক্ষকদের থেকে পূরণ</button>
+        </div>
+      </div>
+
+      <div class="cur-summary" id="curSummary"></div>
+      <div class="cur-editor" id="curEditor"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="tool-btn" onclick="closeModal('curriculumModal')">বাতিল</button>
+      <button class="tool-btn primary" onclick="_curSave()">✓ সংরক্ষণ করুন</button>
     </div>
   </div>
 </div>
@@ -5884,6 +6014,11 @@ let state = {
   requests: [],
   /* 🛡️ Admin Control — multi-admin/manager, per-manager permissions, trusted devices */
   accounts: { admins: [], managers: [], trustedDevices: [] },
+  /* 📚 পাঠ্যসূচি — প্রতি (শ্রেণি, শাখা) এর সাপ্তাহিক বিষয় বণ্টন
+     গঠন: curriculum[className][sectionName] = { 'বাংলা': 6, 'গণিত': 6, ... }
+     'GLOBAL' কী হলে ঐ শ্রেণির সব শাখার জন্য একই বরাদ্দ।
+     ধাপ ১: সাপ্তাহিক চাহিদা সংজ্ঞা — স্বয়ংক্রিয় রুটিনের ভ্যালিডেশন/কভারেজের ভিত্তি। */
+  curriculum: {},
   lastSaved: null
 };
 
@@ -7394,6 +7529,10 @@ function ensureStateIntegrity(){
   // AI settings
   if(!state.aiSettings || typeof state.aiSettings !== 'object'){
     state.aiSettings = {geminiKey:'', lastGenerated:null};
+  }
+  // 📚 পাঠ্যসূচি (curriculum) — পুরোনো ডেটায় না থাকলে নিরাপদে যোগ
+  if(!state.curriculum || typeof state.curriculum !== 'object' || Array.isArray(state.curriculum)){
+    state.curriculum = {};
   }
   // 🛡️ Admin Control অ্যাকাউন্ট — Firebase ফাঁকা/পুরোনো ডেটা পাঠালেও কখনো হারাবে না
   try{ ensureAccounts(); }catch(e){ console.warn('ensureAccounts (integrity) failed:', e); }
@@ -12568,6 +12707,393 @@ function saveOptions(){
   closeModal('optionsModal');
   audit('অপশন আপডেট', currentOptTab+' তালিকা');
   showToast('অপশন সংরক্ষিত','success');
+}
+
+/* ===========================================================
+   📚 পাঠ্যসূচি (CURRICULUM / WEEKLY DEMAND) — ধাপ ১
+   ───────────────────────────────────────────────────────────
+   মূল লক্ষ্য: প্রতি (শ্রেণি, শাখা)-এর জন্য সাপ্তাহিক বিষয়
+   বরাদ্দ সংজ্ঞায়িত করা। স্বয়ংক্রিয় রুটিনের চাহিদা-পক্ষ
+   এই ডেটার ওপর দাঁড়াবে (ধাপ ২+ এ ব্যবহার হবে)।
+
+   ডেটা গঠন:
+     state.curriculum[className][sectionName] = {
+       'বাংলা': 6, 'গণিত': 6, 'ICT': 3, ...
+     }
+     sectionName = 'GLOBAL' হলে ঐ শ্রেণির সব শাখার জন্য একই।
+   লেখা/পড়া শুধু helper-গুলোর মাধ্যমে — সরাসরি state ছোঁবেন না।
+
+   কোনো বিদ্যমান function/state field overwrite করা হয় না —
+   এই ব্লক পুরোপুরি additive। মেইন ফ্রেম অপরিবর্তিত।
+=========================================================== */
+
+/* ── অভ্যন্তরীণ অবস্থা (modal-scope) ───────────────────── */
+let _curActiveClass = '';
+let _curActiveSection = 'GLOBAL';     // 'GLOBAL' = সব শাখার জন্য একই বরাদ্দ
+let _curDraft = null;                  // {className: {sectionName: {subject: count}}}
+
+/* ── public helpers (ধাপ ২+ এ ব্যবহার হবে) ─────────────── */
+function _curActiveDayCount(){
+  // শুক্রবার বাদে — _teActiveDays থাকলে সেটা ব্যবহার, নয়তো ৬
+  try{
+    if(typeof _teActiveDays === 'function'){
+      const a = _teActiveDays();
+      if(Array.isArray(a) && a.length) return a.length;
+    }
+  }catch(_){}
+  return 6;
+}
+function _curSlotColCount(){
+  return ((state && state.columns)||[]).filter(c => c && c.type === 'slot').length;
+}
+function getWeeklyPeriodsRequired(){
+  // মোট পিরিয়ড/সপ্তাহ = slot কলাম × সক্রিয় দিন (শুক্র বাদে)
+  return _curSlotColCount() * _curActiveDayCount();
+}
+function getCurriculumFor(clsName, secName){
+  // resolution: প্রথমে নির্দিষ্ট শাখা, না থাকলে 'GLOBAL', নয়তো {}
+  if(!state.curriculum || !state.curriculum[clsName]) return {};
+  const c = state.curriculum[clsName];
+  if(secName && secName !== 'GLOBAL' && c[secName]) return c[secName];
+  if(c.GLOBAL) return c.GLOBAL;
+  // legacy/edge: যদি curriculum[cls] সরাসরি subject→count map হয় (পুরোনো ডেটা)
+  // section keys নেই — সব মান number হলে এটাকেই GLOBAL ধরে নাও
+  const allNum = Object.values(c).every(v => typeof v === 'number');
+  if(allNum && Object.keys(c).length) return c;
+  return {};
+}
+function getCurriculumTotal(clsName, secName){
+  const m = getCurriculumFor(clsName, secName);
+  return Object.values(m).reduce((s,v) => s + (Number(v)||0), 0);
+}
+
+/* ── modal খোলা / বন্ধ ────────────────────────────────── */
+function openCurriculumModal(){
+  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!requirePerm('manageOptions')) return;
+  try{ if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity(); }catch(_){}
+
+  // pre-flight: শ্রেণি ও পিরিয়ড না থাকলে warn
+  const classes = (state.options && Array.isArray(state.options.class)) ? state.options.class.filter(Boolean) : [];
+  if(!classes.length){
+    showToast('❌ আগে "অপশন" থেকে শ্রেণি যোগ করুন','warning',4000);
+    return;
+  }
+  if(_curSlotColCount() === 0){
+    showToast('❌ আগে "সময়সূচি" থেকে পিরিয়ড কলাম তৈরি করুন','warning',4000);
+    return;
+  }
+
+  // state থেকে deep-copy এনে draft বানাই — Cancel চাপলে কোনো ক্ষতি হবে না
+  _curDraft = JSON.parse(JSON.stringify(state.curriculum || {}));
+
+  // active class/section ঠিক করি
+  if(!_curActiveClass || classes.indexOf(_curActiveClass) < 0){
+    _curActiveClass = classes[0];
+  }
+  _curActiveSection = 'GLOBAL';
+
+  // dropdown গুলো ভরি
+  const clsSel = document.getElementById('curClassSelect');
+  if(clsSel){
+    clsSel.innerHTML = classes.map(c =>
+      `<option value="${esc(c)}"${c===_curActiveClass?' selected':''}>${esc(c)}</option>`
+    ).join('');
+  }
+  _curRefreshSectionSelect();
+  _curRenderEditor();
+  openModal('curriculumModal');
+}
+
+function _curRefreshSectionSelect(){
+  const secSel = document.getElementById('curSectionSelect');
+  if(!secSel) return;
+  const sections = (state.options && Array.isArray(state.options.section)) ? state.options.section.filter(Boolean) : [];
+  let html = '<option value="GLOBAL">সব শাখার জন্য একই</option>';
+  html += sections.map(s =>
+    `<option value="${esc(s)}"${s===_curActiveSection?' selected':''}>${esc(s)}</option>`
+  ).join('');
+  secSel.innerHTML = html;
+  // ensure selection
+  if(_curActiveSection !== 'GLOBAL' && sections.indexOf(_curActiveSection) < 0){
+    _curActiveSection = 'GLOBAL';
+  }
+  secSel.value = _curActiveSection;
+}
+
+function _curSelectClass(clsName){
+  _curActiveClass = String(clsName || '');
+  _curRenderEditor();
+}
+function _curSelectSection(secName){
+  _curActiveSection = String(secName || 'GLOBAL');
+  _curRenderEditor();
+}
+
+/* ── বর্তমান (class, section) এর draft ফেরত দেয় (নিশ্চিত মিউটেবল ম্যাপ) ── */
+function _curEnsureBucket(){
+  if(!_curDraft) _curDraft = {};
+  if(!_curActiveClass) return null;
+  if(!_curDraft[_curActiveClass] || typeof _curDraft[_curActiveClass] !== 'object'){
+    _curDraft[_curActiveClass] = {};
+  }
+  const sec = _curActiveSection || 'GLOBAL';
+  if(!_curDraft[_curActiveClass][sec] || typeof _curDraft[_curActiveClass][sec] !== 'object'){
+    _curDraft[_curActiveClass][sec] = {};
+  }
+  return _curDraft[_curActiveClass][sec];
+}
+
+function _curRenderEditor(){
+  const editor = document.getElementById('curEditor');
+  const summary = document.getElementById('curSummary');
+  if(!editor || !summary) return;
+
+  const subjects = (state.options && Array.isArray(state.options.subject))
+    ? state.options.subject.filter(s => s && s.trim() && s.trim().toLowerCase() !== 'free')
+    : [];
+
+  if(!_curActiveClass){
+    editor.innerHTML = `<div class="cur-empty-msg">কোনো শ্রেণি নির্বাচিত হয়নি</div>`;
+    summary.className = 'cur-summary warn';
+    summary.innerHTML = `<span>⚠️ শ্রেণি নির্বাচন করুন</span>`;
+    return;
+  }
+  if(!subjects.length){
+    editor.innerHTML = `<div class="cur-empty-msg">কোনো বিষয় তালিকায় নেই — "অপশন → বিষয়" থেকে যোগ করুন</div>`;
+    summary.className = 'cur-summary warn';
+    summary.innerHTML = `<span>⚠️ বিষয় তালিকা খালি</span>`;
+    return;
+  }
+
+  const bucket = _curEnsureBucket() || {};
+  const required = getWeeklyPeriodsRequired();
+  const slotCount = _curSlotColCount();
+  const dayCount = _curActiveDayCount();
+
+  // render rows
+  editor.innerHTML = subjects.map(sub => {
+    const val = Number(bucket[sub] || 0);
+    const zero = val === 0;
+    return `
+      <div class="cur-row${zero?' is-zero':''}" data-cur-sub="${esc(sub)}">
+        <div class="cur-subj">${esc(sub)}</div>
+        <div class="cur-input-wrap">
+          <button type="button" class="cur-step-btn" data-cur-action="dec" title="−১">−</button>
+          <input type="number" min="0" max="${dayCount}" step="1" value="${val}" data-cur-action="input">
+          <span class="cur-unit">/সপ্তাহ</span>
+          <button type="button" class="cur-step-btn" data-cur-action="inc" title="+১">+</button>
+        </div>
+        <button type="button" class="cur-del-btn" data-cur-action="zero" title="শূন্য">×</button>
+      </div>
+    `;
+  }).join('');
+
+  // event delegation — quote-safe (subject নামে quote থাকলেও সমস্যা নয়)
+  if(!editor.dataset.curBound){
+    editor.addEventListener('click', _curEditorClick);
+    editor.addEventListener('input', _curEditorInput);
+    editor.addEventListener('change', _curEditorInput);
+    editor.dataset.curBound = '1';
+  }
+
+  _curRefreshSummary(required, slotCount, dayCount);
+}
+
+function _curEditorClick(ev){
+  const btn = ev.target.closest('[data-cur-action]');
+  if(!btn) return;
+  if(btn.tagName === 'INPUT') return;       // input handled separately
+  const row = btn.closest('.cur-row');
+  if(!row) return;
+  const sub = row.getAttribute('data-cur-sub');
+  if(!sub) return;
+  const action = btn.getAttribute('data-cur-action');
+  if(action === 'inc') _curStep(sub, +1);
+  else if(action === 'dec') _curStep(sub, -1);
+  else if(action === 'zero') _curSetValue(sub, 0);
+}
+function _curEditorInput(ev){
+  const inp = ev.target;
+  if(!inp || inp.tagName !== 'INPUT') return;
+  if(inp.getAttribute('data-cur-action') !== 'input') return;
+  const row = inp.closest('.cur-row');
+  if(!row) return;
+  const sub = row.getAttribute('data-cur-sub');
+  if(!sub) return;
+  _curSetValue(sub, inp.value);
+}
+
+function _curRefreshSummary(required, slotCount, dayCount){
+  const summary = document.getElementById('curSummary');
+  if(!summary) return;
+  if(typeof required !== 'number') required = getWeeklyPeriodsRequired();
+  if(typeof slotCount !== 'number') slotCount = _curSlotColCount();
+  if(typeof dayCount !== 'number') dayCount = _curActiveDayCount();
+
+  const bucket = _curEnsureBucket() || {};
+  const total = Object.values(bucket).reduce((s,v) => s + (Number(v)||0), 0);
+  const diff = total - required;
+
+  let cls = 'ok', icon = '✅', msg = `বরাদ্দ মোট: ${toBnNum(total)} / ${toBnNum(required)} — মিলেছে`;
+  if(diff < 0){
+    cls = 'warn'; icon = '⚠️';
+    msg = `বরাদ্দ মোট: ${toBnNum(total)} / ${toBnNum(required)} — আরও ${toBnNum(-diff)} পিরিয়ড বরাদ্দ বাকি`;
+  } else if(diff > 0){
+    cls = 'error'; icon = '❌';
+    msg = `বরাদ্দ মোট: ${toBnNum(total)} / ${toBnNum(required)} — ${toBnNum(diff)} পিরিয়ড অতিরিক্ত!`;
+  }
+  summary.className = 'cur-summary ' + cls;
+  summary.innerHTML = `
+    <span>${icon} ${msg}</span>
+    <span class="cs-meta">পিরিয়ড: ${toBnNum(slotCount)} · দিন: ${toBnNum(dayCount)} (শুক্র বাদে)</span>
+  `;
+}
+
+function _curSetValue(subject, raw){
+  const bucket = _curEnsureBucket();
+  if(!bucket) return;
+  const dayCount = _curActiveDayCount();
+  let n = parseInt(raw, 10);
+  if(isNaN(n) || n < 0) n = 0;
+  if(n > dayCount) n = dayCount;     // কোনো বিষয় সপ্তাহে ৬ দিনের বেশি হতে পারে না (১ পিরিয়ড/দিন রুটিনে)
+  if(n === 0) delete bucket[subject];
+  else bucket[subject] = n;
+  // লাইট রিফ্রেশ — শুধু সারসংক্ষেপ ও রো-এর zero-class (CSS.escape avoided for older browsers)
+  _curRefreshSummary();
+  const rows = document.querySelectorAll('.cur-row');
+  for(let i=0; i<rows.length; i++){
+    if(rows[i].getAttribute('data-cur-sub') === subject){
+      rows[i].classList.toggle('is-zero', n === 0);
+      const inp = rows[i].querySelector('input[type="number"]');
+      if(inp && Number(inp.value) !== n) inp.value = n;
+      break;
+    }
+  }
+}
+
+function _curStep(subject, delta){
+  const bucket = _curEnsureBucket();
+  if(!bucket) return;
+  const cur = Number(bucket[subject] || 0);
+  _curSetValue(subject, cur + delta);
+}
+
+/* ── বর্তমান শাখার বরাদ্দ এই শ্রেণির সব শাখায় কপি ─── */
+function _curApplyToAllSections(){
+  if(!_curActiveClass){ showToast('শ্রেণি নির্বাচন করুন','warning'); return; }
+  const src = _curEnsureBucket();
+  if(!src || !Object.keys(src).length){
+    showToast('বর্তমান শাখায় কোনো বরাদ্দ নেই','warning'); return;
+  }
+  const sections = (state.options && Array.isArray(state.options.section)) ? state.options.section.filter(Boolean) : [];
+  // GLOBAL ও প্রতিটা section-এ কপি (deep clone)
+  if(!_curDraft[_curActiveClass]) _curDraft[_curActiveClass] = {};
+  _curDraft[_curActiveClass].GLOBAL = JSON.parse(JSON.stringify(src));
+  sections.forEach(s => {
+    _curDraft[_curActiveClass][s] = JSON.parse(JSON.stringify(src));
+  });
+  showToast(`✅ "${_curActiveClass}" এর সব শাখায় কপি হয়েছে`,'success');
+  _curRenderEditor();
+}
+
+/* ── বর্তমান বরাদ্দ সব শ্রেণিতে কপি (active শাখায়) ─── */
+function _curApplyToAllClasses(){
+  if(!_curActiveClass){ showToast('শ্রেণি নির্বাচন করুন','warning'); return; }
+  const src = _curEnsureBucket();
+  if(!src || !Object.keys(src).length){
+    showToast('বর্তমান বরাদ্দ খালি','warning'); return;
+  }
+  if(!confirm(`এই বরাদ্দটি সব শ্রেণির "${_curActiveSection==='GLOBAL'?'সব শাখায়':_curActiveSection}" এ কপি হবে।\n\nচালিয়ে যাবেন?`)) return;
+  const classes = (state.options && Array.isArray(state.options.class)) ? state.options.class.filter(Boolean) : [];
+  classes.forEach(c => {
+    if(c === _curActiveClass) return;
+    if(!_curDraft[c]) _curDraft[c] = {};
+    _curDraft[c][_curActiveSection] = JSON.parse(JSON.stringify(src));
+  });
+  showToast(`✅ ${toBnNum(classes.length-1)} টি শ্রেণিতে কপি হয়েছে`,'success');
+}
+
+/* ── শিক্ষকদের teaching entries থেকে স্বয়ংক্রিয় হিসাব ── */
+function _curAutoFillFromTeachers(){
+  if(!_curActiveClass){ showToast('শ্রেণি নির্বাচন করুন','warning'); return; }
+  if(!confirm('শিক্ষকদের teaching entries থেকে এই (শ্রেণি, শাখা) এর বরাদ্দ গণনা করব।\n\n• Shared entry: শুধু নির্ধারিত দিনে গণনা\n• Non-shared: ৬ দিন ধরা হবে (যদি days[] না থাকে)\n• বর্তমান বরাদ্দ overwrite হবে\n\nচালিয়ে যাবেন?')) return;
+
+  const teachers = Array.isArray(state.teachers) ? state.teachers : [];
+  const tgtSec = _curActiveSection;     // 'GLOBAL' বা specific section
+  const result = {};
+
+  teachers.forEach(t => {
+    if(!t || t.onLeave || !Array.isArray(t.teachingEntries)) return;
+    t.teachingEntries.forEach(raw => {
+      const e = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : raw;
+      if(!e) return;
+      const cls = (e.class || '').trim();
+      const sec = (e.section || '').trim();
+      const sub = (e.subject || '').trim();
+      if(!cls || !sub) return;
+      if(cls !== _curActiveClass) return;
+      // section match: GLOBAL হলে সব sections যোগ; specific হলে শুধু ঐ section
+      if(tgtSec !== 'GLOBAL' && sec !== tgtSec) return;
+
+      const daysArr = Array.isArray(e.days) ? e.days : [];
+      const periodsPerWeek = daysArr.length > 0 ? daysArr.length : _curActiveDayCount();
+      result[sub] = (result[sub] || 0) + periodsPerWeek;
+    });
+  });
+
+  // cap each subject at active-day-count (1 period/day ceiling)
+  const cap = _curActiveDayCount();
+  Object.keys(result).forEach(k => { if(result[k] > cap) result[k] = cap; });
+
+  if(!Object.keys(result).length){
+    showToast('এই (শ্রেণি, শাখা)-এ কোনো teaching entry পাওয়া যায়নি','warning',4000);
+    return;
+  }
+  if(!_curDraft[_curActiveClass]) _curDraft[_curActiveClass] = {};
+  _curDraft[_curActiveClass][_curActiveSection] = result;
+  showToast(`✅ ${toBnNum(Object.keys(result).length)} টি বিষয়ের বরাদ্দ গণনা হয়েছে`,'success');
+  _curRenderEditor();
+}
+
+/* ── সংরক্ষণ ─────────────────────────────────────────── */
+function _curSave(){
+  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!requirePerm('manageOptions')) return;
+  if(!_curDraft){ closeModal('curriculumModal'); return; }
+
+  // খালি bucket গুলো ছেঁটে ফেলি — পরিষ্কার state
+  const cleaned = {};
+  Object.keys(_curDraft).forEach(cls => {
+    const byCls = _curDraft[cls];
+    if(!byCls || typeof byCls !== 'object') return;
+    const keepCls = {};
+    Object.keys(byCls).forEach(sec => {
+      const m = byCls[sec];
+      if(!m || typeof m !== 'object') return;
+      const keepSec = {};
+      Object.keys(m).forEach(sub => {
+        const v = Number(m[sub] || 0);
+        if(v > 0) keepSec[sub] = v;
+      });
+      if(Object.keys(keepSec).length) keepCls[sec] = keepSec;
+    });
+    if(Object.keys(keepCls).length) cleaned[cls] = keepCls;
+  });
+
+  snapshot();
+  state.curriculum = cleaned;
+  saveState();
+  closeModal('curriculumModal');
+
+  // সারসংক্ষেপ গণনা — কয়টি শ্রেণিতে কয়টি বিষয়
+  let totalClasses = Object.keys(cleaned).length;
+  let totalSubjects = 0;
+  Object.values(cleaned).forEach(byCls => {
+    Object.values(byCls).forEach(m => { totalSubjects += Object.keys(m).length; });
+  });
+  audit('পাঠ্যসূচি আপডেট', `${totalClasses} শ্রেণি · ${totalSubjects} বরাদ্দ`);
+  showToast(`✅ পাঠ্যসূচি সংরক্ষিত — ${toBnNum(totalClasses)} শ্রেণি`,'success');
 }
 
 /* ===========================================================
