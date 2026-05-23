@@ -2026,33 +2026,54 @@ input[type="range"]::-moz-range-thumb{
   .pm-modal{max-height:94vh}
 }
 .te-sub-head{
-  display:flex;align-items:center;gap:8px;
-  padding:7px 10px;
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;
   cursor:pointer;user-select:none;
-  font-size:12px;font-weight:700;color:var(--text-1);
+  font-size:13.5px;font-weight:700;color:var(--text-1);
   transition:.12s;
+  min-height:44px;
 }
 .te-sub-head:hover{background:var(--surface,#fff)}
 .te-sub-caret{
-  display:inline-block;font-size:10px;
+  display:inline-block;font-size:12px;
   transition:transform .2s ease;
-  color:var(--text-3,#94a3b8);
+  color:var(--primary,#0284c7);
+  width:14px;text-align:center;
 }
 .te-sub.te-sub-collapsed .te-sub-caret{transform:rotate(-90deg)}
-.te-sub-label{flex-shrink:0}
+.te-sub-label{flex-shrink:0;font-size:13.5px}
 .te-sub-summary{
-  margin-left:auto;font-size:11.5px;font-weight:500;
-  color:var(--text-3,#64748b);
+  margin-left:auto;font-size:13px;font-weight:600;
+  color:var(--text-2,#475569);
   text-align:right;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  max-width:60%;
+  max-width:65%;
 }
 .te-sub-summary strong{color:var(--primary,#0284c7);font-weight:800}
 .te-sub-yes{color:#16a34a;font-weight:800}
 .te-sub-no{color:var(--text-3,#94a3b8);font-style:italic}
+/* 🆕 selected value pill */
+.te-sub-val{
+  display:inline-block;
+  background:var(--primary,#0284c7);color:#fff !important;
+  padding:3px 11px;border-radius:99px;
+  font-size:12.5px;font-weight:700;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;
+}
+/* 🆕 empty placeholder */
+.te-sub-empty{
+  color:var(--text-3,#94a3b8);
+  font-style:italic;font-weight:500;font-size:12px;
+}
+/* 🆕 flagged (duplicate value warning) */
+.te-sub.te-sub-flagged{
+  border-color:#f59e0b;
+  background:linear-gradient(180deg,#fffbeb 0%,#fef3c7 100%);
+}
+.te-sub.te-sub-flagged .te-sub-head{color:#92400e}
 .te-sub-hint{font-size:11px;color:var(--text-3,#64748b);margin-bottom:5px}
 .te-sub-body{
-  padding:8px 10px 10px;
+  padding:12px 14px 14px;
   background:var(--surface,#fff);
   border-top:1px solid var(--border);
   animation:teExpand .15s ease-out;
@@ -2062,6 +2083,14 @@ input[type="range"]::-moz-range-thumb{
 .te-sub.te-sub-active .te-sub-head{
   background:linear-gradient(90deg, var(--primary-soft,rgba(2,132,199,.08)) 0%, transparent 80%);
 }
+/* 🆕 te-sub vertical spacing — সব accordion এক ক'রে স্পষ্ট vertical stack */
+.te-sub{
+  margin-bottom:8px;
+  border:1px solid var(--border);border-radius:8px;
+  overflow:hidden;
+  background:var(--surface-2,#f8fafc);
+}
+.te-sub:last-child{margin-bottom:0}
 
 .te-card-title{
   font-size:12.5px;font-weight:700;color:var(--text-1);
@@ -2080,6 +2109,225 @@ input[type="range"]::-moz-range-thumb{
   cursor:pointer;font-size:12px;font-weight:600;
 }
 .te-card-remove:hover{background:var(--danger,#dc2626);color:#fff}
+
+/* ───────── 🆕 Phase B: Duplicate (কপি) button — card head ───────── */
+.te-card-dup{
+  background:transparent;border:1px solid var(--primary,#0f766e);
+  color:var(--primary,#0f766e);
+  padding:3px 9px;border-radius:6px;
+  cursor:pointer;font-size:12px;font-weight:600;
+  margin-right:4px;
+}
+.te-card-dup:hover{background:var(--primary,#0f766e);color:#fff}
+
+/* ───────── 🆕 Phase C/D: Day & Slot quick-action button rows ───── */
+.te-quick-row{
+  display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;
+  padding:4px 0;
+}
+.te-quick-row .te-quick-label{
+  font-size:10.5px;font-weight:600;color:var(--text-3,#94a3b8);
+  align-self:center;margin-right:2px;letter-spacing:.3px;
+}
+.te-quick-btn{
+  font-size:11px;font-weight:600;padding:3px 8px;
+  border-radius:4px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-2);
+  cursor:pointer;transition:var(--transition);
+  white-space:nowrap;
+}
+.te-quick-btn:hover{
+  background:var(--primary-soft);color:var(--primary);
+  border-color:var(--primary);
+}
+.te-quick-btn.danger:hover{
+  background:var(--danger-soft,#fee2e2);color:var(--danger,#dc2626);
+  border-color:var(--danger,#dc2626);
+}
+
+/* ───────── 🆕 Phase A: Bulk Entry Generator — scoped .teb-* ───── */
+#teBulkModal .modal{max-width:780px}
+.teb-header-info{
+  background:var(--primary-soft);color:var(--text);
+  border-left:3px solid var(--primary);
+  padding:10px 12px;border-radius:8px;
+  font-size:12.5px;line-height:1.55;margin-bottom:10px;
+}
+.teb-master-summary{
+  display:flex;flex-wrap:wrap;gap:10px;
+  padding:8px 10px;background:var(--surface-2);
+  border-radius:7px;font-size:12px;margin-bottom:10px;
+}
+.teb-master-summary b{color:var(--primary);font-weight:700}
+.teb-filter-block{
+  border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;margin-bottom:10px;background:var(--surface);
+}
+.teb-filter-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:5px}
+.teb-filter-row:last-child{margin-bottom:0}
+.teb-filter-row .teb-flbl{
+  font-size:11.5px;font-weight:700;color:var(--text-2);
+  min-width:54px;
+}
+.teb-fchip{
+  font-size:11.5px;padding:3px 9px;border-radius:99px;
+  border:1px solid var(--border);background:var(--surface-2);
+  color:var(--text);cursor:pointer;font-weight:600;
+  transition:var(--transition);
+}
+.teb-fchip.active{
+  background:var(--primary);color:#fff;border-color:var(--primary);
+}
+.teb-fchip:hover{border-color:var(--primary)}
+.teb-defaults{
+  display:flex;flex-wrap:wrap;gap:14px;
+  padding:8px 10px;background:var(--surface-2);
+  border-radius:7px;font-size:12px;margin-bottom:10px;
+  align-items:center;
+}
+.teb-defaults label{display:flex;align-items:center;gap:5px;cursor:pointer;font-weight:600}
+.teb-defaults input[type="checkbox"]{width:14px;height:14px;cursor:pointer;accent-color:var(--primary)}
+.teb-list{
+  max-height:45vh;overflow-y:auto;
+  border:1px solid var(--border);border-radius:8px;
+  background:var(--surface-2);padding:4px;
+}
+.teb-row{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:6px;
+  background:var(--surface);border:1px solid transparent;
+  margin-bottom:3px;cursor:pointer;
+  transition:var(--transition);
+}
+.teb-row:hover{border-color:var(--primary);background:var(--primary-soft)}
+.teb-row.checked{background:var(--primary-soft);border-color:var(--primary)}
+.teb-row.exists{opacity:.55;cursor:not-allowed;background:#fef3c7;border-color:#fde68a}
+.teb-row.exists:hover{border-color:#fde68a;background:#fef3c7}
+.teb-row input[type="checkbox"]{
+  width:16px;height:16px;cursor:pointer;accent-color:var(--primary);
+  flex-shrink:0;
+}
+.teb-row.exists input[type="checkbox"]{cursor:not-allowed}
+.teb-row-content{flex:1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+.teb-tag-sub{font-weight:700;color:var(--text)}
+.teb-tag-cls{color:var(--text-2)}
+.teb-tag-sec{color:var(--text-3,#94a3b8);font-size:12px}
+.teb-tag-curr{
+  font-size:10.5px;font-weight:600;
+  padding:1px 7px;border-radius:99px;
+  background:#dbeafe;color:#1e40af;margin-left:auto;
+}
+.teb-tag-exists{
+  font-size:10.5px;font-weight:700;
+  padding:1px 7px;border-radius:99px;
+  background:#fde68a;color:#92400e;margin-left:auto;
+}
+.teb-counter{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 12px;border-radius:8px;
+  background:var(--primary);color:#fff;
+  font-size:13px;font-weight:700;margin-top:10px;
+}
+.teb-counter .teb-mini-actions{display:flex;gap:6px}
+.teb-counter button{
+  background:rgba(255,255,255,.18);color:#fff;
+  border:1px solid rgba(255,255,255,.32);
+  padding:3px 9px;border-radius:5px;cursor:pointer;
+  font-size:11.5px;font-weight:600;
+}
+.teb-counter button:hover{background:rgba(255,255,255,.32)}
+.teb-empty{
+  text-align:center;padding:20px;color:var(--text-2);font-size:13px;
+  background:var(--surface-2);border-radius:8px;
+  border:1px dashed var(--border);
+}
+@media (max-width:560px){
+  .teb-defaults{flex-direction:column;align-items:flex-start;gap:6px}
+  .teb-filter-row{align-items:flex-start}
+  .teb-row-content{font-size:12px}
+  .teb-tag-curr,.teb-tag-exists{margin-left:0}
+}
+/* 🆕 Phase A: bulk trigger button (header) — matches add-btn style but subtle */
+.te-bulk-trigger{
+  font-size:11.5px;font-weight:700;
+  padding:5px 10px;border-radius:6px;
+  background:linear-gradient(135deg,#8b5cf6 0%,#a78bfa 100%);
+  color:#fff;border:none;cursor:pointer;
+  white-space:nowrap;
+}
+.te-bulk-trigger:hover{filter:brightness(1.1)}
+
+/* ───────── 🆕 INLINE CHIP PICKER (Subject / Class / Section)
+   পুরোনো Big-Picker-এর বদলে — এক ক্লিকে select, কোনো popup নেই ───────── */
+.te-inline-pickrow{
+  display:flex;flex-wrap:wrap;gap:5px;
+  padding:7px 8px;min-height:38px;
+  border:1px solid var(--border);border-radius:7px;
+  background:var(--surface-2);
+  align-items:flex-start;
+}
+.te-inline-chip{
+  font-size:12px;font-weight:600;
+  padding:5px 11px;border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--surface);color:var(--text);
+  cursor:pointer;white-space:nowrap;
+  transition:var(--transition);user-select:none;
+}
+.te-inline-chip:hover{
+  border-color:var(--primary);color:var(--primary);
+}
+.te-inline-chip.selected{
+  background:var(--primary);color:#fff;
+  border-color:var(--primary);
+  box-shadow:0 2px 4px rgba(15,118,110,.25);
+}
+.te-inline-empty{
+  font-size:11.5px;color:var(--text-3,#94a3b8);
+  font-style:italic;padding:5px 4px;
+}
+
+/* ───────── 🆕 ENTRY DONE BUTTON — entry body-র শেষে "✓ ঠিক আছে" ───────── */
+.te-entry-done{
+  display:flex;justify-content:flex-end;gap:8px;
+  margin-top:14px;padding-top:12px;
+  border-top:1px dashed var(--border);
+  align-items:center;flex-wrap:wrap;
+}
+.te-entry-done-hint{
+  font-size:11.5px;color:var(--text-2);
+  margin-right:auto;
+}
+.te-entry-done-hint.ok{color:#059669;font-weight:600}
+.te-entry-done-hint.warn{color:#d97706;font-weight:600}
+.te-entry-done-btn{
+  background:linear-gradient(135deg,#10b981 0%,#059669 100%);
+  color:#fff;border:none;
+  padding:9px 22px;border-radius:8px;
+  font-size:13.5px;font-weight:700;
+  cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;
+  white-space:nowrap;
+  box-shadow:0 2px 6px rgba(16,185,129,.3);
+  transition:var(--transition);
+}
+.te-entry-done-btn:hover{
+  filter:brightness(1.08);
+  transform:translateY(-1px);
+  box-shadow:0 4px 10px rgba(16,185,129,.4);
+}
+.te-entry-done-btn.warn{
+  background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);
+  box-shadow:0 2px 6px rgba(217,119,6,.3);
+}
+.te-entry-done-btn.warn:hover{
+  box-shadow:0 4px 10px rgba(217,119,6,.4);
+}
+@media (max-width:560px){
+  .te-entry-done{justify-content:stretch}
+  .te-entry-done-btn{flex:1;justify-content:center}
+  .te-entry-done-hint{flex-basis:100%;text-align:center;margin-right:0;margin-bottom:4px}
+}
 /* 🆕 প্রতি entry-র সব dropdown VERTICAL (|||) — একটার নিচে একটা
    (আগের horizontal layout বাদ — user স্পষ্টভাবে vertical চেয়েছেন) */
 .te-grid-3{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
@@ -2599,12 +2847,15 @@ input[type="range"]::-moz-range-thumb{
    ════════════════════════════════════════════════════════════ */
 /* শিক্ষক তথ্য মোডাল — আকারে কমপ্যাক্ট ও সুন্দর (আগে অনেক বড় ছিল) */
 #teacherModal .modal.wide{
-  max-width:min(720px, 92vw) !important;
+  max-width:min(1080px, 96vw) !important;
   width:auto;
 }
 #teacherModal .modal-body{
-  max-height:calc(100vh - 180px) !important;
+  max-height:calc(100vh - 160px) !important;
   min-height:auto;
+}
+@media(max-width:1100px){
+  #teacherModal .modal.wide{ max-width:min(900px, 95vw) !important; }
 }
 @media(max-width:760px){
   #teacherModal .modal.wide{
@@ -5326,7 +5577,8 @@ body[data-role="manager"] .teacher-only{display:none !important}
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
               <button type="button" class="te-toggle-all-btn" onclick="_teExpandAll()" title="সব এন্ট্রি একসাথে খুলুন">▾ সব খুলুন</button>
               <button type="button" class="te-toggle-all-btn" onclick="_teCollapseAll()" title="সব এন্ট্রি একসাথে বন্ধ করুন">▸ সব বন্ধ করুন</button>
-              <button type="button" class="te-add-btn" id="teAddBtn" onclick="addTeachingEntry()">➕ নতুন এন্ট্রি</button>
+              <button type="button" class="te-bulk-trigger" id="teBulkBtn" onclick="_teBulkOpen()" title="মাস্টার নির্বাচন থেকে একসাথে অনেক এন্ট্রি তৈরি করুন">🪄 <span class="lbl">বাল্ক তৈরি</span></button>
+              <button type="button" class="te-add-btn" id="teAddBtn" onclick="_teSmartAdd()">➕ নতুন এন্ট্রি</button>
             </div>
           </div>
           <div class="info-banner" style="font-size:12px;margin-bottom:10px">
@@ -5412,6 +5664,41 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <button class="tool-btn danger editable-only" onclick="deleteTeacher()" id="tDeleteBtn">🗑 ডিলিট</button>
       <button class="tool-btn" onclick="closeModal('teacherModal')">বাতিল</button>
       <button class="tool-btn primary" onclick="saveTeacher()">💾 সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🪄 Phase A: BULK ENTRY GENERATOR Modal — মাস্টার থেকে এক ক্লিকে অনেক এন্ট্রি -->
+<div class="modal-overlay" id="teBulkModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h2>🪄 বাল্ক এন্ট্রি জেনারেটর</h2>
+      <button class="modal-close" onclick="closeModal('teBulkModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="teb-header-info">
+        মাস্টার নির্বাচনের <b>বিষয় × শ্রেণি × শাখা</b> সংমিশ্রণ থেকে একসাথে অনেকগুলো এন্ট্রি তৈরি করুন। ইতিমধ্যে থাকা সংমিশ্রণ স্বয়ংক্রিয়ভাবে বাদ পড়বে — duplicate হবে না।
+      </div>
+      <div class="teb-master-summary" id="tebMasterSummary"></div>
+      <div class="teb-filter-block" id="tebFilterBlock"></div>
+      <div class="teb-defaults">
+        <span style="font-size:11.5px;font-weight:700;color:var(--text-2)">ডিফল্ট:</span>
+        <label><input type="checkbox" id="tebDefAllDays" checked> ৬ দিন (শুক্রবার বাদে)</label>
+        <label><input type="checkbox" id="tebDefFixed"> 🔒 ফিক্সড স্লট</label>
+        <label><input type="checkbox" id="tebDefShared"> 🔀 শেয়ার্ড স্লট</label>
+      </div>
+      <div class="teb-list" id="tebList"></div>
+      <div class="teb-counter" id="tebCounter">
+        <span id="tebCounterText">— টি এন্ট্রি তৈরি হবে</span>
+        <div class="teb-mini-actions">
+          <button type="button" onclick="_teBulkSelectAll(true)">সব ✓</button>
+          <button type="button" onclick="_teBulkSelectAll(false)">সব ✗</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tool-btn" onclick="closeModal('teBulkModal')">বাতিল</button>
+      <button class="tool-btn primary" onclick="_teBulkApply()">✓ এন্ট্রি তৈরি করুন</button>
     </div>
   </div>
 </div>
@@ -9366,63 +9653,102 @@ function _teCardHTML(e, idx, ctx){
         </div>
         ${cardSummary}
       </div>
+      <button type="button" class="te-card-dup" onclick="event.stopPropagation();duplicateTeachingEntry(${idx})" title="এই এন্ট্রির হুবহু কপি বানান">📋 কপি</button>
       <button type="button" class="te-card-remove" onclick="event.stopPropagation();removeTeachingEntry(${idx})" title="এই এন্ট্রি মুছুন">🗑 মুছুন</button>
     </div>
     <div class="te-card-body">
-    <!-- ── বিষয় / শ্রেণি / শাখা — primary fields (always visible at top) ── -->
-    <div class="te-grid-3">
-      <div class="te-field ${isUsedSub?'te-used-field':''}">
-        <label>📖 বিষয়</label>
-        <!-- 🆕 select hidden — display button → Big Picker খুলবে -->
-        <select data-te-field="subject" onchange="_teUpdateField(${idx},'subject',this.value)" style="display:none">${optHTML(subjArr, e.subject, usage.sub)}</select>
-        <button type="button" class="te-picker-trigger ${e.subject?'has-value':'empty'}" onclick="_teOpenPicker(${idx},'subject',this)" title="ক্লিক করে বিষয় নির্বাচন করুন">
-          <span class="tpt-val">${e.subject ? _teEsc(e.subject) : '— নির্বাচন করুন —'}</span>
-          <span class="tpt-caret">▾</span>
-        </button>
-        <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
+    <!-- ── 📖 বিষয় — accordion dropdown (default: value থাকলে collapsed, না থাকলে expanded) ── -->
+    <div class="te-sub${e.subject?' te-sub-collapsed':''} ${isUsedSub?'te-sub-flagged':''}" data-te-sub="subject">
+      <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'subject', this)">
+        <span class="te-sub-caret">▾</span>
+        <span class="te-sub-label">📖 বিষয়</span>
+        <span class="te-sub-summary">${e.subject ? '<strong class="te-sub-val">'+_teEsc(e.subject)+'</strong>' : '<em class="te-sub-empty">— নির্বাচন করুন —</em>'}</span>
       </div>
-      <div class="te-field ${isUsedCls?'te-used-field':''}">
-        <label>🎓 শ্রেণি</label>
-        <select data-te-field="class" onchange="_teUpdateField(${idx},'class',this.value)" style="display:none">${optHTML(clsArr, e.class, usage.cls)}</select>
-        <button type="button" class="te-picker-trigger ${e.class?'has-value':'empty'}" onclick="_teOpenPicker(${idx},'class',this)" title="ক্লিক করে শ্রেণি নির্বাচন করুন">
-          <span class="tpt-val">${e.class ? _teEsc(e.class) : '— নির্বাচন করুন —'}</span>
-          <span class="tpt-caret">▾</span>
-        </button>
-        <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
-      </div>
-      <div class="te-field ${isUsedSec?'te-used-field':''}">
-        <label>📑 শাখা</label>
-        <select data-te-field="section" onchange="_teUpdateField(${idx},'section',this.value)" style="display:none">${optHTML(secArr, e.section, usage.sec)}</select>
-        <button type="button" class="te-picker-trigger ${e.section?'has-value':'empty'}" onclick="_teOpenPicker(${idx},'section',this)" title="ক্লিক করে শাখা নির্বাচন করুন">
-          <span class="tpt-val">${e.section ? _teEsc(e.section) : '— নির্বাচন করুন —'}</span>
-          <span class="tpt-caret">▾</span>
-        </button>
-        <div class="te-field-help">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>
+      <div class="te-sub-body">
+        <!-- hidden select — _teSyncFromDOM-এর জন্য sync রাখা -->
+        <select data-te-field="subject" style="display:none">${optHTML(subjArr, e.subject, usage.sub)}</select>
+        <div class="te-inline-pickrow" data-te-inline-field="subject" data-te-inline-idx="${idx}">
+          ${subjArr.length
+            ? subjArr.map(v => `<span class="te-inline-chip ${v===e.subject?'selected':''}" data-val="${_teEsc(v)}" onclick="event.stopPropagation();_teInlinePick(this,${idx},'subject',event)">${_teEsc(v)}</span>`).join('')
+            : '<div class="te-inline-empty">⚠ মাস্টারে কোনো বিষয় নেই — উপরের 📖 যে বিষয়গুলো পড়ান-এ যোগ করুন</div>'}
+        </div>
+        ${isUsedSub ? '<div class="te-field-help" style="display:block">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>' : ''}
       </div>
     </div>
 
-    <!-- ── 📅 দিন — sub-section (default EXPANDED — primary input) ── -->
-    <div class="te-sub" data-te-sub="days">
+    <!-- ── 🎓 শ্রেণি — accordion dropdown ── -->
+    <div class="te-sub${e.class?' te-sub-collapsed':''} ${isUsedCls?'te-sub-flagged':''}" data-te-sub="class">
+      <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'class', this)">
+        <span class="te-sub-caret">▾</span>
+        <span class="te-sub-label">🎓 শ্রেণি</span>
+        <span class="te-sub-summary">${e.class ? '<strong class="te-sub-val">'+_teEsc(e.class)+'</strong>' : '<em class="te-sub-empty">— নির্বাচন করুন —</em>'}</span>
+      </div>
+      <div class="te-sub-body">
+        <select data-te-field="class" style="display:none">${optHTML(clsArr, e.class, usage.cls)}</select>
+        <div class="te-inline-pickrow" data-te-inline-field="class" data-te-inline-idx="${idx}">
+          ${clsArr.length
+            ? clsArr.map(v => `<span class="te-inline-chip ${v===e.class?'selected':''}" data-val="${_teEsc(v)}" onclick="event.stopPropagation();_teInlinePick(this,${idx},'class',event)">${_teEsc(v)}</span>`).join('')
+            : '<div class="te-inline-empty">⚠ মাস্টারে কোনো শ্রেণি নেই</div>'}
+        </div>
+        ${isUsedCls ? '<div class="te-field-help" style="display:block">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>' : ''}
+      </div>
+    </div>
+
+    <!-- ── 📑 শাখা — accordion dropdown ── -->
+    <div class="te-sub${e.section?' te-sub-collapsed':''} ${isUsedSec?'te-sub-flagged':''}" data-te-sub="section">
+      <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'section', this)">
+        <span class="te-sub-caret">▾</span>
+        <span class="te-sub-label">📑 শাখা</span>
+        <span class="te-sub-summary">${e.section ? '<strong class="te-sub-val">'+_teEsc(e.section)+'</strong>' : '<em class="te-sub-empty">— নির্বাচন করুন —</em>'}</span>
+      </div>
+      <div class="te-sub-body">
+        <select data-te-field="section" style="display:none">${optHTML(secArr, e.section, usage.sec)}</select>
+        <div class="te-inline-pickrow" data-te-inline-field="section" data-te-inline-idx="${idx}">
+          ${secArr.length
+            ? secArr.map(v => `<span class="te-inline-chip ${v===e.section?'selected':''}" data-val="${_teEsc(v)}" onclick="event.stopPropagation();_teInlinePick(this,${idx},'section',event)">${_teEsc(v)}</span>`).join('')
+            : '<div class="te-inline-empty">⚠ মাস্টারে কোনো শাখা নেই</div>'}
+        </div>
+        ${isUsedSec ? '<div class="te-field-help" style="display:block">⚠ অন্য এন্ট্রিতেও ব্যবহৃত</div>' : ''}
+      </div>
+    </div>
+
+    <!-- ── 📅 দিন — accordion dropdown (default: কিছু দিন থাকলে collapsed) ── -->
+    <div class="te-sub${selDays.size>0?' te-sub-collapsed':''}" data-te-sub="days">
       <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'days', this)">
         <span class="te-sub-caret">▾</span>
         <span class="te-sub-label">📅 দিন</span>
-        <span class="te-sub-summary">নির্বাচিত: <strong>${_teBnNum(selDays.size)}</strong> দিন</span>
+        <span class="te-sub-summary">${selDays.size>0 ? '<strong class="te-sub-val">'+_teBnNum(selDays.size)+' দিন</strong>' : '<em class="te-sub-empty">— দিন নির্বাচন করুন —</em>'}</span>
       </div>
       <div class="te-sub-body">
+        <div class="te-quick-row">
+          <span class="te-quick-label">দ্রুত:</span>
+          <button type="button" class="te-quick-btn" onclick="_teDayQuickAction(${idx},'all')" title="সব ৬ দিন নির্বাচন">সব ৬ দিন</button>
+          <button type="button" class="te-quick-btn danger" onclick="_teDayQuickAction(${idx},'none')" title="সব দিন বাদ">সব বাদ</button>
+          <button type="button" class="te-quick-btn" onclick="_teDayQuickAction(${idx},'first3')" title="শনি-রবি-সোম">প্রথম ৩ দিন</button>
+          <button type="button" class="te-quick-btn" onclick="_teDayQuickAction(${idx},'last3')" title="মঙ্গল-বুধ-বৃহঃ">শেষ ৩ দিন</button>
+        </div>
         <div class="te-day-row" data-te-days>${daysHTML}</div>
         <div class="te-day-count">নির্বাচিত: <strong id="teSelDays_${idx}">${_teBnNum(selDays.size)}</strong> দিন (ডিফল্ট ৬ দিন — টিক তুলে বাদ দিন)</div>
       </div>
     </div>
 
-    <!-- ── ⏰ সময় (পছন্দের slot) — sub-section (default EXPANDED — primary input) ── -->
-    <div class="te-sub" data-te-sub="slots">
+    <!-- ── ⏰ সময় (পছন্দের slot) — accordion dropdown ── -->
+    <div class="te-sub${selSlots.size>0?' te-sub-collapsed':''}" data-te-sub="slots">
       <div class="te-sub-head" onclick="_teToggleSub(${idx}, 'slots', this)">
         <span class="te-sub-caret">▾</span>
         <span class="te-sub-label">⏰ পছন্দের সময়</span>
-        <span class="te-sub-summary">নির্বাচিত: <strong>${_teBnNum(selSlots.size)}</strong> slot</span>
+        <span class="te-sub-summary">${selSlots.size>0 ? '<strong class="te-sub-val">'+_teBnNum(selSlots.size)+' slot</strong>' : '<em class="te-sub-empty">— ঐচ্ছিক, ফাঁকা রাখলে সিস্টেম নিজে বসাবে —</em>'}</span>
       </div>
       <div class="te-sub-body">
         <div class="te-sub-hint"><span style="color:#dc2626;font-weight:600">লাল সংখ্যা</span> = অন্য শিক্ষকও একই শ্রেণি+শাখার জন্য এই slot prefer করছেন</div>
+        <div class="te-quick-row">
+          <span class="te-quick-label">দ্রুত:</span>
+          <button type="button" class="te-quick-btn danger" onclick="_teSlotQuickAction(${idx},'none')" title="সব slot বাদ">সব বাদ</button>
+          <button type="button" class="te-quick-btn" onclick="_teSlotQuickAction(${idx},'morning')" title="সকালের সব slot">সকাল</button>
+          <button type="button" class="te-quick-btn" onclick="_teSlotQuickAction(${idx},'lateMorning')" title="দুপুরের সব slot">দুপুর</button>
+          <button type="button" class="te-quick-btn" onclick="_teSlotQuickAction(${idx},'afternoon')" title="বিকেলের সব slot">বিকেল</button>
+          <button type="button" class="te-quick-btn" onclick="_teSlotQuickAction(${idx},'evening')" title="সন্ধ্যার সব slot">সন্ধ্যা</button>
+        </div>
         <div class="te-tslot-wrap" data-te-slots>${groupHTML}</div>
         <div class="te-day-count">পছন্দের slot: <strong id="teSelSlots_${idx}">${_teBnNum(selSlots.size)}</strong></div>
       </div>
@@ -9462,6 +9788,16 @@ function _teCardHTML(e, idx, ctx){
       <div class="te-sub-body">
         ${fixedBlockHTML}
       </div>
+    </div>
+
+    <!-- 🆕 ✓ ঠিক আছে — entry-level Done button (collapse + sync) -->
+    <div class="te-entry-done">
+      <span class="te-entry-done-hint ${isComplete?'ok':'warn'}">
+        ${isComplete ? '✓ সব তথ্য পূরণ — স্বয়ংক্রিয় রুটিনে বসবে' : '⚠ বিষয়/শ্রেণি/শাখা/দিন কিছু বাকি (তবু সংরক্ষণ করা যাবে)'}
+      </span>
+      <button type="button" class="te-entry-done-btn ${isComplete?'':'warn'}" onclick="event.stopPropagation();_teEntryDone(${idx})" title="এই এন্ট্রির সব তথ্য সংরক্ষণ করে বন্ধ করুন">
+        ✓ ঠিক আছে — বন্ধ করুন
+      </button>
     </div>
     </div>
   </div>`;
@@ -9684,7 +10020,7 @@ function _teToggleCard(idx, ev){
     if(ev){
       // remove button বা inner field-এ ক্লিক হলে toggle হবে না
       const target = ev.target;
-      if(target && (target.closest('.te-card-remove') || target.tagName === 'SELECT' ||
+      if(target && (target.closest('.te-card-remove') || target.closest('.te-card-dup') || target.tagName === 'SELECT' ||
                     target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
                     target.tagName === 'BUTTON' || target.tagName === 'LABEL')){
         return;
@@ -9773,6 +10109,626 @@ function _teToggleShared(idx, checked){
   _teSyncFromDOM(t);
   e.shared = !!checked;
   renderTeachingEntries(t);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   🆕 ENTRY UX UPGRADES (Phases A-E)
+   ─────────────────────────────────────────────────────────────────
+   • _teSmartAdd          → স্মার্ট ডিফল্ট সহ নতুন এন্ট্রি (Phase E)
+   • duplicateTeachingEntry → এক ক্লিকে hubohu কপি (Phase B)
+   • _teDayQuickAction    → দিন quick-action: সব / কোনো না / first3 / last3 (Phase C)
+   • _teSlotQuickAction   → slot quick-action: সব বাদ / গ্রুপ-ভিত্তিক select (Phase D)
+   • _teBulk*             → bulk entry generator (Phase A)
+   কোনো বিদ্যমান function ছোঁয়া হয়নি — সব পুরোপুরি additive।
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Phase E: স্মার্ট ডিফল্ট — master-এ ১টা হলে auto-select ── */
+function _teSmartAdd(){
+  // আগের addTeachingEntry call করে, তারপর শেষ entry-তে স্মার্ট ডিফল্ট ভরি
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t){ try{ addTeachingEntry(); }catch(_){} return; }   // fallback — কিছু থাকলে original চলবে
+
+  // original কে কল — সে নিজেই permission, sync, render সব হ্যান্ডল করবে
+  try{ addTeachingEntry(); }catch(_){ return; }
+  if(!Array.isArray(t.teachingEntries) || t.teachingEntries.length === 0) return;
+
+  const last = t.teachingEntries[t.teachingEntries.length - 1];
+  if(!last) return;
+
+  // master selections থেকে স্মার্ট ডিফল্ট
+  const subs = Array.isArray(t.subjects) ? t.subjects.filter(Boolean) : [];
+  const cls  = Array.isArray(t.classes)  ? t.classes.filter(Boolean)  : [];
+  const secs = Array.isArray(t.sections) ? t.sections.filter(Boolean) : [];
+
+  let changed = false;
+  if(subs.length === 1 && !last.subject){ last.subject = subs[0]; changed = true; }
+  if(cls.length  === 1 && !last.class){   last.class   = cls[0];  changed = true; }
+  if(secs.length === 1 && !last.section){ last.section = secs[0]; changed = true; }
+
+  // একটাও পরিবর্তন হলে re-render — যাতে UI ও পরিবর্তিত মান প্রতিফলিত হয়
+  if(changed){
+    try{ renderTeachingEntries(t); }catch(_){}
+    try{ renderTeachingLiveSummary(t); }catch(_){}
+    // নতুন entry-কে আবার expand + scroll-into-view
+    try{
+      const lastIdx = t.teachingEntries.length - 1;
+      setTimeout(() => {
+        const card = document.querySelector('#teachingEntriesList .te-card[data-te-idx="'+lastIdx+'"]');
+        if(card){
+          card.classList.remove('te-collapsed');
+          card.scrollIntoView({behavior:'smooth', block:'center'});
+        }
+      }, 40);
+    }catch(_){}
+  }
+}
+
+/* ── Phase B: এক ক্লিকে এন্ট্রি কপি (Duplicate) ── */
+function duplicateTeachingEntry(idx){
+  if(typeof blockIfViewOnly === 'function' && blockIfViewOnly('এন্ট্রি কপি')) return;
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t || !Array.isArray(t.teachingEntries)) return;
+  if(idx < 0 || idx >= t.teachingEntries.length) return;
+  if(typeof canEditTeacher === 'function' && !canEditTeacher(tid)){
+    try{ showToast('অনুমতি নেই','error'); }catch(_){} return;
+  }
+  // আগে DOM থেকে latest data sync (লেটেস্ট মান পাব)
+  try{ _teSyncFromDOM(t); }catch(_){}
+  // deep clone — পুরোনো reference share করবে না
+  const src = t.teachingEntries[idx];
+  const clone = JSON.parse(JSON.stringify(src || {}));
+  // নতুন id দিই — original ও clone একই id হতে পারবে না
+  clone.id = 'te_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  // ঠিক উৎসের পরে যোগ
+  t.teachingEntries.splice(idx + 1, 0, clone);
+  try{ renderTeachingEntries(t); }catch(_){}
+  try{ renderTeachingLiveSummary(t); }catch(_){}
+  // নতুন কপি auto-expand + scroll
+  try{
+    setTimeout(() => {
+      const card = document.querySelector('#teachingEntriesList .te-card[data-te-idx="'+(idx+1)+'"]');
+      if(card){
+        card.classList.remove('te-collapsed');
+        card.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+    }, 40);
+  }catch(_){}
+  try{ showToast('✅ এন্ট্রি কপি করা হয়েছে — প্রয়োজনমতো পরিবর্তন করুন','success',2500); }catch(_){}
+}
+
+/* ── Phase C: দিন quick-action ── */
+function _teDayQuickAction(idx, action){
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t || !Array.isArray(t.teachingEntries)) return;
+  const e = t.teachingEntries[idx];
+  if(!e) return;
+  const allKeys = _teActiveDays().map(d => d.key);  // 6 days, Friday excluded
+  let next = [];
+  if(action === 'all')       next = allKeys.slice();
+  else if(action === 'none') next = [];
+  else if(action === 'first3') next = allKeys.slice(0, 3);    // Sat-Sun-Mon
+  else if(action === 'last3')  next = allKeys.slice(-3);      // Tue-Wed-Thu
+  else return;
+  e.days = next;
+  e.daysPerWeek = next.length;
+  // partial UI refresh — সব chip-এর state সিঙ্ক
+  try{
+    const card = document.querySelector('#teachingEntriesList .te-card[data-te-idx="'+idx+'"]');
+    if(card){
+      card.querySelectorAll('[data-te-day]').forEach(chip => {
+        const dk = chip.getAttribute('data-te-day');
+        const on = next.indexOf(dk) >= 0;
+        chip.classList.toggle('checked', on);
+        chip.classList.toggle('selected', on);
+      });
+      const cnt = document.getElementById('teSelDays_'+idx);
+      if(cnt) cnt.textContent = _teBnNum(next.length);
+      const summary = card.querySelector('.te-sub[data-te-sub="days"] .te-sub-summary');
+      if(summary) summary.innerHTML = 'নির্বাচিত: <strong>'+_teBnNum(next.length)+'</strong> দিন';
+    }
+  }catch(_){}
+  try{ renderTeachingLiveSummary(t); }catch(_){}
+}
+
+/* ── Phase D: slot quick-action — group-ভিত্তিক ── */
+function _teSlotQuickAction(idx, action){
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t || !Array.isArray(t.teachingEntries)) return;
+  const e = t.teachingEntries[idx];
+  if(!e) return;
+  const slotCols = _teSlotCols();
+  const groups = _teSlotsByGroup(slotCols);
+  const cur = new Set(Array.isArray(e.preferredSlots) ? e.preferredSlots : []);
+
+  if(action === 'none'){
+    cur.clear();
+  } else if(['morning','lateMorning','afternoon','evening'].indexOf(action) >= 0){
+    // toggle behavior: যদি ঐ group-এর সব already selected, তবে deselect; নয়তো select-all
+    const g = groups[action];
+    if(g && g.cols.length){
+      const gIds = g.cols.map(c => c.id);
+      const allSelected = gIds.every(id => cur.has(id));
+      if(allSelected){ gIds.forEach(id => cur.delete(id)); }
+      else { gIds.forEach(id => cur.add(id)); }
+    }
+  } else return;
+
+  e.preferredSlots = Array.from(cur);
+  // partial UI refresh
+  try{
+    const card = document.querySelector('#teachingEntriesList .te-card[data-te-idx="'+idx+'"]');
+    if(card){
+      card.querySelectorAll('[data-te-slot]').forEach(chip => {
+        const sid = chip.getAttribute('data-te-slot');
+        chip.classList.toggle('selected', cur.has(sid));
+      });
+      const cntEl = document.getElementById('teSelSlots_'+idx);
+      if(cntEl) cntEl.textContent = _teBnNum(cur.size);
+      // per-group counter sync
+      ['morning','lateMorning','afternoon','evening'].forEach(gk => {
+        const g = groups[gk];
+        if(!g) return;
+        const n = g.cols.filter(c => cur.has(c.id)).length;
+        const lbl = card.querySelector('[data-te-tslot-count="'+gk+'"]');
+        if(lbl) lbl.textContent = 'নির্বাচিত ' + _teBnNum(n) + ' / ' + _teBnNum(g.cols.length);
+      });
+      const summary = card.querySelector('.te-sub[data-te-sub="slots"] .te-sub-summary');
+      if(summary) summary.innerHTML = 'নির্বাচিত: <strong>'+_teBnNum(cur.size)+'</strong> slot';
+    }
+  }catch(_){}
+  try{ renderTeachingLiveSummary(t); }catch(_){}
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ── Phase A: BULK ENTRY GENERATOR ──
+   মাস্টার থেকে subject × class × section সব সংমিশ্রণ generate,
+   ইতিমধ্যে থাকা combination অটো-স্কিপ, common defaults সহ।
+═══════════════════════════════════════════════════════════════════ */
+let _teBulkState = null;  // {combos:[...], picked:Set, existing:Set}
+
+function _teBulkOpen(){
+  if(typeof blockIfViewOnly === 'function' && blockIfViewOnly('বাল্ক এন্ট্রি')) return;
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t){ try{ showToast('শিক্ষক পাওয়া যায়নি','error'); }catch(_){} return; }
+  if(typeof canEditTeacher === 'function' && !canEditTeacher(tid)){
+    try{ showToast('অনুমতি নেই','error'); }catch(_){} return;
+  }
+  // আগে DOM থেকে data sync — যাতে latest existing entries hisab-এ আসে
+  try{ _teSyncFromDOM(t); }catch(_){}
+
+  // মাস্টার থেকে নির্বাচন — না থাকলে fallback অপশন তালিকা
+  const subs = (Array.isArray(t.subjects) && t.subjects.length)
+    ? t.subjects.filter(Boolean) : _teOptions('subject');
+  const cls = (Array.isArray(t.classes) && t.classes.length)
+    ? t.classes.filter(Boolean) : _teOptions('class');
+  const secs = (Array.isArray(t.sections) && t.sections.length)
+    ? t.sections.filter(Boolean) : _teOptions('section');
+
+  if(!subs.length || !cls.length || !secs.length){
+    try{ showToast('❌ মাস্টার নির্বাচন অসম্পূর্ণ — বিষয়/শ্রেণি/শাখা চিহ্নিত করুন','warning',4000); }catch(_){}
+    return;
+  }
+
+  // existing combinations map — পুনরাবৃত্তি রোধে
+  const existing = new Set();
+  (t.teachingEntries || []).forEach(raw => {
+    const e = _teSanitizeEntry(raw);
+    if(e.subject && e.class && e.section){
+      existing.add(e.subject + '||' + e.class + '||' + e.section);
+    }
+  });
+
+  // সব সংমিশ্রণ — order: subject × class × section
+  const combos = [];
+  subs.forEach(sub => {
+    cls.forEach(c => {
+      secs.forEach(sec => {
+        const key = sub + '||' + c + '||' + sec;
+        combos.push({
+          key, subject: sub, cls: c, sec: sec,
+          exists: existing.has(key)
+        });
+      });
+    });
+  });
+
+  // active filter — initially all selected
+  _teBulkState = {
+    combos,
+    picked: new Set(combos.filter(co => !co.exists).map(co => co.key)),
+    existing,
+    filterSub: new Set(subs),
+    filterCls: new Set(cls),
+    filterSec: new Set(secs),
+    allSubs: subs, allCls: cls, allSecs: secs
+  };
+
+  _teBulkRenderSummary();
+  _teBulkRenderFilters();
+  _teBulkRenderList();
+  _teBulkUpdateCounter();
+  openModal('teBulkModal');
+}
+
+function _teBulkRenderSummary(){
+  const host = document.getElementById('tebMasterSummary');
+  if(!host || !_teBulkState) return;
+  const total = _teBulkState.combos.length;
+  const existed = _teBulkState.combos.filter(c => c.exists).length;
+  host.innerHTML = `
+    <span>বিষয়: <b>${_teBnNum(_teBulkState.allSubs.length)}</b></span>
+    <span>শ্রেণি: <b>${_teBnNum(_teBulkState.allCls.length)}</b></span>
+    <span>শাখা: <b>${_teBnNum(_teBulkState.allSecs.length)}</b></span>
+    <span>মোট সংমিশ্রণ: <b>${_teBnNum(total)}</b></span>
+    ${existed > 0 ? `<span style="color:#92400e">ইতিমধ্যে আছে: <b>${_teBnNum(existed)}</b></span>` : ''}
+  `;
+}
+
+function _teBulkRenderFilters(){
+  const host = document.getElementById('tebFilterBlock');
+  if(!host || !_teBulkState) return;
+  const mkRow = (label, arr, activeSet, kind) => {
+    const chips = arr.map(v =>
+      `<button type="button" class="teb-fchip ${activeSet.has(v)?'active':''}" data-teb-fkind="${kind}" data-teb-fval="${_teEsc(v)}">${_teEsc(v)}</button>`
+    ).join('');
+    return `<div class="teb-filter-row">
+      <span class="teb-flbl">${label}:</span>
+      ${chips}
+      <button type="button" class="teb-fchip" data-teb-fkind="${kind}" data-teb-fval="__ALL__" style="margin-left:4px;background:var(--surface);font-style:italic">সব</button>
+    </div>`;
+  };
+  host.innerHTML = `
+    ${mkRow('বিষয়', _teBulkState.allSubs, _teBulkState.filterSub, 'sub')}
+    ${mkRow('শ্রেণি', _teBulkState.allCls, _teBulkState.filterCls, 'cls')}
+    ${mkRow('শাখা', _teBulkState.allSecs, _teBulkState.filterSec, 'sec')}
+  `;
+  // delegate clicks (quote-safe)
+  if(!host.dataset.tebBound){
+    host.addEventListener('click', _teBulkFilterClick);
+    host.dataset.tebBound = '1';
+  }
+}
+
+function _teBulkFilterClick(ev){
+  const btn = ev.target.closest('[data-teb-fkind]');
+  if(!btn || !_teBulkState) return;
+  const kind = btn.getAttribute('data-teb-fkind');
+  const val = btn.getAttribute('data-teb-fval');
+  const setMap = { sub: _teBulkState.filterSub, cls: _teBulkState.filterCls, sec: _teBulkState.filterSec };
+  const allArr = { sub: _teBulkState.allSubs, cls: _teBulkState.allCls, sec: _teBulkState.allSecs };
+  const s = setMap[kind];
+  const all = allArr[kind];
+  if(!s || !all) return;
+  if(val === '__ALL__'){
+    // toggle: যদি সব already selected তবে clear করো, নয়তো সব select
+    const allSel = all.every(v => s.has(v));
+    s.clear();
+    if(!allSel) all.forEach(v => s.add(v));
+  } else {
+    if(s.has(val)) s.delete(val); else s.add(val);
+  }
+  _teBulkRenderFilters();
+  _teBulkRenderList();
+  _teBulkUpdateCounter();
+}
+
+function _teBulkRenderList(){
+  const host = document.getElementById('tebList');
+  if(!host || !_teBulkState) return;
+  // filter combos by active filters
+  const visible = _teBulkState.combos.filter(co =>
+    _teBulkState.filterSub.has(co.subject) &&
+    _teBulkState.filterCls.has(co.cls) &&
+    _teBulkState.filterSec.has(co.sec)
+  );
+  if(!visible.length){
+    host.innerHTML = `<div class="teb-empty">— ফিল্টারে কোনো সংমিশ্রণ নেই —</div>`;
+    return;
+  }
+
+  // curriculum demand info if available
+  const getCurrInfo = (cls, sec, sub) => {
+    try{
+      if(typeof getCurriculumFor !== 'function') return '';
+      const m = getCurriculumFor(cls, sec);
+      const v = Number((m && m[sub]) || 0);
+      if(v > 0) return `<span class="teb-tag-curr" title="পাঠ্যসূচিতে চাহিদা">পাঠ্যসূচি: ${_teBnNum(v)}</span>`;
+    }catch(_){}
+    return '';
+  };
+
+  host.innerHTML = visible.map(co => {
+    const picked = _teBulkState.picked.has(co.key);
+    const cls = ['teb-row'];
+    if(co.exists) cls.push('exists');
+    else if(picked) cls.push('checked');
+    return `
+      <div class="${cls.join(' ')}" data-teb-key="${_teEsc(co.key)}">
+        <input type="checkbox" ${picked && !co.exists ? 'checked' : ''} ${co.exists ? 'disabled' : ''}>
+        <div class="teb-row-content">
+          <span class="teb-tag-sub">📖 ${_teEsc(co.subject)}</span>
+          <span class="teb-tag-cls">🎓 ${_teEsc(co.cls)}</span>
+          <span class="teb-tag-sec">📑 ${_teEsc(co.sec)}</span>
+          ${co.exists ? '<span class="teb-tag-exists">⚠ ইতিমধ্যে আছে</span>' : getCurrInfo(co.cls, co.sec, co.subject)}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // delegate row click → toggle pick
+  if(!host.dataset.tebBound){
+    host.addEventListener('click', _teBulkRowClick);
+    host.dataset.tebBound = '1';
+  }
+}
+
+function _teBulkRowClick(ev){
+  const row = ev.target.closest('.teb-row');
+  if(!row || !_teBulkState) return;
+  if(row.classList.contains('exists')) return; // disabled
+  const key = row.getAttribute('data-teb-key');
+  if(!key) return;
+  if(_teBulkState.picked.has(key)){
+    _teBulkState.picked.delete(key);
+    row.classList.remove('checked');
+    const cb = row.querySelector('input[type="checkbox"]'); if(cb) cb.checked = false;
+  } else {
+    _teBulkState.picked.add(key);
+    row.classList.add('checked');
+    const cb = row.querySelector('input[type="checkbox"]'); if(cb) cb.checked = true;
+  }
+  _teBulkUpdateCounter();
+}
+
+function _teBulkSelectAll(on){
+  if(!_teBulkState) return;
+  // শুধু visible (filter-পার হওয়া) এবং non-existing combos আক্রান্ত হবে
+  const visibleKeys = _teBulkState.combos
+    .filter(co =>
+      !co.exists &&
+      _teBulkState.filterSub.has(co.subject) &&
+      _teBulkState.filterCls.has(co.cls) &&
+      _teBulkState.filterSec.has(co.sec)
+    ).map(co => co.key);
+  if(on){
+    visibleKeys.forEach(k => _teBulkState.picked.add(k));
+  } else {
+    visibleKeys.forEach(k => _teBulkState.picked.delete(k));
+  }
+  _teBulkRenderList();
+  _teBulkUpdateCounter();
+}
+
+function _teBulkUpdateCounter(){
+  const el = document.getElementById('tebCounterText');
+  if(!el || !_teBulkState) return;
+  // active filters-এর মধ্যে যেগুলো picked সেগুলোই গণনা
+  const n = _teBulkState.combos.filter(co =>
+    !co.exists &&
+    _teBulkState.picked.has(co.key) &&
+    _teBulkState.filterSub.has(co.subject) &&
+    _teBulkState.filterCls.has(co.cls) &&
+    _teBulkState.filterSec.has(co.sec)
+  ).length;
+  el.textContent = _teBnNum(n) + ' টি এন্ট্রি তৈরি হবে';
+}
+
+function _teBulkApply(){
+  if(!_teBulkState) return;
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t){ try{ showToast('শিক্ষক পাওয়া যায়নি','error'); }catch(_){} return; }
+  if(typeof canEditTeacher === 'function' && !canEditTeacher(tid)){
+    try{ showToast('অনুমতি নেই','error'); }catch(_){} return;
+  }
+
+  const allDays = document.getElementById('tebDefAllDays');
+  const fixedF  = document.getElementById('tebDefFixed');
+  const sharedF = document.getElementById('tebDefShared');
+  const defaultDays = (allDays && allDays.checked) ? _teActiveDays().map(d => d.key) : [];
+  const defaultFixed = !!(fixedF && fixedF.checked);
+  const defaultShared = !!(sharedF && sharedF.checked);
+
+  // active filters + picked + non-existing
+  const toCreate = _teBulkState.combos.filter(co =>
+    !co.exists &&
+    _teBulkState.picked.has(co.key) &&
+    _teBulkState.filterSub.has(co.subject) &&
+    _teBulkState.filterCls.has(co.cls) &&
+    _teBulkState.filterSec.has(co.sec)
+  );
+
+  if(!toCreate.length){
+    try{ showToast('কোনো সংমিশ্রণ নির্বাচিত নয়','warning'); }catch(_){}
+    return;
+  }
+
+  // 🛡 আগে DOM sync — তারপর entries যোগ
+  try{ _teSyncFromDOM(t); }catch(_){}
+  if(!Array.isArray(t.teachingEntries)) t.teachingEntries = [];
+
+  let added = 0;
+  toCreate.forEach(co => {
+    const e = _teNewEntry();
+    e.subject = co.subject;
+    e.class   = co.cls;
+    e.section = co.sec;
+    e.days = defaultDays.slice();
+    e.daysPerWeek = defaultDays.length;
+    e.fixed = defaultFixed;
+    e.shared = defaultShared;
+    e.preferredSlots = [];   // bulk-এ slot ফাঁকা — user পরে select করবে
+    t.teachingEntries.push(e);
+    added++;
+  });
+
+  closeModal('teBulkModal');
+  try{ renderTeachingEntries(t); }catch(_){}
+  try{ renderTeachingLiveSummary(t); }catch(_){}
+  try{ _teRefreshMasterIndicators(t); }catch(_){}
+  try{ showToast(`✅ ${_teBnNum(added)} টি এন্ট্রি তৈরি হয়েছে — এখন সময় (slot) নির্বাচন করুন`,'success',4500); }catch(_){}
+  _teBulkState = null;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   🆕 INLINE CHIP PICKER + ENTRY DONE
+   ─────────────────────────────────────────────────────────────────
+   • _teInlinePick           → chip click-এ subject/class/section সেট
+                                (পপআপ নেই, full re-render নেই, card open থাকে)
+   • _teRefreshCardSummary   → card head-এর summary ও status badge update
+   • _teEntryDone            → entry সংরক্ষণ + collapse (চূড়ান্ত OK বাটন)
+═══════════════════════════════════════════════════════════════════ */
+function _teInlinePick(chipEl, idx, field, ev){
+  try{ if(ev && typeof ev.stopPropagation === 'function') ev.stopPropagation(); }catch(_){}
+  if(!chipEl) return;
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t || !Array.isArray(t.teachingEntries)) return;
+  if(typeof canEditTeacher === 'function' && !canEditTeacher(tid)){
+    try{ showToast('অনুমতি নেই','error'); }catch(_){} return;
+  }
+  const e = t.teachingEntries[idx];
+  if(!e) return;
+  const val = chipEl.getAttribute('data-val') || '';
+  if(field !== 'subject' && field !== 'class' && field !== 'section') return;
+
+  // toggle: একই value-তে আবার ক্লিক করলে deselect
+  const cur = String(e[field] || '');
+  const next = (cur === val) ? '' : val;
+  e[field] = next;
+
+  // hidden <select> sync — যাতে _teSyncFromDOM ঠিক value পায়
+  const card = chipEl.closest('.te-card');
+  if(card){
+    const sel = card.querySelector('select[data-te-field="'+field+'"]');
+    if(sel){
+      // option list-এ value না থাকলে যোগ করি (যাতে edit-এ data হারিয়ে না যায়)
+      if(next){
+        let hasOpt = false;
+        for(let i=0;i<sel.options.length;i++){
+          if(sel.options[i].value === next){ hasOpt = true; break; }
+        }
+        if(!hasOpt){
+          const o = document.createElement('option');
+          o.value = next; o.text = next;
+          sel.appendChild(o);
+        }
+      }
+      sel.value = next;
+    }
+    // চিপ-row-এ selected class toggle
+    const row = chipEl.closest('.te-inline-pickrow');
+    if(row){
+      row.querySelectorAll('.te-inline-chip').forEach(c => {
+        c.classList.toggle('selected', c.getAttribute('data-val') === next && !!next);
+      });
+    }
+    // card summary + status badge partial update
+    _teRefreshCardSummary(card, e);
+  }
+  // লাইভ summary refresh (live count)
+  try{ renderTeachingLiveSummary(t); }catch(_){}
+}
+
+/* card head-এর summary ও status badge update (re-render ছাড়াই) */
+function _teRefreshCardSummary(card, e){
+  if(!card || !e) return;
+  const selDays = (Array.isArray(e.days) ? e.days.length : 0);
+  const selSlots = (Array.isArray(e.preferredSlots) ? e.preferredSlots.length : 0);
+  const isComplete = !!(e.subject && e.class && e.section && selDays > 0);
+
+  // 🆕 প্রতি field accordion-এর header summary update (subject/class/section)
+  [['subject','বিষয়'],['class','শ্রেণি'],['section','শাখা']].forEach(pair => {
+    const f = pair[0];
+    const subEl = card.querySelector('.te-sub[data-te-sub="'+f+'"] .te-sub-summary');
+    if(subEl){
+      const v = e[f] || '';
+      subEl.innerHTML = v
+        ? '<strong class="te-sub-val">' + _teEsc(v) + '</strong>'
+        : '<em class="te-sub-empty">— নির্বাচন করুন —</em>';
+    }
+  });
+  // days accordion summary
+  const daysSubEl = card.querySelector('.te-sub[data-te-sub="days"] .te-sub-summary');
+  if(daysSubEl){
+    daysSubEl.innerHTML = selDays > 0
+      ? '<strong class="te-sub-val">' + _teBnNum(selDays) + ' দিন</strong>'
+      : '<em class="te-sub-empty">— দিন নির্বাচন করুন —</em>';
+  }
+  // slots accordion summary
+  const slotsSubEl = card.querySelector('.te-sub[data-te-sub="slots"] .te-sub-summary');
+  if(slotsSubEl){
+    slotsSubEl.innerHTML = selSlots > 0
+      ? '<strong class="te-sub-val">' + _teBnNum(selSlots) + ' slot</strong>'
+      : '<em class="te-sub-empty">— ঐচ্ছিক, ফাঁকা রাখলে সিস্টেম নিজে বসাবে —</em>';
+  }
+
+  // card-summary text update
+  const sumEl = card.querySelector('.te-card-summary');
+  if(sumEl){
+    let html = `<b>${_teEsc(e.subject||'—')}</b> · ${_teEsc(e.class||'—')} · শাখা ${_teEsc(e.section||'—')} · দিন ${_teBnNum(selDays)} · slot ${_teBnNum(selSlots)}`;
+    if(e.shared) html += ' · <span class="te-shared-tag-inline">🔀 শেয়ার্ড</span>';
+    if(e.fixed)  html += ' · <span class="te-fixed-tag-inline">🔒 ফিক্সড</span>';
+    sumEl.innerHTML = html;
+  } else {
+    // আগে summary ছিল না (নতুন entry) — title-এর পরে যোগ
+    const titleHost = card.querySelector('.te-card-head > div');
+    if(titleHost && (e.subject || e.class || e.section)){
+      const newSum = document.createElement('div');
+      newSum.className = 'te-card-summary';
+      newSum.innerHTML = `<b>${_teEsc(e.subject||'—')}</b> · ${_teEsc(e.class||'—')} · শাখা ${_teEsc(e.section||'—')} · দিন ${_teBnNum(selDays)} · slot ${_teBnNum(selSlots)}`;
+      titleHost.appendChild(newSum);
+    }
+  }
+
+  // status badge update
+  const badge = card.querySelector('.te-status-badge');
+  if(badge){
+    badge.className = 'te-status-badge ' + (isComplete ? 'te-status-ok' : 'te-status-warn');
+    badge.textContent = isComplete ? '✓ প্রস্তুত' : '⚠ অসম্পূর্ণ';
+    badge.setAttribute('title', isComplete ? 'সম্পূর্ণ — auto-routine-এ বসবে' : 'অসম্পূর্ণ — কিছু field বাকি');
+  }
+
+  // card-level complete class
+  card.classList.toggle('te-card-complete', isComplete);
+
+  // entry-done hint/button color refresh
+  const hintEl = card.querySelector('.te-entry-done-hint');
+  if(hintEl){
+    hintEl.className = 'te-entry-done-hint ' + (isComplete ? 'ok' : 'warn');
+    hintEl.textContent = isComplete
+      ? '✓ সব তথ্য পূরণ — স্বয়ংক্রিয় রুটিনে বসবে'
+      : '⚠ বিষয়/শ্রেণি/শাখা/দিন কিছু বাকি (তবু সংরক্ষণ করা যাবে)';
+  }
+  const doneBtn = card.querySelector('.te-entry-done-btn');
+  if(doneBtn){ doneBtn.classList.toggle('warn', !isComplete); }
+}
+
+/* ✓ ঠিক আছে — entry সংরক্ষণ ও collapse */
+function _teEntryDone(idx){
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t) return;
+  // DOM → data sync (latest days/slots/notes ইত্যাদি)
+  try{ _teSyncFromDOM(t); }catch(_){}
+  // লাইট-weight: শুধু এই card-কে collapse করি — পুরো list re-render এড়াই, যাতে scroll হারায় না
+  const card = document.querySelector('#teachingEntriesList .te-card[data-te-idx="'+idx+'"]');
+  if(card){
+    card.classList.add('te-collapsed');
+    // 🆕 ভিতরের সব sub-section accordion-ও collapse — পরের বার ক্লিকে cleanly খুলবে
+    card.querySelectorAll('.te-sub').forEach(s => {
+      s.classList.add('te-sub-collapsed');
+    });
+  }
+  // live summary refresh + master indicators (অন্য entries-এর badges)
+  try{ renderTeachingLiveSummary(t); }catch(_){}
+  try{ _teRefreshMasterIndicators(t); }catch(_){}
+  try{ showToast('✓ এন্ট্রি সংরক্ষিত','success',1500); }catch(_){}
 }
 
 /* DOM থেকে এন্ট্রিগুলোর বর্তমান মান data-এ ফেরত নিই (saveTeacher আগে) */
