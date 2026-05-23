@@ -2810,14 +2810,28 @@ input[type="range"]::-moz-range-thumb{
 .cell-subject.is-shared-half{
   background:#fef9c3 !important;        /* হালকা হলুদ */
 }
-.cell-subject.is-shared-full{
-  background:#dcfce7 !important;        /* হালকা সবুজ */
+.cell-subject.is-shared-full {
+  background: #dcfce7 !important;        /* হালকা সবুজ */
+  position: relative !important;         /* সেলের সীমানা ঠিক রাখার জন্য */
 }
-.cell-subject.is-shared-full::before{
-  background:#16a34a;                    /* badge রঙ সবুজ */
-  content:'✓';
+.cell-subject.is-shared-full::before {
+  content: '✓';
+  position: absolute;                    /* টিক চিহ্নকে ভাসমান করা হলো */
+  top: 2px;
+  right: 2px;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 9px;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 5;
 }
-
 /* 🆕 Cell-এ subject নাম + sharedNote ২ লাইনে */
 .cell-subject .cell-main-subject{
   display:block;
