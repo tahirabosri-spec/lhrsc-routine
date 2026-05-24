@@ -2963,6 +2963,13 @@ input[type="range"]::-moz-range-thumb{
   word-break:break-word;
 }
 .cell-subject.is-shared-full .cell-shared-note{color:#166534}
+/* 🆕 Auto-generated "(N দিন)" label — লাল ছোট ফন্ট, ব্যবহারকারীর নির্দেশনা মতে */
+.cell-subject .cell-shared-note.cell-auto-days{
+  color:#dc2626 !important;
+  font-style:normal;
+  font-weight:700;
+  font-size:calc(var(--subject-font, 13px) - 4px);
+}
 
 /* ════════════════════════════════════════════════════════════
    🆕 EXPANDED TEACHER MODAL + SPECIAL SCHEDULE + YELLOW HIGHLIGHT
@@ -8419,9 +8426,28 @@ function renderTable(){
           //  - sharedNote subject-এর নিচে ছোট ২ লাইনে দেখাবে
           //  - ৩+ দিন coverage → হালকা হলুদ ক্লাস; ৬ দিন → হালকা সবুজ ক্লাস
           const mainSubject = cell.subject || '—';
+          // 🆕 (N দিন) auto-label — shared cell + ৬-এর কম দিন হলে এবং sharedNote ফাঁকা হলে
+          //   manual sharedNote থাকলে সেটাই priority — auto label override করবে না
+          let autoDaysLabel = '';
+          if(isSharedCell && !(cell.sharedNote && cell.sharedNote.trim())){
+            // single-part: cell.days থেকে
+            // multi-part: শুধু এই (subject)-এর days
+            let n = 0;
+            if(Array.isArray(cell.parts) && cell.parts.length){
+              cell.parts.forEach(p => {
+                if((p.subject||'') === mainSubject && Array.isArray(p.days)) n = Math.max(n, p.days.length);
+              });
+              if(!n) n = Array.isArray(cell.days) ? cell.days.length : 0;
+            } else if(Array.isArray(cell.days)){
+              n = cell.days.length;
+            }
+            if(n > 0 && n < 6){
+              autoDaysLabel = '('+toBnNum(n)+' দিন)';
+            }
+          }
           const noteHTML = (isSharedCell && cell.sharedNote && cell.sharedNote.trim())
                           ? `<div class="cell-shared-note" title="${esc(cell.sharedNote)}">${esc(cell.sharedNote)}</div>`
-                          : '';
+                          : (autoDaysLabel ? `<div class="cell-shared-note cell-auto-days" title="স্বয়ংক্রিয়: এই বিষয়ের জন্য ${esc(autoDaysLabel.replace(/[()]/g,''))}">${esc(autoDaysLabel)}</div>` : '');
           const sharedCovCls = isFullShared ? ' is-shared-full' : (isHalfShared ? ' is-shared-half' : '');
           body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}${isSharedCell?' is-shared-cell':''}${sharedCovCls}${isSpecialCell?' is-special-cell':''}${isFixedCell && !isSpecialCell?' is-fixed-cell':''}${isPartial && !isSharedCell?' is-partial-coverage':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}${sharedTitle}${covData}>
             <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
@@ -11715,7 +11741,113 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
     console.error('[INVARIANT GUARD] check failed:', invErr);
   }
 
-  return {placed, usedEntries: entries.length, statuses: entryStatus};
+  // ═══════════════════════════════════════════════════════════════
+  // 🆕 CONSECUTIVE CLASS DETECTION (Soft Constraint — নির্দেশনা ৩)
+  // ─────────────────────────────────────────────────────────────
+  // নিয়ম: একজন শিক্ষকের টানা ৩টির বেশি ক্লাস সাধারণত না।
+  // Soft: bloক করি না, কিন্তু চিহ্নিত করি যাতে user দেখতে পান।
+  // ═══════════════════════════════════════════════════════════════
+  let consecutiveViolations = 0;
+  try{
+    const dayKeys = (typeof _teActiveDays === 'function')
+      ? _teActiveDays().map(d => d.key) : ['Sat','Sun','Mon','Tue','Wed','Thu'];
+    // শুধু slot কলামগুলো ক্রমানুসারে
+    const orderedSlots = slotCols.slice();
+    dayKeys.forEach(d => {
+      let streak = 0;
+      orderedSlots.forEach(c => {
+        const cell = teacher.cells[c.id];
+        let occupied = false;
+        if(cell && !cell.locked && !cell.special){
+          const sub = (cell.subject||'').toLowerCase();
+          if(sub && sub !== 'free'){
+            // shared multi-part: এই দিনে অন্তত একটা part থাকলে occupied
+            if(Array.isArray(cell.parts) && cell.parts.length){
+              occupied = cell.parts.some(p =>
+                Array.isArray(p.days) ? p.days.indexOf(d) >= 0 : true
+              );
+            } else if(Array.isArray(cell.days) && cell.days.length){
+              occupied = cell.days.indexOf(d) >= 0;
+            } else {
+              occupied = true;     // days[] না থাকলে সব দিনই
+            }
+          }
+        }
+        if(occupied){
+          streak++;
+          if(streak > 3) consecutiveViolations++;
+        } else {
+          streak = 0;
+        }
+      });
+    });
+  }catch(_){}
+
+  return {placed, usedEntries: entries.length, statuses: entryStatus, consecutiveViolations};
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   🆕 REAL-TIME PREVIEW PLACEMENT (নির্দেশনা ৫)
+   ─────────────────────────────────────────────────────────────────
+   শিক্ষকের entry সংরক্ষণের সাথে সাথে রুটিনে প্রাথমিক অবস্থান দেখায়।
+   • শুধু এই একজন শিক্ষকের cells modify করে
+   • অন্য শিক্ষকের কোনো cell ছোঁয় না
+   • locked / special cell সংরক্ষিত
+   • _teApplyEntriesForTeacher reuse — same logic, no duplication
+   • আগে এই শিক্ষকের non-locked cells reset করে, তারপর placement
+   • slotTaken অন্য শিক্ষকদের বর্তমান cells থেকে গঠিত — যাতে
+     conflict-অবিচ্ছেদ্য slot-এ বসানোর চেষ্টা না হয়
+   • চূড়ান্ত optimize হবে user যখন "স্বয়ংক্রিয় রুটিন" চালাবেন
+═══════════════════════════════════════════════════════════════════ */
+function _previewPlaceForTeacher(teacher){
+  if(!teacher) return null;
+  if(teacher.locked || teacher.onLeave) return null;        // লক/ছুটি — preview স্কিপ
+  if(!Array.isArray(teacher.teachingEntries) || !teacher.teachingEntries.length) return null;
+
+  const slotCols = ((state && state.columns)||[]).filter(c => c && c.type === 'slot');
+  if(!slotCols.length) return null;
+
+  // অন্য শিক্ষকের cells থেকে slotTaken গঠন — প্রতিটি (cls, sec) এই slot-এ
+  // অন্য কেউ নিয়ে রেখেছেন কিনা
+  const slotTaken = {};
+  slotCols.forEach(c => { slotTaken[c.id] = new Set(); });
+
+  (state.teachers||[]).forEach(other => {
+    if(!other || other.id === teacher.id) return;
+    if(!other.cells) return;
+    slotCols.forEach(c => {
+      const cell = other.cells[c.id];
+      if(!cell) return;
+      if(!cell.class || !cell.section) return;
+      const sub = (cell.subject||'').toLowerCase();
+      if(sub === 'free') return;
+      const key = (cell.class||'') + '||' + (cell.section||'');
+      // multi-part shared cell — প্রতিটা part-এর days লেগেছে
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        cell.parts.forEach(p => {
+          const pdays = Array.isArray(p.days) ? p.days : (cell.days||[]);
+          (pdays||[]).forEach(d => slotTaken[c.id].add(key + '||' + d));
+        });
+      } else if(Array.isArray(cell.days) && cell.days.length){
+        cell.days.forEach(d => slotTaken[c.id].add(key + '||' + d));
+      } else {
+        // non-shared, সব active দিন
+        const dayKeys = (typeof _teActiveDays === 'function')
+          ? _teActiveDays().map(d => d.key) : ['Sat','Sun','Mon','Tue','Wed','Thu'];
+        dayKeys.forEach(d => slotTaken[c.id].add(key + '||' + d));
+      }
+    });
+  });
+
+  // _teApplyEntriesForTeacher reuse — না থাকলে silent fail
+  if(typeof _teApplyEntriesForTeacher !== 'function') return null;
+  try{
+    const result = _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, null);
+    return result;
+  }catch(err){
+    console.warn('_previewPlaceForTeacher: applier failed', err);
+    return null;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -12232,11 +12364,25 @@ function saveTeacher(){
     t.unavailableDays = getDayPickerValues('unavailableDaysPicker');
     t.notes = document.getElementById('tEditNotes').value.trim();
     // 📋 Multiple Teaching Entries — DOM → state, options-এ নতুন মান যোগ
+    // 🆕 entries-এর snapshot আগে নিয়ে রাখি — পরিবর্তন হলে preview চালাব
+    let entriesSnapshot = '';
+    try{ entriesSnapshot = JSON.stringify(t.teachingEntries||[]); }catch(_){}
     try{ saveTeachingEntries(t); }catch(_){}
     try{ saveSpecialSchedule(t); }catch(_){}
     // Sync mainSubject into subjects if not already present
     if(t.mainSubject && !t.subjects.includes(t.mainSubject)){
       t.subjects.unshift(t.mainSubject);
+    }
+    // 🆕 REAL-TIME PREVIEW PLACEMENT (নির্দেশনা ৫)
+    // — শুধু entries বদলালে preview চালাই — যাতে existing auto-routine
+    //   result কারণহীনভাবে reset না হয়
+    let entriesChanged = false;
+    try{
+      const afterSnapshot = JSON.stringify(t.teachingEntries||[]);
+      entriesChanged = (afterSnapshot !== entriesSnapshot);
+    }catch(_){ entriesChanged = false; }
+    if(entriesChanged){
+      try{ _previewPlaceForTeacher(t); }catch(err){ console.warn('preview placement skipped:', err); }
     }
   }
   t.onLeave = document.getElementById('tEditLeave').checked;
@@ -14188,6 +14334,8 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
     let skippedNoEntry = 0;
     let totalEntries = 0;
     let totalSkipped = 0;
+    let totalConsecutive = 0;            // 🆕 টানা ৩+ ক্লাস উল্লঙ্ঘন
+    const consecutiveTeachers = [];      // 🆕 কোন শিক্ষকদের
     const skipDetails = [];   // 🆕 কোন entry কেন skip হয়েছে — toast/log-এ দেখাব
 
     // 🆕 priority-aware order: যাদের কোনো conflict-এ winner সেটে আছে — তারা আগে যাবে
@@ -14225,6 +14373,12 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
       totalEntries += tEntries;
       const tRegularPlaced = (entriesResult && entriesResult.placed) || 0;
       const tSkipped = Math.max(0, tEntries - tRegularPlaced);
+      // 🆕 consecutive-class violations accumulate
+      const tConsec = (entriesResult && entriesResult.consecutiveViolations) || 0;
+      if(tConsec > 0){
+        totalConsecutive += tConsec;
+        consecutiveTeachers.push({name: t.name||'—', count: tConsec});
+      }
       if(tSkipped > 0){
         totalSkipped += tSkipped;
         // 🆕 কোন কারণে কোন entry skip — diagnostic info
@@ -14319,6 +14473,25 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
       msg += ` (${toBnNum(skippedNoEntry)} জনের entry নেই)`;
     }
     showToast(msg, 'success', 7000);
+
+    // 🆕 টানা ৩+ ক্লাস warning (Soft Constraint — নির্দেশনা ৩)
+    if(totalConsecutive > 0){
+      try{
+        const topN = consecutiveTeachers
+          .sort((a,b) => b.count - a.count).slice(0, 3)
+          .map(x => x.name).join(', ');
+        setTimeout(() => {
+          showToast(
+            `⏱ ${toBnNum(totalConsecutive)} জায়গায় টানা ৩+ ক্লাস পাওয়া গেছে ` +
+            `(${topN}${consecutiveTeachers.length > 3 ? ' সহ' : ''}) — soft constraint, কনফ্লিক্টে শিথিল`,
+            'warning', 6000
+          );
+        }, 1200);
+        if(typeof audit === 'function'){
+          audit('স্বয়ংক্রিয় রুটিন — soft constraint', `টানা ৩+ ক্লাস: ${totalConsecutive} জায়গা, ${consecutiveTeachers.length} জন শিক্ষক`);
+        }
+      }catch(_){}
+    }
 
     // 🛡 যদি invariant violation থাকে — admin-কে জানাই (silent log, না কোনো alert)
     if(invariantReport.length > 0){
