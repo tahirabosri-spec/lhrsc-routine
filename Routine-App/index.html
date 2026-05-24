@@ -1052,6 +1052,129 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   0%,100%{box-shadow:inset 0 0 0 2px #1e3a8a, 0 0 0 1px #1e40af}
   50%{box-shadow:inset 0 0 0 2px #1e3a8a, 0 0 12px rgba(30,64,175,.55)}
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   🆕 REAL-TIME CONFLICT MARKERS — manual edit/auto-routine উভয়ই
+   ───────────────────────────────────────────────────────────────
+   ব্যবহার:
+   • td.rt-conflict        → cell-level সংঘাত (একই শ্রেণি+শাখা একাধিক শিক্ষক)
+   • td.rt-overload        → শিক্ষক একই slot-এ একাধিক ক্লাস
+   • #rtConflictBanner     → পুরো রুটিনের উপরে সংঘাত summary
+═══════════════════════════════════════════════════════════════ */
+.routine-table td.rt-conflict{
+  box-shadow:inset 0 0 0 3px #dc2626, 0 0 0 1px #b91c1c !important;
+  position:relative;
+  animation:rtConflictPulse 1.6s ease-in-out infinite;
+}
+.routine-table td.rt-conflict::after{
+  content:'⚠';
+  position:absolute;top:1px;right:3px;
+  font-size:13px;color:#dc2626;font-weight:900;
+  text-shadow:0 0 3px #fff, 0 0 6px #fff;
+  pointer-events:none;z-index:5;
+}
+.routine-table td.rt-overload{
+  box-shadow:inset 0 0 0 3px #d97706, 0 0 0 1px #b45309 !important;
+  position:relative;
+}
+.routine-table td.rt-overload::after{
+  content:'⚡';
+  position:absolute;top:1px;right:3px;
+  font-size:13px;color:#d97706;font-weight:900;
+  text-shadow:0 0 3px #fff, 0 0 6px #fff;
+  pointer-events:none;z-index:5;
+}
+/* 🆕 UNAUTHORIZED cell — purple/violet, entry-র সাথে মেলে না */
+.routine-table td.rt-unauth{
+  box-shadow:inset 0 0 0 3px #a855f7, 0 0 0 1px #7e22ce !important;
+  position:relative;
+}
+.routine-table td.rt-unauth::after{
+  content:'🚫';
+  position:absolute;top:1px;right:3px;
+  font-size:12px;
+  text-shadow:0 0 3px #fff, 0 0 6px #fff;
+  pointer-events:none;z-index:5;
+}
+@keyframes rtConflictPulse{
+  0%,100%{box-shadow:inset 0 0 0 3px #dc2626, 0 0 0 1px #b91c1c}
+  50%{box-shadow:inset 0 0 0 3px #dc2626, 0 0 14px rgba(220,38,38,.65)}
+}
+
+/* Real-time conflict banner (Routine table-এর উপরে) */
+#rtConflictBanner{
+  display:none;
+  margin:8px auto 4px;
+  padding:10px 14px;border-radius:10px;
+  background:linear-gradient(135deg,#fee2e2 0%,#fecaca 100%);
+  border:1.5px solid #dc2626;
+  color:#7f1d1d;
+  font-size:13px;font-weight:700;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  max-width:1200px;
+  box-shadow:0 2px 8px rgba(220,38,38,.18);
+}
+#rtConflictBanner.hidden{display:none !important}
+#rtConflictBanner .rt-banner-icon{font-size:18px}
+#rtConflictBanner .rt-banner-text{flex:1;line-height:1.5}
+#rtConflictBanner .rt-banner-btn{
+  background:#dc2626;color:#fff;border:none;
+  padding:6px 12px;border-radius:6px;cursor:pointer;
+  font-size:12px;font-weight:700;
+}
+#rtConflictBanner .rt-banner-btn:hover{background:#b91c1c}
+#rtConflictBanner .rt-banner-btn.secondary{
+  background:transparent;color:#dc2626;border:1.5px solid #dc2626;
+}
+#rtConflictBanner .rt-banner-btn.secondary:hover{
+  background:#dc2626;color:#fff;
+}
+/* OK banner (যখন কোনো conflict নেই) */
+#rtConflictBanner.ok{
+  background:linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%);
+  border-color:#16a34a;color:#14532d;
+}
+#rtConflictBanner.ok .rt-banner-btn{background:#16a34a}
+#rtConflictBanner.ok .rt-banner-btn:hover{background:#15803d}
+#rtConflictBanner.ok .rt-banner-btn.secondary{
+  color:#16a34a;border-color:#16a34a;background:transparent;
+}
+
+/* Conflict details modal */
+#rtConflictModal .modal{max-width:720px}
+.rt-conflict-list{
+  max-height:60vh;overflow-y:auto;
+  padding:4px;
+}
+.rt-conflict-item{
+  display:flex;flex-direction:column;gap:4px;
+  padding:10px 12px;margin-bottom:6px;
+  border-radius:8px;border:1px solid #fecaca;
+  background:#fef2f2;
+}
+.rt-conflict-item.overload{
+  border-color:#fed7aa;background:#fff7ed;
+}
+.rt-conflict-item .rt-c-title{
+  font-size:13.5px;font-weight:700;color:#7f1d1d;
+}
+.rt-conflict-item.overload .rt-c-title{color:#9a3412}
+.rt-conflict-item .rt-c-desc{
+  font-size:12.5px;color:var(--text-2);line-height:1.55;
+}
+.rt-conflict-item .rt-c-teachers{
+  display:flex;flex-wrap:wrap;gap:5px;margin-top:3px;
+}
+.rt-conflict-item .rt-c-teachers .rt-t-chip{
+  font-size:11.5px;font-weight:600;
+  padding:2px 8px;border-radius:99px;
+  background:#fff;border:1px solid #fca5a5;
+  color:#991b1b;
+}
+.rt-conflict-item.overload .rt-c-teachers .rt-t-chip{
+  border-color:#fdba74;color:#9a3412;
+}
+
 .routine-table td .cell-content{
   padding:var(--cell-pad);
   width:100%;
@@ -2810,28 +2933,14 @@ input[type="range"]::-moz-range-thumb{
 .cell-subject.is-shared-half{
   background:#fef9c3 !important;        /* হালকা হলুদ */
 }
-.cell-subject.is-shared-full {
-  background: #dcfce7 !important;        /* হালকা সবুজ */
-  position: relative !important;         /* সেলের সীমানা ঠিক রাখার জন্য */
+.cell-subject.is-shared-full{
+  background:#dcfce7 !important;        /* হালকা সবুজ */
 }
-.cell-subject.is-shared-full::before {
-  content: '✓';
-  position: absolute;                    /* টিক চিহ্নকে ভাসমান করা হলো */
-  top: 2px;
-  right: 2px;
-  background: #16a34a;
-  color: #ffffff;
-  font-size: 9px;
-  width: 14px;
-  height: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-weight: bold;
-  pointer-events: none;
-  z-index: 5;
+.cell-subject.is-shared-full::before{
+  background:#16a34a;                    /* badge রঙ সবুজ */
+  content:'✓';
 }
+
 /* 🆕 Cell-এ subject নাম + sharedNote ২ লাইনে */
 .cell-subject .cell-main-subject{
   display:block;
@@ -3351,6 +3460,117 @@ input[type="range"]::-moz-range-thumb{
   .cur-row .cur-input-wrap input{width:36px;font-size:13px}
   .cur-toolbar{flex-direction:column;align-items:stretch}
   .cur-actions{justify-content:flex-start}
+}
+
+/* =============================================================
+   🗺 COVERAGE REPORT — scoped .cov-*
+============================================================= */
+#coverageModal .modal{max-width:min(1100px, 96vw)}
+.cov-help{
+  background:var(--primary-soft);
+  border-left:3px solid var(--primary);
+  padding:10px 12px;border-radius:8px;
+  font-size:12.5px;line-height:1.6;
+  margin-bottom:10px;color:var(--text);
+}
+.cov-summary{
+  display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+  gap:8px;margin-bottom:12px;
+}
+.cov-stat{
+  padding:10px 12px;border-radius:8px;
+  background:var(--surface-2);border:1px solid var(--border);
+  display:flex;flex-direction:column;gap:2px;
+}
+.cov-stat .cov-stat-lbl{font-size:11px;color:var(--text-2);font-weight:600}
+.cov-stat .cov-stat-val{font-size:20px;font-weight:800;color:var(--text)}
+.cov-stat.ok .cov-stat-val{color:#16a34a}
+.cov-stat.warn .cov-stat-val{color:#d97706}
+.cov-stat.error .cov-stat-val{color:#dc2626}
+.cov-stat.info .cov-stat-val{color:#0284c7}
+.cov-toolbar{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  padding:8px 10px;background:var(--surface-2);border-radius:8px;
+  margin-bottom:10px;
+}
+.cov-tlbl{font-size:12px;font-weight:600;color:var(--text-2)}
+.cov-toolbar select{
+  padding:5px 9px;border:1px solid var(--border);
+  border-radius:6px;background:var(--surface);
+  font-size:12.5px;color:var(--text);min-width:130px;
+}
+.cov-toggle{
+  display:flex;align-items:center;gap:5px;
+  font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;
+}
+.cov-toggle input{width:14px;height:14px;accent-color:var(--primary);cursor:pointer}
+.cov-grids{
+  display:flex;flex-direction:column;gap:14px;
+  max-height:55vh;overflow-y:auto;padding:4px;
+}
+.cov-grid-block{
+  border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;background:var(--surface);
+}
+.cov-grid-head{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:9px 12px;
+  background:linear-gradient(180deg,var(--surface-2) 0%, var(--surface) 100%);
+  border-bottom:1px solid var(--border);
+}
+.cov-grid-head .cov-class-name{font-size:14px;font-weight:800;color:var(--text)}
+.cov-grid-head .cov-pct{
+  margin-left:auto;font-size:12.5px;font-weight:700;
+  padding:3px 11px;border-radius:99px;color:#fff;
+}
+.cov-grid-head .cov-pct.ok{background:#16a34a}
+.cov-grid-head .cov-pct.warn{background:#d97706}
+.cov-grid-head .cov-pct.error{background:#dc2626}
+.cov-grid-head .cov-counts{font-size:11.5px;color:var(--text-2);font-weight:500}
+.cov-table{
+  width:100%;border-collapse:collapse;
+  font-size:12px;table-layout:fixed;
+}
+.cov-table th,
+.cov-table td{
+  padding:5px 6px;text-align:center;
+  border:1px solid var(--border);
+  vertical-align:middle;
+}
+.cov-table th{
+  background:var(--surface-2);font-weight:700;color:var(--text);
+  font-size:11.5px;
+}
+.cov-table th.cov-day-lbl{
+  position:sticky;left:0;background:var(--surface-2);z-index:2;
+  text-align:right;padding-right:8px;min-width:60px;
+}
+.cov-table td.cov-day-lbl{
+  position:sticky;left:0;background:var(--surface);z-index:1;
+  font-weight:700;text-align:right;padding-right:8px;
+  font-size:11.5px;color:var(--text-2);
+}
+.cov-cell{
+  font-weight:700;line-height:1.3;
+  height:34px;cursor:default;
+}
+.cov-cell.filled{background:#dcfce7;color:#166534;border-color:#86efac}
+.cov-cell.empty{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.cov-cell.locked{background:#e5e7eb;color:#6b7280;border-color:#d1d5db;font-style:italic}
+.cov-cell.break-col{background:#fef3c7;color:#92400e;border-color:#fde68a;font-style:italic;font-size:10.5px}
+.cov-cell .cov-sub{font-size:10.5px;font-weight:600;display:block}
+.cov-cell .cov-teacher{font-size:9.5px;font-weight:500;opacity:.85;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cov-empty-msg{
+  text-align:center;color:var(--text-2);font-size:13px;
+  padding:24px 12px;background:var(--surface-2);border-radius:8px;
+  border:1px dashed var(--border);
+}
+@media (max-width:760px){
+  .cov-summary{grid-template-columns:repeat(2, 1fr)}
+  .cov-table{font-size:10.5px}
+  .cov-cell{height:30px}
+  .cov-cell .cov-sub{font-size:9.5px}
+  .cov-cell .cov-teacher{display:none}
 }
 
 /* =============================================================
@@ -4342,6 +4562,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <button class="tool-btn editable-only" data-perm="scheduleGen" onclick="openScheduleGen();closeToolMenu()">🕐 <span class="lbl">সময়সূচি</span></button>
         <button class="tool-btn primary editable-only" data-perm="aiRoutine" onclick="openAIGenerator();closeToolMenu()">🤖 <span class="lbl">AI রুটিন</span></button>
         <button class="tool-btn editable-only" data-perm="aiRoutine" onclick="autoGenerateRoutine();closeToolMenu()" title="API ছাড়াই ৪০–৫০ জন শিক্ষকের রুটিন স্বয়ংক্রিয়ভাবে তৈরি করুন">⚙️ <span class="lbl">স্বয়ংক্রিয় রুটিন</span></button>
+        <button class="tool-btn editable-only" data-perm="aiRoutine" onclick="openCoverageReport();closeToolMenu()" title="প্রতি শ্রেণি-শাখার কোন পিরিয়ড ফাঁকা — পাঠ্যসূচির সাথে মিলিয়ে কভারেজ রিপোর্ট">🗺 <span class="lbl">কভারেজ রিপোর্ট</span></button>
         <button class="tool-btn editable-only" data-perm="voice" onclick="toggleVoice();closeToolMenu()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
         <button class="tool-btn editable-only" data-perm="routineLock" id="routineLockBtn" data-locked="false" onclick="toggleRoutineLock();closeToolMenu()" title="রুটিন লক/আনলক — এলোমেলো ক্লিক থেকে সুরক্ষা">🔓 <span class="lbl">রুটিন লক</span></button>
         <div class="tool-divider"></div>
@@ -4376,6 +4597,12 @@ body[data-role="manager"] .teacher-only{display:none !important}
 
   <!-- TABLE -->
   <div class="table-wrap" id="tableWrap">
+    <!-- 🆕 REAL-TIME CONFLICT BANNER — auto-routine / manual edit সব ক্ষেত্রে real-time -->
+    <div id="rtConflictBanner" class="hidden" role="alert" aria-live="polite">
+      <span class="rt-banner-icon">⚠️</span>
+      <span class="rt-banner-text" id="rtConflictText">— তথ্য লোড হচ্ছে —</span>
+      <button class="rt-banner-btn" onclick="_rtOpenConflictModal()">বিস্তারিত দেখুন</button>
+    </div>
     <div class="print-header">
       <h1 id="printSchoolName">লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ</h1>
       <div class="sub" id="printSystemName">রুটিন ম্যানেজমেন্ট সিস্টেম — সাপ্তাহিক রুটিন</div>
@@ -4384,6 +4611,22 @@ body[data-role="manager"] .teacher-only{display:none !important}
       <thead><tr id="theadRow"></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
+  </div>
+
+  <!-- 🆕 CONFLICT DETAILS MODAL -->
+  <div class="modal-overlay" id="rtConflictModal">
+    <div class="modal wide">
+      <div class="modal-header">
+        <h2>⚠️ রুটিন সংঘাত — বিস্তারিত</h2>
+        <button class="modal-close" onclick="closeModal('rtConflictModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="rtConflictListHost" class="rt-conflict-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="tool-btn" onclick="closeModal('rtConflictModal')">বন্ধ</button>
+      </div>
+    </div>
   </div>
 
   <!-- Floating horizontal scrollbar (always visible at bottom) -->
@@ -5330,6 +5573,35 @@ body[data-role="manager"] .teacher-only{display:none !important}
     <div class="modal-footer">
       <button class="tool-btn" onclick="closeModal('curriculumModal')">বাতিল</button>
       <button class="tool-btn primary" onclick="_curSave()">✓ সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🗺 COVERAGE REPORT Modal — প্রতি শ্রেণি-শাখার পিরিয়ড × দিন গ্রিড -->
+<div class="modal-overlay" id="coverageModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h2>🗺 কভারেজ রিপোর্ট</h2>
+      <button class="modal-close" onclick="closeModal('coverageModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="cov-help">
+        প্রতি শ্রেণি-শাখার পিরিয়ড × দিন গ্রিড। 🟢 সবুজ = ভর্তি · 🔴 লাল = ফাঁকা · 🔒 লক/বিরতি = ধূসর। পাঠ্যসূচির সাথে মিলিয়ে কোন শ্রেণির কোন পিরিয়ড অপূর্ণ তা এক নজরে দেখুন।
+      </div>
+      <div class="cov-summary" id="covSummary"></div>
+      <div class="cov-toolbar">
+        <label class="cov-tlbl">শ্রেণি ফিল্টার:</label>
+        <select id="covClassFilter" onchange="_covRender()"></select>
+        <label class="cov-tlbl" style="margin-left:8px">শাখা:</label>
+        <select id="covSectionFilter" onchange="_covRender()"></select>
+        <span style="flex:1"></span>
+        <label class="cov-toggle"><input type="checkbox" id="covOnlyGaps" onchange="_covRender()"> শুধু ফাঁকা ক্লাস দেখাও</label>
+      </div>
+      <div class="cov-grids" id="covGrids"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="tool-btn" onclick="closeModal('coverageModal')">বন্ধ</button>
+      <button class="tool-btn primary" onclick="_covExport()" title="CSV-তে রিপোর্ট ডাউনলোড">⬇ CSV রিপোর্ট</button>
     </div>
   </div>
 </div>
@@ -6601,6 +6873,8 @@ function undo(){
   renderAll();
   updateHistButtons();
   audit('আনডু','সর্বশেষ পরিবর্তন বাতিল');
+  // 🛡 defensive conflict refresh
+  try{ refreshRealtimeConflicts(); }catch(_){}
   showToast('আনডু করা হয়েছে','info');
 }
 function redo(){
@@ -6613,6 +6887,8 @@ function redo(){
   renderAll();
   updateHistButtons();
   audit('রিডু','পরিবর্তন পুনরায় প্রয়োগ');
+  // 🛡 defensive conflict refresh
+  try{ refreshRealtimeConflicts(); }catch(_){}
   showToast('রিডু করা হয়েছে','info');
 }
 function updateHistButtons(){
@@ -8189,6 +8465,9 @@ function renderTable(){
   syncFloatingScroll();
   // 🌙 toolbar এর ছুটি count badge আপডেট করো (টেবিলের প্রতি render-এ)
   if(typeof updateLeaveBadge === 'function') updateLeaveBadge();
+
+  // 🆕 Real-time conflict markers refresh — auto-routine, manual edit, startup সব ক্ষেত্রে
+  try{ refreshRealtimeConflicts(); }catch(_){}
 }
 
 /* প্রতিটি teacher block-এ ৩টি <tr> থাকে এবং SL/Name/বিরতি সেলে rowspan="3" ব্যবহৃত।
@@ -11380,7 +11659,472 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
   if(placed > entries.length){
     console.warn('[_teApplyEntriesForTeacher] placed('+placed+') > entries('+entries.length+') — invariant violated for', teacher && teacher.name);
   }
+
+  // ═══════════════════════════════════════════════════════════════
+  // 🛡🛡 STRICT INVARIANT GUARD (apex-engineer hard-block)
+  // ─────────────────────────────────────────────────────────────
+  // নিয়ম: এই function-এর শেষে teacher.cells-এ থাকা প্রতিটা
+  // populated cell (যা locked/special নয়) MUST teacher-এর
+  // ১টা teaching entry-র (subject, class, section) এর সাথে মেলে।
+  //
+  // যদি কোনো cell mismatch পাওয়া যায় → cell পরিষ্কার করে
+  // audit log + console.error দেওয়া হবে। এটা guarantee দেয়:
+  //   1. Auto-routine NEVER শ্রেণি/শাখা/বিষয় invent করবে না
+  //   2. Auto-routine NEVER entry-র বাইরের cell create করবে না
+  //   3. placed ≤ entries.length সবসময়
+  // ═══════════════════════════════════════════════════════════════
+  try{
+    const validKeys = new Set();
+    entries.forEach(e => {
+      const k = (e.subject||'') + '||' + (e.class||'') + '||' + (e.section||'');
+      validKeys.add(k);
+    });
+    let invariantBreaks = 0;
+    slotCols.forEach(c => {
+      const cell = teacher.cells[c.id];
+      if(!cell) return;
+      if(cell.locked || cell.special) return;  // protected
+      // empty cell — OK
+      if(!cell.class && !cell.section && !cell.subject) return;
+      // 'Free' subject — OK (user-marked free)
+      if((cell.subject||'').toLowerCase() === 'free') return;
+      const k = (cell.subject||'') + '||' + (cell.class||'') + '||' + (cell.section||'');
+      // shared multi-part: প্রতিটা part check
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        const allPartsValid = cell.parts.every(p => {
+          const pk = (p.subject||'') + '||' + (cell.class||'') + '||' + (cell.section||'');
+          return validKeys.has(pk);
+        });
+        if(allPartsValid) return;
+      } else if(validKeys.has(k)){
+        return;  // OK — exactly matches an entry
+      }
+      // ❌ Invariant break — এই cell entry-র সাথে মেলে না
+      invariantBreaks++;
+      console.error('[INVARIANT BREAK] auto-routine produced unmapped cell for', teacher && teacher.name, c.id, cell);
+      // hard-clear — যাতে দূষিত state save না হয়
+      teacher.cells[c.id] = {};
+    });
+    if(invariantBreaks > 0){
+      console.error('[INVARIANT BREAK] '+invariantBreaks+' cells cleared for', teacher && teacher.name);
+      try{
+        if(typeof audit === 'function') audit('সিস্টেম রক্ষা', `${teacher.name||'—'}: ${invariantBreaks} টি অননুমোদিত cell পরিষ্কার (subject/class/section invariant)`);
+      }catch(_){}
+    }
+  }catch(invErr){
+    console.error('[INVARIANT GUARD] check failed:', invErr);
+  }
+
   return {placed, usedEntries: entries.length, statuses: entryStatus};
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   🆕 REAL-TIME CONFLICT DETECTION SYSTEM
+   ─────────────────────────────────────────────────────────────────
+   দুই ধরনের সংঘাত শনাক্ত করে:
+   ─────────────────────────────────────────────────────────────────
+   1. CELL CONFLICT (লাল ⚠) — একই (শ্রেণি, শাখা, slot, দিন)-এ
+      একাধিক শিক্ষক বসেছেন
+   2. TEACHER OVERLOAD (কমলা ⚡) — একই শিক্ষক একই slot+দিন-এ
+      একাধিক class-section-এ আছেন
+   ─────────────────────────────────────────────────────────────────
+   কোথা থেকে কল হবে:
+   • renderTable শেষে (auto-routine বা startup)
+   • selectCellOption / clearCell-এর পরে (manual edit)
+   • _runAutoRoutineCore শেষে
+═══════════════════════════════════════════════════════════════════ */
+
+/* utility: একটি cell-এর effective days array
+   shared/days-specified entry-তে days সরাসরি; না হলে সব active day */
+function _rtCellDays(cell){
+  if(!cell) return [];
+  if(Array.isArray(cell.days) && cell.days.length) return cell.days.slice();
+  // ডিফল্ট = সব active days (শুক্রবার বাদে)
+  try{
+    if(typeof _teActiveDays === 'function'){
+      return _teActiveDays().map(d => d.key);
+    }
+  }catch(_){}
+  return ['sat','sun','mon','tue','wed','thu'];
+}
+
+/* utility: cell একটি ক্লাস-ধরা cell কিনা (যেখানে class+subject ভর্তি) */
+function _rtIsLoadedCell(cell){
+  if(!cell) return false;
+  // Free slot conflict হিসেবে গণ্য না
+  const sub = (cell.subject||'').toString().toLowerCase();
+  if(sub === 'free') return false;
+  return !!(cell.class || cell.subject || cell.section);
+}
+
+/* মূল detector — পুরো রুটিন স্ক্যান করে সংঘাতের তালিকা ফেরত দেয়
+   ফেরত: {
+     cellConflicts: [{cid, day, classKey, teachers, colLabel, dayLabel}],
+     overloads:     [{tid, tname, cid, day, parts}],
+     // 🆕 ৩টি কঠোর নতুন category — নিয়ম প্রয়োগে
+     unauthorized:  [{tid, tname, cid, colLabel, cell, reason}],   // entry-র সাথে মেলে না
+     overCount:     [{tid, tname, expected, actual}],              // entries < cells (অতিরিক্ত class)
+     underCount:    [{tid, tname, expected, actual, missing}]      // entries > cells (entry বাদ পড়েছে)
+   }
+*/
+function _detectRealtimeConflicts(){
+  const out = {cellConflicts: [], overloads: [], unauthorized: [], overCount: [], underCount: []};
+  if(!state || !Array.isArray(state.teachers) || !Array.isArray(state.columns)) return out;
+  const slotCols = state.columns.filter(c => c && c.type === 'slot');
+  if(!slotCols.length) return out;
+
+  const allDays = (typeof _teActiveDays === 'function')
+    ? _teActiveDays().map(d => d.key)
+    : ['sat','sun','mon','tue','wed','thu'];
+  const dayLabelMap = {};
+  try{
+    if(typeof _teActiveDays === 'function'){
+      _teActiveDays().forEach(d => { dayLabelMap[d.key] = d.label; });
+    }
+  }catch(_){}
+  const colLabelMap = {};
+  slotCols.forEach(c => { colLabelMap[c.id] = c.label || c.id; });
+
+  // ── PASS 1: CELL CONFLICT — একই (class||section||cid||day)-এ একাধিক teacher
+  // index: classKey → cid → day → [tid...]
+  const occMap = {};
+  state.teachers.forEach(t => {
+    if(!t || !t.cells || t.onLeave) return;
+    slotCols.forEach(c => {
+      const cell = t.cells[c.id];
+      if(!_rtIsLoadedCell(cell)) return;
+      // class+section বের করি (cell-এ যা আছে সেটাই)
+      const cls = (cell.class || '').trim();
+      const sec = (cell.section || '').trim();
+      if(!cls && !sec) return;   // class-less cell → conflict গণনা করি না
+      const classKey = cls + '||' + sec;
+      const days = _rtCellDays(cell);
+      days.forEach(day => {
+        if(!occMap[classKey]) occMap[classKey] = {};
+        if(!occMap[classKey][c.id]) occMap[classKey][c.id] = {};
+        if(!occMap[classKey][c.id][day]) occMap[classKey][c.id][day] = [];
+        occMap[classKey][c.id][day].push({tid: t.id, tname: t.name, subject: cell.subject||''});
+      });
+    });
+  });
+
+  // collapse same (classKey, cid) across multiple days into one conflict
+  Object.keys(occMap).forEach(classKey => {
+    Object.keys(occMap[classKey]).forEach(cid => {
+      Object.keys(occMap[classKey][cid]).forEach(day => {
+        const arr = occMap[classKey][cid][day];
+        if(arr.length > 1){
+          // দুই teacher একই subject + shared-flag-এ থাকলে conflict না (intentional split)
+          // — তবু default-এ আমরা সব overlap কে conflict ধরি, user দেখে decide করবে
+          out.cellConflicts.push({
+            classKey, cid, day,
+            colLabel: colLabelMap[cid] || cid,
+            dayLabel: dayLabelMap[day] || day,
+            classLabel: classKey.replace('||', ' / শাখা '),
+            teachers: arr.slice()
+          });
+        }
+      });
+    });
+  });
+
+  // ── PASS 2: TEACHER OVERLOAD — একজন শিক্ষক একই (cid, day)-এ একাধিক ভিন্ন cell
+  // (এটা ঘটে যদি teacher.cells[cid]-এ একটাই cell, কিন্তু days array-এ overlapping)
+  // আসলে cells structure একটাই cell/cid রাখে — তাই overload শুধু parts[] থেকে আসতে পারে
+  // (shared multi-part slot)
+  state.teachers.forEach(t => {
+    if(!t || !t.cells || t.onLeave) return;
+    slotCols.forEach(c => {
+      const cell = t.cells[c.id];
+      if(!cell || !Array.isArray(cell.parts) || cell.parts.length < 2) return;
+      // প্রতি day-তে কয়টা part active সেটা দেখি
+      const dayCount = {};
+      cell.parts.forEach(p => {
+        const pd = Array.isArray(p.days) ? p.days : [];
+        pd.forEach(d => { dayCount[d] = (dayCount[d]||0) + 1; });
+      });
+      Object.keys(dayCount).forEach(d => {
+        if(dayCount[d] > 1){
+          out.overloads.push({
+            tid: t.id, tname: t.name,
+            cid: c.id, day: d,
+            colLabel: colLabelMap[c.id] || c.id,
+            dayLabel: dayLabelMap[d] || d,
+            parts: cell.parts.filter(p => Array.isArray(p.days) && p.days.indexOf(d) >= 0)
+          });
+        }
+      });
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // 🆕 PASS 3: UNAUTHORIZED CELL — শিক্ষকের teaching entries-এর সাথে cell মেলে না
+  //   নিয়ম: প্রতি cell-এর (subject, class, section) MUST শিক্ষকের
+  //   কোনো teaching entry-র সাথে মিলবে। মিল না হলে → unauthorized
+  //   exception: locked, special, Free, সম্পূর্ণ খালি cell
+  // ═══════════════════════════════════════════════════════════════════
+  state.teachers.forEach(t => {
+    if(!t || !t.cells || t.onLeave || t.locked) return;
+    // valid keys তৈরি — teacher-এর সব teaching entries (sanitize করে)
+    const validKeys = new Set();
+    if(Array.isArray(t.teachingEntries)){
+      t.teachingEntries.forEach(raw => {
+        const e = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : (raw||{});
+        if(e.subject || e.class || e.section){
+          validKeys.add((e.subject||'') + '||' + (e.class||'') + '||' + (e.section||''));
+        }
+      });
+    }
+    // teacher-এর কোনো entry না থাকলে → কোনো cell বসানো বৈধ নয়
+    slotCols.forEach(c => {
+      const cell = t.cells[c.id];
+      if(!cell) return;
+      if(cell.locked || cell.special) return;          // protected
+      if(!_rtIsLoadedCell(cell)) return;                // খালি OK
+      const sub = (cell.subject||'').toString().toLowerCase();
+      if(sub === 'free') return;                        // Free OK
+
+      // shared multi-part cell
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        const allOk = cell.parts.every(p => {
+          const pk = (p.subject||'') + '||' + (cell.class||'') + '||' + (cell.section||'');
+          return validKeys.has(pk);
+        });
+        if(allOk) return;
+        out.unauthorized.push({
+          tid: t.id, tname: t.name,
+          cid: c.id, colLabel: colLabelMap[c.id] || c.id,
+          cell, reason: 'shared-part-mismatch'
+        });
+        return;
+      }
+      const k = (cell.subject||'') + '||' + (cell.class||'') + '||' + (cell.section||'');
+      if(!validKeys.has(k)){
+        out.unauthorized.push({
+          tid: t.id, tname: t.name,
+          cid: c.id, colLabel: colLabelMap[c.id] || c.id,
+          cell, reason: 'no-matching-entry'
+        });
+      }
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // 🆕 PASS 4: COUNT MISMATCH — entry সংখ্যা vs cell সংখ্যা
+  //   নিয়ম: ১ teaching entry = ১ cell (slot)। কম-বেশি গ্রহণযোগ্য নয়।
+  //   shared entry exception: একই slot-এ co-exist, তাই multi-part
+  //   এক-ই cell গণনা ১ বার।
+  // ═══════════════════════════════════════════════════════════════════
+  state.teachers.forEach(t => {
+    if(!t || t.onLeave || t.locked) return;
+    if(!Array.isArray(t.teachingEntries) || !t.teachingEntries.length) return;
+
+    // expected = সব non-empty teaching entries (sanitized) — special schedule বাদ
+    const expectedEntries = t.teachingEntries
+      .map(raw => (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : raw)
+      .filter(e => e && (e.subject || e.class || e.section));
+    const expected = expectedEntries.length;
+
+    // actual = teacher.cells এ যত non-empty, non-Free, non-locked, non-special সেল
+    // shared multi-part সেল-এ যত parts তত গণনা (প্রতিটা entry আলাদা)
+    let actual = 0;
+    slotCols.forEach(c => {
+      const cell = t.cells && t.cells[c.id];
+      if(!cell) return;
+      if(cell.locked || cell.special) return;
+      if(!_rtIsLoadedCell(cell)) return;
+      const sub = (cell.subject||'').toString().toLowerCase();
+      if(sub === 'free') return;
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        actual += cell.parts.length;
+      } else {
+        actual += 1;
+      }
+    });
+
+    if(actual > expected){
+      out.overCount.push({tid: t.id, tname: t.name, expected, actual});
+    } else if(actual < expected){
+      const missing = expected - actual;
+      out.underCount.push({tid: t.id, tname: t.name, expected, actual, missing});
+    }
+  });
+
+  return out;
+}
+
+/* DOM-এ conflict markers paint — renderTable-এর পরে কল হবে */
+function _applyConflictMarkers(){
+  // আগের markers পরিষ্কার
+  document.querySelectorAll('.routine-table td.rt-conflict').forEach(td => td.classList.remove('rt-conflict'));
+  document.querySelectorAll('.routine-table td.rt-overload').forEach(td => td.classList.remove('rt-overload'));
+  document.querySelectorAll('.routine-table td.rt-unauth').forEach(td => td.classList.remove('rt-unauth'));
+
+  const conflicts = _detectRealtimeConflicts();
+
+  // marker apply helper — CSS.escape এড়িয়ে attribute iteration (older browser safe)
+  const markCells = (tid, cid, className) => {
+    const tds = document.querySelectorAll('.routine-table td[data-tid][data-cid]');
+    for(let i=0; i<tds.length; i++){
+      const td = tds[i];
+      if(td.getAttribute('data-tid') === tid && td.getAttribute('data-cid') === cid){
+        td.classList.add(className);
+      }
+    }
+  };
+
+  // CELL CONFLICT markers — সব involved teachers-এর cell-এ red border
+  conflicts.cellConflicts.forEach(cf => {
+    cf.teachers.forEach(tt => {
+      markCells(tt.tid, cf.cid, 'rt-conflict');
+    });
+  });
+
+  // OVERLOAD markers
+  conflicts.overloads.forEach(ov => {
+    markCells(ov.tid, ov.cid, 'rt-overload');
+  });
+
+  // 🆕 UNAUTHORIZED markers — purple/violet border
+  conflicts.unauthorized.forEach(u => {
+    markCells(u.tid, u.cid, 'rt-unauth');
+  });
+
+  // Banner update
+  _updateConflictBanner(conflicts);
+  return conflicts;
+}
+
+/* Banner show/hide + count update */
+function _updateConflictBanner(conflicts){
+  const banner = document.getElementById('rtConflictBanner');
+  const txt = document.getElementById('rtConflictText');
+  if(!banner || !txt) return;
+  if(!conflicts) conflicts = _detectRealtimeConflicts();
+  const cn = conflicts.cellConflicts.length;
+  const on = conflicts.overloads.length;
+  const un = (conflicts.unauthorized||[]).length;
+  const oc = (conflicts.overCount||[]).length;
+  const uc = (conflicts.underCount||[]).length;
+  const total = cn + on + un + oc + uc;
+  if(total === 0){
+    // Show OK banner শুধু যদি rtShowOK preference থাকে, না হলে hide
+    if(window._rtShowOK){
+      banner.style.display = 'flex';
+      banner.classList.remove('hidden');
+      banner.classList.add('ok');
+      txt.innerHTML = '✓ <b>রুটিনে কোনো সংঘাত নেই</b> — সব ক্লাস সঠিক জায়গায়';
+    } else {
+      banner.style.display = 'none';
+      banner.classList.add('hidden');
+    }
+    return;
+  }
+  banner.classList.remove('hidden','ok');
+  banner.style.display = 'flex';
+  const parts = [];
+  if(cn > 0) parts.push('<b>'+_teBnNum(cn)+'টি সেল-সংঘাত</b>');
+  if(on > 0) parts.push('<b>'+_teBnNum(on)+'টি ওভারলোড</b>');
+  if(un > 0) parts.push('<b style="color:#a855f7">'+_teBnNum(un)+'টি অননুমোদিত cell</b>');
+  if(oc > 0) parts.push('<b style="color:#dc2626">'+_teBnNum(oc)+'টি অতিরিক্ত ক্লাস</b>');
+  if(uc > 0) parts.push('<b style="color:#d97706">'+_teBnNum(uc)+'টি বরাদ্দ অপূর্ণ</b>');
+  txt.innerHTML = parts.join(' · ') + ' — "বিস্তারিত দেখুন" চেপে সব সমস্যা দেখুন';
+}
+
+/* Modal-এ সংঘাতের পূর্ণাঙ্গ তালিকা দেখাও */
+function _rtOpenConflictModal(){
+  const conflicts = _detectRealtimeConflicts();
+  const host = document.getElementById('rtConflictListHost');
+  if(!host) return;
+  const items = [];
+
+  conflicts.cellConflicts.forEach(cf => {
+    const tchips = cf.teachers.map(tt =>
+      '<span class="rt-t-chip">'+esc(tt.tname || tt.tid)+(tt.subject?' · '+esc(tt.subject):'')+'</span>'
+    ).join('');
+    items.push(`
+      <div class="rt-conflict-item">
+        <div class="rt-c-title">⚠️ ${esc(cf.classLabel)} · ${esc(cf.colLabel)} · ${esc(cf.dayLabel)}</div>
+        <div class="rt-c-desc">এই (শ্রেণি, শাখা, পিরিয়ড, দিন)-এ একাধিক শিক্ষক বসেছেন। সমাধান: যে কোনো এক শিক্ষকের cell মুছে দিন বা অন্য slot-এ সরান।</div>
+        <div class="rt-c-teachers">${tchips}</div>
+      </div>
+    `);
+  });
+
+  conflicts.overloads.forEach(ov => {
+    const pchips = ov.parts.map(p =>
+      '<span class="rt-t-chip">'+esc(p.subject||'—')+'</span>'
+    ).join('');
+    items.push(`
+      <div class="rt-conflict-item overload">
+        <div class="rt-c-title">⚡ ${esc(ov.tname)} · ${esc(ov.colLabel)} · ${esc(ov.dayLabel)}</div>
+        <div class="rt-c-desc">এই শিক্ষক একই slot-এ একাধিক subject-এ আছেন (shared-slot multi-part)।</div>
+        <div class="rt-c-teachers">${pchips}</div>
+      </div>
+    `);
+  });
+
+  // 🆕 UNAUTHORIZED — teaching entries-এর সাথে cell মেলে না (manual edit-এর ভুল)
+  (conflicts.unauthorized||[]).forEach(u => {
+    const c = u.cell || {};
+    items.push(`
+      <div class="rt-conflict-item" style="border-left-color:#a855f7;background:#faf5ff">
+        <div class="rt-c-title" style="color:#7e22ce">🚫 অননুমোদিত cell — ${esc(u.tname)} · ${esc(u.colLabel)}</div>
+        <div class="rt-c-desc">এই শিক্ষকের <b>teaching entries</b>-এ <b>${esc(c.subject||'—')} / ${esc(c.class||'—')} / শাখা ${esc(c.section||'—')}</b> এই combination নেই — কিন্তু রুটিনে বসানো হয়েছে। ম্যানুয়ালি পরিবর্তন করেছেন। সমাধান: শিক্ষকের entries-এ এই combination যোগ করুন, অথবা cell মুছুন।</div>
+      </div>
+    `);
+  });
+
+  // 🆕 OVER-COUNT — শিক্ষকের নামে বরাদ্দের চেয়ে বেশি class রুটিনে
+  (conflicts.overCount||[]).forEach(oc => {
+    items.push(`
+      <div class="rt-conflict-item" style="border-left-color:#dc2626;background:#fef2f2">
+        <div class="rt-c-title" style="color:#b91c1c">📈 অতিরিক্ত ক্লাস — ${esc(oc.tname)}</div>
+        <div class="rt-c-desc">শিক্ষকের <b>teaching entries</b>-এ <b>${_teBnNum(oc.expected)}</b> টি ক্লাস বরাদ্দ, কিন্তু রুটিনে <b>${_teBnNum(oc.actual)}</b> টি ক্লাস বসেছে — <b>${_teBnNum(oc.actual - oc.expected)}</b> টি অতিরিক্ত। সমাধান: ম্যানুয়ালি অতিরিক্ত cell মুছুন, অথবা শিক্ষকের entries-এ নতুন entry যোগ করুন।</div>
+      </div>
+    `);
+  });
+
+  // 🆕 UNDER-COUNT — বরাদ্দের চেয়ে কম class বসেছে
+  (conflicts.underCount||[]).forEach(uc => {
+    items.push(`
+      <div class="rt-conflict-item" style="border-left-color:#d97706;background:#fffbeb">
+        <div class="rt-c-title" style="color:#92400e">📉 বরাদ্দ অপূর্ণ — ${esc(uc.tname)}</div>
+        <div class="rt-c-desc">শিক্ষকের <b>teaching entries</b>-এ <b>${_teBnNum(uc.expected)}</b> টি ক্লাস বরাদ্দ, রুটিনে বসেছে <b>${_teBnNum(uc.actual)}</b> টি — <b>${_teBnNum(uc.missing)}</b> টি বাকি। সমাধান: "স্বয়ংক্রিয় রুটিন" আবার চালান অথবা ম্যানুয়ালি খালি slot-এ বসান।</div>
+      </div>
+    `);
+  });
+
+  if(!items.length){
+    host.innerHTML = `
+      <div style="text-align:center;padding:40px 20px;color:var(--text-2)">
+        <div style="font-size:48px;margin-bottom:10px">✅</div>
+        <div style="font-size:15px;font-weight:700;color:#16a34a">কোনো সংঘাত নেই</div>
+        <div style="font-size:12.5px;margin-top:6px">রুটিন সম্পূর্ণ সামঞ্জস্যপূর্ণ।</div>
+      </div>
+    `;
+  } else {
+    host.innerHTML = items.join('');
+  }
+  openModal('rtConflictModal');
+}
+
+/* ════════════════════════════════════════════════════════════════
+   🪝 PUBLIC HOOK — renderTable / cell-edit / auto-routine শেষে কল হবে
+   🛡 immediate-mode flag: critical event-এ debounce ছাড়াই scan
+════════════════════════════════════════════════════════════════ */
+function refreshRealtimeConflicts(immediate){
+  // immediate=true হলে debounce ছাড়াই সরাসরি — manual edit সম্পন্ন হওয়ার পরে
+  if(immediate){
+    if(window._rtDebTimer){ clearTimeout(window._rtDebTimer); window._rtDebTimer = null; }
+    try{ _applyConflictMarkers(); }catch(_){}
+    return;
+  }
+  // ছোট debounce — পরপর কয়েকটা call হলে শেষেরটাই কাজ করবে
+  if(window._rtDebTimer) clearTimeout(window._rtDebTimer);
+  window._rtDebTimer = setTimeout(() => {
+    try{ _applyConflictMarkers(); }catch(_){}
+  }, 50);
 }
 
 function renderChipPicker(elementId, options, selected){
@@ -11592,6 +12336,56 @@ function selectCellOption(value){
   const {tid, cid, field} = currentEditCell;
   const t = state.teachers.find(x=>x.id===tid);
   if(!t) return;
+
+  // ═══════════════════════════════════════════════════════════════
+  // 🆕 কঠোর প্রি-চেক: user যা সেট করতে যাচ্ছেন তা শিক্ষকের teaching
+  // entries-এর সাথে মেলে কিনা — Free + খালি ছাড়া। মিল না হলে warn,
+  // user চাইলে এগিয়ে যাবেন (block না, কিন্তু conflict markers
+  // স্বয়ংক্রিয়ভাবে দেখাবে)।
+  // ═══════════════════════════════════════════════════════════════
+  try{
+    if(value && (field === 'subject' || field === 'class' || field === 'section')
+       && String(value).toLowerCase() !== 'free'){
+      const curCell = (t.cells && t.cells[cid]) || {};
+      const proposed = {
+        subject: field === 'subject' ? value : (curCell.subject || ''),
+        class:   field === 'class'   ? value : (curCell.class   || ''),
+        section: field === 'section' ? value : (curCell.section || '')
+      };
+      const entries = Array.isArray(t.teachingEntries) ? t.teachingEntries : [];
+      const sanitized = entries.map(raw =>
+        (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : (raw||{})
+      ).filter(e => e && (e.subject || e.class || e.section));
+
+      // proposed non-empty fields সব entry-তে exact match লাগবে
+      const hasMatch = sanitized.some(e => {
+        if(proposed.subject && proposed.subject !== (e.subject||'')) return false;
+        if(proposed.class   && proposed.class   !== (e.class||'')) return false;
+        if(proposed.section && proposed.section !== (e.section||'')) return false;
+        return true;
+      });
+
+      if(!hasMatch && sanitized.length > 0){
+        const proposedStr =
+          (proposed.subject||'?') + ' / ' +
+          (proposed.class||'?') + ' / শাখা ' +
+          (proposed.section||'?');
+        const ok = confirm(
+          '⚠️ অননুমোদিত পরিবর্তন\n\n' +
+          'শিক্ষক "' + t.name + '"-এর teaching entries-এ\n' +
+          '"' + proposedStr + '"\n' +
+          'এই combination পাওয়া যাচ্ছে না।\n\n' +
+          '🚫 cell বেগুনি border-এ চিহ্নিত হবে (অননুমোদিত)।\n\n' +
+          'প্রস্তাবিত সমাধান:\n' +
+          '• আগে শিক্ষকের entries-এ এই combination যোগ করুন\n' +
+          '• অথবা cell খালি রেখে স্বয়ংক্রিয় রুটিন আবার চালান\n\n' +
+          'তবুও এই পরিবর্তন প্রয়োগ করবেন?'
+        );
+        if(!ok){ closeCellEditor(); return; }
+      }
+    }
+  }catch(_){}
+
   snapshot();
   if(!t.cells[cid]) t.cells[cid] = {};
   const old = t.cells[cid][field] || '—';
@@ -11606,6 +12400,8 @@ function selectCellOption(value){
   refreshDashboardSilent();
   audit('সেল এডিট', `${t.name} • ${getColLabel(cid)} • ${field}: ${old} → ${value}`);
   closeCellEditor();
+  // 🛡 immediate-mode — manual edit হলে debounce ছাড়াই scan
+  try{ refreshRealtimeConflicts(true); }catch(_){}
   if(state.settings.notifications) showToast('পরিবর্তন সংরক্ষিত','success',1500);
 }
 
@@ -11621,6 +12417,8 @@ function clearCell(){
   refreshDashboardSilent();
   audit('সেল মুছে ফেলা', `${t.name} • ${getColLabel(cid)} • ${field}`);
   closeCellEditor();
+  // 🛡 defensive double-hook
+  try{ refreshRealtimeConflicts(true); }catch(_){}
 }
 
 function closeCellEditor(){
@@ -13362,13 +14160,18 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
   try{
     if(!confirm(
         `⚙️ স্বয়ংক্রিয় রুটিন তৈরি\n\n` +
-        `📐 কাজের নিয়ম:\n` +
-        `• প্রতি teaching entry = ঠিক ১টি পিরিয়ড/ঘণ্টা\n` +
-        `• যেভাবে input করেছেন — সেভাবেই রুটিনে বসবে\n` +
+        `🛡 যা auto-routine করবে:\n` +
+        `• শুধু slot (সময়/দিন) নির্বাচন ও পরিবর্তন\n` +
+        `• প্রতি teaching entry = ঠিক ১টা cell (বেশি না, কম না)\n` +
+        `• Conflict হলে slot পরিবর্তনের চেষ্টা — শ্রেণি/শাখা/বিষয় কখনই নয়\n\n` +
+        `🚫 যা auto-routine করবে না:\n` +
+        `• শ্রেণি/শাখা/বিষয় কখনই পরিবর্তন হবে না\n` +
+        `• কারো নামে যত entry, ঠিক তত cell — অতিরিক্ত cell বানাবে না\n\n` +
+        `📐 placement rule:\n` +
         `• পছন্দের সময় থাকলে সেখানেই বসবে; না বসলে অন্য entry-র দিকে যাবে না\n` +
         `${prioritySet && prioritySet.size ? `• ⚖️ ${toBnNum(prioritySet.size)} টি কনফ্লিক্টে আপনার অনুমোদন প্রয়োগ হবে\n` : ''}` +
         `• 🔒 Fixed entry: পছন্দের slot ছাড়া কোথাও যাবে না\n` +
-        `• 🔀 Shared entry: slot/partner/class/section কিছুই পরিবর্তন হবে না\n` +
+        `• 🔀 Shared entry: slot/partner কিছুই পরিবর্তন হবে না\n` +
         `• 📌 Special Entry: সর্বোচ্চ priority\n` +
         `• ⏸ লক করা ও ছুটিতে থাকা শিক্ষক অপরিবর্তিত\n\n` +
         `চালিয়ে যাবেন?`)){
@@ -13455,6 +14258,50 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
     if(!state.aiSettings) state.aiSettings = {};
     state.aiSettings.lastAutoGenerated = new Date().toISOString();
 
+    // ═══════════════════════════════════════════════════════════════
+    // 🛡 POST-RUN INVARIANT VALIDATION (apex-engineer hard check)
+    // ─────────────────────────────────────────────────────────────
+    // নিয়ম: প্রতি teacher-এর জন্য —
+    //   placed-cells = teaching entries (যেগুলো ফাঁকা নয়)
+    //   এর চেয়ে বেশি বা কম থাকলে warning দেওয়া হবে।
+    //   class/section/subject কোনো cell-এ entry-র বাইরে থাকলে
+    //   _teApplyEntriesForTeacher-এর invariant guard ইতিমধ্যে
+    //   পরিষ্কার করেছে; এখানে শুধু count validation।
+    // ═══════════════════════════════════════════════════════════════
+    const invariantReport = [];
+    try{
+      teachers.forEach(t => {
+        if(!t || t.onLeave || !t.cells) return;
+        const validEntries = (t.teachingEntries || []).map(e => _teSanitizeEntry(e))
+          .filter(e => (e.class || e.subject || e.section));
+        // populated slot cells (locked/special/free বাদ)
+        let placedCount = 0;
+        slotCols.forEach(c => {
+          const cell = t.cells[c.id];
+          if(!cell) return;
+          if(cell.locked || cell.special) return;
+          if((cell.subject||'').toLowerCase() === 'free') return;
+          if(!cell.class && !cell.section && !cell.subject) return;
+          // shared multi-part — প্রতি part-ই আলাদা গণনা
+          if(Array.isArray(cell.parts) && cell.parts.length){
+            placedCount += cell.parts.length;
+          } else {
+            placedCount++;
+          }
+        });
+        if(placedCount > validEntries.length){
+          invariantReport.push({
+            name: t.name || '—',
+            entries: validEntries.length,
+            placed: placedCount,
+            kind: 'over'  // অতিরিক্ত cell বসেছে — invariant violation
+          });
+        }
+      });
+    }catch(invErr){
+      console.warn('[post-run invariant] check failed:', invErr);
+    }
+
     saveState();
     renderTable();
     try{ populateBulk(); }catch(_){}
@@ -13472,6 +14319,23 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
       msg += ` (${toBnNum(skippedNoEntry)} জনের entry নেই)`;
     }
     showToast(msg, 'success', 7000);
+
+    // 🛡 যদি invariant violation থাকে — admin-কে জানাই (silent log, না কোনো alert)
+    if(invariantReport.length > 0){
+      console.error('[INVARIANT VIOLATION] over-placement detected:', invariantReport);
+      try{
+        const lines = invariantReport.slice(0, 5).map(r =>
+          `• ${r.name}: ${toBnNum(r.entries)} entry ↔ ${toBnNum(r.placed)} cell`
+        ).join('\n');
+        if(typeof audit === 'function'){
+          audit('সিস্টেম রক্ষা', `Invariant violation — ${invariantReport.length} জনের cell-গণনা entry-গণনার চেয়ে বেশি`);
+        }
+        // এটি rare একটা bug — user-কে toast দিয়ে জানাই, কিন্তু flow ভাঙি না
+        setTimeout(() => {
+          showToast(`⚠ ${toBnNum(invariantReport.length)} জনের cell-গণনা মেলেনি — log দেখুন`, 'warning', 5000);
+        }, 800);
+      }catch(_){}
+    }
 
     // 🆕 যদি কেউ skip হয়, বিস্তারিত report দেখাই (max 8 entries)
     if(skipDetails.length > 0){
@@ -14064,6 +14928,369 @@ function _curSave(){
   });
   audit('পাঠ্যসূচি আপডেট', `${totalClasses} শ্রেণি · ${totalSubjects} বরাদ্দ`);
   showToast(`✅ পাঠ্যসূচি সংরক্ষিত — ${toBnNum(totalClasses)} শ্রেণি`,'success');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   🗺 COVERAGE REPORT (ধাপ ৪)
+   ─────────────────────────────────────────────────────────────────
+   প্রতি (শ্রেণি, শাখা)-এর জন্য পিরিয়ড × দিন গ্রিড। প্রতিটি cell
+   দেখায় ক) এই (শ্রেণি, শাখা, পিরিয়ড, দিন)-এ কোনো শিক্ষক বসেছেন
+   কিনা; খ) বসলে সেই subject ও teacher; গ) না বসলে fix-suggestion।
+
+   ডেটা সোর্স: state.teachers[].cells (যেমন routine table-এ আছে)
+   কোনো বিদ্যমান function/state field overwrite করা হয় না — পুরোটাই
+   read-only analysis।
+═══════════════════════════════════════════════════════════════════ */
+
+/* কোন কোন (class, section) রুটিনে আছে — teachers cells এবং
+   teachingEntries দুই উৎস মিলিয়ে। */
+function _covCollectClassSections(){
+  const set = new Set();
+  const slotCols = ((state && state.columns)||[]).filter(c => c && c.type === 'slot');
+  (state.teachers||[]).forEach(t => {
+    // teachingEntries থেকে
+    if(Array.isArray(t.teachingEntries)){
+      t.teachingEntries.forEach(raw => {
+        const e = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : (raw||{});
+        if(e.class && e.section) set.add(e.class + '||' + e.section);
+      });
+    }
+    // cells থেকে
+    if(t.cells){
+      slotCols.forEach(c => {
+        const cell = t.cells[c.id];
+        if(!cell) return;
+        if(cell.locked || cell.special) return;
+        const sub = (cell.subject||'').toString().toLowerCase();
+        if(sub === 'free') return;
+        if(cell.class && cell.section) set.add(cell.class + '||' + cell.section);
+      });
+    }
+  });
+  // sort: class বর্ণমালা → section
+  return Array.from(set).sort();
+}
+
+/* দিন list (Sat-Thu) — _teActiveDays থেকে */
+function _covActiveDays(){
+  try{
+    if(typeof _teActiveDays === 'function'){
+      const arr = _teActiveDays();
+      if(Array.isArray(arr) && arr.length) return arr;
+    }
+  }catch(_){}
+  // fallback
+  return [
+    {key:'Sat',label:'শনি'},{key:'Sun',label:'রবি'},{key:'Mon',label:'সোম'},
+    {key:'Tue',label:'মঙ্গল'},{key:'Wed',label:'বুধ'},{key:'Thu',label:'বৃহঃ'}
+  ];
+}
+
+/* মূল গণনা — প্রতি (class, section, slot, day)-এর জন্য occupant ফেরত
+   ফেরত: occMap[classSec][slotId][dayKey] = {tid, tname, subject, locked} | null
+*/
+function _covBuildOccupancy(){
+  const slotCols = ((state && state.columns)||[]).filter(c => c && c.type === 'slot');
+  const days = _covActiveDays();
+  const dayKeys = days.map(d => d.key);
+  const occ = {};
+  const classSecs = _covCollectClassSections();
+  classSecs.forEach(k => {
+    occ[k] = {};
+    slotCols.forEach(c => {
+      occ[k][c.id] = {};
+      dayKeys.forEach(d => { occ[k][c.id][d] = null; });
+    });
+  });
+
+  // teachers cells স্ক্যান
+  (state.teachers||[]).forEach(t => {
+    if(!t || !t.cells || t.onLeave) return;
+    slotCols.forEach(c => {
+      const cell = t.cells[c.id];
+      if(!cell) return;
+      if(cell.locked || cell.special){
+        // locked/special — সব (cls, sec) এর জন্য নয়, কিন্তু এই teacher এর slot
+        // আমরা শুধু track করি যদি cell-এ cls, sec থাকে
+      }
+      if(!cell.class || !cell.section) return;
+      const sub = (cell.subject||'').toString().toLowerCase();
+      if(sub === 'free') return;
+      const k = cell.class + '||' + cell.section;
+      if(!occ[k]) {
+        occ[k] = {};
+        slotCols.forEach(cc => {
+          occ[k][cc.id] = {};
+          dayKeys.forEach(d => { occ[k][cc.id][d] = null; });
+        });
+      }
+      // cell-এর days — না থাকলে সব active days
+      let cdays = (Array.isArray(cell.days) && cell.days.length) ? cell.days : dayKeys.slice();
+      // shared multi-part — parts[] থেকে আলাদা করে
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        cell.parts.forEach(p => {
+          const pdays = Array.isArray(p.days) && p.days.length ? p.days : cdays;
+          pdays.forEach(d => {
+            if(!occ[k][c.id]) return;
+            if(occ[k][c.id][d] !== undefined){
+              const exist = occ[k][c.id][d];
+              const entry = {
+                tid: t.id, tname: t.name||'—',
+                subject: p.subject || cell.subject || '',
+                locked: !!(cell.locked || cell.special)
+              };
+              if(!exist) occ[k][c.id][d] = entry;
+              else if(Array.isArray(exist)) exist.push(entry);
+              else occ[k][c.id][d] = [exist, entry];
+            }
+          });
+        });
+      } else {
+        cdays.forEach(d => {
+          if(!occ[k][c.id]) return;
+          if(occ[k][c.id][d] !== undefined){
+            const exist = occ[k][c.id][d];
+            const entry = {
+              tid: t.id, tname: t.name||'—',
+              subject: cell.subject||'',
+              locked: !!(cell.locked || cell.special)
+            };
+            if(!exist) occ[k][c.id][d] = entry;
+            else if(Array.isArray(exist)) exist.push(entry);
+            else occ[k][c.id][d] = [exist, entry];
+          }
+        });
+      }
+    });
+  });
+
+  return {occ, slotCols, days, dayKeys};
+}
+
+/* সারসংক্ষেপ গণনা — মোট cell, ভরা, ফাঁকা, কভারেজ % */
+function _covSummary(built){
+  const {occ, slotCols, dayKeys} = built;
+  const classSecs = Object.keys(occ);
+  let total = 0, filled = 0;
+  const perClass = {};
+  classSecs.forEach(k => {
+    let t = 0, f = 0;
+    slotCols.forEach(c => {
+      dayKeys.forEach(d => {
+        t++;
+        if(occ[k][c.id] && occ[k][c.id][d]) f++;
+      });
+    });
+    perClass[k] = {total: t, filled: f};
+    total += t;
+    filled += f;
+  });
+  return {total, filled, empty: total-filled, classSecs, perClass};
+}
+
+/* ── modal খোলা ─────────────────────────────────────────── */
+function openCoverageReport(){
+  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!requirePerm('aiRoutine')) return;
+  try{ if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity(); }catch(_){}
+
+  const slotCols = ((state && state.columns)||[]).filter(c => c && c.type === 'slot');
+  if(!slotCols.length){
+    showToast('❌ কোনো পিরিয়ড কলাম নেই — আগে "সময়সূচি" থেকে তৈরি করুন','warning',4000);
+    return;
+  }
+  const classSecs = _covCollectClassSections();
+  if(!classSecs.length){
+    showToast('❌ কোনো শ্রেণি-শাখা ডেটা পাওয়া যায়নি — শিক্ষকের teaching entries যোগ করুন','warning',5000);
+    return;
+  }
+
+  // filter dropdowns ভরি
+  const classes = (state.options && Array.isArray(state.options.class)) ? state.options.class.filter(Boolean) : [];
+  const sections = (state.options && Array.isArray(state.options.section)) ? state.options.section.filter(Boolean) : [];
+  const clsSel = document.getElementById('covClassFilter');
+  const secSel = document.getElementById('covSectionFilter');
+  if(clsSel){
+    clsSel.innerHTML = '<option value="__ALL__">সব শ্রেণি</option>' +
+      classes.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  }
+  if(secSel){
+    secSel.innerHTML = '<option value="__ALL__">সব শাখা</option>' +
+      sections.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  }
+  const gapsBox = document.getElementById('covOnlyGaps');
+  if(gapsBox) gapsBox.checked = false;
+
+  _covRender();
+  openModal('coverageModal');
+}
+
+/* ── মূল render ─────────────────────────────────────────── */
+function _covRender(){
+  const built = _covBuildOccupancy();
+  const sum = _covSummary(built);
+
+  // summary cards
+  const sumHost = document.getElementById('covSummary');
+  if(sumHost){
+    const pct = sum.total ? Math.round((sum.filled / sum.total) * 100) : 0;
+    const pctCls = pct >= 95 ? 'ok' : (pct >= 75 ? 'warn' : 'error');
+    sumHost.innerHTML = `
+      <div class="cov-stat info">
+        <span class="cov-stat-lbl">মোট cell</span>
+        <span class="cov-stat-val">${toBnNum(sum.total)}</span>
+      </div>
+      <div class="cov-stat ok">
+        <span class="cov-stat-lbl">ভর্তি</span>
+        <span class="cov-stat-val">${toBnNum(sum.filled)}</span>
+      </div>
+      <div class="cov-stat ${sum.empty > 0 ? 'error' : 'ok'}">
+        <span class="cov-stat-lbl">ফাঁকা</span>
+        <span class="cov-stat-val">${toBnNum(sum.empty)}</span>
+      </div>
+      <div class="cov-stat ${pctCls}">
+        <span class="cov-stat-lbl">কভারেজ</span>
+        <span class="cov-stat-val">${toBnNum(pct)}%</span>
+      </div>
+    `;
+  }
+
+  // filters
+  const clsF = document.getElementById('covClassFilter');
+  const secF = document.getElementById('covSectionFilter');
+  const gapsOnly = document.getElementById('covOnlyGaps');
+  const fCls = clsF ? clsF.value : '__ALL__';
+  const fSec = secF ? secF.value : '__ALL__';
+  const onlyGaps = !!(gapsOnly && gapsOnly.checked);
+
+  // grids
+  const host = document.getElementById('covGrids');
+  if(!host) return;
+
+  // class-sec গুলো filter ও sort
+  let pairs = sum.classSecs.map(k => {
+    const [cls, sec] = k.split('||');
+    const st = sum.perClass[k];
+    return {key:k, cls, sec, total:st.total, filled:st.filled, empty:st.total-st.filled};
+  });
+  if(fCls !== '__ALL__') pairs = pairs.filter(p => p.cls === fCls);
+  if(fSec !== '__ALL__') pairs = pairs.filter(p => p.sec === fSec);
+  if(onlyGaps) pairs = pairs.filter(p => p.empty > 0);
+
+  if(!pairs.length){
+    host.innerHTML = `<div class="cov-empty-msg">${onlyGaps ? '🎉 কোনো ফাঁকা cell নেই — ১০০% কভারেজ!' : 'এই ফিল্টারে কোনো শ্রেণি-শাখা নেই'}</div>`;
+    return;
+  }
+
+  // render
+  const {slotCols, days, dayKeys} = built;
+  // columns header — slot + break flags
+  const allCols = ((state && state.columns)||[]);
+  // for layout we want all cols (slot + break) in original order
+  const renderCols = allCols.filter(c => c && (c.type === 'slot' || c.type === 'break'));
+
+  host.innerHTML = pairs.map(p => {
+    const pct = p.total ? Math.round((p.filled / p.total) * 100) : 0;
+    const pctCls = pct >= 95 ? 'ok' : (pct >= 75 ? 'warn' : 'error');
+    // table head row — period labels
+    const headRow = '<tr>' +
+      '<th class="cov-day-lbl">দিন \\ পিরিয়ড</th>' +
+      renderCols.map(c => `<th title="${esc(c.label||c.id)}">${esc(c.label||c.id)}</th>`).join('') +
+      '</tr>';
+    // body rows — one per day
+    const rows = days.map(d => {
+      const cells = renderCols.map(c => {
+        if(c.type === 'break'){
+          return `<td class="cov-cell break-col" title="বিরতি">— বিরতি —</td>`;
+        }
+        const occ = built.occ[p.key] && built.occ[p.key][c.id] ? built.occ[p.key][c.id][d.key] : null;
+        if(occ){
+          if(Array.isArray(occ)){
+            // multi-occupant — conflict
+            const sub = occ.map(o => esc(o.subject||'—')).join(' / ');
+            const tn = occ.map(o => esc(o.tname||'—')).join(', ');
+            return `<td class="cov-cell filled" title="⚠ একাধিক: ${tn}"><span class="cov-sub">⚠ ${sub}</span><span class="cov-teacher">${tn}</span></td>`;
+          }
+          if(occ.locked){
+            return `<td class="cov-cell locked" title="🔒 ${esc(occ.tname)}"><span class="cov-sub">🔒 ${esc(occ.subject||'—')}</span><span class="cov-teacher">${esc(occ.tname||'—')}</span></td>`;
+          }
+          return `<td class="cov-cell filled" title="${esc(occ.tname)} • ${esc(occ.subject||'—')}"><span class="cov-sub">${esc(occ.subject||'—')}</span><span class="cov-teacher">${esc(occ.tname||'—')}</span></td>`;
+        }
+        return `<td class="cov-cell empty" title="ফাঁকা — কেউ বসেননি">— ফাঁকা —</td>`;
+      }).join('');
+      return `<tr><td class="cov-day-lbl">${esc(d.label||d.key)}</td>${cells}</tr>`;
+    }).join('');
+
+    return `
+      <div class="cov-grid-block">
+        <div class="cov-grid-head">
+          <span class="cov-class-name">🎓 ${esc(p.cls)} · শাখা ${esc(p.sec)}</span>
+          <span class="cov-counts">${toBnNum(p.filled)}/${toBnNum(p.total)} ভরা · ${toBnNum(p.empty)} ফাঁকা</span>
+          <span class="cov-pct ${pctCls}">${toBnNum(pct)}%</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="cov-table">
+            <thead>${headRow}</thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ── CSV রিপোর্ট এক্সপোর্ট ─────────────────────────────── */
+function _covExport(){
+  try{
+    const built = _covBuildOccupancy();
+    const {slotCols, days, dayKeys} = built;
+    const renderCols = ((state && state.columns)||[]).filter(c => c && (c.type === 'slot' || c.type === 'break'));
+    const lines = [];
+    // header per class block
+    Object.keys(built.occ).forEach(k => {
+      const [cls, sec] = k.split('||');
+      lines.push(`শ্রেণি,${cls},শাখা,${sec}`);
+      lines.push('দিন,' + renderCols.map(c => '"' + (c.label||c.id).replace(/"/g,'""') + '"').join(','));
+      days.forEach(d => {
+        const row = [d.label || d.key];
+        renderCols.forEach(c => {
+          if(c.type === 'break'){ row.push('বিরতি'); return; }
+          const occ = built.occ[k][c.id] ? built.occ[k][c.id][d.key] : null;
+          if(!occ){ row.push('— ফাঁকা —'); return; }
+          if(Array.isArray(occ)){
+            row.push('⚠ ' + occ.map(o => (o.subject||'—')+' / '+(o.tname||'—')).join(' | '));
+            return;
+          }
+          row.push((occ.subject||'—') + ' / ' + (occ.tname||'—'));
+        });
+        lines.push(row.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(','));
+      });
+      lines.push('');
+    });
+    // summary footer
+    const sum = _covSummary(built);
+    const pct = sum.total ? Math.round((sum.filled / sum.total) * 100) : 0;
+    lines.push('সারসংক্ষেপ');
+    lines.push(`মোট cell,${sum.total}`);
+    lines.push(`ভরা,${sum.filled}`);
+    lines.push(`ফাঁকা,${sum.empty}`);
+    lines.push(`কভারেজ,${pct}%`);
+
+    // BOM for Excel Bengali support
+    const csv = '\uFEFF' + lines.join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'coverage-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    audit('কভারেজ রিপোর্ট', `CSV এক্সপোর্ট — ${sum.classSecs.length} শ্রেণি, কভারেজ ${pct}%`);
+    showToast('✅ CSV রিপোর্ট ডাউনলোড হয়েছে','success',2500);
+  }catch(err){
+    console.error('coverage export error:', err);
+    showToast('❌ এক্সপোর্ট ব্যর্থ: ' + (err.message||err), 'error');
+  }
 }
 
 /* ===========================================================
