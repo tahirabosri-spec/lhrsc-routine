@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="রুটিন">
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='38' fill='%230f766e'/><text x='50%25' y='62%25' text-anchor='middle' font-size='104' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>">
-
+<title>রুটিন ম্যানেজমেন্ট — লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ</title>
 
 <!-- Inline PWA Manifest -->
 <link rel="manifest" id="manifestLink">
@@ -826,13 +826,21 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
    ─────────────────────────────────────────────────────────────────────────────
    --slot-divider-w : 0px = off (default), 1-6px = visible separator
    --slot-divider-c : color (default teal/primary)
-   শুধু slot-column-এর right border বদলায়; col-sl/col-name/col-break অপরিবর্তিত
+   slot columns + break columns দুই-ই এই divider পাবে
+   col-sl ও col-name অপরিবর্তিত (sticky cells, আলাদা styling)
 */
-.routine-table thead th:not(.col-sl):not(.col-name):not(.col-break),
-.routine-table tbody td:not(.col-sl):not(.col-name):not(.col-break){
+.routine-table thead th:not(.col-sl):not(.col-name),
+.routine-table tbody td:not(.col-sl):not(.col-name){
   border-right-width:var(--slot-divider-w, 1px) !important;
   border-right-color:var(--slot-divider-c, var(--border)) !important;
   border-right-style:solid !important;
+}
+/* বিরতি কলামের বাঁ পাশেও same divider — যাতে বিরতি কলামের দুই পাশ স্পষ্ট আলাদা */
+.routine-table thead th.col-break,
+.routine-table tbody td.col-break{
+  border-left-width:var(--slot-divider-w, 1px) !important;
+  border-left-color:var(--slot-divider-c, var(--border)) !important;
+  border-left-style:solid !important;
 }
 .routine-table td.col-sl{background:var(--sl-bg);color:var(--sl-text);text-align:center;font-weight:700;position:sticky;left:0;z-index:5;min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w);font-size:var(--name-font);padding:4px 3px}
 .routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:var(--sl-col-w);z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);padding:4px 8px;cursor:pointer}
@@ -3944,39 +3952,16 @@ input[type="range"]::-moz-range-thumb{
   .row-controls{display:none !important}
   .col-handle{display:none !important}
   @page{size:A3 landscape;margin:8mm}
-  @media print{
-    .print-header{display:block !important;text-align:center;margin-bottom:8px;padding:0;border:none}
-    .print-header h1{margin:0;font-size:18px;color:#0f766e;font-weight:800}
-    .print-header .sub{display:none !important}
-  }
-  /* 🆕 PRINT-HEADER ON SCREEN — শুধু কলেজের নাম, center, bold; সাবটাইটেল ও background সরানো */
-  .print-header{
-    display:block;
-    text-align:center;
-    padding:6px 8px 4px;          /* minimal vertical padding — fake gap সরানো */
-    margin:0 0 4px;
-    background:none;               /* সবুজ gradient সরানো */
-    border:none;                   /* border সরানো */
-    border-radius:0;
-  }
-  .print-header h1{
-    margin:0;
-    font-size:22px;
-    font-weight:800;
-    color:#0f766e;
-    letter-spacing:.3px;
-    line-height:1.2;
-  }
-  .print-header .sub{
-    display:none !important;       /* সাবটাইটেল hide করি — ব্যবহারকারী নির্দেশনা */
-  }
-  @media (max-width:760px){
-    .print-header{padding:5px 6px 3px;margin-bottom:3px}
-    .print-header h1{font-size:16px;letter-spacing:.1px}
-  }
-  @media (max-width:420px){
-    .print-header h1{font-size:14px;line-height:1.25}
-  }
+  .print-header{display:block !important;text-align:center;margin-bottom:8px;padding:0;border:none}
+  .print-header h1{margin:0;font-size:18px;color:#0f766e;font-weight:800}
+  .print-header .sub{display:none !important}
+}
+/* 🆕 PRINT-HEADER — শুধু print-এ দেখাবে, screen-এ সম্পূর্ণ hide (user নির্দেশনা)
+   ─────────────────────────────────────────────────────────────────────
+   ব্যবহারকারী চান screen view-এ print-header block সম্পূর্ণ remove —
+   কোনো কলেজের নাম, subtitle বা ফাঁকা জায়গা থাকবে না। শুধু print-এ visible। */
+.print-header{
+  display:none !important;
 }
 /* 🆕 print-header এখন screen-এ-ও visible (উপরের নতুন rules অনুযায়ী) — display:none সরানো */
 
