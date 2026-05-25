@@ -713,12 +713,19 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   position:relative;
   background:var(--surface);
   height:var(--row-h);
-  /* Enforce minimum height to prevent content collapse */
+  /* 🛡 STRICT HEIGHT — কোনোভাবেই content cell-কে বাড়াতে পারবে না।
+     ✓ চিহ্ন, badge, multi-line text, কোনো কিছুই row বড় করবে না।
+     Settings (compact/normal) থেকে --row-h আসে — সেটাই চূড়ান্ত। */
   min-height:var(--row-h);
-  max-height:auto;
+  max-height:var(--row-h);
   box-sizing:border-box;
   /* STRICT: nothing leaks across cell boundaries */
   overflow:hidden;
+}
+/* tr-এও height লক — কিছু ব্রাউজার tr ignore করে, তবুও safety */
+.routine-table tbody tr{
+  height:var(--row-h);
+  max-height:var(--row-h);
 }
 /* Sticky cells need overflow visible for shadows but content stays clipped via cell-content */
 .routine-table td.col-sl,
@@ -2380,6 +2387,155 @@ input[type="range"]::-moz-range-thumb{
 }
 .te-bulk-trigger:hover{filter:brightness(1.1)}
 
+/* ⚡ Quick-Grid trigger button — emerald accent, primary action */
+.te-quickgrid-trigger{
+  font-size:11.5px;font-weight:700;
+  padding:5px 10px;border-radius:6px;
+  background:linear-gradient(135deg,#10b981 0%,#059669 100%);
+  color:#fff;border:none;cursor:pointer;
+  white-space:nowrap;
+  box-shadow:0 2px 4px rgba(16,185,129,.3);
+}
+.te-quickgrid-trigger:hover{filter:brightness(1.08);transform:translateY(-1px)}
+
+/* ⚡ Quick-Grid Modal — scoped .qg-* */
+#teQuickGridModal .modal{max-width:min(1100px, 96vw)}
+.qg-help{
+  background:linear-gradient(180deg,#ecfdf5 0%,#d1fae5 100%);
+  border-left:3px solid #059669;
+  padding:10px 12px;border-radius:8px;
+  font-size:12.5px;line-height:1.55;color:var(--text);
+  margin-bottom:12px;
+}
+.qg-help b{color:#065f46;font-weight:700}
+.qg-subjects-bar{
+  display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;
+  padding:9px 12px;background:var(--surface-2);
+  border-radius:8px;margin-bottom:12px;
+}
+.qg-sb-lbl{font-size:12.5px;font-weight:700;color:var(--text);margin-top:4px}
+.qg-sub-chips{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.qg-sub-chip{
+  font-size:12px;font-weight:600;
+  padding:5px 12px;border-radius:99px;
+  border:1px solid var(--border);background:var(--surface);
+  color:var(--text);cursor:pointer;transition:var(--transition);
+  user-select:none;display:inline-flex;align-items:center;gap:5px;
+}
+.qg-sub-chip:hover{border-color:#10b981;color:#059669}
+.qg-sub-chip.active{
+  background:#10b981;color:#fff;border-color:#059669;
+  box-shadow:0 2px 4px rgba(16,185,129,.3);
+}
+.qg-sub-chip .qg-sub-count{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:18px;padding:0 4px;border-radius:99px;
+  background:rgba(255,255,255,.25);font-size:10.5px;font-weight:700;
+}
+.qg-sub-chip.active .qg-sub-count{background:rgba(255,255,255,.3)}
+.qg-sub-chip:not(.active) .qg-sub-count{background:#dcfce7;color:#166534}
+
+.qg-grids{
+  display:flex;flex-direction:column;gap:14px;
+  max-height:55vh;overflow-y:auto;padding:2px;
+}
+.qg-grid-block{
+  border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;background:var(--surface);
+}
+.qg-grid-head{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:9px 12px;
+  background:linear-gradient(180deg,#ecfdf5 0%,#f0fdf4 100%);
+  border-bottom:1px solid #86efac;
+}
+.qg-grid-head .qg-subj-name{
+  font-size:14px;font-weight:800;color:#065f46;
+  display:flex;align-items:center;gap:6px;
+}
+.qg-grid-head .qg-count{
+  margin-left:auto;font-size:12px;font-weight:700;
+  padding:3px 11px;border-radius:99px;
+  background:#dcfce7;color:#065f46;
+}
+.qg-grid-head .qg-mini-actions{display:flex;gap:5px;flex-wrap:wrap}
+.qg-grid-head .qg-mini-btn{
+  font-size:11px;font-weight:600;
+  padding:3px 9px;border-radius:5px;
+  border:1px solid var(--border);background:var(--surface);
+  color:var(--text-2);cursor:pointer;
+  transition:var(--transition);
+}
+.qg-grid-head .qg-mini-btn:hover{border-color:#10b981;color:#059669;background:#ecfdf5}
+.qg-grid-head .qg-mini-btn.danger:hover{border-color:#dc2626;color:#dc2626;background:#fee2e2}
+
+.qg-table-wrap{overflow-x:auto;padding:2px}
+.qg-table{
+  width:100%;border-collapse:collapse;
+  font-size:12.5px;table-layout:fixed;
+}
+.qg-table th, .qg-table td{
+  border:1px solid var(--border);padding:0;text-align:center;
+  vertical-align:middle;height:38px;
+}
+.qg-table th{
+  background:var(--surface-2);font-weight:700;color:var(--text);
+  font-size:11.5px;
+}
+.qg-table th.qg-row-head{
+  position:sticky;left:0;z-index:2;background:var(--surface-2);
+  text-align:right;padding-right:8px;min-width:80px;
+}
+.qg-table td.qg-row-head{
+  position:sticky;left:0;z-index:1;background:var(--surface);
+  font-weight:700;text-align:right;padding-right:8px;color:var(--text);
+  font-size:12px;
+}
+.qg-cell{
+  cursor:pointer;transition:.12s;user-select:none;
+  position:relative;
+}
+.qg-cell.empty{background:var(--surface)}
+.qg-cell.empty:hover{background:#ecfdf5;box-shadow:inset 0 0 0 2px #86efac}
+.qg-cell.selected{
+  background:#16a34a;color:#fff;
+  box-shadow:inset 0 0 0 2px #166534;
+  font-weight:700;font-size:14px;
+}
+.qg-cell.selected:hover{background:#15803d}
+.qg-cell.selected::after{content:'✓'}
+.qg-cell.taken{background:#fef3c7;color:#92400e}
+.qg-cell.taken:hover{background:#fde68a}
+.qg-cell.taken-other{
+  background:repeating-linear-gradient(45deg, #fee2e2, #fee2e2 4px, #fecaca 4px, #fecaca 8px);
+  color:#991b1b;font-size:10px;font-weight:700;
+}
+.qg-cell.taken-other:hover{filter:brightness(1.05)}
+.qg-cell .qg-other-name{
+  font-size:9.5px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  padding:0 3px;
+}
+
+.qg-empty-msg{
+  text-align:center;color:var(--text-2);font-size:13px;
+  padding:24px 12px;background:var(--surface-2);border-radius:8px;
+  border:1px dashed var(--border);
+}
+.qg-summary{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  padding:10px 14px;border-radius:8px;
+  background:linear-gradient(135deg,#10b981 0%,#059669 100%);
+  color:#fff;font-size:13.5px;font-weight:700;margin-top:12px;
+}
+.qg-summary .qg-summary-meta{font-size:11.5px;font-weight:500;opacity:.92}
+@media (max-width:560px){
+  .qg-subjects-bar{flex-direction:column;align-items:stretch}
+  .qg-table{font-size:11px}
+  .qg-table th, .qg-table td{height:34px}
+  .qg-cell.selected{font-size:12px}
+}
+
 /* ───────── 🆕 INLINE CHIP PICKER (Subject / Class / Section)
    পুরোনো Big-Picker-এর বদলে — এক ক্লিকে select, কোনো popup নেই ───────── */
 .te-inline-pickrow{
@@ -2963,12 +3119,70 @@ input[type="range"]::-moz-range-thumb{
   word-break:break-word;
 }
 .cell-subject.is-shared-full .cell-shared-note{color:#166534}
-/* 🆕 Auto-generated "(N দিন)" label — লাল ছোট ফন্ট, ব্যবহারকারীর নির্দেশনা মতে */
+/* 🆕 Auto-generated "(N দিন)" label — লাল ছোট ফন্ট */
 .cell-subject .cell-shared-note.cell-auto-days{
   color:#dc2626 !important;
   font-style:normal;
   font-weight:700;
-  font-size:calc(var(--subject-font, 13px) - 4px);
+  font-size:9.5px;            /* fixed small — সব density-তে একই, row-fit নিশ্চিত */
+  line-height:1;
+  margin-top:0;
+  max-height:1em;
+  -webkit-line-clamp:1;
+}
+/* 🆕 Day-names line (শনি, রবি, সোম) — deep blue, ছোট, পরিষ্কার */
+.cell-subject .cell-auto-day-names{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#1e40af !important;
+  font-weight:600;
+  font-style:normal;
+  font-size:9.5px;
+  line-height:1;
+  margin-top:0;
+  max-height:1em;
+  letter-spacing:.1px;
+}
+.cell-subject.is-shared-full .cell-auto-day-names{color:#166534 !important}
+
+/* Shared-note (user-typed) ও tighten করি subject-row-এর fit ensure-এ */
+.cell-subject .cell-shared-note{
+  font-size:10px;
+  line-height:1;
+  max-height:1em;
+  -webkit-line-clamp:1;
+  margin-top:0;
+}
+
+/* 🛡 STRICT HEIGHT GUARD — সকল row, সকল cell-এ প্রযোজ্য (subject + class + section + name + SL)
+   ─────────────────────────────────────────────────────────────────────
+   কোনো অবস্থাতেই content cell-কে বাড়াতে পারবে না — ✓ badge, conflict icon,
+   multi-line text, sharedNote, কিছুই row উচ্চতা প্রভাবিত করবে না।
+   Settings থেকে আসা --row-h ও --cell-pad আমাদের চূড়ান্ত boundary।
+   Density (compact/normal) স্বয়ংক্রিয়ভাবে কাজ করবে কারণ আমরা
+   var()-ই ব্যবহার করছি, hard-code না। */
+.routine-table td .cell-content{
+  height:100%;
+  max-height:100%;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+/* Subject row বিশেষ — দুই-তিন লাইন stack করতে দরকার (subject + (N দিন) + day names) */
+.routine-table td.cell-subject .cell-content{
+  flex-direction:column;
+  justify-content:center;
+  white-space:normal;
+  gap:0;
+}
+.routine-table td.cell-subject .cell-main-subject{
+  font-size:var(--subject-font, 13px);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  max-width:100%;
+  line-height:1.1;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -3691,11 +3905,46 @@ input[type="range"]::-moz-range-thumb{
   .row-controls{display:none !important}
   .col-handle{display:none !important}
   @page{size:A3 landscape;margin:8mm}
-  .print-header{display:block !important;text-align:center;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #0f766e}
-  .print-header h1{margin:0 0 4px;font-size:18px;color:#0f766e}
-  .print-header .sub{font-size:13px;color:#475569}
+  @media print{
+    .print-header{display:block !important;text-align:center;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #0f766e}
+    .print-header h1{margin:0 0 4px;font-size:18px;color:#0f766e}
+    .print-header .sub{font-size:13px;color:#475569}
+  }
+  /* 🆕 PRINT-HEADER ON SCREEN — User instruction: top-of-routine, center, bold */
+  .print-header{
+    display:block;
+    text-align:center;
+    padding:14px 12px 12px;
+    margin-bottom:8px;
+    background:linear-gradient(180deg, rgba(15,118,110,.06) 0%, transparent 100%);
+    border-bottom:1.5px solid #0f766e;
+    border-radius:8px 8px 0 0;
+  }
+  .print-header h1{
+    margin:0 0 4px;
+    font-size:22px;
+    font-weight:800;
+    color:#0f766e;
+    letter-spacing:.3px;
+    line-height:1.2;
+  }
+  .print-header .sub{
+    font-size:14px;
+    font-weight:700;
+    color:#475569;
+    margin:0;
+  }
+  @media (max-width:760px){
+    .print-header{padding:10px 8px 9px;margin-bottom:6px}
+    .print-header h1{font-size:16px;letter-spacing:.1px}
+    .print-header .sub{font-size:12px}
+  }
+  @media (max-width:420px){
+    .print-header h1{font-size:14px;line-height:1.25}
+    .print-header .sub{font-size:11px}
+  }
 }
-.print-header{display:none}
+/* 🆕 print-header এখন screen-এ-ও visible (উপরের নতুন rules অনুযায়ী) — display:none সরানো */
 
 /* =============================================================
    VIEW-ONLY MODE  (now applies to Teacher role)
@@ -5870,6 +6119,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
               <button type="button" class="te-toggle-all-btn" onclick="_teExpandAll()" title="সব এন্ট্রি একসাথে খুলুন">▾ সব খুলুন</button>
               <button type="button" class="te-toggle-all-btn" onclick="_teCollapseAll()" title="সব এন্ট্রি একসাথে বন্ধ করুন">▸ সব বন্ধ করুন</button>
+              <button type="button" class="te-quickgrid-trigger" id="teQuickGridBtn" onclick="_teQuickGridOpen()" title="বিষয়ভিত্তিক গ্রিডে এক ক্লিকে অনেক এন্ট্রি যোগ — শিক্ষকের জন্য দ্রুততম উপায়">⚡ <span class="lbl">দ্রুত গ্রিড</span></button>
               <button type="button" class="te-bulk-trigger" id="teBulkBtn" onclick="_teBulkOpen()" title="মাস্টার নির্বাচন থেকে একসাথে অনেক এন্ট্রি তৈরি করুন">🪄 <span class="lbl">বাল্ক তৈরি</span></button>
               <button type="button" class="te-add-btn" id="teAddBtn" onclick="_teSmartAdd()">➕ নতুন এন্ট্রি</button>
             </div>
@@ -5992,6 +6242,31 @@ body[data-role="manager"] .teacher-only{display:none !important}
     <div class="modal-footer">
       <button class="tool-btn" onclick="closeModal('teBulkModal')">বাতিল</button>
       <button class="tool-btn primary" onclick="_teBulkApply()">✓ এন্ট্রি তৈরি করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- ⚡ QUICK GRID — বিষয়ভিত্তিক class×section গ্রিডে এক ক্লিকে অনেক entry -->
+<div class="modal-overlay" id="teQuickGridModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h2>⚡ দ্রুত পাঠদান গ্রিড</h2>
+      <button class="modal-close" onclick="closeModal('teQuickGridModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="qg-help">
+        প্রতিটি বিষয়ের জন্য <b>শ্রেণি × শাখা</b> গ্রিডে যে cell ক্লিক করবেন, ঠিক সেই combination-এর জন্য entry তৈরি হবে। বর্তমান entries automatic-ভাবে গ্রিডে দেখানো হবে — পরিবর্তন করলে সিঙ্ক হবে।
+      </div>
+      <div class="qg-subjects-bar">
+        <span class="qg-sb-lbl">📖 বিষয় নির্বাচন:</span>
+        <div class="qg-sub-chips" id="qgSubChips"></div>
+      </div>
+      <div class="qg-grids" id="qgGrids"></div>
+      <div class="qg-summary" id="qgSummary"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="tool-btn" onclick="closeModal('teQuickGridModal')">বাতিল</button>
+      <button class="tool-btn primary" onclick="_teQuickGridApply()">✓ এন্ট্রি সংরক্ষণ</button>
     </div>
   </div>
 </div>
@@ -8429,25 +8704,46 @@ function renderTable(){
           // 🆕 (N দিন) auto-label — shared cell + ৬-এর কম দিন হলে এবং sharedNote ফাঁকা হলে
           //   manual sharedNote থাকলে সেটাই priority — auto label override করবে না
           let autoDaysLabel = '';
+          let autoDayNames = '';   // 🆕 দিনের নামের তালিকা — "শনি, রবি, সোম"
           if(isSharedCell && !(cell.sharedNote && cell.sharedNote.trim())){
             // single-part: cell.days থেকে
             // multi-part: শুধু এই (subject)-এর days
             let n = 0;
+            let usedDays = [];
             if(Array.isArray(cell.parts) && cell.parts.length){
               cell.parts.forEach(p => {
-                if((p.subject||'') === mainSubject && Array.isArray(p.days)) n = Math.max(n, p.days.length);
+                if((p.subject||'') === mainSubject && Array.isArray(p.days) && p.days.length > usedDays.length){
+                  usedDays = p.days;
+                }
               });
-              if(!n) n = Array.isArray(cell.days) ? cell.days.length : 0;
+              if(!usedDays.length) usedDays = Array.isArray(cell.days) ? cell.days : [];
+              n = usedDays.length;
             } else if(Array.isArray(cell.days)){
-              n = cell.days.length;
+              usedDays = cell.days;
+              n = usedDays.length;
             }
             if(n > 0 && n < 6){
               autoDaysLabel = '('+toBnNum(n)+' দিন)';
+              // 🆕 দিনের নাম তালিকা — WEEK_DAYS order মেনে, ছোট form
+              try{
+                const DAY_SHORT_BN = {
+                  Sat:'শনি', Sun:'রবি', Mon:'সোম',
+                  Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ', Fri:'শুক্র'
+                };
+                const orderRef = (typeof WEEK_DAYS !== 'undefined' && Array.isArray(WEEK_DAYS))
+                  ? WEEK_DAYS.map(d => d.key)
+                  : ['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
+                const orderedDays = orderRef.filter(k => usedDays.indexOf(k) >= 0);
+                autoDayNames = orderedDays.map(k => DAY_SHORT_BN[k] || k).join(', ');
+              }catch(_){}
             }
           }
           const noteHTML = (isSharedCell && cell.sharedNote && cell.sharedNote.trim())
                           ? `<div class="cell-shared-note" title="${esc(cell.sharedNote)}">${esc(cell.sharedNote)}</div>`
-                          : (autoDaysLabel ? `<div class="cell-shared-note cell-auto-days" title="স্বয়ংক্রিয়: এই বিষয়ের জন্য ${esc(autoDaysLabel.replace(/[()]/g,''))}">${esc(autoDaysLabel)}</div>` : '');
+                          : (autoDaysLabel
+                            ? `<div class="cell-shared-note cell-auto-days" title="স্বয়ংক্রিয়: ${esc(autoDaysLabel.replace(/[()]/g,''))} — ${esc(autoDayNames)}">${esc(autoDaysLabel)}</div>` +
+                              (autoDayNames ? `<div class="cell-auto-day-names" title="${esc(autoDayNames)}">${esc(autoDayNames)}</div>` : '')
+                            : '');
           const sharedCovCls = isFullShared ? ' is-shared-full' : (isHalfShared ? ' is-shared-half' : '');
           body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''}${isSharedCell?' is-shared-cell':''}${sharedCovCls}${isSpecialCell?' is-special-cell':''}${isFixedCell && !isSpecialCell?' is-fixed-cell':''}${isPartial && !isSharedCell?' is-partial-coverage':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}${sharedTitle}${covData}>
             <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
@@ -10895,6 +11191,445 @@ function _teBulkApply(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   ⚡ QUICK-GRID — Subject-First class×section grid picker
+   ─────────────────────────────────────────────────────────────────
+   শিক্ষকদের জন্য দ্রুততম entry method।
+   প্রতি বিষয়ের জন্য (class × section) গ্রিড — এক ক্লিকে cell on/off।
+   বিদ্যমান entries-এর সাথে synchronization:
+     • আগে existing entry থাকলে cell selected হয়ে দেখাবে
+     • cell deselect করলে সেই entry মুছবে
+     • cell select করলে নতুন entry যোগ হবে (default ৬ দিন, ফাঁকা slots)
+   অন্য entries-এর settings (days, slots, shared, fixed, notes) ছোঁয়া হয় না।
+═══════════════════════════════════════════════════════════════════ */
+let _qgState = null;
+/*
+  _qgState shape:
+  {
+    tid: '...',
+    activeSub: 'গণিত',         // currently visible grid
+    subjects: ['গণিত', ...],
+    classes:  ['৬ষ্ঠ', ...],
+    sections: ['ক', 'খ', ...],
+    // map<subject, Set<"cls||sec">> — যা select করা আছে
+    selected: { 'গণিত': Set, 'বিজ্ঞান': Set, ... },
+    // map<subject, Map<"cls||sec", entry>> — existing entries
+    existingByKey: { 'গণিত': Map<key, entry>, ... },
+    // অন্য শিক্ষকদের assignment — visual hint
+    otherTeachersByKey: Map<"sub||cls||sec", [teacherName, ...]>
+  }
+*/
+
+function _teQuickGridOpen(){
+  if(typeof blockIfViewOnly === 'function' && blockIfViewOnly('দ্রুত গ্রিড')) return;
+  const tid = document.getElementById('tEditId') && document.getElementById('tEditId').value;
+  const t = (state.teachers||[]).find(x => x.id === tid);
+  if(!t){ try{ showToast('শিক্ষক পাওয়া যায়নি','error'); }catch(_){} return; }
+  if(typeof canEditTeacher === 'function' && !canEditTeacher(tid)){
+    try{ showToast('অনুমতি নেই','error'); }catch(_){} return;
+  }
+  // আগে DOM থেকে data sync — যাতে latest existing entries hisab-এ আসে
+  try{ _teSyncFromDOM(t); }catch(_){}
+
+  // বিষয়/শ্রেণি/শাখা উৎস:
+  //   ১. মাস্টার থেকে (যদি set করা থাকে)
+  //   ২. না থাকলে options-list থেকে (full set)
+  const subs = (Array.isArray(t.subjects) && t.subjects.length)
+    ? t.subjects.filter(Boolean) : _teOptions('subject');
+  const classes = (Array.isArray(t.classes) && t.classes.length)
+    ? t.classes.filter(Boolean) : _teOptions('class');
+  const sections = (Array.isArray(t.sections) && t.sections.length)
+    ? t.sections.filter(Boolean) : _teOptions('section');
+
+  if(!subs.length){
+    try{ showToast('❌ মাস্টারে কোনো বিষয় নেই — উপরের "যে বিষয়গুলো পড়ান"-এ বিষয় যোগ করুন','warning',4500); }catch(_){}
+    return;
+  }
+  if(!classes.length || !sections.length){
+    try{ showToast('❌ অপশনে শ্রেণি/শাখা যোগ করুন আগে','warning',4000); }catch(_){}
+    return;
+  }
+
+  // existing entries → selected map
+  const selected = {};
+  const existingByKey = {};
+  subs.forEach(s => {
+    selected[s] = new Set();
+    existingByKey[s] = new Map();
+  });
+  (t.teachingEntries || []).forEach(raw => {
+    const e = _teSanitizeEntry(raw);
+    if(!e.subject || !e.class || !e.section) return;
+    if(!selected[e.subject]){
+      // subject মাস্টারে নেই — যোগ করি যাতে data হারিয়ে না যায়
+      selected[e.subject] = new Set();
+      existingByKey[e.subject] = new Map();
+      if(subs.indexOf(e.subject) < 0) subs.push(e.subject);
+    }
+    const k = e.class + '||' + e.section;
+    selected[e.subject].add(k);
+    existingByKey[e.subject].set(k, e);
+    // class/section মাস্টারে না থাকলেও যোগ — যাতে দেখা যায়
+    if(classes.indexOf(e.class) < 0) classes.push(e.class);
+    if(sections.indexOf(e.section) < 0) sections.push(e.section);
+  });
+
+  // অন্য শিক্ষকদের assignment — visual hint
+  const otherTeachersByKey = new Map();
+  (state.teachers||[]).forEach(other => {
+    if(!other || other.id === t.id) return;
+    if(!Array.isArray(other.teachingEntries)) return;
+    other.teachingEntries.forEach(raw => {
+      const e = _teSanitizeEntry(raw);
+      if(!e.subject || !e.class || !e.section) return;
+      const k = e.subject + '||' + e.class + '||' + e.section;
+      if(!otherTeachersByKey.has(k)) otherTeachersByKey.set(k, []);
+      otherTeachersByKey.get(k).push(other.name || '—');
+    });
+  });
+
+  _qgState = {
+    tid: t.id,
+    activeSub: subs[0],
+    subjects: subs,
+    classes,
+    sections,
+    selected,
+    existingByKey,
+    otherTeachersByKey
+  };
+
+  _qgRenderSubChips();
+  _qgRenderGrids();
+  _qgRenderSummary();
+  openModal('teQuickGridModal');
+}
+
+function _qgRenderSubChips(){
+  const host = document.getElementById('qgSubChips');
+  if(!host || !_qgState) return;
+  host.innerHTML = _qgState.subjects.map(s => {
+    const n = _qgState.selected[s] ? _qgState.selected[s].size : 0;
+    const active = (s === _qgState.activeSub);
+    return `<span class="qg-sub-chip ${active?'active':''}" data-qg-sub="${_teEsc(s)}">
+      ${_teEsc(s)}<span class="qg-sub-count">${_teBnNum(n)}</span>
+    </span>`;
+  }).join('');
+  if(!host.dataset.qgBound){
+    host.addEventListener('click', _qgSubChipClick);
+    host.dataset.qgBound = '1';
+  }
+}
+
+function _qgSubChipClick(ev){
+  const chip = ev.target.closest('[data-qg-sub]');
+  if(!chip || !_qgState) return;
+  const s = chip.getAttribute('data-qg-sub');
+  if(!s || s === _qgState.activeSub) return;
+  _qgState.activeSub = s;
+  // active state update without full re-render
+  const host = document.getElementById('qgSubChips');
+  if(host){
+    host.querySelectorAll('.qg-sub-chip').forEach(c => {
+      c.classList.toggle('active', c.getAttribute('data-qg-sub') === s);
+    });
+  }
+  _qgRenderGrids();
+}
+
+function _qgRenderGrids(){
+  const host = document.getElementById('qgGrids');
+  if(!host || !_qgState) return;
+  const s = _qgState.activeSub;
+  if(!s){
+    host.innerHTML = '<div class="qg-empty-msg">কোনো বিষয় নির্বাচিত নয়</div>';
+    return;
+  }
+  const sel = _qgState.selected[s] || new Set();
+  const cls = _qgState.classes;
+  const secs = _qgState.sections;
+  const count = sel.size;
+
+  // header row — sections
+  const head = '<tr><th class="qg-row-head">শ্রেণি \\ শাখা</th>' +
+    secs.map(sec => `<th title="${_teEsc(sec)}">${_teEsc(sec)}</th>`).join('') + '</tr>';
+
+  // body rows — classes
+  const rows = cls.map(c => {
+    const cells = secs.map(sec => {
+      const k = c + '||' + sec;
+      const isSel = sel.has(k);
+      const otherKey = s + '||' + c + '||' + sec;
+      const others = _qgState.otherTeachersByKey.get(otherKey) || [];
+      let cellCls = 'qg-cell ';
+      let inner = '';
+      let title = '';
+      if(isSel){
+        cellCls += 'selected';
+        title = '✓ এই শিক্ষকের নামে assigned — ক্লিক করে বাদ দিন';
+      } else if(others.length){
+        cellCls += 'taken-other';
+        const names = others.join(', ');
+        inner = `<div class="qg-other-name" title="${_teEsc(names)}">👥 ${_teEsc(others[0])}${others.length>1?' +'+_teBnNum(others.length-1):''}</div>`;
+        title = `অন্য শিক্ষক(গণ): ${names} — ক্লিক করে এই শিক্ষককেও যোগ করুন (overlap)`;
+      } else {
+        cellCls += 'empty';
+        title = 'খালি — ক্লিক করে এই শিক্ষকের জন্য assign করুন';
+      }
+      return `<td class="${cellCls}" data-qg-key="${_teEsc(k)}" title="${_teEsc(title)}">${inner}</td>`;
+    }).join('');
+    return `<tr><td class="qg-row-head" title="${_teEsc(c)}">${_teEsc(c)}</td>${cells}</tr>`;
+  }).join('');
+
+  host.innerHTML = `
+    <div class="qg-grid-block">
+      <div class="qg-grid-head">
+        <span class="qg-subj-name">📖 ${_teEsc(s)}</span>
+        <span class="qg-count">${_teBnNum(count)} টি ক্লাস</span>
+        <div class="qg-mini-actions">
+          <button type="button" class="qg-mini-btn" data-qg-action="all">সব select</button>
+          <button type="button" class="qg-mini-btn danger" data-qg-action="none">সব clear</button>
+          <button type="button" class="qg-mini-btn" data-qg-action="invert">উল্টে দিন</button>
+          ${_qgState.subjects.length > 1
+            ? `<button type="button" class="qg-mini-btn" data-qg-action="copy-from-prev" title="পূর্ববর্তী বিষয়ের গ্রিড কপি">📋 আগের মতো</button>`
+            : ''}
+        </div>
+      </div>
+      <div class="qg-table-wrap">
+        <table class="qg-table">
+          <thead>${head}</thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  if(!host.dataset.qgBound){
+    host.addEventListener('click', _qgGridClick);
+    host.dataset.qgBound = '1';
+  }
+}
+
+function _qgGridClick(ev){
+  if(!_qgState) return;
+  // mini action button
+  const actionBtn = ev.target.closest('[data-qg-action]');
+  if(actionBtn){
+    const a = actionBtn.getAttribute('data-qg-action');
+    _qgMiniAction(a);
+    return;
+  }
+  // cell click
+  const cell = ev.target.closest('.qg-cell');
+  if(!cell) return;
+  const k = cell.getAttribute('data-qg-key');
+  if(!k) return;
+  const s = _qgState.activeSub;
+  const sel = _qgState.selected[s];
+  if(!sel) return;
+  if(sel.has(k)){
+    sel.delete(k);
+    cell.classList.remove('selected');
+    // taken-other হিসেবে ফিরে যাবে কি না দেখি
+    const [c, sec] = k.split('||');
+    const otherKey = s + '||' + c + '||' + sec;
+    const others = _qgState.otherTeachersByKey.get(otherKey) || [];
+    if(others.length){
+      cell.classList.add('taken-other');
+      cell.innerHTML = `<div class="qg-other-name" title="${_teEsc(others.join(', '))}">👥 ${_teEsc(others[0])}${others.length>1?' +'+_teBnNum(others.length-1):''}</div>`;
+    } else {
+      cell.classList.add('empty');
+      cell.innerHTML = '';
+    }
+  } else {
+    sel.add(k);
+    cell.classList.remove('empty','taken-other');
+    cell.classList.add('selected');
+    cell.innerHTML = '';
+  }
+  _qgUpdateChipCount(s);
+  _qgRenderSummary();
+}
+
+function _qgMiniAction(action){
+  if(!_qgState) return;
+  const s = _qgState.activeSub;
+  const sel = _qgState.selected[s];
+  if(!sel) return;
+  const cls = _qgState.classes;
+  const secs = _qgState.sections;
+  if(action === 'all'){
+    cls.forEach(c => secs.forEach(sec => sel.add(c + '||' + sec)));
+  } else if(action === 'none'){
+    sel.clear();
+  } else if(action === 'invert'){
+    const allKeys = [];
+    cls.forEach(c => secs.forEach(sec => allKeys.push(c + '||' + sec)));
+    const newSel = new Set();
+    allKeys.forEach(k => { if(!sel.has(k)) newSel.add(k); });
+    _qgState.selected[s] = newSel;
+  } else if(action === 'copy-from-prev'){
+    // পূর্ববর্তী বিষয় (active-এর আগেরটি) থেকে কপি
+    const idx = _qgState.subjects.indexOf(s);
+    if(idx <= 0){
+      try{ showToast('পূর্ববর্তী বিষয় নেই','warning',2000); }catch(_){}
+      return;
+    }
+    const prev = _qgState.subjects[idx - 1];
+    const prevSel = _qgState.selected[prev];
+    if(!prevSel || !prevSel.size){
+      try{ showToast(`"${prev}"-এ কিছু selected নেই`,'warning',2000); }catch(_){}
+      return;
+    }
+    _qgState.selected[s] = new Set(prevSel);
+    try{ showToast(`✓ "${prev}" থেকে কপি করা হয়েছে`,'success',2000); }catch(_){}
+  }
+  _qgRenderGrids();
+  _qgUpdateChipCount(s);
+  _qgRenderSummary();
+}
+
+function _qgUpdateChipCount(subject){
+  if(!_qgState) return;
+  const host = document.getElementById('qgSubChips');
+  if(!host) return;
+  const chips = host.querySelectorAll('[data-qg-sub]');
+  for(let i=0; i<chips.length; i++){
+    if(chips[i].getAttribute('data-qg-sub') === subject){
+      const cnt = chips[i].querySelector('.qg-sub-count');
+      if(cnt) cnt.textContent = _teBnNum(_qgState.selected[subject].size);
+      break;
+    }
+  }
+}
+
+function _qgRenderSummary(){
+  const host = document.getElementById('qgSummary');
+  if(!host || !_qgState) return;
+  let total = 0, perSubj = [];
+  _qgState.subjects.forEach(s => {
+    const n = _qgState.selected[s] ? _qgState.selected[s].size : 0;
+    total += n;
+    if(n > 0) perSubj.push(s + '(' + _teBnNum(n) + ')');
+  });
+  const meta = perSubj.length ? perSubj.join(' · ') : 'কোনো বিষয় থেকে কোনো ক্লাস নির্বাচিত নয়';
+  host.innerHTML = `
+    <span>✓ মোট <b>${_teBnNum(total)}</b> টি teaching entry তৈরি/আপডেট হবে</span>
+    <span class="qg-summary-meta">${_teEsc(meta)}</span>
+  `;
+}
+
+/* ── Apply: selected map → teachingEntries[] ─────────────────── */
+function _teQuickGridApply(){
+  if(!_qgState) return;
+  const t = (state.teachers||[]).find(x => x.id === _qgState.tid);
+  if(!t){ try{ showToast('শিক্ষক পাওয়া যায়নি','error'); }catch(_){} return; }
+  if(typeof canEditTeacher === 'function' && !canEditTeacher(t.id)){
+    try{ showToast('অনুমতি নেই','error'); }catch(_){} return;
+  }
+
+  // আগে latest DOM sync (যাতে অন্য field-এর changes না হারায়)
+  try{ _teSyncFromDOM(t); }catch(_){}
+  if(!Array.isArray(t.teachingEntries)) t.teachingEntries = [];
+
+  // current entries-কে (subject||cls||sec) দ্বারা index করি
+  const currentByKey = new Map();
+  t.teachingEntries.forEach((raw, i) => {
+    const e = _teSanitizeEntry(raw);
+    if(e.subject && e.class && e.section){
+      const k = e.subject + '||' + e.class + '||' + e.section;
+      currentByKey.set(k, i);
+    }
+  });
+
+  // selected set (subject||cls||sec)
+  const selectedFull = new Set();
+  _qgState.subjects.forEach(s => {
+    const sel = _qgState.selected[s];
+    if(!sel) return;
+    sel.forEach(k => {
+      const [c, sec] = k.split('||');
+      selectedFull.add(s + '||' + c + '||' + sec);
+    });
+  });
+
+  // STEP 1: deselected entries মুছি (যেগুলো current-এ ছিল কিন্তু selected-এ নেই)
+  //   — শুধু (subject, class, section) match হলে যেগুলো রাখা হয়নি, সেগুলোই
+  //   — অন্য entries-এর settings (days, slots, shared, fixed, notes) intact
+  const toRemoveIndices = [];
+  t.teachingEntries.forEach((raw, i) => {
+    const e = _teSanitizeEntry(raw);
+    if(!e.subject || !e.class || !e.section) return;     // ফাঁকা entry skip
+    const k = e.subject + '||' + e.class + '||' + e.section;
+    // শুধু যে subject quick-grid-এ চিহ্নিত, সেগুলোর entries-এ deselection apply
+    if(_qgState.subjects.indexOf(e.subject) >= 0 && !selectedFull.has(k)){
+      toRemoveIndices.push(i);
+    }
+  });
+  // descending order — index shift এড়াতে
+  toRemoveIndices.sort((a,b) => b-a).forEach(i => t.teachingEntries.splice(i, 1));
+
+  // STEP 2: নতুন selected entries যোগ
+  const dayKeys = (typeof _teActiveDays === 'function')
+    ? _teActiveDays().map(d => d.key) : ['Sat','Sun','Mon','Tue','Wed','Thu'];
+  let added = 0, removed = toRemoveIndices.length;
+  selectedFull.forEach(fullKey => {
+    if(currentByKey.has(fullKey)) return;   // already exists — keep as is
+    const [s, c, sec] = fullKey.split('||');
+    const e = _teNewEntry();
+    e.subject = s;
+    e.class = c;
+    e.section = sec;
+    e.days = dayKeys.slice();
+    e.daysPerWeek = dayKeys.length;
+    e.preferredSlots = [];
+    t.teachingEntries.push(e);
+    added++;
+  });
+
+  // মাস্টার subjects update — quick-grid-এ ব্যবহৃত সব subject মাস্টারে যোগ
+  if(!Array.isArray(t.subjects)) t.subjects = [];
+  _qgState.subjects.forEach(s => {
+    if(_qgState.selected[s].size > 0 && t.subjects.indexOf(s) < 0){
+      t.subjects.push(s);
+    }
+  });
+  // অনুরূপ classes/sections — যেগুলো select-এ ব্যবহৃত
+  if(!Array.isArray(t.classes)) t.classes = [];
+  if(!Array.isArray(t.sections)) t.sections = [];
+  const usedCls = new Set();
+  const usedSec = new Set();
+  _qgState.subjects.forEach(s => {
+    (_qgState.selected[s]||new Set()).forEach(k => {
+      const [c, sec] = k.split('||');
+      usedCls.add(c); usedSec.add(sec);
+    });
+  });
+  usedCls.forEach(c => { if(t.classes.indexOf(c) < 0) t.classes.push(c); });
+  usedSec.forEach(sec => { if(t.sections.indexOf(sec) < 0) t.sections.push(sec); });
+
+  closeModal('teQuickGridModal');
+  try{ renderTeachingEntries(t); }catch(_){}
+  try{ renderTeachingLiveSummary(t); }catch(_){}
+  try{ _teRefreshMasterIndicators(t); }catch(_){}
+
+  // chip-pickers update (DOM-এ মাস্টার selection-ও refresh)
+  try{
+    if(typeof renderChipPicker === 'function'){
+      const subList = (state.options && state.options.subject) || [];
+      renderChipPicker('subjectsPicker', subList, t.subjects);
+      renderChipPicker('classesPicker', (state.options && state.options.class) || [], t.classes);
+      renderChipPicker('sectionsPicker', (state.options && state.options.section) || [], t.sections);
+    }
+  }catch(_){}
+
+  let msg = '✅ গ্রিড সংরক্ষিত';
+  if(added > 0) msg += ` · +${_teBnNum(added)} নতুন`;
+  if(removed > 0) msg += ` · −${_teBnNum(removed)} বাদ`;
+  if(added === 0 && removed === 0) msg = 'কোনো পরিবর্তন হয়নি';
+  try{ showToast(msg, 'success', 3500); }catch(_){}
+  _qgState = null;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    🆕 INLINE CHIP PICKER + ENTRY DONE
    ─────────────────────────────────────────────────────────────────
    • _teInlinePick           → chip click-এ subject/class/section সেট
@@ -12364,25 +13099,33 @@ function saveTeacher(){
     t.unavailableDays = getDayPickerValues('unavailableDaysPicker');
     t.notes = document.getElementById('tEditNotes').value.trim();
     // 📋 Multiple Teaching Entries — DOM → state, options-এ নতুন মান যোগ
-    // 🆕 entries-এর snapshot আগে নিয়ে রাখি — পরিবর্তন হলে preview চালাব
-    let entriesSnapshot = '';
-    try{ entriesSnapshot = JSON.stringify(t.teachingEntries||[]); }catch(_){}
     try{ saveTeachingEntries(t); }catch(_){}
     try{ saveSpecialSchedule(t); }catch(_){}
     // Sync mainSubject into subjects if not already present
     if(t.mainSubject && !t.subjects.includes(t.mainSubject)){
       t.subjects.unshift(t.mainSubject);
     }
-    // 🆕 REAL-TIME PREVIEW PLACEMENT (নির্দেশনা ৫)
-    // — শুধু entries বদলালে preview চালাই — যাতে existing auto-routine
-    //   result কারণহীনভাবে reset না হয়
-    let entriesChanged = false;
+    // 🆕 REAL-TIME PREVIEW PLACEMENT (নির্দেশনা ২ — এবার সবসময়, conflict সহ)
+    // ────────────────────────────────────────────────────────────────
+    // Save করার সাথে সাথে এই শিক্ষকের entries রুটিনে প্রাথমিক অবস্থানে
+    // বসানো হবে। preview = preliminary, চূড়ান্ত নয় — auto-routine
+    // চাপলে conflict-resolve সহ optimize হবে। User-এর স্পষ্ট নির্দেশনা।
+    // ────────────────────────────────────────────────────────────────
     try{
-      const afterSnapshot = JSON.stringify(t.teachingEntries||[]);
-      entriesChanged = (afterSnapshot !== entriesSnapshot);
-    }catch(_){ entriesChanged = false; }
-    if(entriesChanged){
-      try{ _previewPlaceForTeacher(t); }catch(err){ console.warn('preview placement skipped:', err); }
+      const previewResult = _previewPlaceForTeacher(t);
+      if(previewResult && previewResult.placed > 0){
+        // হালকা toast — silent না, কিন্তু intrusive না
+        setTimeout(() => {
+          try{
+            showToast(
+              `🔍 প্রিভিউ: ${toBnNum(previewResult.placed)}/${toBnNum(previewResult.usedEntries||0)} entry রুটিনে বসানো হয়েছে — চূড়ান্ত করতে "স্বয়ংক্রিয় রুটিন" চাপুন`,
+              'info', 4000
+            );
+          }catch(_){}
+        }, 500);
+      }
+    }catch(err){
+      console.warn('preview placement skipped:', err);
     }
   }
   t.onLeave = document.getElementById('tEditLeave').checked;
