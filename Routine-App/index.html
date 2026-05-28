@@ -1553,6 +1553,18 @@ input[type="range"]::-moz-range-thumb{
 /* =============================================================
    CELL EDITOR POPOVER
 ============================================================= */
+/* 🆕 Cell editor backdrop — modal-এর পেছনে dim overlay */
+.cell-editor-backdrop{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:199;
+  opacity:0;pointer-events:none;
+  transition:opacity .15s ease;
+}
+.cell-editor-backdrop.show{
+  opacity:1;pointer-events:auto;
+}
+
 .cell-editor{
   position:fixed;
   background:var(--surface);
@@ -1560,22 +1572,24 @@ input[type="range"]::-moz-range-thumb{
   border-radius:12px;
   box-shadow:var(--shadow-lg);
   z-index:200;
-  width:280px;
-  max-height:380px;
+  width:min(360px, 92vw);
+  max-height:min(80vh, 640px);
   display:none;
   flex-direction:column;
   animation:popIn .15s ease;
 }
 .cell-editor.show{display:flex}
-@keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+@keyframes popIn{from{opacity:0;transform:translate(-50%, -50%) scale(.95)}to{opacity:1;transform:translate(-50%, -50%) scale(1)}}
 .cell-editor-header{
   padding:10px 12px;
   border-bottom:1px solid var(--border);
   font-size:12px;font-weight:600;color:var(--text-2);
   display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;
 }
 .cell-editor-search{
   padding:8px 12px;border-bottom:1px solid var(--border);
+  flex-shrink:0;
 }
 .cell-editor-search input{
   width:100%;padding:6px 9px;
@@ -1584,7 +1598,16 @@ input[type="range"]::-moz-range-thumb{
   border-radius:6px;font-size:12.5px;
 }
 .cell-editor-list{
-  flex:1;overflow-y:auto;padding:4px;
+  flex:1 1 auto;overflow-y:auto;padding:4px;
+  min-height:140px;
+  max-height:260px;
+}
+@media (max-height:700px){
+  .cell-editor-list{min-height:120px;max-height:200px}
+}
+@media (max-height:560px){
+  .cell-editor-list{min-height:100px;max-height:140px}
+  .cell-editor{max-height:94vh}
 }
 .cell-option{
   display:flex;align-items:center;justify-content:space-between;
@@ -1601,8 +1624,136 @@ input[type="range"]::-moz-range-thumb{
 .cell-editor-footer{
   padding:8px 10px;border-top:1px solid var(--border);
   display:flex;gap:6px;
+  flex-shrink:0;
+  background:var(--surface);
+  border-radius:0 0 12px 12px;
 }
-.cell-editor-footer .tool-btn{font-size:11.5px;padding:5px 9px;flex:1;justify-content:center}
+.cell-editor-footer .tool-btn{font-size:12px;padding:8px 12px;flex:1;justify-content:center;font-weight:700}
+
+/* =============================================================
+   🔄 QUICK-ENTRY MODE (.qem-*) — scoped, additive
+============================================================= */
+/* Toolbar toggle button — active state (green glow) */
+#qemToggleBtn.qem-active{
+  background:linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color:#fff !important;
+  border-color:#059669 !important;
+  box-shadow:0 0 0 2px rgba(16,185,129,.25), 0 2px 8px rgba(16,185,129,.35);
+  animation:qemPulse 2.4s ease-in-out infinite;
+}
+@keyframes qemPulse{
+  0%,100%{box-shadow:0 0 0 2px rgba(16,185,129,.25), 0 2px 8px rgba(16,185,129,.35)}
+  50%   {box-shadow:0 0 0 4px rgba(16,185,129,.35), 0 2px 14px rgba(16,185,129,.55)}
+}
+
+/* Routine table — green outline when mode active */
+body[data-qem="on"] .table-wrap{
+  position:relative;
+}
+body[data-qem="on"] .routine-table{
+  outline:3px solid #10b981;
+  outline-offset:-1px;
+  box-shadow:0 0 0 1px #059669, 0 8px 24px rgba(16,185,129,.18);
+}
+/* Corner badge */
+body[data-qem="on"] .table-wrap::before{
+  content:'🔄 অটো-এন্ট্রি সক্রিয়';
+  position:absolute;
+  top:-12px;left:14px;
+  z-index:50;
+  background:linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color:#fff;
+  font-size:11.5px;font-weight:800;
+  padding:3px 11px;border-radius:99px;
+  box-shadow:0 2px 8px rgba(16,185,129,.4);
+  letter-spacing:.2px;
+  pointer-events:none;
+}
+
+/* Cell editor extension */
+.cell-editor-qem{
+  border-top:1.5px dashed #10b981;
+  padding:9px 10px;
+  background:linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+  display:flex;flex-direction:column;gap:7px;
+  flex-shrink:0;
+  max-height:230px;
+  overflow-y:auto;
+}
+@media (max-height:560px){
+  .cell-editor-qem{max-height:180px;padding:6px 8px;gap:5px}
+}
+.qem-section-label{
+  font-size:11.5px;font-weight:700;color:#065f46;
+  margin-bottom:3px;
+}
+.qem-radio-row{
+  display:flex;flex-wrap:wrap;gap:4px;
+}
+.qem-radio{
+  display:flex;align-items:center;gap:4px;
+  font-size:11px;color:var(--text);cursor:pointer;
+  padding:3px 8px;border-radius:99px;
+  border:1px solid var(--border);background:#fff;
+  font-weight:600;transition:.12s;
+  user-select:none;
+}
+.qem-radio:hover{border-color:#10b981}
+.qem-radio input{margin:0;accent-color:#10b981;cursor:pointer;width:13px;height:13px}
+.qem-radio input:checked + span{color:#059669}
+.qem-radio:has(input:checked){
+  border-color:#10b981;background:#dcfce7;
+}
+.qem-custom-days{
+  display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;
+}
+.qem-chip{
+  font-size:11px;font-weight:600;
+  padding:3px 9px;border-radius:99px;
+  background:#fff;border:1px solid var(--border);
+  color:var(--text);cursor:pointer;
+  transition:.12s;user-select:none;
+}
+.qem-chip:hover{border-color:#10b981}
+.qem-chip.selected{
+  background:#10b981;color:#fff;border-color:#059669;
+}
+.qem-fixed-section{margin-top:2px;display:flex;flex-direction:column;gap:6px}
+.qem-checkbox{
+  display:flex;align-items:center;gap:6px;
+  font-size:11.5px;color:var(--text);cursor:pointer;
+  font-weight:600;
+  user-select:none;
+}
+.qem-checkbox input{
+  accent-color:#dc2626;cursor:pointer;
+  width:14px;height:14px;margin:0;
+}
+.qem-shared-chk-label input{accent-color:#f59e0b}
+.qem-smart-suggest{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 11px;border-radius:8px;
+  background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border:2px solid #f59e0b;
+  font-size:11.5px;color:#78350f;font-weight:600;
+  box-shadow:0 2px 8px rgba(245,158,11,.25);
+  animation:qemSsPulse 1.8s ease-in-out infinite;
+}
+@keyframes qemSsPulse{
+  0%,100%{box-shadow:0 2px 8px rgba(245,158,11,.25)}
+  50%{box-shadow:0 2px 14px rgba(245,158,11,.55)}
+}
+.qem-ss-icon{font-size:18px;flex-shrink:0}
+.qem-ss-text{flex:1;line-height:1.35;font-size:11.5px}
+.qem-ss-apply{
+  background:#d97706;color:#fff;border:none;
+  padding:6px 12px;border-radius:6px;
+  font-size:11.5px;font-weight:800;cursor:pointer;
+  white-space:nowrap;flex-shrink:0;
+  box-shadow:0 2px 4px rgba(0,0,0,.1);
+}
+.qem-ss-apply:hover{background:#b45309;transform:translateY(-1px)}
+.qem-ss-apply:active{transform:translateY(0)}
 
 /* =============================================================
    DASHBOARD
@@ -4837,6 +4988,7 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <button class="tool-btn editable-only" data-perm="scheduleGen" onclick="openScheduleGen();closeToolMenu()">🕐 <span class="lbl">সময়সূচি</span></button>
         <button class="tool-btn primary editable-only" data-perm="aiRoutine" onclick="openAIGenerator();closeToolMenu()">🤖 <span class="lbl">AI রুটিন</span></button>
         <button class="tool-btn editable-only" data-perm="aiRoutine" onclick="autoGenerateRoutine();closeToolMenu()" title="API ছাড়াই ৪০–৫০ জন শিক্ষকের রুটিন স্বয়ংক্রিয়ভাবে তৈরি করুন">⚙️ <span class="lbl">স্বয়ংক্রিয় রুটিন</span></button>
+        <button class="tool-btn editable-only" data-perm="aiRoutine" id="qemToggleBtn" onclick="toggleQuickEntryMode();closeToolMenu()" title="রুটিন cell-এ সরাসরি ক্লাস বসান → শিক্ষকের entries-এ auto-add">🔄 <span class="lbl">দ্রুত এন্ট্রি মোড: বন্ধ</span></button>
         <button class="tool-btn editable-only" data-perm="aiRoutine" onclick="openCoverageReport();closeToolMenu()" title="প্রতি শ্রেণি-শাখার কোন পিরিয়ড ফাঁকা — পাঠ্যসূচির সাথে মিলিয়ে কভারেজ রিপোর্ট">🗺 <span class="lbl">কভারেজ রিপোর্ট</span></button>
         <button class="tool-btn editable-only" data-perm="voice" onclick="toggleVoice();closeToolMenu()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
         <button class="tool-btn editable-only" data-perm="routineLock" id="routineLockBtn" data-locked="false" onclick="toggleRoutineLock();closeToolMenu()" title="রুটিন লক/আনলক — এলোমেলো ক্লিক থেকে সুরক্ষা">🔓 <span class="lbl">রুটিন লক</span></button>
@@ -4931,6 +5083,42 @@ body[data-role="manager"] .teacher-only{display:none !important}
     <input type="text" id="cellEditorSearch" placeholder="খুঁজুন..." oninput="filterCellOptions()">
   </div>
   <div class="cell-editor-list" id="cellEditorList"></div>
+  <!-- 🆕 QUICK-ENTRY MODE EXTENSION — শুধু mode চালু থাকলে show হবে -->
+  <div class="cell-editor-qem" id="cellEditorQem" style="display:none">
+    <div class="qem-smart-suggest" id="qemSmartSuggest" style="display:none">
+      <span class="qem-ss-icon">⚡</span>
+      <span class="qem-ss-text" id="qemSmartSuggestText"></span>
+      <button type="button" class="qem-ss-apply" id="qemSmartSuggestApply">ব্যবহার করুন</button>
+    </div>
+    <div class="qem-days-section">
+      <div class="qem-section-label">📅 কয়দিন এই বিষয়?</div>
+      <div class="qem-radio-row">
+        <label class="qem-radio"><input type="radio" name="qemDays" value="6" checked><span>৬ দিন</span></label>
+        <label class="qem-radio"><input type="radio" name="qemDays" value="3a"><span>৩ দিন (শনি-সোম)</span></label>
+        <label class="qem-radio"><input type="radio" name="qemDays" value="3b"><span>৩ দিন (মঙ্গল-বৃহঃ)</span></label>
+        <label class="qem-radio"><input type="radio" name="qemDays" value="2"><span>২ দিন (মঙ্গল-বুধ)</span></label>
+        <label class="qem-radio"><input type="radio" name="qemDays" value="custom"><span>Custom</span></label>
+      </div>
+      <div class="qem-custom-days" id="qemCustomDays" style="display:none">
+        <span class="qem-chip" data-day="Sat">শনি</span>
+        <span class="qem-chip" data-day="Sun">রবি</span>
+        <span class="qem-chip" data-day="Mon">সোম</span>
+        <span class="qem-chip" data-day="Tue">মঙ্গল</span>
+        <span class="qem-chip" data-day="Wed">বুধ</span>
+        <span class="qem-chip" data-day="Thu">বৃহঃ</span>
+      </div>
+    </div>
+    <div class="qem-fixed-section">
+      <label class="qem-checkbox qem-shared-chk-label">
+        <input type="checkbox" id="qemSharedChk">
+        <span>🔄 শেয়ার্ড ক্লাস — এই ক্লাসটি একাধিক শিক্ষক/বিষয়ের মধ্যে ভাগাভাগি হবে</span>
+      </label>
+      <label class="qem-checkbox">
+        <input type="checkbox" id="qemFixedChk">
+        <span>🔒 ফিক্সড স্লট — এই slot ছাড়া অন্য কোথাও সরাবে না</span>
+      </label>
+    </div>
+  </div>
   <div class="cell-editor-footer">
     <button class="tool-btn" onclick="clearCell()">🗑 মুছুন</button>
     <button class="tool-btn primary" onclick="closeCellEditor()">সম্পন্ন</button>
@@ -6852,6 +7040,7 @@ let state = {
     teacherBlockGap: 3,                 /* 🆕 শিক্ষক ব্লক গ্যাপ (px) — settings-controlled */
     slotDividerWidth: 2,                /* 🆕 সময় কলাম পৃথক রেখার পুরুত্ব (px) — 0 = বন্ধ */
     slotDividerColor: '#0f766e',        /* 🆕 সময় কলাম পৃথক রেখার রঙ */
+    quickEntryMode: false,              /* 🆕 দ্রুত এন্ট্রি মোড — রুটিন cell → entry auto-sync */
     /* Color customization */
     colorPrimary: '#0f766e',
     colorSlBg: '#bbf7d0',
@@ -12716,45 +12905,139 @@ function _detectRealtimeConflicts(){
   slotCols.forEach(c => { colLabelMap[c.id] = c.label || c.id; });
 
   // ── PASS 1: CELL CONFLICT — একই (class||section||cid||day)-এ একাধিক teacher
-  // index: classKey → cid → day → [tid...]
+  //   ─────────────────────────────────────────────────────────────────
+  //   🆕 SHARED CLASS LOGIC (audit fix):
+  //   - একই (cls, sec, slot, subject) shared হলে — combined days হিসাব
+  //   - combined = ৬ → Valid (NO conflict)
+  //   - combined < ৬ → Invalid shared distribution → Conflict
+  //   - combined > ৬ বা ভিন্ন subject overlap → Conflict
+  //   ─────────────────────────────────────────────────────────────────
+  // index: classKey → cid → day → [{tid, tname, subject, isShared}]
   const occMap = {};
   state.teachers.forEach(t => {
     if(!t || !t.cells || t.onLeave) return;
+    // teacher-এর shared flag খুঁজি teaching entries থেকে
+    const sharedMap = {};   // "subject||cls||sec" → true/false
+    if(Array.isArray(t.teachingEntries)){
+      t.teachingEntries.forEach(raw => {
+        const e = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : (raw||{});
+        const k = (e.subject||'') + '||' + (e.class||'') + '||' + (e.section||'');
+        if(e.shared) sharedMap[k] = true;
+      });
+    }
     slotCols.forEach(c => {
       const cell = t.cells[c.id];
       if(!_rtIsLoadedCell(cell)) return;
-      // class+section বের করি (cell-এ যা আছে সেটাই)
       const cls = (cell.class || '').trim();
       const sec = (cell.section || '').trim();
-      if(!cls && !sec) return;   // class-less cell → conflict গণনা করি না
+      if(!cls && !sec) return;
       const classKey = cls + '||' + sec;
-      const days = _rtCellDays(cell);
-      days.forEach(day => {
+      // multi-part cell — প্রতি part-এর জন্য আলাদা entry
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        cell.parts.forEach(part => {
+          const psub = (part.subject||'').trim();
+          if(!psub) return;
+          const pdays = Array.isArray(part.days) ? part.days : [];
+          const pk = psub + '||' + cls + '||' + sec;
+          const isShared = !!sharedMap[pk] || pdays.length > 0 && pdays.length < 6;
+          pdays.forEach(day => {
+            if(!occMap[classKey]) occMap[classKey] = {};
+            if(!occMap[classKey][c.id]) occMap[classKey][c.id] = {};
+            if(!occMap[classKey][c.id][day]) occMap[classKey][c.id][day] = [];
+            occMap[classKey][c.id][day].push({tid: t.id, tname: t.name, subject: psub, isShared});
+          });
+        });
+        return;
+      }
+      // single cell
+      const cellSub = (cell.subject||'').trim();
+      const cellKey = cellSub + '||' + cls + '||' + sec;
+      const cellDays = _rtCellDays(cell);
+      const isShared = !!sharedMap[cellKey] || (Array.isArray(cell.days) && cell.days.length > 0 && cell.days.length < 6);
+      cellDays.forEach(day => {
         if(!occMap[classKey]) occMap[classKey] = {};
         if(!occMap[classKey][c.id]) occMap[classKey][c.id] = {};
         if(!occMap[classKey][c.id][day]) occMap[classKey][c.id][day] = [];
-        occMap[classKey][c.id][day].push({tid: t.id, tname: t.name, subject: cell.subject||''});
+        occMap[classKey][c.id][day].push({tid: t.id, tname: t.name, subject: cellSub, isShared});
       });
     });
   });
 
-  // collapse same (classKey, cid) across multiple days into one conflict
+  // ─── analyze occMap with shared logic ────────────────────────────
   Object.keys(occMap).forEach(classKey => {
     Object.keys(occMap[classKey]).forEach(cid => {
-      Object.keys(occMap[classKey][cid]).forEach(day => {
-        const arr = occMap[classKey][cid][day];
-        if(arr.length > 1){
-          // দুই teacher একই subject + shared-flag-এ থাকলে conflict না (intentional split)
-          // — তবু default-এ আমরা সব overlap কে conflict ধরি, user দেখে decide করবে
-          out.cellConflicts.push({
-            classKey, cid, day,
-            colLabel: colLabelMap[cid] || cid,
-            dayLabel: dayLabelMap[day] || day,
-            classLabel: classKey.replace('||', ' / শাখা '),
-            teachers: arr.slice()
-          });
-        }
+      // day-by-day check
+      const daysBucket = occMap[classKey][cid];
+      // Build slot-wide shared-set: collect all (subject, tid) tuples for this slot
+      const slotEntries = {};   // subject → {teachers:{tid:Set<days>}}
+      Object.keys(daysBucket).forEach(day => {
+        daysBucket[day].forEach(rec => {
+          if(!slotEntries[rec.subject]) slotEntries[rec.subject] = {teachers: {}, anyShared: false};
+          if(!slotEntries[rec.subject].teachers[rec.tid]) slotEntries[rec.subject].teachers[rec.tid] = new Set();
+          slotEntries[rec.subject].teachers[rec.tid].add(day);
+          if(rec.isShared) slotEntries[rec.subject].anyShared = true;
+        });
       });
+
+      // PER-DAY rules:
+      Object.keys(daysBucket).forEach(day => {
+        const arr = daysBucket[day];
+        if(arr.length <= 1) return;
+        // Multiple teachers same day, same (cls, sec, slot) → conflict
+        // ব্যতিক্রম: কেউ যদি ভাবে আলাদা teacher-আলাদা subject — তবু একই slot-এ একই section দুটো ক্লাস
+        // হবে — physically impossible, সর্বদা conflict
+        out.cellConflicts.push({
+          classKey, cid, day,
+          colLabel: colLabelMap[cid] || cid,
+          dayLabel: dayLabelMap[day] || day,
+          classLabel: classKey.replace('||', ' / শাখা '),
+          teachers: arr.slice(),
+          reason: 'same-day-overlap'
+        });
+      });
+
+      // ── SHARED VALIDITY rule — COMBINED (across all subjects/teachers): ─────
+      //    একই (cls, sec, slot)-এ shared cells-এর combined days দেখা হয়।
+      //    ভিন্ন বিষয় ভিন্ন দিনে = বৈধ (যেমন ইংরেজি শনি-সোম + গণিত মঙ্গল-বৃহঃ = ৬ দিন)
+      //    সব দিন কভার হলে Valid; না হলে Invalid Shared Distribution।
+      // ─────────────────────────────────────────────────────────────────────
+      // Combined union of days across ALL shared teachers (any subject)
+      let anySharedInSlot = false;
+      const combinedDays = new Set();
+      const slotTeacherList = new Set();   // for reporting
+      const slotSubjectList = new Set();
+      Object.keys(daysBucket).forEach(day => {
+        daysBucket[day].forEach(rec => {
+          if(rec.isShared){
+            anySharedInSlot = true;
+            combinedDays.add(day);
+            slotTeacherList.add(rec.tid);
+            if(rec.subject) slotSubjectList.add(rec.subject);
+          }
+        });
+      });
+
+      if(anySharedInSlot && combinedDays.size < allDays.length){
+        // এই slot-এ shared cells আছে কিন্তু combined days ৬ পূর্ণ নয়
+        // ⚠ Only flag if there's actually a missing-day gap (not just one teacher mid-fill)
+        const missingDays = allDays.filter(d => !combinedDays.has(d));
+        const dayShort = {Sat:'শনি', Sun:'রবি', Mon:'সোম', Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ'};
+        const missingNames = missingDays.map(d => dayShort[d] || d).join(', ');
+        const subjList = Array.from(slotSubjectList).join(' + ');
+        out.cellConflicts.push({
+          classKey, cid, day: '*',
+          colLabel: colLabelMap[cid] || cid,
+          dayLabel: 'shared',
+          classLabel: classKey.replace('||', ' / শাখা '),
+          teachers: Array.from(slotTeacherList).map(tid => {
+            const t = state.teachers.find(x => x.id === tid);
+            return {tid, tname: t ? t.name : '—', subject: subjList, isShared: true};
+          }),
+          reason: 'shared-incomplete',
+          sharedDetail: `Shared: ${subjList} — মোট ${combinedDays.size} দিন কভার, বাকি ${missingDays.length} দিন (${missingNames})`
+        });
+      }
+      // combined == 6 → Valid (no conflict added). ✅
     });
   });
 
@@ -12792,7 +13075,12 @@ function _detectRealtimeConflicts(){
   //   নিয়ম: প্রতি cell-এর (subject, class, section) MUST শিক্ষকের
   //   কোনো teaching entry-র সাথে মিলবে। মিল না হলে → unauthorized
   //   exception: locked, special, Free, সম্পূর্ণ খালি cell
+  //   🆕 Grid-driven model: valid cells (subject+class+section সবই আছে) যেগুলোর entry নেই —
+  //      সেগুলোকে unauthorized হিসেবে চিহ্নিত করার বদলে স্বয়ংক্রিয়ভাবে entry তৈরি করি
   // ═══════════════════════════════════════════════════════════════════
+  const qemActive = true;  // grid-driven default
+  const qemDays = (typeof _qemAllDays === 'function') ? _qemAllDays() : ['Sat','Sun','Mon','Tue','Wed','Thu'];
+  let qemAutoCreated = 0;
   state.teachers.forEach(t => {
     if(!t || !t.cells || t.onLeave || t.locked) return;
     // valid keys তৈরি — teacher-এর সব teaching entries (sanitize করে)
@@ -12830,6 +13118,37 @@ function _detectRealtimeConflicts(){
       }
       const k = (cell.subject||'') + '||' + (cell.class||'') + '||' + (cell.section||'');
       if(!validKeys.has(k)){
+        // 🆕 QEM auto-rescue — যদি cell-এ ৩টিই (subject, class, section) আছে এবং QEM চালু,
+        //    unauthorized না বানিয়ে নিজেই entry তৈরি করি
+        const cs = (cell.subject||'').trim();
+        const cc = (cell.class||'').trim();
+        const csec = (cell.section||'').trim();
+        if(qemActive && cs && cc && csec && cs.toLowerCase() !== 'free'){
+          try{
+            if(!Array.isArray(t.teachingEntries)) t.teachingEntries = [];
+            const ne = (typeof _teNewEntry === 'function') ? _teNewEntry() : {
+              id: 'e-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
+              subject:'', class:'', section:'', days:[], daysPerWeek:6,
+              preferredSlots:[], notes:'', shared:false, sharedNote:'', fixed:false
+            };
+            ne.subject = cs; ne.class = cc; ne.section = csec;
+            // 🆕 cell-এ actual days থাকলে সেটা respect করি (shared scenarios-এ critical)
+            const cellActualDays = (Array.isArray(cell.days) && cell.days.length) ? cell.days.slice() : qemDays.slice();
+            ne.days = cellActualDays;
+            ne.daysPerWeek = cellActualDays.length;
+            ne.preferredSlots = [c.id];
+            ne.shared = !!cell.shared || (cellActualDays.length > 0 && cellActualDays.length < qemDays.length);
+            ne.fixed = !!cell.fixed;
+            t.teachingEntries.push(ne);
+            validKeys.add(k);
+            // master lists-এ যোগ
+            if(Array.isArray(t.subjects) && t.subjects.indexOf(cs) < 0) t.subjects.push(cs);
+            if(Array.isArray(t.classes) && t.classes.indexOf(cc) < 0) t.classes.push(cc);
+            if(Array.isArray(t.sections) && t.sections.indexOf(csec) < 0) t.sections.push(csec);
+            qemAutoCreated++;
+            return;  // unauthorized list-এ যোগ করি না
+          }catch(_){}
+        }
         out.unauthorized.push({
           tid: t.id, tname: t.name,
           cid: c.id, colLabel: colLabelMap[c.id] || c.id,
@@ -12838,6 +13157,11 @@ function _detectRealtimeConflicts(){
       }
     });
   });
+  // QEM auto-rescue হলে state save করে দিই
+  if(qemAutoCreated > 0){
+    try{ console.log('[QEM-DEBUG] conflict-detector auto-rescued', qemAutoCreated, 'cells'); }catch(_){}
+    try{ saveState(); }catch(_){}
+  }
 
   // ═══════════════════════════════════════════════════════════════════
   // 🆕 PASS 4: COUNT MISMATCH — entry সংখ্যা vs cell সংখ্যা
@@ -12970,12 +13294,26 @@ function _rtOpenConflictModal(){
 
   conflicts.cellConflicts.forEach(cf => {
     const tchips = cf.teachers.map(tt =>
-      '<span class="rt-t-chip">'+esc(tt.tname || tt.tid)+(tt.subject?' · '+esc(tt.subject):'')+'</span>'
+      '<span class="rt-t-chip">'+esc(tt.tname || tt.tid)+(tt.subject?' · '+esc(tt.subject):'')+(tt.isShared?' · 🔄':'')+'</span>'
     ).join('');
+    // reason-specific description
+    let title, desc;
+    if(cf.reason === 'shared-incomplete'){
+      title = '⚠️ Invalid Shared — ' + esc(cf.classLabel) + ' · ' + esc(cf.colLabel);
+      desc = esc(cf.sharedDetail || 'Shared class-এর combined days ৬ পূর্ণ নয়') +
+             '। সমাধান: বাকি দিনগুলোর জন্য আরো শিক্ষক যোগ করুন, অথবা একজনের days বাড়িয়ে ৬ দিন পূর্ণ করুন।';
+    } else if(cf.reason === 'shared-overlap'){
+      title = '⚠️ Shared Overlap — ' + esc(cf.classLabel) + ' · ' + esc(cf.colLabel);
+      desc = esc(cf.sharedDetail || 'একই দিনে দুই শিক্ষক') +
+             '। সমাধান: কোনো এক শিক্ষকের days বদলান যাতে overlap না হয়।';
+    } else {
+      title = '⚠️ ' + esc(cf.classLabel) + ' · ' + esc(cf.colLabel) + ' · ' + esc(cf.dayLabel);
+      desc = 'এই (শ্রেণি, শাখা, পিরিয়ড, দিন)-এ একাধিক শিক্ষক বসেছেন। সমাধান: যে কোনো এক শিক্ষকের cell মুছে দিন বা অন্য slot-এ সরান।';
+    }
     items.push(`
       <div class="rt-conflict-item">
-        <div class="rt-c-title">⚠️ ${esc(cf.classLabel)} · ${esc(cf.colLabel)} · ${esc(cf.dayLabel)}</div>
-        <div class="rt-c-desc">এই (শ্রেণি, শাখা, পিরিয়ড, দিন)-এ একাধিক শিক্ষক বসেছেন। সমাধান: যে কোনো এক শিক্ষকের cell মুছে দিন বা অন্য slot-এ সরান।</div>
+        <div class="rt-c-title">${title}</div>
+        <div class="rt-c-desc">${desc}</div>
         <div class="rt-c-teachers">${tchips}</div>
       </div>
     `);
@@ -13234,6 +13572,10 @@ function openCellEditor(tid, cid, field){
     showToast('শিক্ষক শুধু "ছুটিতে আছি" টগল করতে পারেন','warning');
     return;
   }
+
+  /* Grid-driven default — cell editor সর্বদা inline খুলবে (subject field-এ
+     শেয়ার্ড/ফিক্সড/দিন section automatically দেখাবে — _qemPrepEditor handle করবে) */
+
   currentEditCell = {tid, cid, field};
   const t = state.teachers.find(x=>x.id===tid);
   const cell = t.cells[cid] || {};
@@ -13247,99 +13589,120 @@ function openCellEditor(tid, cid, field){
 
   renderCellOptions(cur);
 
+  // 🆕 Cell editor extension prep — subject field-এ শেয়ার্ড/ফিক্সড/দিন section দেখাবে
+  try{ _qemPrepEditor(tid, cid, field); }catch(_){}
+
+  // 🆕 Center modal positioning — সব ডিভাইসে (মোবাইল/ট্যাবলেট/ল্যাপটপ) সমানভাবে
+  //    স্ক্রিনের মাঝখানে দেখাবে যাতে সব বাটন/section সবসময় দৃশ্যমান থাকে
   const editor = document.getElementById('cellEditor');
-  // Position near the clicked cell
-  const tdEl = document.querySelector(`td[data-tid="${tid}"][data-cid="${cid}"][data-field="${field}"]`);
-  const rect = tdEl ? tdEl.getBoundingClientRect() : {left:100,top:100,bottom:140};
-  let left = rect.left;
-  let top = rect.bottom + 4;
-  if(left + 280 > window.innerWidth) left = window.innerWidth - 290;
-  if(top + 380 > window.innerHeight) top = rect.top - 384;
-  if(left < 5) left = 5;
-  if(top < 5) top = 5;
-  editor.style.left = left+'px';
-  editor.style.top = top+'px';
+  editor.style.left = '50%';
+  editor.style.top = '50%';
+  editor.style.transform = 'translate(-50%, -50%)';
   editor.classList.add('show');
+  // backdrop overlay show
+  try{ _showCellEditorBackdrop(); }catch(_){}
   setTimeout(()=>document.getElementById('cellEditorSearch').focus(), 50);
+}
+
+/* 🆕 Backdrop overlay — cell editor modal-এর পেছনে dim background */
+function _showCellEditorBackdrop(){
+  let bd = document.getElementById('cellEditorBackdrop');
+  if(!bd){
+    bd = document.createElement('div');
+    bd.id = 'cellEditorBackdrop';
+    bd.className = 'cell-editor-backdrop';
+    bd.addEventListener('click', () => { try{ closeCellEditor(); }catch(_){} });
+    document.body.appendChild(bd);
+  }
+  bd.classList.add('show');
+}
+function _hideCellEditorBackdrop(){
+  const bd = document.getElementById('cellEditorBackdrop');
+  if(bd) bd.classList.remove('show');
 }
 
 function renderCellOptions(currentValue){
   const list = document.getElementById('cellEditorList');
   const field = currentEditCell.field;
-  let opts = state.options[field] || [];
+  let opts = (state.options && state.options[field]) || [];
   // "Free" only relevant in middle (subject) field
   if(field !== 'subject'){
     opts = opts.filter(o => o !== 'Free' && o !== 'free' && o !== 'FREE');
   }
-  const q = document.getElementById('cellEditorSearch').value.toLowerCase();
-  const filtered = opts.filter(o => !q || o.toLowerCase().includes(q));
-  list.innerHTML = filtered.map(o => {
+  const q = (document.getElementById('cellEditorSearch').value||'').trim();
+  const ql = q.toLowerCase();
+  const filtered = opts.filter(o => !ql || o.toLowerCase().includes(ql));
+
+  let html = filtered.map(o => {
     const isFree = (o === 'Free');
     const sel = (o === currentValue);
     return `<div class="cell-option ${sel?'selected':''} ${isFree?'is-free':''}" onclick="selectCellOption('${esc(o).replace(/'/g,"\\'")}')">
       ${esc(o)} ${sel?'<span style="font-size:14px">✓</span>':''}
     </div>`;
-  }).join('') || '<div style="padding:20px;text-align:center;color:var(--text-3)">কোনো অপশন পাওয়া যায়নি</div>';
+  }).join('');
+
+  // 🆕 grid-driven: search বক্সে এমন কিছু আছে যা list-এ নেই —"+ যোগ করুন" option দেখাই
+  if(q && !opts.some(o => o.toLowerCase() === ql)){
+    const fieldLabel = field === 'subject' ? 'বিষয়' : field === 'class' ? 'শ্রেণি' : field === 'section' ? 'শাখা' : field;
+    const escQ = esc(q).replace(/'/g, "\\'");
+    html += `<div class="cell-option cell-option-create" onclick="_cellOptionCreateAndSelect('${escQ}')" style="border:1.5px dashed #10b981;background:#ecfdf5;color:#065f46;font-weight:700;margin-top:4px">
+      <span>➕ নতুন ${fieldLabel}: "${esc(q)}" যোগ করুন</span>
+      <span style="font-size:14px">↩</span>
+    </div>`;
+  }
+
+  list.innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--text-3)">খুঁজুন বক্সে টাইপ করে নতুন যোগ করুন</div>';
+}
+
+/* 🆕 নতুন option globally যোগ করে সেটাই select করি */
+function _cellOptionCreateAndSelect(value){
+  const v = (value||'').trim();
+  if(!v) return;
+  const field = currentEditCell.field;
+  if(!state.options) state.options = {};
+  if(!Array.isArray(state.options[field])) state.options[field] = [];
+  if(state.options[field].indexOf(v) < 0){
+    state.options[field].push(v);
+    try{ saveState(); }catch(_){}
+  }
+  selectCellOption(v);
 }
 
 function filterCellOptions(){renderCellOptions((state.teachers.find(t=>t.id===currentEditCell.tid).cells[currentEditCell.cid]||{})[currentEditCell.field])}
 
 function selectCellOption(value){
+  // 🔍 Diagnostic log — F12 console-এ দেখা যাবে কী হচ্ছে
+  try{
+    console.log('[QEM-DEBUG] selectCellOption called:', {
+      value: value,
+      currentEditCell: currentEditCell,
+      qemEnabled: state && state.settings && state.settings.quickEntryMode
+    });
+  }catch(_){}
   const {tid, cid, field} = currentEditCell;
   const t = state.teachers.find(x=>x.id===tid);
-  if(!t) return;
+  if(!t){
+    try{ console.warn('[QEM-DEBUG] Teacher not found:', tid); }catch(_){}
+    return;
+  }
+
+  // 🆕 QEM: mode চালু থাকলে warning bypass — কারণ পুরো উদ্দেশ্যই auto-entry-add
+  // Grid-driven model — সবসময় sync চালু (mode toggle আর নেই)
+  const qemActive = true;
 
   // ═══════════════════════════════════════════════════════════════
-  // 🆕 কঠোর প্রি-চেক: user যা সেট করতে যাচ্ছেন তা শিক্ষকের teaching
-  // entries-এর সাথে মেলে কিনা — Free + খালি ছাড়া। মিল না হলে warn,
-  // user চাইলে এগিয়ে যাবেন (block না, কিন্তু conflict markers
-  // স্বয়ংক্রিয়ভাবে দেখাবে)।
+  // Grid-driven model-এ এই warning আর দরকার নেই — entry auto-create হবে।
   // ═══════════════════════════════════════════════════════════════
-  try{
-    if(value && (field === 'subject' || field === 'class' || field === 'section')
-       && String(value).toLowerCase() !== 'free'){
-      const curCell = (t.cells && t.cells[cid]) || {};
-      const proposed = {
-        subject: field === 'subject' ? value : (curCell.subject || ''),
-        class:   field === 'class'   ? value : (curCell.class   || ''),
-        section: field === 'section' ? value : (curCell.section || '')
-      };
-      const entries = Array.isArray(t.teachingEntries) ? t.teachingEntries : [];
-      const sanitized = entries.map(raw =>
-        (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : (raw||{})
-      ).filter(e => e && (e.subject || e.class || e.section));
-
-      // proposed non-empty fields সব entry-তে exact match লাগবে
-      const hasMatch = sanitized.some(e => {
-        if(proposed.subject && proposed.subject !== (e.subject||'')) return false;
-        if(proposed.class   && proposed.class   !== (e.class||'')) return false;
-        if(proposed.section && proposed.section !== (e.section||'')) return false;
-        return true;
-      });
-
-      if(!hasMatch && sanitized.length > 0){
-        const proposedStr =
-          (proposed.subject||'?') + ' / ' +
-          (proposed.class||'?') + ' / শাখা ' +
-          (proposed.section||'?');
-        const ok = confirm(
-          '⚠️ অননুমোদিত পরিবর্তন\n\n' +
-          'শিক্ষক "' + t.name + '"-এর teaching entries-এ\n' +
-          '"' + proposedStr + '"\n' +
-          'এই combination পাওয়া যাচ্ছে না।\n\n' +
-          '🚫 cell বেগুনি border-এ চিহ্নিত হবে (অননুমোদিত)।\n\n' +
-          'প্রস্তাবিত সমাধান:\n' +
-          '• আগে শিক্ষকের entries-এ এই combination যোগ করুন\n' +
-          '• অথবা cell খালি রেখে স্বয়ংক্রিয় রুটিন আবার চালান\n\n' +
-          'তবুও এই পরিবর্তন প্রয়োগ করবেন?'
-        );
-        if(!ok){ closeCellEditor(); return; }
-      }
-    }
-  }catch(_){}
+  /* warning block removed — auto-create takes care of unauthorized cells */
 
   snapshot();
   if(!t.cells[cid]) t.cells[cid] = {};
+  // 🆕 QEM: change-এর আগে পুরোনো (subject, class, section) ধরে রাখি — sync-এ দরকার
+  const prevForQem = qemActive ? {
+    subject: t.cells[cid].subject || '',
+    class:   t.cells[cid].class   || '',
+    section: t.cells[cid].section || ''
+  } : null;
   const old = t.cells[cid][field] || '—';
   t.cells[cid][field] = value;
   // If selecting Free in subject, clear class & section for visual consistency
@@ -13348,6 +13711,15 @@ function selectCellOption(value){
     t.cells[cid].section = '';
   }
   saveState();
+
+  // 🆕 QEM: cell change → entry sync (mode চালু থাকলেই কাজ করবে)
+  // ৩টি field (subject/class/section) যেকোনোটার পর — sync function নিজেই পরীক্ষা করবে
+  if(qemActive){
+    try{ _qemSyncCellToEntry(tid, cid, field, prevForQem); }catch(err){ console.warn('qem sync skipped:', err); }
+    // 🛡 অতিরিক্ত safety net — global cell scan, যাতে কোনো cell missed না হয়
+    try{ _qemAutoSyncAllCells(); }catch(_){}
+  }
+
   renderTable();
   refreshDashboardSilent();
   audit('সেল এডিট', `${t.name} • ${getColLabel(cid)} • ${field}: ${old} → ${value}`);
@@ -13362,9 +13734,20 @@ function clearCell(){
   const {tid, cid, field} = currentEditCell;
   const t = state.teachers.find(x=>x.id===tid);
   if(!t || !t.cells[cid]) return;
+  // Grid-driven model — cell মুছলে সবসময় entry sync (mode toggle আর নেই)
+  const qemActive = true;
+  const prevCell = Object.assign({}, t.cells[cid]);
+
   snapshot();
   t.cells[cid][field] = '';
   saveState();
+
+  // 🆕 QEM: cell-এর subject মুছলে → entry-এর preferredSlots থেকে এই slot সরাও
+  //   ⚠ Entry নিজে মুছব না — কারণ একই entry অন্য slot-এ থাকতে পারে
+  if(qemActive && field === 'subject' && prevCell && prevCell.subject){
+    try{ _qemRemoveSlotFromEntry(t, prevCell.subject, prevCell.class, prevCell.section, cid); }catch(_){}
+  }
+
   renderTable();
   refreshDashboardSilent();
   audit('সেল মুছে ফেলা', `${t.name} • ${getColLabel(cid)} • ${field}`);
@@ -13373,9 +13756,565 @@ function clearCell(){
   try{ refreshRealtimeConflicts(true); }catch(_){}
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   🔄 QUICK-ENTRY MODE — Cell ↔ Entry two-way sync
+   ─────────────────────────────────────────────────────────────────
+   Mode চালু থাকলে রুটিন cell-এ subject বসালে → শিক্ষকের
+   teachingEntries-এ automatic entry যোগ হবে।
+   - নতুন combination: নতুন entry তৈরি (days/preferredSlots/shared/fixed apply)
+   - বিদ্যমান combination: শুধু preferredSlots-এ slot যোগ
+   - Cell মুছলে: preferredSlots থেকে slot সরবে (entry অপরিবর্তিত)
+
+   কোনো existing function ভাঙা হয়নি — পুরোটাই additive।
+═══════════════════════════════════════════════════════════════════ */
+
+/* Mode toggle — toolbar button থেকে call */
+function toggleQuickEntryMode(){
+  if(typeof blockIfViewOnly === 'function' && blockIfViewOnly('দ্রুত এন্ট্রি মোড')) return;
+  if(!state.settings) state.settings = {};
+  state.settings.quickEntryMode = !state.settings.quickEntryMode;
+  saveState();
+  _qemApplyVisualState();
+  if(state.settings.quickEntryMode){
+    // 🆕 চালু করার সময়েই auto-sync — পুরোনো cells থেকে missing entries তৈরি
+    let synced = 0;
+    try{ synced = _qemAutoSyncAllCells(); }catch(_){}
+    try{
+      if(synced > 0){
+        showToast(`🔄 দ্রুত এন্ট্রি মোড চালু — ${_teBnNum(synced)} টি cell থেকে নতুন entry তৈরি করা হলো`,'success',4500);
+      } else {
+        showToast('🔄 দ্রুত এন্ট্রি মোড চালু — রুটিন cell-এ ক্লিক করে সরাসরি entry তৈরি করুন','success',3500);
+      }
+    }catch(_){}
+    // refresh routine display + conflicts
+    try{ renderTable(); }catch(_){}
+    try{ refreshRealtimeConflicts(true); }catch(_){}
+  } else {
+    try{ showToast('🔄 দ্রুত এন্ট্রি মোড বন্ধ','info',2000); }catch(_){}
+  }
+}
+
+/* DOM-এ visual state apply — Grid-driven default-এ আর badge/outline দেখাই না */
+function _qemApplyVisualState(){
+  // Grid-driven default — কোনো outline/badge না, কারণ সর্বদা active
+  if(document.body) document.body.setAttribute('data-qem', 'off');
+  // toolbar button hide
+  const btn = document.getElementById('qemToggleBtn');
+  if(btn) btn.style.display = 'none';
+}
+
+/* Day-keys retrieve — _teActiveDays-এর fallback সহ */
+function _qemAllDays(){
+  try{
+    if(typeof _teActiveDays === 'function'){
+      const a = _teActiveDays();
+      if(Array.isArray(a) && a.length) return a.map(d => d.key);
+    }
+  }catch(_){}
+  return ['Sat','Sun','Mon','Tue','Wed','Thu'];
+}
+
+/* Cell editor extension show/hide ও pre-fill — openCellEditor থেকে call */
+function _qemPrepEditor(tid, cid, field){
+  const wrap = document.getElementById('cellEditorQem');
+  if(!wrap) return;
+  // Grid-driven model — সব ৩ field-এ (subject/class/section) দেখাই
+  // যাতে user-যেকোনো field সেট করার সময় days/shared/fixed control করতে পারেন
+  const show = (field === 'subject' || field === 'class' || field === 'section');
+  wrap.style.display = show ? 'flex' : 'none';
+  if(!show) return;
+
+  // Default reset: ৬ দিন, fixed=off, shared=off, custom hidden
+  const sixRadio = wrap.querySelector('input[name="qemDays"][value="6"]');
+  if(sixRadio) sixRadio.checked = true;
+  const fxChk = document.getElementById('qemFixedChk');
+  if(fxChk) fxChk.checked = false;
+  const shChk = document.getElementById('qemSharedChk');
+  if(shChk) shChk.checked = false;
+  const cd = document.getElementById('qemCustomDays');
+  if(cd){
+    cd.style.display = 'none';
+    cd.querySelectorAll('.qem-chip').forEach(ch => ch.classList.remove('selected'));
+  }
+
+  // existing entry থাকলে সেটার days/fixed/shared প্রি-ফিল
+  // অথবা cell-এ আগে থেকে set করা pending qem state থাকলে সেটা থেকে
+  try{
+    const t = state.teachers.find(x => x.id === tid);
+    const cell = t && t.cells && t.cells[cid];
+    let prefilled = false;
+    // STEP 1: existing entry থেকে (যদি cell-এ ৩টিই field থাকে)
+    if(t && cell && cell.subject && cell.class && cell.section){
+      const e = (t.teachingEntries||[]).map(_teSanitizeEntry)
+        .find(x => x.subject === cell.subject && x.class === cell.class && x.section === cell.section);
+      if(e){
+        const days = Array.isArray(e.days) ? e.days.slice() : [];
+        _qemSelectPresetForDays(days);
+        if(fxChk) fxChk.checked = !!e.fixed;
+        if(shChk) shChk.checked = !!e.shared;
+        prefilled = true;
+      }
+    }
+    // STEP 2: cell-এ pending qem state (cell.days/shared/fixed) থেকে — যদি entry নেই
+    //   এটা ঘটে যখন user subject editor-এ "৩ দিন (শনি-সোম) + শেয়ার্ড" সেট করে
+    //   save করেছেন কিন্তু class/section তখন ফাঁকা ছিল → entry তৈরি হয়নি
+    //   কিন্তু cell.days/shared/fixed-এ state আছে। পরে class/section সেট করার সময়
+    //   ঐ পুরোনো choice টিকিয়ে রাখতে হবে।
+    if(!prefilled && cell){
+      if(Array.isArray(cell.days) && cell.days.length){
+        _qemSelectPresetForDays(cell.days.slice());
+        prefilled = true;
+      }
+      if(fxChk && cell.fixed) fxChk.checked = true;
+      if(shChk && cell.shared) shChk.checked = true;
+    }
+  }catch(_){}
+
+  // Smart partner suggestion — অন্য শিক্ষক একই (cls,sec,slot)-এ shared রেখেছেন কিনা
+  const ssResult = _qemShowSmartSuggest(tid, cid);
+
+  // 🆕 AUTO-APPLY SUGGESTION — যদি cell-এ কোনো prior days-state না থাকে এবং
+  //    smart-suggest available — automatically সেই days select + শেয়ার্ড check
+  //    এতে user manually overlap তৈরি করার সুযোগ কমে।
+  try{
+    const t2 = state.teachers.find(x => x.id === tid);
+    const cell2 = t2 && t2.cells && t2.cells[cid];
+    const cellHasDays = cell2 && Array.isArray(cell2.days) && cell2.days.length > 0;
+    if(ssResult && ssResult.remaining && ssResult.remaining.length && !cellHasDays){
+      _qemSelectPresetForDays(ssResult.remaining.slice());
+      if(shChk) shChk.checked = true;
+      // cls/sec auto-fill cell-এ যদি ফাঁকা
+      if(cell2 && !cell2.class && ssResult.cls) cell2.class = ssResult.cls;
+      if(cell2 && !cell2.section && ssResult.sec) cell2.section = ssResult.sec;
+    }
+  }catch(_){}
+
+  // Event handlers wire up (একবারই)
+  _qemWireEditorEvents();
+}
+
+/* কোন preset radio match করে — দিনের তালিকা অনুসারে */
+function _qemSelectPresetForDays(days){
+  const wrap = document.getElementById('cellEditorQem');
+  if(!wrap || !Array.isArray(days)) return;
+  const set = new Set(days);
+  const sat3 = ['Sat','Sun','Mon'];
+  const tue3 = ['Tue','Wed','Thu'];
+  const tue2 = ['Tue','Wed'];
+  const all6 = _qemAllDays();
+  let preset = 'custom';
+  if(days.length === 6 && all6.every(d => set.has(d))) preset = '6';
+  else if(days.length === 3 && sat3.every(d => set.has(d))) preset = '3a';
+  else if(days.length === 3 && tue3.every(d => set.has(d))) preset = '3b';
+  else if(days.length === 2 && tue2.every(d => set.has(d))) preset = '2';
+  const radio = wrap.querySelector('input[name="qemDays"][value="'+preset+'"]');
+  if(radio) radio.checked = true;
+  // custom হলে chips select + show
+  if(preset === 'custom'){
+    const cd = document.getElementById('qemCustomDays');
+    if(cd){
+      cd.style.display = 'flex';
+      cd.querySelectorAll('.qem-chip').forEach(ch => {
+        ch.classList.toggle('selected', set.has(ch.getAttribute('data-day')));
+      });
+    }
+  }
+}
+
+/* Editor events — radio change + chip click — একবারই attach */
+function _qemWireEditorEvents(){
+  const wrap = document.getElementById('cellEditorQem');
+  if(!wrap || wrap.dataset.qemBound) return;
+  wrap.dataset.qemBound = '1';
+  // radio change → custom show/hide
+  wrap.addEventListener('change', (e) => {
+    if(e.target && e.target.name === 'qemDays'){
+      const cd = document.getElementById('qemCustomDays');
+      if(cd) cd.style.display = (e.target.value === 'custom') ? 'flex' : 'none';
+    }
+  });
+  // chip click → toggle selected
+  const cd = document.getElementById('qemCustomDays');
+  if(cd){
+    cd.addEventListener('click', (e) => {
+      const chip = e.target.closest('.qem-chip');
+      if(!chip) return;
+      chip.classList.toggle('selected');
+      // auto-switch radio to custom
+      const customRadio = wrap.querySelector('input[name="qemDays"][value="custom"]');
+      if(customRadio) customRadio.checked = true;
+    });
+  }
+  // smart-suggest apply button
+  const applyBtn = document.getElementById('qemSmartSuggestApply');
+  if(applyBtn){
+    applyBtn.addEventListener('click', () => {
+      const days = applyBtn.dataset.qemDays;
+      if(!days) return;
+      const dayList = days.split(',').filter(Boolean);
+      _qemSelectPresetForDays(dayList);
+      // 🆕 শেয়ার্ড checkbox auto-check করি (smart suggest সবসময় shared scenario-তে)
+      const shChk = document.getElementById('qemSharedChk');
+      if(shChk) shChk.checked = true;
+      // 🆕 অন্য teacher-এর (cls, sec) suggest button-এর dataset-এ store — current cell-এ
+      //    auto-fill করি যাতে user পরে আলাদা ভাবে class/section সেট না করতে হয়
+      const sCls = applyBtn.dataset.qemCls;
+      const sSec = applyBtn.dataset.qemSec;
+      const sCid = applyBtn.dataset.qemCid;
+      const sTid = applyBtn.dataset.qemTid;
+      if(sCls && sSec && sCid && sTid){
+        try{
+          const t = state.teachers.find(x => x.id === sTid);
+          if(t){
+            if(!t.cells[sCid]) t.cells[sCid] = {};
+            t.cells[sCid].class = sCls;
+            t.cells[sCid].section = sSec;
+            saveState();
+            try{ showToast(`✓ Class ${sCls}, Section ${sSec} অটো-সেট হয়েছে`, 'success', 2000); }catch(_){}
+          }
+        }catch(_){}
+      }
+    });
+  }
+}
+
+/* Smart partner suggestion — অন্য শিক্ষক একই (cls, sec, slot)-এ shared রেখেছেন? */
+function _qemShowSmartSuggest(tid, cid){
+  const box = document.getElementById('qemSmartSuggest');
+  const txt = document.getElementById('qemSmartSuggestText');
+  const btn = document.getElementById('qemSmartSuggestApply');
+  if(!box || !txt || !btn) return;
+  box.style.display = 'none';
+  try{
+    const t = state.teachers.find(x => x.id === tid);
+    if(!t) return;
+    const cell = (t.cells && t.cells[cid]) || {};
+    const allDays = _qemAllDays();
+
+    // ── Scan: অন্য শিক্ষকদের একই slot-এ cell-গুলো ─────────────────
+    //    Group করি (cls, sec) অনুযায়ী → days union
+    //    Map: "cls||sec" → { days:Set, teachers:[names], anyShared:bool }
+    const groups = new Map();
+    (state.teachers||[]).forEach(other => {
+      if(!other || other.id === t.id) return;
+      const oc = other.cells && other.cells[cid];
+      if(!oc) return;
+      const ocls = (oc.class||'').trim();
+      const osec = (oc.section||'').trim();
+      if(!ocls || !osec) return;
+      const key = ocls + '||' + osec;
+      if(!groups.has(key)) groups.set(key, {days:new Set(), teachers:[], anyShared:false, cls:ocls, sec:osec});
+      const g = groups.get(key);
+      g.teachers.push(other.name || other.id);
+      // parts থাকলে parts থেকে days, না থাকলে cell.days
+      if(Array.isArray(oc.parts) && oc.parts.length){
+        oc.parts.forEach(p => {
+          if(Array.isArray(p.days)) p.days.forEach(d => g.days.add(d));
+        });
+        g.anyShared = true;
+      } else if(Array.isArray(oc.days) && oc.days.length && oc.days.length < allDays.length){
+        oc.days.forEach(d => g.days.add(d));
+        if(oc.shared) g.anyShared = true;
+        else g.anyShared = oc.days.length < allDays.length;   // partial-day-শেয়ার্ড
+      }
+    });
+    if(!groups.size) return;
+
+    // ── টার্গেট group বাছাই ──────────────────────────────────────
+    //    যদি current cell-এ cls/sec থাকে → exact match group
+    //    নাহলে → first group with partial days (most relevant)
+    let targetKey = null;
+    if(cell.class && cell.section){
+      const k = cell.class + '||' + cell.section;
+      if(groups.has(k) && groups.get(k).days.size > 0 && groups.get(k).days.size < allDays.length){
+        targetKey = k;
+      }
+    } else {
+      // first partial-days group
+      for(const [k, g] of groups.entries()){
+        if(g.days.size > 0 && g.days.size < allDays.length){ targetKey = k; break; }
+      }
+    }
+    if(!targetKey) return;
+    const g = groups.get(targetKey);
+
+    const remaining = allDays.filter(d => !g.days.has(d));
+    if(!remaining.length) return;
+    const dayShort = {Sat:'শনি', Sun:'রবি', Mon:'সোম', Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ'};
+    const usedNames = Array.from(g.days).map(d => dayShort[d] || d).join(', ');
+    const remNames = remaining.map(d => dayShort[d] || d).join(', ');
+    const teacherList = g.teachers.slice(0, 2).join(', ');
+
+    let msg;
+    if(cell.class && cell.section){
+      msg = `${teacherList} ${_teBnNum(g.days.size)} দিন (${usedNames}) নিয়েছেন — আপনি বাকি ${_teBnNum(remaining.length)} দিন (${remNames}) নিন`;
+    } else {
+      msg = `${teacherList} এই slot-এ ${g.cls} / ${g.sec} এ ${_teBnNum(g.days.size)} দিন (${usedNames}) নিয়েছেন — আপনি বাকি ${_teBnNum(remaining.length)} দিন (${remNames}) নিন`;
+    }
+    txt.textContent = msg;
+    btn.dataset.qemDays = remaining.join(',');
+    // 🆕 cls/sec ও pre-fill করার জন্য store
+    btn.dataset.qemCls = g.cls;
+    btn.dataset.qemSec = g.sec;
+    btn.dataset.qemCid = cid;
+    btn.dataset.qemTid = tid;
+    box.style.display = 'flex';
+    // 🆕 Return result for auto-apply in _qemPrepEditor
+    return { remaining: remaining.slice(), cls: g.cls, sec: g.sec };
+  }catch(_){}
+  return null;
+}
+
+/* selectCellOption save-এর পর call হবে — cell → entry sync
+   ─────────────────────────────────────────────────────────────────
+   এই function ৩টি field (subject/class/section) যেকোনোটার পরিবর্তনের
+   পর কল হয়। তিনটি ক্ষেত্রে কাজ:
+   ১. পুরোনো (subject, class, section) combination-এর entry-তে এই cid
+      preferredSlots থেকে বাদ যাবে (cell আগের state থেকে এসেছিল)
+   ২. বর্তমান cell-এ ৩টিই থাকলে → entry তৈরি/update + cid preferredSlots-এ
+   ৩. ৩টির মধ্যে ১টি/২টি থাকলে → এন্ট্রিতে কিছু করব না (partial state)
+
+   ৩ field cell আলাদা row-এ থাকায় user প্রথমে ১টা বসান, পরে অন্যগুলো —
+   তাই অপেক্ষা করি যতক্ষণ না তিনটি ভর্তি হয়। তিনটি ভর্তি = entry তৈরি।
+═══════════════════════════════════════════════════════════════════ */
+function _qemSyncCellToEntry(tid, cid, field, prevValues){
+  // Grid-driven model — সবসময় sync (mode check সরানো)
+  const t = state.teachers.find(x => x.id === tid);
+  if(!t) return;
+  const cell = t.cells && t.cells[cid];
+  if(!cell) return;
+
+  // STEP 1: পুরোনো combination-এর entry থেকে preferredSlot সরাও (যদি combination বদলে যাচ্ছে)
+  // prevValues = {subject, class, section} — selectCellOption থেকে call করার আগে cell-এ যা ছিল
+  if(prevValues && prevValues.subject && prevValues.class && prevValues.section){
+    const newSub = (cell.subject||'').trim();
+    const newCls = (cell.class||'').trim();
+    const newSec = (cell.section||'').trim();
+    // combination আসলে বদলেছে?
+    if(prevValues.subject !== newSub || prevValues.class !== newCls || prevValues.section !== newSec){
+      try{ _qemRemoveSlotFromEntry(t, prevValues.subject, prevValues.class, prevValues.section, cid); }catch(_){}
+    }
+  }
+
+  const sub = (cell.subject||'').trim();
+  const cls = (cell.class||'').trim();
+  const sec = (cell.section||'').trim();
+
+  // Free হলে entry তৈরি করব না
+  if(sub.toLowerCase() === 'free') return;
+
+  // ── editor state পড়ি (যেকোনো field-এ editor খোলা থাকলেই) ───────
+  const allDays = _qemAllDays();
+  const radioEl = document.querySelector('input[name="qemDays"]:checked');
+  const preset = radioEl ? radioEl.value : '6';
+  let days = allDays.slice();
+  if(preset === '3a') days = ['Sat','Sun','Mon'].filter(d => allDays.indexOf(d) >= 0);
+  else if(preset === '3b') days = ['Tue','Wed','Thu'].filter(d => allDays.indexOf(d) >= 0);
+  else if(preset === '2') days = ['Tue','Wed'].filter(d => allDays.indexOf(d) >= 0);
+  else if(preset === 'custom'){
+    const sel = [];
+    document.querySelectorAll('#qemCustomDays .qem-chip.selected').forEach(ch => {
+      const d = ch.getAttribute('data-day');
+      if(d && allDays.indexOf(d) >= 0) sel.push(d);
+    });
+    days = sel.length ? sel : allDays.slice();
+  }
+  const fixedChk = document.getElementById('qemFixedChk');
+  const isFixed = !!(fixedChk && fixedChk.checked);
+  const sharedChk = document.getElementById('qemSharedChk');
+  const isShared = (sharedChk && sharedChk.checked) || (days.length > 0 && days.length < allDays.length);
+
+  // 🆕 PARTIAL STATE FIX — cell-এ ৩ field সম্পূর্ণ না থাকলেও, current editor state
+  //    cell-এ store করি যাতে পরবর্তী field save-এর সময় preserve থাকে
+  //    (radio reset হয়ে যাবে নতুন field খুললে — তাই cell-এ persist করা জরুরি)
+  if(cell){
+    cell.days = days.slice();
+    cell.shared = isShared;
+    cell.fixed = isFixed;
+  }
+
+  // ৩টিই থাকলে তবেই entry তৈরি/update; নাহলে অপেক্ষা
+  if(!sub || !cls || !sec){
+    try{ console.log('[QEM-DEBUG] sync: partial state, cell pending qem saved:', {sub, cls, sec, days, isShared, isFixed}); }catch(_){}
+    saveState();
+    return;
+  }
+
+  if(!Array.isArray(t.teachingEntries)) t.teachingEntries = [];
+  const existing = t.teachingEntries.map((e,i) => ({e:_teSanitizeEntry(e), i}))
+    .find(x => x.e.subject === sub && x.e.class === cls && x.e.section === sec);
+
+  let action;     // 'created' | 'slot-added' | 'noop'
+  if(!existing){
+    // নতুন entry
+    const ne = _teNewEntry();
+    ne.subject = sub; ne.class = cls; ne.section = sec;
+    ne.days = days.slice();
+    ne.daysPerWeek = days.length;
+    ne.preferredSlots = [cid];
+    ne.shared = isShared;
+    ne.fixed = isFixed;
+    t.teachingEntries.push(ne);
+    action = 'created';
+  } else {
+    // existing — preferred slot-এ এই cid নেই? যোগ
+    const e = t.teachingEntries[existing.i];
+    if(!Array.isArray(e.preferredSlots)) e.preferredSlots = [];
+    if(e.preferredSlots.indexOf(cid) < 0){
+      e.preferredSlots.push(cid);
+      action = 'slot-added';
+    } else {
+      action = 'noop';
+    }
+    // 🆕 ANY-FIELD UPDATE — editor-এ user-এর সর্বশেষ choice (days/shared/fixed)
+    //    সব field সেভ-এ entry-তে যাবে। কারণ user যখন cell পূর্ণ করেন, প্রতি field সেভ-এ
+    //    editor-এ explicit choice থাকতে পারে — সব field-এ honor করা জরুরি।
+    e.days = days.slice();
+    e.daysPerWeek = days.length;
+    e.fixed = isFixed;
+    e.shared = isShared;
+  }
+
+  // also sync teacher's master lists (subjects/classes/sections) so the entry shows up
+  if(Array.isArray(t.subjects) && t.subjects.indexOf(sub) < 0) t.subjects.push(sub);
+  if(Array.isArray(t.classes) && t.classes.indexOf(cls) < 0) t.classes.push(cls);
+  if(Array.isArray(t.sections) && t.sections.indexOf(sec) < 0) t.sections.push(sec);
+
+  // 🆕 SHARED LOGIC FIX — cell-এ-ও days/shared/fixed store করি যাতে
+  //    conflict detector accurate ভাবে কাজ করে। ANY field save-এ apply।
+  if(cell){
+    cell.days = days.slice();
+    cell.shared = isShared;
+    cell.fixed = isFixed;
+  }
+
+  try{ console.log('[QEM-DEBUG] sync: action =', action, '| entry:', {sub, cls, sec, days, isShared, isFixed}); }catch(_){}
+
+  saveState();
+  try{
+    if(action === 'created'){
+      showToast(`✓ ${t.name}-এর entry-তে যোগ: ${sub} · ${cls} · ${sec}`,'success',2500);
+    } else if(action === 'slot-added'){
+      showToast('✓ Preferred slot যোগ হয়েছে','success',1500);
+    }
+  }catch(_){}
+}
+
+/* Cell মুছলে: entry-এর preferredSlots থেকে এই slot সরাও (entry অপরিবর্তিত) */
+function _qemRemoveSlotFromEntry(teacher, subject, cls, sec, cid){
+  if(!teacher || !Array.isArray(teacher.teachingEntries)) return;
+  if(!subject || !cls || !sec) return;
+  let changed = false;
+  teacher.teachingEntries.forEach(raw => {
+    const e = _teSanitizeEntry(raw);
+    if(e.subject !== subject || e.class !== cls || e.section !== sec) return;
+    // raw object-এ আসল পরিবর্তন
+    if(Array.isArray(raw.preferredSlots)){
+      const idx = raw.preferredSlots.indexOf(cid);
+      if(idx >= 0){
+        raw.preferredSlots.splice(idx, 1);
+        changed = true;
+      }
+    }
+  });
+  if(changed){
+    saveState();
+    try{ showToast('✓ Preferred slot সরানো হয়েছে','info',1500); }catch(_){}
+  }
+}
+
 function closeCellEditor(){
   document.getElementById('cellEditor').classList.remove('show');
+  try{ _hideCellEditorBackdrop(); }catch(_){}
   currentEditCell = null;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   🆕 QEM Global Auto-Sync — সমস্ত cells স্ক্যান করে missing entries তৈরি
+   ─────────────────────────────────────────────────────────────────
+   QEM mode চালু থাকলে — `renderTable()` শেষে প্রতি teacher-এর cells
+   স্ক্যান করে। যদি কোনো cell-এ valid (subject + class + section) আছে
+   কিন্তু teacher-এর entries-এ এই combination নেই — তবে entry তৈরি।
+
+   এটা নিশ্চিত করে যে:
+   - User যেভাবেই cell বসান (আগের session, mode বন্ধ অবস্থায়, drag-drop)
+     সমস্ত cell-এর জন্য entry সবসময় sync থাকবে
+   - Auto-routine চালালে invariant guard cell মুছবে না
+   - "অননুমোদিত cell" warning আসবে না QEM-mode-এ
+═══════════════════════════════════════════════════════════════════ */
+function _qemAutoSyncAllCells(){
+  // Grid-driven model — সবসময় কাজ করে
+  if(!Array.isArray(state.teachers) || !Array.isArray(state.columns)) return 0;
+  const slotCols = state.columns.filter(c => c && c.type === 'slot');
+  if(!slotCols.length) return 0;
+  const allDays = _qemAllDays();
+  let totalCreated = 0;
+  state.teachers.forEach(t => {
+    if(!t || !t.cells || t.onLeave || t.locked) return;
+    if(!Array.isArray(t.teachingEntries)) t.teachingEntries = [];
+    // Existing combinations index
+    const existing = new Set();
+    t.teachingEntries.forEach(raw => {
+      const e = _teSanitizeEntry(raw);
+      if(e.subject && e.class && e.section){
+        existing.add(e.subject + '||' + e.class + '||' + e.section);
+      }
+    });
+    // প্রতি slot cell scan
+    slotCols.forEach(c => {
+      const cell = t.cells[c.id];
+      if(!cell) return;
+      if(cell.locked || cell.special) return;
+      const sub = (cell.subject||'').trim();
+      const cls = (cell.class||'').trim();
+      const sec = (cell.section||'').trim();
+      if(!sub || !cls || !sec) return;
+      if(sub.toLowerCase() === 'free') return;
+      const key = sub + '||' + cls + '||' + sec;
+      if(existing.has(key)){
+        // entry exists, just ensure this cid is in preferredSlots
+        const e = t.teachingEntries.find(raw => {
+          const s = _teSanitizeEntry(raw);
+          return s.subject === sub && s.class === cls && s.section === sec;
+        });
+        if(e){
+          if(!Array.isArray(e.preferredSlots)) e.preferredSlots = [];
+          if(e.preferredSlots.indexOf(c.id) < 0) e.preferredSlots.push(c.id);
+        }
+        return;
+      }
+      // নতুন entry তৈরি
+      const ne = _teNewEntry();
+      ne.subject = sub; ne.class = cls; ne.section = sec;
+      // 🆕 cell-এ যদি days array থাকে সেটা respect করি (shared cell-এর জন্য crucial)
+      let cellDays = Array.isArray(cell.days) && cell.days.length ? cell.days.slice() : allDays.slice();
+      // parts থাকলে সেই part-এর days
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        const matchPart = cell.parts.find(p => (p.subject||'').trim() === sub);
+        if(matchPart && Array.isArray(matchPart.days) && matchPart.days.length){
+          cellDays = matchPart.days.slice();
+        }
+      }
+      ne.days = cellDays;
+      ne.daysPerWeek = cellDays.length;
+      ne.preferredSlots = [c.id];
+      // ৬-এর কম দিন বা multi-part = shared
+      ne.shared = cellDays.length < allDays.length || (Array.isArray(cell.parts) && cell.parts.length > 1);
+      ne.fixed = !!cell.fixed;
+      t.teachingEntries.push(ne);
+      existing.add(key);
+      totalCreated++;
+      // master lists-এ যোগ
+      if(Array.isArray(t.subjects) && t.subjects.indexOf(sub) < 0) t.subjects.push(sub);
+      if(Array.isArray(t.classes) && t.classes.indexOf(cls) < 0) t.classes.push(cls);
+      if(Array.isArray(t.sections) && t.sections.indexOf(sec) < 0) t.sections.push(sec);
+    });
+  });
+  if(totalCreated > 0){
+    try{ console.log('[QEM-DEBUG] Auto-sync created', totalCreated, 'entries from existing cells'); }catch(_){}
+    saveState();
+  }
+  return totalCreated;
 }
 
 function getColLabel(cid){
@@ -14921,6 +15860,16 @@ function autoGenerateRoutine(){
   if(!requirePerm('aiRoutine')) return;
   try{
     if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity();
+
+    // Grid-driven default — auto-routine চালানোর আগে cells-এ যা আছে সব entries-এ sync
+    try{
+      if(typeof _qemAutoSyncAllCells === 'function'){
+        const synced = _qemAutoSyncAllCells();
+        if(synced > 0){
+          try{ console.log('[grid-driven] pre-auto-routine: synced', synced, 'cells'); }catch(_){}
+        }
+      }
+    }catch(_){}
 
     const slotCols = (state.columns||[]).filter(c => c && c.type === 'slot');
     if(!slotCols.length){
@@ -17342,6 +18291,8 @@ function applySettings(){
   document.body.dataset.coltools = s.alwaysShowColTools ? 'always' : 'hover';
   document.body.dataset.boldImp = !!s.boldImportant;
   document.body.dataset.slNameSwapped = !!s.slNameSwapped;
+  // 🆕 QEM: page-load বা settings-apply-এর সময় visual state restore
+  try{ if(typeof _qemApplyVisualState === 'function') _qemApplyVisualState(); }catch(_){}
 
   // Apply CSS variables for sizing
   const root = document.documentElement;
