@@ -1774,7 +1774,46 @@ body[data-qem="on"] .table-wrap::before{
   cursor:pointer;color:var(--text-2);
 }
 .qem-split-sug .ss-chip:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* 🆕 নির্বাচিত suggestion chip — স্পষ্ট ভিন্ন রঙ (সবুজ, টিক সহ) */
+.qem-split-sug .ss-chip.selected{
+  background:#10b981;color:#fff;border-color:#059669;
+  font-weight:800;box-shadow:0 1px 4px rgba(16,185,129,.4);
+}
+.qem-split-sug .ss-chip.selected::before{content:'✓ ';}
+/* 🆕 split modal input — মান থাকলে সবুজ border highlight */
+#qemSplitModal .field input{transition:.15s}
+#qemSplitModal .field input:not(:placeholder-shown){
+  border-color:#10b981;background:#f0fdf4;font-weight:700;color:#065f46;
+}
 .qem-chip-row{display:flex;flex-wrap:wrap;gap:5px}
+
+/* 🆕 MULTI-PART CELL DISPLAY — দিন → বিষয় → শাখা ফরম্যাট */
+.cell-mpart-wrap{display:flex;flex-direction:column;gap:0;width:100%}
+.cell-mpart{
+  display:block;width:100%;min-width:0;
+  padding:3px 2px;line-height:1.45;
+  font-size:11px;
+  white-space:normal;word-break:break-word;overflow-wrap:anywhere;
+}
+.cell-mpart .mp-days{
+  font-weight:800;color:#dc2626;        /* দিন — স্পষ্ট লাল */
+}
+.cell-mpart .mp-arrow{
+  color:#0d9488;font-weight:700;margin:0 2px;   /* তীর — টিল */
+}
+.cell-mpart .mp-subj{
+  font-weight:700;color:var(--text);     /* বিষয় */
+}
+.cell-mpart .mp-sect{
+  font-weight:700;color:#7c3aed;         /* শাখা — বেগুনি */
+}
+.cell-mpart .mp-share{font-size:10px}
+.mp-divider{
+  height:0;border-top:1px dashed #c084fc;
+  margin:3px 0;width:100%;
+}
+td.is-multipart .cell-content{align-items:stretch !important;padding:3px 4px !important}
+td.is-multipart{vertical-align:top}
 .qem-smart-suggest{
   display:flex;align-items:center;gap:8px;
   padding:9px 11px;border-radius:8px;
@@ -3461,6 +3500,33 @@ body[data-qem="on"] .table-wrap::before{
   height:var(--row-h) !important;
   max-height:var(--row-h) !important;
   min-height:0 !important;
+}
+/* 🆕 শ্রেণি ও শাখা row — content কম (১ লাইন), তাই উচ্চতা কমাই */
+.routine-table tr.teacher-row-class > td,
+.routine-table tr.teacher-row-section > td{
+  height:calc(var(--row-h) * 0.7) !important;
+  max-height:calc(var(--row-h) * 0.7) !important;
+}
+.routine-table tr.teacher-row-class > td .cell-content,
+.routine-table tr.teacher-row-section > td .cell-content{
+  height:calc(var(--row-h) * 0.7) !important;
+  max-height:calc(var(--row-h) * 0.7) !important;
+}
+/* 🆕 বিষয় row — হালকা কমাই (multi-part হলে content auto বাড়বে) */
+.routine-table tr.teacher-row-subject > td{
+  height:calc(var(--row-h) * 0.9) !important;
+  max-height:none !important;        /* multi-part content overflow না করে নিচে নামুক */
+}
+.routine-table tr.teacher-row-subject > td .cell-content{
+  height:auto !important;
+  min-height:calc(var(--row-h) * 0.9) !important;
+  max-height:none !important;
+}
+/* multi-part cell হলে subject content পুরো দেখাও (overflow নয়) */
+.routine-table td.is-multipart .cell-content{
+  height:auto !important;
+  max-height:none !important;
+  overflow:visible !important;
 }
 /* Subject row বিশেষ — দুই-তিন লাইন stack করতে দরকার (subject + (N দিন) + day names)
    কিন্তু container fixed; বেশি content overflow:hidden দিয়ে কাটা যাবে */
@@ -5234,30 +5300,30 @@ body[data-role="manager"] .teacher-only{display:none !important}
 </div>
 
 <!-- 🆕 SPLIT PART EDITOR MODAL — একটি অতিরিক্ত অংশ (শাখা/বিষয়/দিন) সেট করার জন্য -->
-<div class="modal-overlay" id="qemSplitModal" style="display:none">
-  <div class="modal-box" style="max-width:380px">
-    <div class="modal-head">
-      <h3>🔀 অতিরিক্ত অংশ — শাখা/বিষয়/দিন</h3>
-      <button class="modal-x" onclick="_qemSplitModalClose()">✕</button>
+<div class="modal-overlay" id="qemSplitModal">
+  <div class="modal narrow">
+    <div class="modal-header">
+      <h2>🔀 অতিরিক্ত অংশ — শাখা/বিষয়/দিন</h2>
+      <div class="modal-close" onclick="_qemSplitModalClose()">✕</div>
     </div>
-    <div class="modal-body" style="display:flex;flex-direction:column;gap:10px">
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
       <div class="field">
         <label>📖 বিষয়</label>
-        <input type="text" id="qemSplitSubject" placeholder="যেমন: ইসলাম শিক্ষা" autocomplete="off">
+        <input type="text" id="qemSplitSubject" class="input" placeholder="যেমন: ইসলাম শিক্ষা" autocomplete="off">
         <div class="qem-split-sug" id="qemSplitSubjectSug"></div>
       </div>
       <div class="field">
         <label>🎓 শ্রেণি</label>
-        <input type="text" id="qemSplitClass" placeholder="যেমন: দশম শ্রেণি" autocomplete="off">
+        <input type="text" id="qemSplitClass" class="input" placeholder="যেমন: দশম শ্রেণি" autocomplete="off">
         <div class="qem-split-sug" id="qemSplitClassSug"></div>
       </div>
       <div class="field">
         <label>📑 শাখা</label>
-        <input type="text" id="qemSplitSection" placeholder="যেমন: মানবিক" autocomplete="off">
+        <input type="text" id="qemSplitSection" class="input" placeholder="যেমন: মানবিক" autocomplete="off">
         <div class="qem-split-sug" id="qemSplitSectionSug"></div>
       </div>
       <div class="field">
-        <label>📅 কোন দিনগুলো?</label>
+        <label>📅 কোন দিনগুলো? <span id="qemSplitDaysHint" style="font-size:11px;color:#16a34a;font-weight:600"></span></label>
         <div class="qem-chip-row" id="qemSplitDays">
           <span class="qem-chip" data-day="Sat">শনি</span>
           <span class="qem-chip" data-day="Sun">রবি</span>
@@ -5271,10 +5337,10 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <input type="checkbox" id="qemSplitShared" checked>
         <span>🔄 শেয়ার্ড ক্লাস</span>
       </label>
-    </div>
-    <div class="modal-foot">
-      <button class="tool-btn" onclick="_qemSplitModalClose()">বাতিল</button>
-      <button class="tool-btn primary" onclick="_qemSplitModalSave()">✓ যোগ করুন</button>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="tool-btn" style="flex:1;justify-content:center" onclick="_qemSplitModalClose()">বাতিল</button>
+        <button class="tool-btn primary" style="flex:1;justify-content:center" onclick="_qemSplitModalSave()">✓ যোগ করুন</button>
+      </div>
     </div>
   </div>
 </div>
@@ -8720,6 +8786,34 @@ function ensureStateIntegrity(){
   if(!Array.isArray(state.teachers)) state.teachers = [];
   if(!Array.isArray(state.audit)) state.audit = [];
   if(!Array.isArray(state.requests)) state.requests = [];
+
+  // 🆕 MULTI-PART CLEANUP — multi-part cell-এ top-level subject/class/section
+  //    থাকলে এলোমেলো হয়। parts[] একমাত্র master রাখি — top-level সরিয়ে দিই।
+  try{
+    state.teachers.forEach(t => {
+      if(!t || !t.cells) return;
+      Object.keys(t.cells).forEach(cid => {
+        const cell = t.cells[cid];
+        if(cell && Array.isArray(cell.parts) && cell.parts.length){
+          // parts থাকলে top-level fields অপ্রয়োজনীয় ও বিভ্রান্তিকর — মুছি
+          delete cell.subject; delete cell.class; delete cell.section;
+          delete cell.days; delete cell.shared;
+          // parts-এ ত্রুটিপূর্ণ (subject/section ছাড়া) entry বাদ দিই
+          cell.parts = cell.parts.filter(p => p && (p.subject||'').trim() && (p.section||'').trim());
+          // একটাই part থাকলে → single cell-এ ফিরিয়ে আনি
+          if(cell.parts.length === 1){
+            const p = cell.parts[0];
+            cell.subject = p.subject; cell.class = p.class; cell.section = p.section;
+            cell.days = Array.isArray(p.days) ? p.days.slice() : [];
+            cell.shared = !!p.shared;
+            delete cell.parts;
+          } else if(cell.parts.length === 0){
+            delete cell.parts;
+          }
+        }
+      });
+    });
+  }catch(_){}
   // columns: যদি ফাঁকা হয়, default time-slot গুলো ফেরত দাও
   if(!Array.isArray(state.columns) || state.columns.length === 0){
     state.columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
@@ -9049,14 +9143,21 @@ function renderTable(){
         return;
       }
       const cell = (t.cells[c.id]||{});
-      const isFree = !cell.subject || cell.subject==='Free' || !cell.class;
+      const _hasParts = Array.isArray(cell.parts) && cell.parts.length > 0;
+      const isFree = !_hasParts && (!cell.subject || cell.subject==='Free' || !cell.class);
       const conflict = conflicts.has(t.id+'_'+c.id);
       const cellEditable = teacherCanEdit && !c.locked;
       const lockedCellCls = teacherLocked ? ' is-locked' : '';
       // Req #6: Always render the class cell (even when onLeave) — schedule stays visible for proxy assignment.
       // Class cell — show value or just dropdown arrow icon (NO "Free" text here)
-      const classVal = cell.class ? esc(cell.class) : '<span class="cell-arrow" title="ক্লিক করে শ্রেণি নির্বাচন">▾</span>';
-      const classCls = cell.class ? '' : 'is-empty-arrow';
+      // 🆕 multi-part হলে প্রথম part-এর class দেখাই (বা "একাধিক")
+      let classDisplay = cell.class;
+      if(_hasParts){
+        const uniqueClasses = [...new Set(cell.parts.map(p => (p.class||'').trim()).filter(Boolean))];
+        classDisplay = uniqueClasses.length === 1 ? uniqueClasses[0] : (uniqueClasses.join(' / ') || '');
+      }
+      const classVal = classDisplay ? esc(classDisplay) : '<span class="cell-arrow" title="ক্লিক করে শ্রেণি নির্বাচন">▾</span>';
+      const classCls = classDisplay ? '' : 'is-empty-arrow';
       body += `<td class="cell-class${lockedCellCls} ${conflict?'has-conflict':''} ${isFree?'is-free':''} ${classCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="class"${styleAttr}>
         <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','class')`:''}">
           <span class="row-label">শ্রেণি</span>${classVal}
@@ -9071,7 +9172,8 @@ function renderTable(){
       state.columns.forEach(c=>{
         if(c.type==='break') return; // rowspan covers
         const cell = (t.cells[c.id]||{});
-        const isFree = !cell.subject || cell.subject==='Free' || !cell.class;
+        const _hasParts = Array.isArray(cell.parts) && cell.parts.length > 0;
+        const isFree = !_hasParts && (!cell.subject || cell.subject==='Free' || !cell.class);
         const conflict = conflicts.has(t.id+'_'+c.id);
         const cellEditable = teacherCanEdit && !c.locked;
         const colW = (c.width && c.width > 0) ? c.width : 0;
@@ -9084,6 +9186,34 @@ function renderTable(){
           body += `<td class="is-free cell-subject${lockedCellCls} ${conflict?'has-conflict':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}>
             <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
               <span class="row-label">বিষয়</span><span class="free-text">${esc(freeText)}</span>
+            </div></td>`;
+        } else if(_hasParts){
+          // 🆕 MULTI-PART CELL — ফরম্যাট: দিন → বিষয় → শাখা
+          //    উদাহরণ: শনি, রবি, সোম → বাংলা → মানবিক
+          const dayShortBn = {Sat:'শনি', Sun:'রবি', Mon:'সোম', Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ', Fri:'শুক্র'};
+          const orderRef = (typeof WEEK_DAYS !== 'undefined' && Array.isArray(WEEK_DAYS)) ? WEEK_DAYS.map(d=>d.key) : ['Sat','Sun','Mon','Tue','Wed','Thu'];
+          // combined coverage for color
+          const allCovered = new Set();
+          cell.parts.forEach(p => (Array.isArray(p.days)?p.days:[]).forEach(d => allCovered.add(d)));
+          const covN = allCovered.size;
+          const sharedCovCls = covN >= 6 ? ' is-shared-full' : (covN > 0 ? ' is-shared-half' : '');
+          const partsHTML = cell.parts.map((p, idx) => {
+            const od = orderRef.filter(k => (p.days||[]).indexOf(k) >= 0);
+            const dnames = od.map(k => dayShortBn[k]||k).join(', ');
+            const sep = idx > 0 ? '<div class="mp-divider"></div>' : '';
+            // দিন (লাল) → বিষয় → শাখা
+            return `${sep}<div class="cell-mpart">
+              <span class="mp-days">${esc(dnames)}</span>
+              <span class="mp-arrow">→</span>
+              <span class="mp-subj">${esc(p.subject||'—')}</span>
+              <span class="mp-arrow">→</span>
+              <span class="mp-sect">${esc(p.section||'—')}</span>${p.shared?' <span class="mp-share">🔄</span>':''}
+            </div>`;
+          }).join('');
+          body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''} is-shared-cell is-multipart${sharedCovCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr} title="🔀 স্প্লিট স্লট — ${toBnNum(covN)}/৬ দিন, ${cell.parts.length} অংশ">
+            <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
+              <span class="row-label">বিষয়</span>
+              <div class="cell-mpart-wrap">${partsHTML}</div>
             </div></td>`;
         } else {
           const isSharedCell = (Array.isArray(cell.days) && cell.days.length) || (Array.isArray(cell.parts) && cell.parts.length);
@@ -9174,11 +9304,18 @@ function renderTable(){
       state.columns.forEach(c=>{
         if(c.type==='break') return;
         const cell = (t.cells[c.id]||{});
-        const isFree = !cell.subject || cell.subject==='Free' || !cell.class;
+        const _hasParts = Array.isArray(cell.parts) && cell.parts.length > 0;
+        const isFree = !_hasParts && (!cell.subject || cell.subject==='Free' || !cell.class);
         const conflict = conflicts.has(t.id+'_'+c.id);
         const cellEditable = teacherCanEdit && !c.locked;
-        const sectionVal = cell.section ? esc(cell.section) : '<span class="cell-arrow" title="ক্লিক করে শাখা নির্বাচন">▾</span>';
-        const secCls = cell.section ? '' : 'is-empty-arrow';
+        // 🆕 multi-part হলে section row-এ "একাধিক শাখা" দেখাই (বিস্তারিত subject row-এ)
+        let sectionDisplay = cell.section;
+        if(_hasParts){
+          const uniqueSecs = [...new Set(cell.parts.map(p => (p.section||'').trim()).filter(Boolean))];
+          sectionDisplay = uniqueSecs.length === 1 ? uniqueSecs[0] : (uniqueSecs.join(' / ') || '');
+        }
+        const sectionVal = sectionDisplay ? esc(sectionDisplay) : '<span class="cell-arrow" title="ক্লিক করে শাখা নির্বাচন">▾</span>';
+        const secCls = sectionDisplay ? '' : 'is-empty-arrow';
         const colW = (c.width && c.width > 0) ? c.width : 0;
         const widthCss = colW > 0 ? `width:${colW}px;min-width:${colW}px;max-width:${colW}px;` : '';
         const cellBg = rowBg || c.color || '';
@@ -13167,22 +13304,28 @@ function _detectRealtimeConflicts(){
       if(!_rtIsLoadedCell(cell)) return;
       const cls = (cell.class || '').trim();
       const sec = (cell.section || '').trim();
-      if(!cls && !sec) return;
+      const _isMultiPart = Array.isArray(cell.parts) && cell.parts.length > 0;
+      // multi-part cell-এ top-level cls/sec খালি থাকতে পারে — তাই এই check skip
+      if(!_isMultiPart && !cls && !sec) return;
       const classKey = cls + '||' + sec;
-      // multi-part cell — একই slot-এ একাধিক subject = প্রকৃত shared
+      // multi-part cell — প্রতিটি part-এর নিজস্ব class/section/subject।
+      // 🆕 KEY FIX: part-এর নিজস্ব class/section দিয়ে classKey তৈরি করি
+      //    (top-level cell.class/section নয় — তা ভুল গ্রুপিং করত)।
       if(Array.isArray(cell.parts) && cell.parts.length){
         cell.parts.forEach(part => {
           const psub = (part.subject||'').trim();
+          const pcls = (part.class||'').trim() || cls;     // part-এর নিজস্ব, fallback top-level
+          const psec = (part.section||'').trim() || sec;
           if(!psub) return;
           const pdays = Array.isArray(part.days) ? part.days : [];
-          const pk = psub + '||' + cls + '||' + sec;
+          const pClassKey = pcls + '||' + psec;            // 🆕 part-ভিত্তিক classKey
           // multi-part = genuinely shared (একই ঘরে একাধিক বিষয়/দিন ভাগ)
           const isShared = true;
           pdays.forEach(day => {
-            if(!occMap[classKey]) occMap[classKey] = {};
-            if(!occMap[classKey][c.id]) occMap[classKey][c.id] = {};
-            if(!occMap[classKey][c.id][day]) occMap[classKey][c.id][day] = [];
-            occMap[classKey][c.id][day].push({tid: t.id, tname: t.name, subject: psub, isShared});
+            if(!occMap[pClassKey]) occMap[pClassKey] = {};
+            if(!occMap[pClassKey][c.id]) occMap[pClassKey][c.id] = {};
+            if(!occMap[pClassKey][c.id][day]) occMap[pClassKey][c.id][day] = [];
+            occMap[pClassKey][c.id][day].push({tid: t.id, tname: t.name, subject: psub, isShared});
           });
         });
         return;
@@ -13309,12 +13452,11 @@ function _detectRealtimeConflicts(){
   });
 
   // ═══════════════════════════════════════════════════════════════════
-  // 🆕 PASS 3: UNAUTHORIZED CELL — শিক্ষকের teaching entries-এর সাথে cell মেলে না
-  //   নিয়ম: প্রতি cell-এর (subject, class, section) MUST শিক্ষকের
-  //   কোনো teaching entry-র সাথে মিলবে। মিল না হলে → unauthorized
-  //   exception: locked, special, Free, সম্পূর্ণ খালি cell
-  //   🆕 Grid-driven model: valid cells (subject+class+section সবই আছে) যেগুলোর entry নেই —
-  //      সেগুলোকে unauthorized হিসেবে চিহ্নিত করার বদলে স্বয়ংক্রিয়ভাবে entry তৈরি করি
+  // 🆕 PASS 3: GRID-DRIVEN MODEL — cell-ই master data source।
+  //   cell-এ যা বসানো, তাই বৈধ — teaching entries-এর সাথে মেলানোর দরকার নেই।
+  //   তাই "অননুমোদিত cell" detection সম্পূর্ণ বন্ধ। শুধু auto-rescue রাখি:
+  //   valid cell (subject+class+section আছে) যেগুলোর entry নেই — সেগুলোর জন্য
+  //   entry তৈরি করি (auto-routine/sync-এর প্রয়োজনে), কিন্তু কোনো নোটিশ দেখাই না।
   // ═══════════════════════════════════════════════════════════════════
   const qemActive = true;  // grid-driven default
   const qemDays = (typeof _qemAllDays === 'function') ? _qemAllDays() : ['Sat','Sun','Mon','Tue','Wed','Thu'];
@@ -13331,37 +13473,54 @@ function _detectRealtimeConflicts(){
         }
       });
     }
-    // teacher-এর কোনো entry না থাকলে → কোনো cell বসানো বৈধ নয়
     slotCols.forEach(c => {
       const cell = t.cells[c.id];
       if(!cell) return;
-      if(cell.locked || cell.special) return;          // protected
-      if(!_rtIsLoadedCell(cell)) return;                // খালি OK
+      if(cell.locked || cell.special) return;
+      if(!_rtIsLoadedCell(cell)) return;
       const sub = (cell.subject||'').toString().toLowerCase();
-      if(sub === 'free') return;                        // Free OK
+      if(sub === 'free') return;
 
-      // shared multi-part cell
+      // multi-part cell — প্রতি part-এর জন্য entry নিশ্চিত করি (নোটিশ নয়)
       if(Array.isArray(cell.parts) && cell.parts.length){
-        const allOk = cell.parts.every(p => {
-          const pk = (p.subject||'') + '||' + (cell.class||'') + '||' + (cell.section||'');
-          return validKeys.has(pk);
-        });
-        if(allOk) return;
-        out.unauthorized.push({
-          tid: t.id, tname: t.name,
-          cid: c.id, colLabel: colLabelMap[c.id] || c.id,
-          cell, reason: 'shared-part-mismatch'
+        cell.parts.forEach(p => {
+          const ps = (p.subject||'').trim();
+          const pc = (p.class||'').trim();
+          const psec = (p.section||'').trim();
+          if(!ps || !pc || !psec) return;
+          const pk = ps + '||' + pc + '||' + psec;
+          if(validKeys.has(pk)) return;
+          try{
+            if(!Array.isArray(t.teachingEntries)) t.teachingEntries = [];
+            const ne = (typeof _teNewEntry === 'function') ? _teNewEntry() : {
+              id: 'e-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
+              subject:'', class:'', section:'', days:[], daysPerWeek:6,
+              preferredSlots:[], notes:'', shared:false, sharedNote:'', fixed:false
+            };
+            ne.subject = ps; ne.class = pc; ne.section = psec;
+            const pd = Array.isArray(p.days) && p.days.length ? p.days.slice() : qemDays.slice();
+            ne.days = pd; ne.daysPerWeek = pd.length;
+            ne.preferredSlots = [c.id];
+            ne.shared = !!p.shared || true;   // multi-part সর্বদা shared প্রকৃতির
+            ne.fixed = false;
+            t.teachingEntries.push(ne);
+            validKeys.add(pk);
+            if(Array.isArray(t.subjects) && t.subjects.indexOf(ps) < 0) t.subjects.push(ps);
+            if(Array.isArray(t.classes) && t.classes.indexOf(pc) < 0) t.classes.push(pc);
+            if(Array.isArray(t.sections) && t.sections.indexOf(psec) < 0) t.sections.push(psec);
+            qemAutoCreated++;
+          }catch(_){}
         });
         return;
       }
+
+      // single cell — entry না থাকলে auto-তৈরি (নোটিশ নয়)
       const k = (cell.subject||'') + '||' + (cell.class||'') + '||' + (cell.section||'');
       if(!validKeys.has(k)){
-        // 🆕 QEM auto-rescue — যদি cell-এ ৩টিই (subject, class, section) আছে এবং QEM চালু,
-        //    unauthorized না বানিয়ে নিজেই entry তৈরি করি
         const cs = (cell.subject||'').trim();
         const cc = (cell.class||'').trim();
         const csec = (cell.section||'').trim();
-        if(qemActive && cs && cc && csec && cs.toLowerCase() !== 'free'){
+        if(cs && cc && csec && cs.toLowerCase() !== 'free'){
           try{
             if(!Array.isArray(t.teachingEntries)) t.teachingEntries = [];
             const ne = (typeof _teNewEntry === 'function') ? _teNewEntry() : {
@@ -13370,32 +13529,25 @@ function _detectRealtimeConflicts(){
               preferredSlots:[], notes:'', shared:false, sharedNote:'', fixed:false
             };
             ne.subject = cs; ne.class = cc; ne.section = csec;
-            // 🆕 cell-এ actual days থাকলে সেটা respect করি (shared scenarios-এ critical)
             const cellActualDays = (Array.isArray(cell.days) && cell.days.length) ? cell.days.slice() : qemDays.slice();
             ne.days = cellActualDays;
             ne.daysPerWeek = cellActualDays.length;
             ne.preferredSlots = [c.id];
-            ne.shared = !!cell.shared || (cellActualDays.length > 0 && cellActualDays.length < qemDays.length);
+            ne.shared = !!cell.shared;
             ne.fixed = !!cell.fixed;
             t.teachingEntries.push(ne);
             validKeys.add(k);
-            // master lists-এ যোগ
             if(Array.isArray(t.subjects) && t.subjects.indexOf(cs) < 0) t.subjects.push(cs);
             if(Array.isArray(t.classes) && t.classes.indexOf(cc) < 0) t.classes.push(cc);
             if(Array.isArray(t.sections) && t.sections.indexOf(csec) < 0) t.sections.push(csec);
             qemAutoCreated++;
-            return;  // unauthorized list-এ যোগ করি না
           }catch(_){}
         }
-        out.unauthorized.push({
-          tid: t.id, tname: t.name,
-          cid: c.id, colLabel: colLabelMap[c.id] || c.id,
-          cell, reason: 'no-matching-entry'
-        });
+        // ❌ কোনো unauthorized push নেই — grid-driven-এ cell-ই বৈধ
       }
     });
   });
-  // QEM auto-rescue হলে state save করে দিই
+  // auto-rescue হলে state save
   if(qemAutoCreated > 0){
     try{ saveState(); }catch(_){}
   }
@@ -14057,11 +14209,16 @@ function _qemAllDays(){
      part 2: ইসলাম · দশম · মানবিক · শনি,রবি,সোম
 ═══════════════════════════════════════════════════════════════════ */
 
+// 🆕 split modal-এর নিজস্ব target — cell editor বন্ধ হলেও টিকে থাকে
+//    (currentEditCell null হয়ে গেলেও split কাজ চলবে)
+let _qemSplitTarget = null;
+
 /* split section render — current cell-এর parts দেখাও */
 function _qemRenderSplitList(){
   const host = document.getElementById('qemSplitList');
-  if(!host || !currentEditCell) return;
-  const {tid, cid} = currentEditCell;
+  const tgt = currentEditCell || _qemSplitTarget;
+  if(!host || !tgt) return;
+  const {tid, cid} = tgt;
   const t = state.teachers.find(x => x.id === tid);
   const cell = t && t.cells && t.cells[cid];
   const parts = (cell && Array.isArray(cell.parts)) ? cell.parts : [];
@@ -14082,12 +14239,58 @@ function _qemRenderSplitList(){
 /* "➕ আরেকটি শাখা/দিন যোগ করুন" — split modal খোলো */
 function _qemSplitAddPart(){
   if(!currentEditCell) return;
+  const {tid, cid} = currentEditCell;
+  // 🆕 target আলাদা variable-এ ধরে রাখি (cell editor বন্ধ হলেও টিকবে)
+  _qemSplitTarget = {tid, cid};
+  const t = state.teachers.find(x => x.id === tid);
+  const cell = t && t.cells && t.cells[cid];
+
   // modal field reset
   ['qemSplitSubject','qemSplitClass','qemSplitSection'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
   document.querySelectorAll('#qemSplitDays .qem-chip').forEach(ch => ch.classList.remove('selected'));
   const sh = document.getElementById('qemSplitShared'); if(sh) sh.checked = true;
+
+  // 🆕 AUTO REMAINING DAYS — এই cell-এ ইতিমধ্যে যে দিনগুলো ব্যবহৃত,
+  //    তার বাইরের বাকি দিনগুলো স্বয়ংক্রিয়ভাবে select করি
+  const allDays = _qemAllDays();
+  const usedDays = new Set();
+  if(cell){
+    // existing parts থেকে
+    if(Array.isArray(cell.parts) && cell.parts.length){
+      cell.parts.forEach(p => (Array.isArray(p.days)?p.days:[]).forEach(d => usedDays.add(d)));
+    } else if(Array.isArray(cell.days) && cell.days.length){
+      // single cell (এখনো part-এ রূপান্তর হয়নি)
+      cell.days.forEach(d => usedDays.add(d));
+    }
+  }
+  const remaining = allDays.filter(d => !usedDays.has(d));
+  const hint = document.getElementById('qemSplitDaysHint');
+  if(remaining.length && remaining.length < allDays.length){
+    // বাকি দিনগুলো auto-select
+    document.querySelectorAll('#qemSplitDays .qem-chip').forEach(ch => {
+      const d = ch.getAttribute('data-day');
+      if(remaining.indexOf(d) >= 0) ch.classList.add('selected');
+    });
+    const dayShort = {Sat:'শনি', Sun:'রবি', Mon:'সোম', Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ'};
+    if(hint) hint.textContent = '(বাকি দিন স্বয়ংক্রিয় নির্বাচিত: ' + remaining.map(d=>dayShort[d]||d).join(', ') + ')';
+  } else {
+    if(hint) hint.textContent = '';
+  }
+
+  // 🆕 শ্রেণি auto-fill — যদি cell-এ ইতিমধ্যে class থাকে, সেটাই বসাই (সাধারণত একই শ্রেণি)
+  if(cell){
+    let baseClass = cell.class || '';
+    if((!baseClass) && Array.isArray(cell.parts) && cell.parts.length){
+      baseClass = cell.parts[0].class || '';
+    }
+    if(baseClass){
+      const cInp = document.getElementById('qemSplitClass');
+      if(cInp) cInp.value = baseClass;
+    }
+  }
+
   // suggestion chips (global options থেকে)
   _qemSplitFillSuggestions();
   // chip click handler (একবার bind)
@@ -14100,7 +14303,19 @@ function _qemSplitAddPart(){
     });
   }
   const m = document.getElementById('qemSplitModal');
-  if(m) m.style.display = 'flex';
+  if(m){
+    // 🆕 cell editor backdrop সরাই যাতে split modal-এর সাথে interference না হয়
+    try{
+      const bd = document.getElementById('cellEditorBackdrop');
+      if(bd) bd.classList.remove('show');
+    }catch(_){}
+    m.classList.add('show');
+    // প্রথম input-এ focus (subject)
+    setTimeout(() => {
+      const si = document.getElementById('qemSplitSubject');
+      if(si) si.focus();
+    }, 60);
+  }
 }
 
 /* split modal-এ subject/class/section suggestion chips ভরো */
@@ -14109,15 +14324,32 @@ function _qemSplitFillSuggestions(){
     const host = document.getElementById(sugId);
     const inp = document.getElementById(inputId);
     if(!host || !inp) return;
-    const list = (opts||[]).slice(0, 12);
+    const list = (opts||[]).slice(0, 16);
+    const curVal = (inp.value||'').trim();
     host.innerHTML = list.map(o =>
-      `<span class="ss-chip" data-v="${esc(o)}">${esc(o)}</span>`
+      `<span class="ss-chip${o===curVal?' selected':''}" data-v="${esc(o)}">${esc(o)}</span>`
     ).join('');
+    // প্রতিবার rebind (innerHTML বদলালে পুরোনো listener হারায় না, কিন্তু নিরাপদে flag দিয়ে)
     if(!host.dataset.bound){
       host.dataset.bound = '1';
       host.addEventListener('click', (e) => {
         const chip = e.target.closest('.ss-chip');
-        if(chip) inp.value = chip.getAttribute('data-v') || '';
+        if(!chip) return;
+        const v = chip.getAttribute('data-v') || '';
+        inp.value = v;                                   // input-এ বসাই
+        // visible feedback — এই chip selected, বাকিগুলো নয়
+        host.querySelectorAll('.ss-chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+      });
+    }
+    // input-এ টাইপ করলেও matching chip highlight হবে
+    if(!inp.dataset.bound){
+      inp.dataset.bound = '1';
+      inp.addEventListener('input', () => {
+        const v = (inp.value||'').trim();
+        host.querySelectorAll('.ss-chip').forEach(c => {
+          c.classList.toggle('selected', c.getAttribute('data-v') === v);
+        });
       });
     }
   };
@@ -14128,22 +14360,37 @@ function _qemSplitFillSuggestions(){
 
 function _qemSplitModalClose(){
   const m = document.getElementById('qemSplitModal');
-  if(m) m.style.display = 'none';
+  if(m) m.classList.remove('show');
+  // cell editor এখনো খোলা থাকলে তার backdrop ফিরিয়ে আনি
+  try{
+    const ce = document.getElementById('cellEditor');
+    if(ce && ce.classList.contains('show')){
+      const bd = document.getElementById('cellEditorBackdrop');
+      if(bd) bd.classList.add('show');
+    }
+  }catch(_){}
 }
 
 /* split modal "✓ যোগ করুন" — নতুন part cell-এ যোগ */
 function _qemSplitModalSave(){
-  if(!currentEditCell) return;
-  const {tid, cid} = currentEditCell;
+  const tgt = _qemSplitTarget || currentEditCell;
+  if(!tgt){ try{ showToast('⚠ আবার চেষ্টা করুন — slot নির্বাচন হারিয়ে গেছে','warning',2500); }catch(_){} return; }
+  const {tid, cid} = tgt;
   const t = state.teachers.find(x => x.id === tid);
-  if(!t) return;
+  if(!t){ try{ showToast('⚠ শিক্ষক খুঁজে পাওয়া যায়নি','warning',2500); }catch(_){} return; }
   if(!t.cells[cid]) t.cells[cid] = {};
   const cell = t.cells[cid];
 
-  const sub = (document.getElementById('qemSplitSubject').value||'').trim();
-  const cls = (document.getElementById('qemSplitClass').value||'').trim();
-  const sec = (document.getElementById('qemSplitSection').value||'').trim();
-  const shared = !!document.getElementById('qemSplitShared').checked;
+  const subEl = document.getElementById('qemSplitSubject');
+  const clsEl = document.getElementById('qemSplitClass');
+  const secEl = document.getElementById('qemSplitSection');
+  const shEl  = document.getElementById('qemSplitShared');
+  if(!subEl || !clsEl || !secEl){ try{ showToast('⚠ ফর্ম লোড হয়নি','warning',2000); }catch(_){} return; }
+
+  const sub = (subEl.value||'').trim();
+  const cls = (clsEl.value||'').trim();
+  const sec = (secEl.value||'').trim();
+  const shared = !!(shEl && shEl.checked);
   const days = [];
   document.querySelectorAll('#qemSplitDays .qem-chip.selected').forEach(ch => {
     const d = ch.getAttribute('data-day'); if(d) days.push(d);
@@ -14180,6 +14427,15 @@ function _qemSplitModalSave(){
   // নতুন part যোগ
   cell.parts.push({subject: sub, class: cls, section: sec, days: days.slice(), shared: shared});
 
+  // 🆕 KEY FIX — multi-part হওয়ার পর top-level subject/class/section/days মুছি।
+  //    এখন parts[] একমাত্র master — render/detector আর top-level ব্যবহার করবে না,
+  //    তাই section/subject এলোমেলো হবে না।
+  delete cell.subject;
+  delete cell.class;
+  delete cell.section;
+  delete cell.days;
+  delete cell.shared;
+
   saveState();
   _qemSplitModalClose();
   _qemRenderSplitList();
@@ -14190,8 +14446,9 @@ function _qemSplitModalSave(){
 
 /* একটি part মুছে ফেলো */
 function _qemSplitRemovePart(index){
-  if(!currentEditCell) return;
-  const {tid, cid} = currentEditCell;
+  const tgt = _qemSplitTarget || currentEditCell;
+  if(!tgt) return;
+  const {tid, cid} = tgt;
   const t = state.teachers.find(x => x.id === tid);
   const cell = t && t.cells && t.cells[cid];
   if(!cell || !Array.isArray(cell.parts)) return;
