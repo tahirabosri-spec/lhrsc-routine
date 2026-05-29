@@ -1730,6 +1730,51 @@ body[data-qem="on"] .table-wrap::before{
   width:14px;height:14px;margin:0;
 }
 .qem-shared-chk-label input{accent-color:#f59e0b}
+
+/* 🆕 MULTI-PART (SPLIT) SECTION */
+.qem-split-section{
+  margin-top:8px;padding-top:9px;
+  border-top:1.5px dashed #a855f7;
+}
+.qem-split-head{
+  display:flex;flex-direction:column;gap:2px;margin-bottom:7px;
+}
+.qem-split-head>span:first-child{
+  font-size:12px;font-weight:800;color:#7c3aed;
+}
+.qem-split-hint{font-size:10px;color:var(--text-3);line-height:1.4}
+.qem-split-list{display:flex;flex-direction:column;gap:6px;margin-bottom:7px}
+.qem-split-item{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 9px;border-radius:8px;
+  background:linear-gradient(135deg,#faf5ff,#f3e8ff);
+  border:1px solid #d8b4fe;font-size:11.5px;
+}
+.qem-split-item .si-body{flex:1;line-height:1.4;color:#581c87}
+.qem-split-item .si-body b{color:#6b21a8}
+.qem-split-item .si-days{font-size:10px;color:#7c3aed;display:block;margin-top:1px}
+.qem-split-item .si-del{
+  background:#fee2e2;color:#b91c1c;border:none;
+  width:24px;height:24px;border-radius:6px;cursor:pointer;
+  font-size:13px;flex-shrink:0;font-weight:700;
+}
+.qem-split-item .si-del:hover{background:#fecaca}
+.qem-split-add{
+  width:100%;padding:8px;border-radius:8px;
+  background:#f3e8ff;color:#7c3aed;border:1.5px dashed #c084fc;
+  font-size:11.5px;font-weight:700;cursor:pointer;
+}
+.qem-split-add:hover{background:#e9d5ff}
+.qem-split-sug{
+  display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;
+}
+.qem-split-sug .ss-chip{
+  font-size:10.5px;padding:3px 8px;border-radius:99px;
+  background:var(--surface-2);border:1px solid var(--border);
+  cursor:pointer;color:var(--text-2);
+}
+.qem-split-sug .ss-chip:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.qem-chip-row{display:flex;flex-wrap:wrap;gap:5px}
 .qem-smart-suggest{
   display:flex;align-items:center;gap:8px;
   padding:9px 11px;border-radius:8px;
@@ -5171,10 +5216,66 @@ body[data-role="manager"] .teacher-only{display:none !important}
         <span>🔒 ফিক্সড স্লট — এই slot ছাড়া অন্য কোথাও সরাবে না</span>
       </label>
     </div>
+
+    <!-- 🆕 MULTI-PART (SPLIT) SECTION — একই সময়ে ভিন্ন শাখা/দিনে আলাদা ক্লাস -->
+    <div class="qem-split-section" id="qemSplitSection">
+      <div class="qem-split-head">
+        <span>🔀 স্প্লিট স্লট — একই সময়ে ভিন্ন শাখা</span>
+        <span class="qem-split-hint">যদি এই শিক্ষক একই ঘণ্টায় কিছু দিন এক শাখায়, বাকি দিন অন্য শাখায় ক্লাস নেন</span>
+      </div>
+      <div class="qem-split-list" id="qemSplitList"></div>
+      <button type="button" class="qem-split-add" id="qemSplitAddBtn" onclick="_qemSplitAddPart()">➕ আরেকটি শাখা/দিন যোগ করুন</button>
+    </div>
   </div>
   <div class="cell-editor-footer">
     <button class="tool-btn" onclick="clearCell()">🗑 মুছুন</button>
     <button class="tool-btn primary" onclick="closeCellEditor()">সম্পন্ন</button>
+  </div>
+</div>
+
+<!-- 🆕 SPLIT PART EDITOR MODAL — একটি অতিরিক্ত অংশ (শাখা/বিষয়/দিন) সেট করার জন্য -->
+<div class="modal-overlay" id="qemSplitModal" style="display:none">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-head">
+      <h3>🔀 অতিরিক্ত অংশ — শাখা/বিষয়/দিন</h3>
+      <button class="modal-x" onclick="_qemSplitModalClose()">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:10px">
+      <div class="field">
+        <label>📖 বিষয়</label>
+        <input type="text" id="qemSplitSubject" placeholder="যেমন: ইসলাম শিক্ষা" autocomplete="off">
+        <div class="qem-split-sug" id="qemSplitSubjectSug"></div>
+      </div>
+      <div class="field">
+        <label>🎓 শ্রেণি</label>
+        <input type="text" id="qemSplitClass" placeholder="যেমন: দশম শ্রেণি" autocomplete="off">
+        <div class="qem-split-sug" id="qemSplitClassSug"></div>
+      </div>
+      <div class="field">
+        <label>📑 শাখা</label>
+        <input type="text" id="qemSplitSection" placeholder="যেমন: মানবিক" autocomplete="off">
+        <div class="qem-split-sug" id="qemSplitSectionSug"></div>
+      </div>
+      <div class="field">
+        <label>📅 কোন দিনগুলো?</label>
+        <div class="qem-chip-row" id="qemSplitDays">
+          <span class="qem-chip" data-day="Sat">শনি</span>
+          <span class="qem-chip" data-day="Sun">রবি</span>
+          <span class="qem-chip" data-day="Mon">সোম</span>
+          <span class="qem-chip" data-day="Tue">মঙ্গল</span>
+          <span class="qem-chip" data-day="Wed">বুধ</span>
+          <span class="qem-chip" data-day="Thu">বৃহঃ</span>
+        </div>
+      </div>
+      <label class="qem-checkbox qem-shared-chk-label">
+        <input type="checkbox" id="qemSplitShared" checked>
+        <span>🔄 শেয়ার্ড ক্লাস</span>
+      </label>
+    </div>
+    <div class="modal-foot">
+      <button class="tool-btn" onclick="_qemSplitModalClose()">বাতিল</button>
+      <button class="tool-btn primary" onclick="_qemSplitModalSave()">✓ যোগ করুন</button>
+    </div>
   </div>
 </div>
 
@@ -13946,6 +14047,172 @@ function _qemAllDays(){
 }
 
 /* Cell editor extension show/hide ও pre-fill — openCellEditor থেকে call */
+/* ═══════════════════════════════════════════════════════════════════
+   🆕 MULTI-PART (SPLIT) CELL — একই সময়ে ভিন্ন শাখা/দিনে আলাদা ক্লাস
+   ─────────────────────────────────────────────────────────────────
+   cell.parts[] = [{subject, class, section, days[], shared}]
+   প্রতিটি part স্বাধীন — ভিন্ন শাখা, ভিন্ন বিষয়, ভিন্ন দিন।
+   উদাহরণ: শোহাইব স্যার একই ৬:৩০ slot-এ —
+     part 1: ইসলাম · দশম · ইবনে সিনা · মঙ্গল,বুধ,বৃহঃ
+     part 2: ইসলাম · দশম · মানবিক · শনি,রবি,সোম
+═══════════════════════════════════════════════════════════════════ */
+
+/* split section render — current cell-এর parts দেখাও */
+function _qemRenderSplitList(){
+  const host = document.getElementById('qemSplitList');
+  if(!host || !currentEditCell) return;
+  const {tid, cid} = currentEditCell;
+  const t = state.teachers.find(x => x.id === tid);
+  const cell = t && t.cells && t.cells[cid];
+  const parts = (cell && Array.isArray(cell.parts)) ? cell.parts : [];
+  const dayShort = {Sat:'শনি', Sun:'রবি', Mon:'সোম', Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ'};
+  if(!parts.length){ host.innerHTML = ''; return; }
+  host.innerHTML = parts.map((p, i) => {
+    const days = Array.isArray(p.days) ? p.days.map(d => dayShort[d]||d).join(', ') : '';
+    return `<div class="qem-split-item">
+      <div class="si-body">
+        <b>${esc(p.subject||'—')}</b> · ${esc(p.class||'—')} · ${esc(p.section||'—')}
+        <span class="si-days">📅 ${esc(days)} ${p.shared?'· 🔄 শেয়ার্ড':''}</span>
+      </div>
+      <button type="button" class="si-del" onclick="_qemSplitRemovePart(${i})" title="মুছুন">✕</button>
+    </div>`;
+  }).join('');
+}
+
+/* "➕ আরেকটি শাখা/দিন যোগ করুন" — split modal খোলো */
+function _qemSplitAddPart(){
+  if(!currentEditCell) return;
+  // modal field reset
+  ['qemSplitSubject','qemSplitClass','qemSplitSection'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.querySelectorAll('#qemSplitDays .qem-chip').forEach(ch => ch.classList.remove('selected'));
+  const sh = document.getElementById('qemSplitShared'); if(sh) sh.checked = true;
+  // suggestion chips (global options থেকে)
+  _qemSplitFillSuggestions();
+  // chip click handler (একবার bind)
+  const dayWrap = document.getElementById('qemSplitDays');
+  if(dayWrap && !dayWrap.dataset.bound){
+    dayWrap.dataset.bound = '1';
+    dayWrap.addEventListener('click', (e) => {
+      const chip = e.target.closest('.qem-chip');
+      if(chip) chip.classList.toggle('selected');
+    });
+  }
+  const m = document.getElementById('qemSplitModal');
+  if(m) m.style.display = 'flex';
+}
+
+/* split modal-এ subject/class/section suggestion chips ভরো */
+function _qemSplitFillSuggestions(){
+  const fill = (sugId, inputId, opts) => {
+    const host = document.getElementById(sugId);
+    const inp = document.getElementById(inputId);
+    if(!host || !inp) return;
+    const list = (opts||[]).slice(0, 12);
+    host.innerHTML = list.map(o =>
+      `<span class="ss-chip" data-v="${esc(o)}">${esc(o)}</span>`
+    ).join('');
+    if(!host.dataset.bound){
+      host.dataset.bound = '1';
+      host.addEventListener('click', (e) => {
+        const chip = e.target.closest('.ss-chip');
+        if(chip) inp.value = chip.getAttribute('data-v') || '';
+      });
+    }
+  };
+  fill('qemSplitSubjectSug', 'qemSplitSubject', (state.options && state.options.subject) || []);
+  fill('qemSplitClassSug', 'qemSplitClass', (state.options && state.options.class) || []);
+  fill('qemSplitSectionSug', 'qemSplitSection', (state.options && state.options.section) || []);
+}
+
+function _qemSplitModalClose(){
+  const m = document.getElementById('qemSplitModal');
+  if(m) m.style.display = 'none';
+}
+
+/* split modal "✓ যোগ করুন" — নতুন part cell-এ যোগ */
+function _qemSplitModalSave(){
+  if(!currentEditCell) return;
+  const {tid, cid} = currentEditCell;
+  const t = state.teachers.find(x => x.id === tid);
+  if(!t) return;
+  if(!t.cells[cid]) t.cells[cid] = {};
+  const cell = t.cells[cid];
+
+  const sub = (document.getElementById('qemSplitSubject').value||'').trim();
+  const cls = (document.getElementById('qemSplitClass').value||'').trim();
+  const sec = (document.getElementById('qemSplitSection').value||'').trim();
+  const shared = !!document.getElementById('qemSplitShared').checked;
+  const days = [];
+  document.querySelectorAll('#qemSplitDays .qem-chip.selected').forEach(ch => {
+    const d = ch.getAttribute('data-day'); if(d) days.push(d);
+  });
+
+  if(!sub || !cls || !sec){
+    try{ showToast('⚠ বিষয়, শ্রেণি ও শাখা — তিনটিই দিন', 'warning', 3000); }catch(_){}
+    return;
+  }
+  if(!days.length){
+    try{ showToast('⚠ অন্তত একটি দিন নির্বাচন করুন', 'warning', 3000); }catch(_){}
+    return;
+  }
+
+  // নতুন global options-এ যোগ (যদি না থাকে)
+  ['subject','class','section'].forEach((f, idx) => {
+    const val = [sub, cls, sec][idx];
+    if(!state.options) state.options = {};
+    if(!Array.isArray(state.options[f])) state.options[f] = [];
+    if(state.options[f].indexOf(val) < 0) state.options[f].push(val);
+  });
+
+  // cell-কে multi-part-এ রূপান্তর — যদি এখনো parts না থাকে, current cell-কে part 1 বানাই
+  if(!Array.isArray(cell.parts) || !cell.parts.length){
+    const curDays = (Array.isArray(cell.days) && cell.days.length) ? cell.days.slice() : _qemAllDays();
+    cell.parts = [];
+    if(cell.subject && cell.class && cell.section){
+      cell.parts.push({
+        subject: cell.subject, class: cell.class, section: cell.section,
+        days: curDays, shared: !!cell.shared
+      });
+    }
+  }
+  // নতুন part যোগ
+  cell.parts.push({subject: sub, class: cls, section: sec, days: days.slice(), shared: shared});
+
+  saveState();
+  _qemSplitModalClose();
+  _qemRenderSplitList();
+  try{ renderTable(); }catch(_){}
+  try{ refreshRealtimeConflicts(true); }catch(_){}
+  try{ showToast(`✓ যোগ হলো: ${sub} · ${sec} (${days.length} দিন)`, 'success', 2500); }catch(_){}
+}
+
+/* একটি part মুছে ফেলো */
+function _qemSplitRemovePart(index){
+  if(!currentEditCell) return;
+  const {tid, cid} = currentEditCell;
+  const t = state.teachers.find(x => x.id === tid);
+  const cell = t && t.cells && t.cells[cid];
+  if(!cell || !Array.isArray(cell.parts)) return;
+  cell.parts.splice(index, 1);
+  // যদি একটাই part বাকি থাকে → আবার single cell-এ রূপান্তর
+  if(cell.parts.length === 1){
+    const p = cell.parts[0];
+    cell.subject = p.subject; cell.class = p.class; cell.section = p.section;
+    cell.days = Array.isArray(p.days) ? p.days.slice() : [];
+    cell.shared = !!p.shared;
+    delete cell.parts;
+  } else if(cell.parts.length === 0){
+    delete cell.parts;
+  }
+  saveState();
+  _qemRenderSplitList();
+  try{ renderTable(); }catch(_){}
+  try{ refreshRealtimeConflicts(true); }catch(_){}
+  try{ showToast('✓ অংশটি মুছে ফেলা হলো', 'info', 1800); }catch(_){}
+}
+
 function _qemPrepEditor(tid, cid, field){
   const wrap = document.getElementById('cellEditorQem');
   if(!wrap) return;
@@ -14022,6 +14289,9 @@ function _qemPrepEditor(tid, cid, field){
 
   // Event handlers wire up (একবারই)
   _qemWireEditorEvents();
+
+  // 🆕 multi-part split list render
+  try{ _qemRenderSplitList(); }catch(_){}
 }
 
 /* কোন preset radio match করে — দিনের তালিকা অনুসারে */
