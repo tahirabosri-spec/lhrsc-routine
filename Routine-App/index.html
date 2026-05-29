@@ -19795,6 +19795,42 @@ function handleVoiceCommand(cmd){
    maskable=true হলে Android-এর জন্য নিরাপদ প্যাডিং যোগ করে।
    ব্যর্থ হলে null ফেরত — কলার নিরাপদে SVG ফলব্যাক ব্যবহার করবে।
    ⚠️ এটি কেবল আইকন বানায় — state/রুটিন/ডেটায় কোনো প্রভাব নেই। */
+/* 🆕 logoImage (স্কুলের লোগো) থেকে PWA আইকন তৈরি — async (image load লাগে)।
+   সাদা ব্যাকগ্রাউন্ডের উপর লোগো বসায়, যাতে হোম-স্ক্রিনে সুন্দর দেখায়।
+   callback(dataUrl|null) দিয়ে ফল ফেরত। */
+function _makeLogoIcon(size, maskable, logoSrc, callback){
+  try{
+    if(!logoSrc){ callback(null); return; }
+    const img = new Image();
+    img.onload = function(){
+      try{
+        const cv = document.createElement('canvas');
+        cv.width = size; cv.height = size;
+        const ctx = cv.getContext('2d');
+        if(!ctx){ callback(null); return; }
+        // ব্যাকগ্রাউন্ড — সাদা টাইল (লোগোর transparent অংশের জন্য পরিষ্কার দেখাবে)
+        ctx.fillStyle = '#ffffff';
+        if(maskable){
+          ctx.fillRect(0,0,size,size);
+        } else {
+          const r = size * 0.18;
+          ctx.beginPath();
+          ctx.moveTo(r,0); ctx.arcTo(size,0,size,size,r);
+          ctx.arcTo(size,size,0,size,r); ctx.arcTo(0,size,0,0,r);
+          ctx.arcTo(0,0,size,0,r); ctx.closePath(); ctx.fill();
+        }
+        // লোগো কেন্দ্রে আঁকি — maskable হলে safe-zone (~76%), নাহলে ~88%
+        const pad = maskable ? size*0.12 : size*0.06;
+        const drawSize = size - pad*2;
+        ctx.drawImage(img, pad, pad, drawSize, drawSize);
+        callback(cv.toDataURL('image/png'));
+      }catch(e){ callback(null); }
+    };
+    img.onerror = function(){ callback(null); };
+    img.src = logoSrc;
+  }catch(e){ callback(null); }
+}
+
 function _makeBrandIcon(size, maskable){
   try{
     const cv = document.createElement('canvas');
@@ -19845,53 +19881,76 @@ function setupPWA(){
   // SVG ফলব্যাক আইকন (ক্যানভাস ব্যর্থ হলেও অন্তত এটি থাকবে)
   const svg192 = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230f766e'/><text x='50%25' y='62%25' text-anchor='middle' font-size='110' fill='white' font-family='sans-serif' font-weight='700'>রু</text></svg>";
 
-  // ব্র্যান্ডিং-অনুযায়ী PNG আইকন (Play Store/Android-এর জন্য জরুরি)
-  const icon192  = _makeBrandIcon(192, false) || svg192;
-  const icon512  = _makeBrandIcon(512, false) || svg192;
-  const iconMask = _makeBrandIcon(512, true)  || svg192;
+  // 🆕 স্কুলের লোগো থাকলে সেটা দিয়ে আইকন (async); নাহলে text-আইকন
+  const logoSrc = (b && typeof b.logoImage === 'string' && b.logoImage.trim()) ? b.logoImage.trim() : '';
 
-  const icons = [
-    { src: icon192,  sizes:'192x192', type:'image/png', purpose:'any' },
-    { src: icon512,  sizes:'512x512', type:'image/png', purpose:'any' },
-    { src: iconMask, sizes:'512x512', type:'image/png', purpose:'maskable' }
-  ];
+  // text-আইকন fallback (লোগো না থাকলে বা load fail হলে)
+  const ticon192  = _makeBrandIcon(192, false) || svg192;
+  const ticon512  = _makeBrandIcon(512, false) || svg192;
+  const ticonMask = _makeBrandIcon(512, true)  || svg192;
 
-  // সমৃদ্ধ manifest (Play Store / PWABuilder যা যা চায়)
-  const manifest = {
-    id: '/?app=routine',
-    name: schoolName + ' — ' + systemName,
-    short_name: 'রুটিন',
-    description: schoolName + ' এর সাপ্তাহিক রুটিন ও শিক্ষক ব্যবস্থাপনা।',
-    start_url: location.pathname + '?app=routine',
-    scope: location.pathname,
-    display: 'standalone',
-    orientation: 'any',
-    lang: 'bn',
-    dir: 'ltr',
-    background_color: '#0f766e',
-    theme_color: '#0f766e',
-    categories: ['education', 'productivity'],
-    icons: icons
-  };
-  try{
-    const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
-    const mLink = document.getElementById('manifestLink');
-    if(mLink){
-      // আগের blob URL থাকলে রিভোক (মেমরি লিক এড়াতে)
-      if(mLink.href && mLink.href.startsWith('blob:')){
-        try{ URL.revokeObjectURL(mLink.href); }catch(_){}
-      }
-      mLink.href = URL.createObjectURL(blob);
-    }
-    // Apple touch icon-ও ব্র্যান্ডেড আইকনে আপডেট
-    const ati = document.getElementById('appleTouchIcon');
-    if(ati && icon192 && icon192.startsWith('data:image/png')) ati.href = icon192;
-    // favicon-ও ব্র্যান্ডেড (ট্যাবে নিজস্ব পরিচয়)
+  const _finishManifest = (icon192, icon512, iconMask) => {
+    const icons = [
+      { src: icon192,  sizes:'192x192', type:'image/png', purpose:'any' },
+      { src: icon512,  sizes:'512x512', type:'image/png', purpose:'any' },
+      { src: iconMask, sizes:'512x512', type:'image/png', purpose:'maskable' }
+    ];
+    const manifest = {
+      id: '/?app=routine',
+      name: schoolName + ' — ' + systemName,
+      short_name: 'রুটিন',
+      description: schoolName + ' এর সাপ্তাহিক রুটিন ও শিক্ষক ব্যবস্থাপনা।',
+      start_url: location.pathname + '?app=routine',
+      scope: location.pathname,
+      display: 'standalone',
+      orientation: 'any',
+      lang: 'bn',
+      dir: 'ltr',
+      background_color: '#ffffff',
+      theme_color: '#0f766e',
+      categories: ['education', 'productivity'],
+      icons: icons
+    };
     try{
-      const fav = document.querySelector("link[rel='icon']");
-      if(fav && icon192 && icon192.startsWith('data:image/png')) fav.href = icon192;
-    }catch(_){}
-  }catch(e){ console.warn('manifest setup skipped:', e); }
+      const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+      const mLink = document.getElementById('manifestLink');
+      if(mLink){
+        if(mLink.href && mLink.href.startsWith('blob:')){
+          try{ URL.revokeObjectURL(mLink.href); }catch(_){}
+        }
+        mLink.href = URL.createObjectURL(blob);
+      }
+      const ati = document.getElementById('appleTouchIcon');
+      if(ati && icon192 && icon192.startsWith('data:image/png')) ati.href = icon192;
+      try{
+        const fav = document.querySelector("link[rel='icon']");
+        if(fav && icon192 && icon192.startsWith('data:image/png')) fav.href = icon192;
+      }catch(_){}
+    }catch(e){ console.warn('manifest setup skipped:', e); }
+  };
+
+  if(logoSrc){
+    // লোগো থেকে ৩টা আইকন async বানাই, সব হলে manifest সাজাই
+    let done = 0; const results = {};
+    const collect = (key, val) => {
+      results[key] = val || null;
+      done++;
+      if(done === 3){
+        _finishManifest(
+          results.i192 || ticon192,
+          results.i512 || ticon512,
+          results.iMask || ticonMask
+        );
+      }
+    };
+    _makeLogoIcon(192, false, logoSrc, v => collect('i192', v));
+    _makeLogoIcon(512, false, logoSrc, v => collect('i512', v));
+    _makeLogoIcon(512, true,  logoSrc, v => collect('iMask', v));
+  } else {
+    _finishManifest(ticon192, ticon512, ticonMask);
+  }
+
+  // ───────────── PWA আইকন + manifest উপরে handle হয়েছে ─────────────
 
   // Service worker — network-first (নতুন আপডেট দ্রুত আসে, পুরোনো ভার্সনে
   // আটকে থাকে না), অফলাইনে ক্যাশ থেকে দেখায়। ব্যর্থ হলেও অ্যাপ স্বাভাবিক চলে।
