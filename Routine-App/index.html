@@ -1787,32 +1787,32 @@ body[data-qem="on"] .table-wrap::before{
 }
 .qem-chip-row{display:flex;flex-wrap:wrap;gap:5px}
 
-/* 🆕 MULTI-PART CELL DISPLAY — দিন → বিষয় → শাখা ফরম্যাট */
+/* 🆕 MULTI-PART CELL DISPLAY — দিন-বিষয়-শাখা compact ফরম্যাট */
 .cell-mpart-wrap{display:flex;flex-direction:column;gap:0;width:100%}
 .cell-mpart{
   display:block;width:100%;min-width:0;
-  padding:3px 2px;line-height:1.45;
+  padding:1px 2px;line-height:1.3;
   font-size:11px;
   white-space:normal;word-break:break-word;overflow-wrap:anywhere;
 }
 .cell-mpart .mp-days{
-  font-weight:800;color:#dc2626;        /* দিন — স্পষ্ট লাল */
+  font-weight:700;color:#dc2626;font-size:9px;   /* দিন — ছোট স্পষ্ট লাল */
 }
 .cell-mpart .mp-arrow{
-  color:#0d9488;font-weight:700;margin:0 2px;   /* তীর — টিল */
+  color:#0d9488;font-weight:700;                  /* হাইফেন — টিল, স্পেস ছাড়া */
 }
 .cell-mpart .mp-subj{
-  font-weight:700;color:var(--text);     /* বিষয় */
+  font-weight:700;color:var(--text);font-size:11px;  /* বিষয় */
 }
 .cell-mpart .mp-sect{
-  font-weight:700;color:#7c3aed;         /* শাখা — বেগুনি */
+  font-weight:700;color:#7c3aed;font-size:11px;   /* শাখা — বেগুনি */
 }
-.cell-mpart .mp-share{font-size:10px}
+.cell-mpart .mp-share{font-size:9px;margin-left:1px}
 .mp-divider{
   height:0;border-top:1px dashed #c084fc;
-  margin:3px 0;width:100%;
+  margin:1px 0;width:100%;                         /* কম ফাঁকা */
 }
-td.is-multipart .cell-content{align-items:stretch !important;padding:3px 4px !important}
+td.is-multipart .cell-content{align-items:stretch !important;padding:2px 4px !important}
 td.is-multipart{vertical-align:top}
 .qem-smart-suggest{
   display:flex;align-items:center;gap:8px;
@@ -3388,6 +3388,17 @@ td.is-multipart{vertical-align:top}
    (::before badge সরিয়ে দেওয়া হলো যাতে cell বড় না হয়; inline ✓ icon ব্যবহার করি) */
 .cell-subject.is-shared-cell{position:relative}
 .cell-subject.is-shared-cell::before{ content:none !important; }
+
+/* 🆕 সব শেয়ার্ড ক্লাস — সাধারণ ক্লাস থেকে আলাদা চেনার জন্য নীল-বেগুনি বাম border
+   ও হালকা টিন্ট। coverage রং (হলুদ/সবুজ) এর উপরেই বসে। */
+.cell-subject.is-shared-cell{
+  border-left:4px solid #6366f1 !important;   /* নীল-বেগুনি marker */
+  box-shadow:inset 0 0 0 1px rgba(99,102,241,.15);
+}
+.cell-subject.is-multipart{
+  border-left:4px solid #a855f7 !important;   /* স্প্লিট — বেগুনি marker */
+  box-shadow:inset 0 0 0 1px rgba(168,85,247,.18);
+}
 
 /* 🆕 শেয়ার্ড ক্লাস coverage-ভিত্তিক রং:
    - হালকা হলুদ: ৩+ দিন কিন্তু ৬ দিন পূর্ণ না (অসম্পূর্ণ shared)
@@ -9199,15 +9210,11 @@ function renderTable(){
           const sharedCovCls = covN >= 6 ? ' is-shared-full' : (covN > 0 ? ' is-shared-half' : '');
           const partsHTML = cell.parts.map((p, idx) => {
             const od = orderRef.filter(k => (p.days||[]).indexOf(k) >= 0);
-            const dnames = od.map(k => dayShortBn[k]||k).join(', ');
+            const dnames = od.map(k => dayShortBn[k]||k).join(',');   // শুধু কমা, স্পেস নেই
             const sep = idx > 0 ? '<div class="mp-divider"></div>' : '';
-            // দিন (লাল) → বিষয় → শাখা
+            // দিন(ছোট লাল) -বিষয়-শাখা, হাইফেন স্পেস ছাড়া
             return `${sep}<div class="cell-mpart">
-              <span class="mp-days">${esc(dnames)}</span>
-              <span class="mp-arrow">→</span>
-              <span class="mp-subj">${esc(p.subject||'—')}</span>
-              <span class="mp-arrow">→</span>
-              <span class="mp-sect">${esc(p.section||'—')}</span>${p.shared?' <span class="mp-share">🔄</span>':''}
+              <span class="mp-days">${esc(dnames)}</span><span class="mp-arrow">-</span><span class="mp-subj">${esc(p.subject||'—')}</span><span class="mp-arrow">-</span><span class="mp-sect">${esc(p.section||'—')}</span>${p.shared?'<span class="mp-share">🔄</span>':''}
             </div>`;
           }).join('');
           body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''} is-shared-cell is-multipart${sharedCovCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr} title="🔀 স্প্লিট স্লট — ${toBnNum(covN)}/৬ দিন, ${cell.parts.length} অংশ">
