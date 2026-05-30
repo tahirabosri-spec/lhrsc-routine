@@ -17072,6 +17072,43 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
 
     snapshot();
 
+    // 🆕 ধাপ ৫ — INVARIANT GUARD: auto-routine চালানোর আগে প্রতি teacher-এর
+    //    সব ক্লাস-সংমিশ্রণ (subject+class+section সহ days) সংরক্ষণ করি।
+    //    auto-routine শুধু slot বদলাতে পারবে — কোনো combination হারালে বা
+    //    বদলালে পরে restore করব। (cls/sec/subject কখনো পরিবর্তন/hide হবে না)
+    const _preRunSnapshot = {};   // tid → [{subject,class,section,days,shared,fixed, preferredSlots}]
+    try{
+      (teachers||[]).forEach(t => {
+        if(!t || !t.cells) return;
+        const combos = [];
+        const seen = new Set();
+        slotCols.forEach(c => {
+          const cell = t.cells[c.id];
+          if(!cell) return;
+          if(Array.isArray(cell.parts) && cell.parts.length){
+            cell.parts.forEach(p => {
+              const ps=(p.subject||'').trim(), pc=(p.class||'').trim(), psec=(p.section||'').trim();
+              if(!ps||!pc||!psec) return;
+              const k = ps+'||'+pc+'||'+psec;
+              if(seen.has(k)) return; seen.add(k);
+              combos.push({subject:ps, class:pc, section:psec,
+                days:Array.isArray(p.days)?p.days.slice():[], shared:!!p.shared,
+                fixed:!!p.fixed, preferredSlots:[c.id]});
+            });
+            return;
+          }
+          const s=(cell.subject||'').trim(), cl=(cell.class||'').trim(), se=(cell.section||'').trim();
+          if(!s||!cl||!se||s.toLowerCase()==='free') return;
+          const k = s+'||'+cl+'||'+se;
+          if(seen.has(k)) return; seen.add(k);
+          combos.push({subject:s, class:cl, section:se,
+            days:Array.isArray(cell.days)?cell.days.slice():[], shared:!!cell.shared,
+            fixed:!!cell.fixed, preferredSlots:[c.id]});
+        });
+        if(combos.length) _preRunSnapshot[t.id] = combos;
+      });
+    }catch(_){}
+
     // প্রতি পিরিয়ডে যে "শ্রেণি||শাখা" ইতিমধ্যে নেওয়া হয়েছে — কনফ্লিক্ট গার্ড
     const slotTaken = {};
     slotCols.forEach(c => { slotTaken[c.id] = new Set(); });
@@ -17201,6 +17238,56 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
     }catch(invErr){
       console.warn('[post-run invariant] check failed:', invErr);
     }
+
+    // 🆕 ধাপ ৫ — POST-RUN RESTORE GUARD: যেসব combination auto-routine চালানোর
+    //    পরে হারিয়ে গেছে (hide হয়েছে) বা বদলে গেছে — restore করি।
+    //    নিয়ম: প্রতিটি pre-run combination অবশ্যই কোনো না কোনো slot-এ থাকবে।
+    let _restoredCount = 0;
+    try{
+      Object.keys(_preRunSnapshot).forEach(tid => {
+        const t = (state.teachers||[]).find(x => x.id === tid);
+        if(!t || !t.cells) return;
+        const present = new Set();
+        slotCols.forEach(c => {
+          const cell = t.cells[c.id];
+          if(!cell) return;
+          if(Array.isArray(cell.parts) && cell.parts.length){
+            cell.parts.forEach(p => {
+              present.add((p.subject||'').trim()+'||'+(p.class||'').trim()+'||'+(p.section||'').trim());
+            });
+          } else if((cell.subject||'').trim()){
+            present.add((cell.subject||'').trim()+'||'+(cell.class||'').trim()+'||'+(cell.section||'').trim());
+          }
+        });
+        _preRunSnapshot[tid].forEach(combo => {
+          const k = combo.subject+'||'+combo.class+'||'+combo.section;
+          if(present.has(k)) return;   // আছে — ঠিক
+          // হারিয়ে গেছে — preferred slot খালি থাকলে সেখানে, নাহলে প্রথম খালি slot
+          let targetSlot = null;
+          const prefs = Array.isArray(combo.preferredSlots) ? combo.preferredSlots : [];
+          for(const sid of prefs){
+            const cell = t.cells[sid];
+            if(!cell || (!cell.subject && !(Array.isArray(cell.parts)&&cell.parts.length))){ targetSlot = sid; break; }
+          }
+          if(!targetSlot){
+            for(const c of slotCols){
+              const cell = t.cells[c.id];
+              if(!cell || (!cell.subject && !(Array.isArray(cell.parts)&&cell.parts.length))){ targetSlot = c.id; break; }
+            }
+          }
+          if(targetSlot){
+            t.cells[targetSlot] = {
+              subject: combo.subject, class: combo.class, section: combo.section,
+              days: combo.days.slice(), shared: combo.shared, fixed: combo.fixed
+            };
+            _restoredCount++;
+          }
+        });
+      });
+      if(_restoredCount > 0){
+        try{ audit('স্বয়ংক্রিয় রুটিন — রক্ষা', `${_restoredCount}টি ক্লাস hide/পরিবর্তন রোধ করে restore`); }catch(_){}
+      }
+    }catch(_){}
 
     saveState();
     renderTable();
