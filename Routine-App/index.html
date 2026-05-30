@@ -983,6 +983,19 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   font-size:11px;padding:0 3px;
 }
 .routine-table td.col-name.is-locked{outline:2px solid var(--warning);outline-offset:-2px}
+/* 🆕 লক করা শিক্ষকের নামের cell-এ স্পষ্ট লক ব্যাজ (রঙ অপরিবর্তিত) */
+.t-lock-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;font-weight:800;
+  color:#92400e;background:#fde68a;
+  padding:2px 7px;border-radius:99px;
+  margin-bottom:3px;border:1px solid #f59e0b;
+  white-space:nowrap;
+}
+/* লক করা নাম cell — হালকা amber outline, কিন্তু background অপরিবর্তিত */
+.routine-table td.col-name.is-locked-name{
+  outline:2px solid #f59e0b;outline-offset:-2px;
+}
 .routine-table th.col-locked{outline:2px solid var(--warning);outline-offset:-2px}
 .routine-table td.col-break{background:var(--break-bg);color:var(--break-text);text-align:center;font-weight:700;font-size:var(--cell-font)}
 .routine-table td.cell-class{font-size:var(--class-font);font-weight:700}
@@ -1786,6 +1799,33 @@ body[data-qem="on"] .table-wrap::before{
   border-color:#10b981;background:#f0fdf4;font-weight:700;color:#065f46;
 }
 .qem-chip-row{display:flex;flex-wrap:wrap;gap:5px}
+
+/* 🆕 চলমান ঘণ্টা — পুরো column (header + cells) সবুজ glowing pulse */
+.routine-table th.is-current-slot,
+.routine-table td.is-current-slot{
+  position:relative;
+  z-index:1;
+  animation:currentSlotGlow 2s ease-in-out infinite;
+}
+.routine-table th.is-current-slot{ z-index:3; }
+@keyframes currentSlotGlow{
+  0%, 100%{
+    box-shadow:inset 0 0 0 0 rgba(16,185,129,0);
+    background-color:transparent;
+  }
+  50%{
+    box-shadow:inset 0 0 0 2px rgba(16,185,129,.85);
+    background-color:rgba(16,185,129,.10);
+  }
+}
+/* current column-এর top header — একটু বেশি উজ্জ্বল */
+.routine-table th.is-current-slot{
+  animation:currentSlotGlowHead 2s ease-in-out infinite;
+}
+@keyframes currentSlotGlowHead{
+  0%, 100%{ box-shadow:inset 0 0 0 0 rgba(16,185,129,0), 0 0 0 0 rgba(16,185,129,0); }
+  50%{ box-shadow:inset 0 0 0 3px rgba(16,185,129,.95), 0 0 16px 3px rgba(16,185,129,.6); }
+}
 
 /* 🆕 MULTI-PART CELL DISPLAY — দিন-বিষয়-শাখা compact ফরম্যাট */
 .cell-mpart-wrap{display:flex;flex-direction:column;gap:0;width:100%}
@@ -9019,6 +9059,8 @@ function renderTable(){
   </th>`;
 
   let html = swapped ? (nameHeaderHtml + slHeaderHtml) : (slHeaderHtml + nameHeaderHtml);
+  // 🆕 চলমান ঘণ্টা — current slot column-এ pulse animation দেখানোর জন্য
+  const _curSlotId = (typeof _currentSlotColId === 'function') ? _currentSlotColId() : null;
   state.columns.forEach((c, idx)=>{
     const breakCls = c.type==='break'?' col-break':'';
     const lockedCls = headerLocked?' col-locked':'';
@@ -9041,7 +9083,7 @@ function renderTable(){
         <button type="button" class="slot-qbtn busy" onclick="event.stopPropagation();openSlotTeachers('${c.id}','busy')" title="এই ঘন্টায় ব্যস্ত শিক্ষকের তালিকা (কোন ক্লাস/শাখায়) — কল করা যাবে">🔴 ব্যস্ত <span class="qb-n">${toBnNum(fc.busy)}</span></button>
       </div>`;
     }
-    html += `<th class="${breakCls}${lockedCls}" data-cid="${c.id}" draggable="false"${colStyleAttr}>
+    html += `<th class="${breakCls}${lockedCls}${(c.type==='slot' && c.id===_curSlotId)?' is-current-slot':''}" data-cid="${c.id}" draggable="false"${colStyleAttr}>
       <div class="col-header-inner">
         <div class="col-label" data-cid="${c.id}" ${canEditCol?`ondblclick="enableColLabelEdit(this,'${c.id}')" title="ডাবল-ক্লিক করে এডিট"`:''} draggable="false">${esc(c.label)}</div>
       </div>
@@ -9129,7 +9171,8 @@ function renderTable(){
     // Req #6: Leave badge in name cell — schedule cells stay visible for proxy assignment
     const leaveBadgeHtml = t.onLeave ? `<div class="leave-badge" title="ছুটিতে আছেন — প্রক্সির জন্য ক্লাস তালিকা দৃশ্যমান">${esc(leaveText)}</div>` : '';
     // 🔻 weekly badges (সপ্তাহের বিভিন্ন দিনের subject) সরানো হলো — শুধু নাম/পদবি/প্রধান বিষয় থাকবে
-    const nameCellHtml = `<td class="col-name${teacherLocked?' is-locked':''}${t.onLeave?' is-on-leave':''}" rowspan="3"${nameBodyStyle} onclick="${teacherCanEdit?`editTeacher('${t.id}')`:''}">
+    const nameCellHtml = `<td class="col-name${teacherLocked?' is-locked is-locked-name':''}${t.onLeave?' is-on-leave':''}" rowspan="3"${nameBodyStyle} onclick="${teacherCanEdit?`editTeacher('${t.id}')`:''}">
+      ${teacherLocked?`<div class="t-lock-badge" title="এই শিক্ষক লক করা — সম্পাদনা বন্ধ">🔒 লক করা</div>`:''}
       <div class="t-name">${esc(t.name)}</div>
       ${t.title?`<div class="t-meta">${esc(t.title)}</div>`:''}
       ${t.mainSubject?`<div class="t-meta">📚 ${esc(t.mainSubject)}</div>`:''}
@@ -9150,7 +9193,7 @@ function renderTable(){
         const breakHStyle = rowspan3HeightStyle;
         const combinedStyle = (widthCss + bgCss + breakHStyle);
         const breakStyleAttr = combinedStyle ? ` style="${combinedStyle}"` : '';
-        body+=`<td class="col-break${teacherLocked?' is-locked':''}" rowspan="3"${breakStyleAttr}>${esc(breakText)}</td>`;
+        body+=`<td class="col-break" rowspan="3"${breakStyleAttr}>${esc(breakText)}</td>`;
         return;
       }
       const cell = (t.cells[c.id]||{});
@@ -9158,7 +9201,7 @@ function renderTable(){
       const isFree = !_hasParts && (!cell.subject || cell.subject==='Free' || !cell.class);
       const conflict = conflicts.has(t.id+'_'+c.id);
       const cellEditable = teacherCanEdit && !c.locked;
-      const lockedCellCls = teacherLocked ? ' is-locked' : '';
+      const lockedCellCls = '';  // 🆕 schedule cell-এ lock রঙ নয় (নামের row-তে আইকন দেখাই)
       // Req #6: Always render the class cell (even when onLeave) — schedule stays visible for proxy assignment.
       // Class cell — show value or just dropdown arrow icon (NO "Free" text here)
       // 🆕 multi-part হলে প্রথম part-এর class দেখাই (বা "একাধিক")
@@ -9192,7 +9235,7 @@ function renderTable(){
         const cellBg = rowBg || c.color || '';
         const bgCss = cellBg ? `background:${cellBg}!important;` : '';
         const styleAttr = (widthCss+bgCss) ? ` style="${widthCss+bgCss}"` : '';
-        const lockedCellCls = teacherLocked ? ' is-locked' : '';
+        const lockedCellCls = '';  // 🆕 schedule cell-এ lock রঙ নয় (নামের row-তে আইকন দেখাই)
         if(isFree){
           body += `<td class="is-free cell-subject${lockedCellCls} ${conflict?'has-conflict':''}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr}>
             <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
@@ -9328,7 +9371,7 @@ function renderTable(){
         const cellBg = rowBg || c.color || '';
         const bgCss = cellBg ? `background:${cellBg}!important;` : '';
         const styleAttr = (widthCss+bgCss) ? ` style="${widthCss+bgCss}"` : '';
-        const lockedCellCls = teacherLocked ? ' is-locked' : '';
+        const lockedCellCls = '';  // 🆕 schedule cell-এ lock রঙ নয় (নামের row-তে আইকন দেখাই)
         body += `<td class="cell-section${lockedCellCls} ${isFree?'is-free':''} ${secCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="section"${styleAttr}>
           <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','section')`:''}">
             <span class="row-label">শাখা</span>${sectionVal}
@@ -9348,6 +9391,9 @@ function renderTable(){
 
   // 🆕 Real-time conflict markers refresh — auto-routine, manual edit, startup সব ক্ষেত্রে
   try{ refreshRealtimeConflicts(); }catch(_){}
+
+  // 🆕 চলমান ঘণ্টার পুরো column pulse apply
+  try{ _applyCurrentSlotPulse(); }catch(_){}
 }
 
 /* প্রতিটি teacher block-এ ৩টি <tr> থাকে এবং SL/Name/বিরতি সেলে rowspan="3" ব্যবহৃত।
@@ -12855,10 +12901,13 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
   if(!entries.length) return null;
 
   if(!teacher.cells || typeof teacher.cells !== 'object') teacher.cells = {};
-  // এই শিক্ষকের slot সেলগুলো রিসেট — কিন্তু locked/special সেল অক্ষত
+  // এই শিক্ষকের slot সেলগুলো রিসেট — কিন্তু locked/special/fixed সেল অক্ষত
+  // 🆕 fixed cell সম্পূর্ণ protected — স্বয়ংক্রিয় রুটিন এটি একদম স্পর্শ করবে না
   slotCols.forEach(c => {
     const cur = teacher.cells[c.id];
-    if(cur && (cur.locked || cur.special)) return; // 🌟 protected
+    if(cur && (cur.locked || cur.special || cur.fixed)) return; // 🌟 protected (fixed সহ)
+    // multi-part cell-এ কোনো part fixed হলেও protect
+    if(cur && Array.isArray(cur.parts) && cur.parts.some(p => p && p.fixed)) return;
     teacher.cells[c.id] = {};
   });
 
@@ -12866,6 +12915,33 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
   const slotById = {};
   slotCols.forEach(c => { slotById[c.id] = c; });
   const allFixed = !!teacher.allFixed;
+
+  // 🆕 FIXED CELL PROTECTION — যেসব slot-এ fixed cell আছে, সেগুলো
+  //    slotTaken-এ mark করি যাতে অন্য entry সেখানে না বসে, এবং সেই
+  //    cell-এর (subject||class||section) সংমিশ্রণ track করি যাতে ঐ entry
+  //    আবার বসানোর চেষ্টা না হয় (cell আগে থেকেই আছে)।
+  const fixedSlotKeys = new Set();   // "subject||class||section" যেগুলো fixed cell-এ আছে
+  slotCols.forEach(c => {
+    const cur = teacher.cells[c.id];
+    if(!cur) return;
+    const curFixed = cur.fixed || (Array.isArray(cur.parts) && cur.parts.some(p => p && p.fixed));
+    if(!curFixed) return;
+    // slotTaken-এ mark
+    const taken = slotTaken[c.id];
+    if(taken){
+      if(Array.isArray(cur.parts) && cur.parts.length){
+        cur.parts.forEach(p => {
+          const pd = Array.isArray(p.days) ? p.days : [];
+          try{ _teMarkSlotTaken(taken, (p.class||cur.class||''), (p.section||cur.section||''), pd, true); }catch(_){}
+          fixedSlotKeys.add((p.subject||'')+'||'+(p.class||cur.class||'')+'||'+(p.section||cur.section||''));
+        });
+      } else {
+        const cd = Array.isArray(cur.days) ? cur.days : [];
+        try{ _teMarkSlotTaken(taken, (cur.class||''), (cur.section||''), cd, !!cur.shared); }catch(_){}
+        fixedSlotKeys.add((cur.subject||'')+'||'+(cur.class||'')+'||'+(cur.section||''));
+      }
+    }
+  });
 
   /* ═══════════════════════════════════════════════════════════════════
      🎯 PLACEMENT POLICY (apex-engineer rewrite)
@@ -12954,6 +13030,14 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
     const sec = e.section || '';
     const sub = e.subject || '';
     if(!sub && !cls && !sec){ entryStatus.push({entry:e, status:'empty'}); return; }
+
+    // 🆕 এই entry যদি কোনো fixed cell-এ আগে থেকেই বসানো — skip (protected)
+    const eKey = sub + '||' + cls + '||' + sec;
+    if(fixedSlotKeys.has(eKey)){
+      placed++;
+      entryStatus.push({entry:e, status:'placed-fixed-protected', idx:eIdx});
+      return;
+    }
 
     const isShared = !!e.shared;
     const isFixed = !!(e.fixed || allFixed);
@@ -15391,9 +15475,73 @@ function countTeacherClasses(t){
 =========================================================== */
 // একটি নির্দিষ্ট স্লটে কতজন ফ্রি ও কতজন ব্যস্ত — হেডার বাটনের সংখ্যা দেখানোর জন্য
 /* আজকের WEEK_DAYS key বের করি (JS getDay: রবি=0..শনি=6) */
+/* 🆕 চলমান ঘণ্টার পুরো column-এ (header + সব cell) pulse class apply করি।
+   renderTable শেষে এবং প্রতি ৩০ সেকেন্ডে call হয়। শুধু class toggle — efficient। */
+function _applyCurrentSlotPulse(){
+  try{
+    if(typeof _currentSlotColId !== 'function') return;
+    const curId = _currentSlotColId();
+    const tbl = document.querySelector('.routine-table');
+    if(!tbl) return;
+    // সব th + td যাদের data-cid আছে
+    const cells = tbl.querySelectorAll('th[data-cid], td[data-cid]');
+    cells.forEach(el => {
+      const cid = el.getAttribute('data-cid');
+      const shouldGlow = (cid && cid === curId);
+      if(shouldGlow){
+        if(!el.classList.contains('is-current-slot')) el.classList.add('is-current-slot');
+      } else {
+        if(el.classList.contains('is-current-slot')) el.classList.remove('is-current-slot');
+      }
+    });
+  }catch(_){}
+}
+
 function _todayDayKey(){
   const map = {0:'Sun', 1:'Mon', 2:'Tue', 3:'Wed', 4:'Thu', 5:'Fri', 6:'Sat'};
   return map[new Date().getDay()] || 'Sat';
+}
+
+/* 🆕 কোন slot column এখন চলছে — label-এর সময় parse করে বের করি।
+   ─────────────────────────────────────────────────────────────
+   label উদাহরণ: "৬:৩০ - ৭:২০ AM", "১১:২৫ AM - ১২:১৫ PM"
+   বাংলা/ইংরেজি সংখ্যা ও AM/PM বুঝে শুরু-শেষ মিনিট বের করে,
+   বর্তমান সময় ঐ পরিসরে থাকলে সেই column-এর id ফেরত।
+   ব্যর্থ হলে null — কোনো ক্ষতি নেই (শুধু animation দেখাবে না)। */
+function _currentSlotColId(){
+  try{
+    const bnToEn = s => s.replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+    const now = new Date();
+    const nowMin = now.getHours()*60 + now.getMinutes();
+    // একটি সময়-টোকেন ("৭:৩০ AM") → মিনিট (24h)
+    const parseTime = (txt, ampm) => {
+      const m = txt.match(/(\d{1,2})\s*[:.]\s*(\d{2})/);
+      if(!m) return null;
+      let h = parseInt(m[1], 10);
+      const min = parseInt(m[2], 10);
+      const ap = (ampm||'').toUpperCase();
+      if(ap === 'PM' && h !== 12) h += 12;
+      if(ap === 'AM' && h === 12) h = 0;
+      return h*60 + min;
+    };
+    const cols = (state.columns||[]).filter(c => c && c.type === 'slot');
+    for(const c of cols){
+      const raw = bnToEn(String(c.label||''));
+      // দুই অংশে ভাগ — "start - end"; প্রতি অংশে নিজস্ব AM/PM থাকতে পারে
+      const parts = raw.split(/[-–—]/);
+      if(parts.length < 2) continue;
+      let left = parts[0].trim();
+      let right = parts.slice(1).join('-').trim();
+      const apRe = /(AM|PM)/i;
+      const rightAp = (right.match(apRe)||[])[1] || '';
+      const leftAp = (left.match(apRe)||[])[1] || rightAp;   // left-এ না থাকলে right-এর AM/PM
+      const startMin = parseTime(left, leftAp);
+      const endMin = parseTime(right, rightAp);
+      if(startMin == null || endMin == null) continue;
+      if(nowMin >= startMin && nowMin < endMin) return c.id;
+    }
+  }catch(_){}
+  return null;
 }
 
 /* একটি cell আজকের দিনে active (ক্লাস আছে) কিনা — day-wise হিসাব
@@ -15402,16 +15550,21 @@ function _todayDayKey(){
    multi-part cell হলে যেকোনো part-এ আজ থাকলেই busy। */
 function _cellActiveToday(cell, todayKey){
   if(!cell) return false;
-  const sub = (cell.subject||'').trim();
-  if(!sub || sub.toLowerCase() === 'free') return false;
-  // multi-part shared cell
+  // 🆕 multi-part cell — top-level subject খালি থাকে (parts master)।
+  //    তাই subject check-এর আগে parts যাচাই করি।
+  //    আজকের দিনে যেকোনো part-এ ক্লাস থাকলেই busy।
   if(Array.isArray(cell.parts) && cell.parts.length){
     return cell.parts.some(p => {
+      const psub = (p.subject||'').trim();
+      if(!psub || psub.toLowerCase() === 'free') return false;
       const pd = Array.isArray(p.days) ? p.days : [];
       return pd.length ? pd.indexOf(todayKey) >= 0 : true;
     });
   }
-  // single cell — days array থাকলে সেই দিনেই active
+  // single cell — subject না থাকলে free
+  const sub = (cell.subject||'').trim();
+  if(!sub || sub.toLowerCase() === 'free') return false;
+  // days array থাকলে সেই দিনেই active
   const days = Array.isArray(cell.days) ? cell.days : [];
   if(days.length) return days.indexOf(todayKey) >= 0;
   // days না থাকলে legacy: প্রতিদিন active
@@ -15486,11 +15639,16 @@ function openSlotTeachers(colId, mode){
       // আজকের দিনে কোন part active সেটা বের করি (multi-part হলে)
       let actCls = cell.class||'', actSec = cell.section||'', actSub = cell.subject||'';
       if(Array.isArray(cell.parts) && cell.parts.length){
+        // top-level খালি — আজকের active part থেকে শ্রেণি/শাখা/বিষয় নিই
         const ap = cell.parts.find(p => {
           const pd = Array.isArray(p.days) ? p.days : [];
           return pd.length ? pd.indexOf(todayKey) >= 0 : true;
         });
-        if(ap){ actSub = ap.subject || actSub; }
+        if(ap){
+          actSub = ap.subject || '';
+          actCls = ap.class || '';
+          actSec = ap.section || '';
+        }
       }
       // নামের নিচে ছোট করে — কোন ক্লাসের কোন শাখায় আছে
       const where = [
@@ -21316,6 +21474,14 @@ function init(){
 
   // ☁️ Firebase রিয়েল-টাইম সিঙ্ক চালু করো (লগইনের আগেই, যাতে teacher dropdown আপডেট হয়)
   startFirebaseSync();
+
+  // 🆕 চলমান ঘণ্টা pulse — প্রতি ৩০ সেকেন্ডে current slot check করে পুরো column update।
+  //    শুধু class toggle — efficient, কিছু ভাঙে না।
+  try{
+    setInterval(() => {
+      try{ _applyCurrentSlotPulse(); }catch(_){}
+    }, 30000);
+  }catch(_){}
 }
 
 document.addEventListener('DOMContentLoaded', init);
