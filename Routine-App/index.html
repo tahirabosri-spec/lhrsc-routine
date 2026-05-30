@@ -12901,13 +12901,13 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
   if(!entries.length) return null;
 
   if(!teacher.cells || typeof teacher.cells !== 'object') teacher.cells = {};
-  // এই শিক্ষকের slot সেলগুলো রিসেট — কিন্তু locked/special/fixed সেল অক্ষত
-  // 🆕 fixed cell সম্পূর্ণ protected — স্বয়ংক্রিয় রুটিন এটি একদম স্পর্শ করবে না
+  // এই শিক্ষকের slot সেলগুলো রিসেট — কিন্তু locked/special/fixed/multi-part সেল অক্ষত
+  // 🆕 multi-part cell সম্পূর্ণ protected — engine single-cell rebuild করে,
+  //    তাই multi-part structure ভেঙে যেত। এখন একদম স্পর্শ করব না।
   slotCols.forEach(c => {
     const cur = teacher.cells[c.id];
-    if(cur && (cur.locked || cur.special || cur.fixed)) return; // 🌟 protected (fixed সহ)
-    // multi-part cell-এ কোনো part fixed হলেও protect
-    if(cur && Array.isArray(cur.parts) && cur.parts.some(p => p && p.fixed)) return;
+    if(cur && (cur.locked || cur.special || cur.fixed)) return; // 🌟 protected
+    if(cur && Array.isArray(cur.parts) && cur.parts.length){ return; } // 🆕 multi-part protected
     teacher.cells[c.id] = {};
   });
 
@@ -12920,20 +12920,22 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
   //    slotTaken-এ mark করি যাতে অন্য entry সেখানে না বসে, এবং সেই
   //    cell-এর (subject||class||section) সংমিশ্রণ track করি যাতে ঐ entry
   //    আবার বসানোর চেষ্টা না হয় (cell আগে থেকেই আছে)।
-  const fixedSlotKeys = new Set();   // "subject||class||section" যেগুলো fixed cell-এ আছে
+  const fixedSlotKeys = new Set();   // "subject||class||section" যেগুলো protected cell-এ আছে
   slotCols.forEach(c => {
     const cur = teacher.cells[c.id];
     if(!cur) return;
-    const curFixed = cur.fixed || (Array.isArray(cur.parts) && cur.parts.some(p => p && p.fixed));
-    if(!curFixed) return;
+    const curIsMultipart = Array.isArray(cur.parts) && cur.parts.length > 0;
+    const curFixed = cur.fixed || (curIsMultipart && cur.parts.some(p => p && p.fixed));
+    // 🆕 multi-part cell সবসময় protected (fixed না হলেও) — তাই reserve করি
+    if(!curFixed && !curIsMultipart) return;
     // slotTaken-এ mark
     const taken = slotTaken[c.id];
     if(taken){
-      if(Array.isArray(cur.parts) && cur.parts.length){
+      if(curIsMultipart){
         cur.parts.forEach(p => {
           const pd = Array.isArray(p.days) ? p.days : [];
-          try{ _teMarkSlotTaken(taken, (p.class||cur.class||''), (p.section||cur.section||''), pd, true); }catch(_){}
-          fixedSlotKeys.add((p.subject||'')+'||'+(p.class||cur.class||'')+'||'+(p.section||cur.section||''));
+          try{ _teMarkSlotTaken(taken, (p.class||''), (p.section||''), pd, true); }catch(_){}
+          fixedSlotKeys.add((p.subject||'')+'||'+(p.class||'')+'||'+(p.section||''));
         });
       } else {
         const cd = Array.isArray(cur.days) ? cur.days : [];
@@ -15098,6 +15100,15 @@ function _qemAutoSyncAllCells(){
       const cell = t.cells[c.id];
       if(!cell) return;
       if(cell.locked || cell.special) return;
+
+      // 🆕 MULTI-PART CELL — auto-routine থেকে সম্পূর্ণ বাদ।
+      //    এই cell-এর জন্য কোনো entry তৈরি করব না — তাহলে engine এটি
+      //    single-cell হিসেবে rebuild করতে পারবে না, structure অক্ষত থাকবে।
+      //    (multi-part cell engine reset-এও protected — যেখানে আছে সেখানেই থাকবে)
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        return;   // skip — multi-part cell একদম স্পর্শ করব না
+      }
+
       const sub = (cell.subject||'').trim();
       const cls = (cell.class||'').trim();
       const sec = (cell.section||'').trim();
@@ -15121,19 +15132,11 @@ function _qemAutoSyncAllCells(){
       ne.subject = sub; ne.class = cls; ne.section = sec;
       // 🆕 cell-এ যদি days array থাকে সেটা respect করি (shared cell-এর জন্য crucial)
       let cellDays = Array.isArray(cell.days) && cell.days.length ? cell.days.slice() : allDays.slice();
-      // parts থাকলে সেই part-এর days
-      if(Array.isArray(cell.parts) && cell.parts.length){
-        const matchPart = cell.parts.find(p => (p.subject||'').trim() === sub);
-        if(matchPart && Array.isArray(matchPart.days) && matchPart.days.length){
-          cellDays = matchPart.days.slice();
-        }
-      }
       ne.days = cellDays;
       ne.daysPerWeek = cellDays.length;
       ne.preferredSlots = [c.id];
-      // 🆕 Shared শুধু explicit — cell.shared true হলে, বা multi-part হলে।
-      //    দিন কম হলেই auto-shared করব না (user-এর সিদ্ধান্তই চূড়ান্ত)।
-      ne.shared = !!cell.shared || (Array.isArray(cell.parts) && cell.parts.length > 1);
+      // 🆕 Shared শুধু explicit — cell.shared true হলে।
+      ne.shared = !!cell.shared;
       ne.fixed = !!cell.fixed;
       t.teachingEntries.push(ne);
       existing.add(key);
@@ -15160,19 +15163,16 @@ function _qemAutoSyncAllCells(){
     slotCols.forEach(c => {
       const cell = t.cells && t.cells[c.id];
       if(!cell) return;
+      // 🆕 multi-part cell — এর combination cellCombos-এ যোগ করি না।
+      //    কারণ multi-part cell auto-routine থেকে সম্পূর্ণ বাদ; তার জন্য কোনো
+      //    entry থাকা উচিত নয়। পুরোনো multi-part entry থাকলে সেটা orphan হিসেবে
+      //    মুছে যাবে — engine আর সেগুলো single-cell বানাতে পারবে না।
+      if(Array.isArray(cell.parts) && cell.parts.length) return;
       const cls = (cell.class||'').trim();
       const sec = (cell.section||'').trim();
-      // single subject
       const sub = (cell.subject||'').trim();
       if(sub && sub.toLowerCase() !== 'free' && cls && sec){
         cellCombos.add(sub + '||' + cls + '||' + sec);
-      }
-      // multi-part
-      if(Array.isArray(cell.parts) && cell.parts.length){
-        cell.parts.forEach(p => {
-          const ps = (p.subject||'').trim();
-          if(ps && cls && sec) cellCombos.add(ps + '||' + cls + '||' + sec);
-        });
       }
     });
     // entries যেগুলোর combination cellCombos-এ নেই → orphan
