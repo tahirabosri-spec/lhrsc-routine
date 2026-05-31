@@ -4283,6 +4283,20 @@ td.is-multipart{vertical-align:top}
   .routine-table thead th{font-size:10.5px;padding:6px 4px;min-height:56px}
   .routine-table th.col-name,.routine-table td.col-name{left:var(--sl-col-w)}
   .routine-table th.col-name{left:var(--sl-col-w) !important}
+  /* 🆕 মোবাইল — ডানে scroll করে গাঢ় সবুজ হারানো শুরু হলে নামের অংশ
+     আধা-স্বচ্ছ হবে (পেছনের cell আবছা দেখা যাবে, নাম পড়া যাবে)।
+     names-floating class scroll-listener থেকে যোগ হয়। */
+  #tableWrap.names-floating .routine-table td.col-name{
+    background:rgba(15,118,110,.72) !important;
+    backdrop-filter:blur(2px);
+    -webkit-backdrop-filter:blur(2px);
+    box-shadow:2px 0 8px rgba(0,0,0,.15);
+  }
+  #tableWrap.names-floating .routine-table td.col-sl{
+    background:rgba(202,138,4,.72) !important;
+    backdrop-filter:blur(2px);
+    -webkit-backdrop-filter:blur(2px);
+  }
   .routine-table td.col-name .t-name{font-size:12px}
   .routine-table td.col-name .t-meta{font-size:9.5px}
   .routine-table td.col-sl .row-handle,.routine-table td.col-sl .row-lock{font-size:11px;padding:0 3px}
@@ -9242,18 +9256,38 @@ function renderTable(){
               <span class="row-label">বিষয়</span><span class="free-text">${esc(freeText)}</span>
             </div></td>`;
         } else if(_hasParts){
-          // 🆕 MULTI-PART CELL — ফরম্যাট: দিন → বিষয় → শাখা
-          //    উদাহরণ: শনি, রবি, সোম → বাংলা → মানবিক
+          // 🆕 MULTI-PART CELL — ফরম্যাট: দিন(range) -বিষয়-শাখা
+          //    পরপর দিন হলে range: "শনি-সোম"; নাহলে কমা: "শনি,বুধ"
           const dayShortBn = {Sat:'শনি', Sun:'রবি', Mon:'সোম', Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ', Fri:'শুক্র'};
           const orderRef = (typeof WEEK_DAYS !== 'undefined' && Array.isArray(WEEK_DAYS)) ? WEEK_DAYS.map(d=>d.key) : ['Sat','Sun','Mon','Tue','Wed','Thu'];
+          // পরপর দিনের range compress করি — উদাহরণ: [Sat,Sun,Mon] → "শনি-সোম"
+          const _compressDays = (dayKeys) => {
+            const od = orderRef.filter(k => dayKeys.indexOf(k) >= 0);
+            if(!od.length) return '';
+            // consecutive group বের করি (orderRef-এর index অনুযায়ী)
+            const groups = [];
+            let start = od[0], prev = od[0];
+            for(let i=1; i<od.length; i++){
+              const curIdx = orderRef.indexOf(od[i]);
+              const prevIdx = orderRef.indexOf(prev);
+              if(curIdx === prevIdx + 1){ prev = od[i]; }
+              else { groups.push([start, prev]); start = od[i]; prev = od[i]; }
+            }
+            groups.push([start, prev]);
+            // প্রতি group → "শনি-সোম" (২+ দিন) বা "শনি" (একক)
+            return groups.map(g => {
+              const a = dayShortBn[g[0]]||g[0];
+              const b = dayShortBn[g[1]]||g[1];
+              return (g[0] === g[1]) ? a : (a + '-' + b);
+            }).join(',');
+          };
           // combined coverage for color
           const allCovered = new Set();
           cell.parts.forEach(p => (Array.isArray(p.days)?p.days:[]).forEach(d => allCovered.add(d)));
           const covN = allCovered.size;
           const sharedCovCls = covN >= 6 ? ' is-shared-full' : (covN > 0 ? ' is-shared-half' : '');
           const partsHTML = cell.parts.map((p, idx) => {
-            const od = orderRef.filter(k => (p.days||[]).indexOf(k) >= 0);
-            const dnames = od.map(k => dayShortBn[k]||k).join(',');   // শুধু কমা, স্পেস নেই
+            const dnames = _compressDays(Array.isArray(p.days) ? p.days : []);
             const sep = idx > 0 ? '<div class="mp-divider"></div>' : '';
             // দিন(ছোট লাল) -বিষয়-শাখা, হাইফেন স্পেস ছাড়া
             return `${sep}<div class="cell-mpart">
@@ -12895,6 +12929,14 @@ function getCellCoverageStatus(teacher, slotId){
 function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
   if(!teacher || !Array.isArray(teacher.teachingEntries) || !teacher.teachingEntries.length) return null;
   if(!Array.isArray(slotCols) || !slotCols.length) return null;
+
+  // 🆕 RESERVED SLOTS — প্রথম ও শেষ slot column auto-routine-এর জন্য সংরক্ষিত।
+  //    এই দুই slot-এ স্বয়ংক্রিয় রুটিন নতুন ক্লাস বসাবে না (admin ম্যানুয়ালি বসাবেন)।
+  //    তবে এই slot-এ আগে থেকে ম্যানুয়ালি বসানো ক্লাস অক্ষত থাকে (reset/protect আলাদা)।
+  const _reservedSlotIds = new Set();
+  if(slotCols.length >= 1) _reservedSlotIds.add(slotCols[0].id);              // প্রথম slot
+  if(slotCols.length >= 2) _reservedSlotIds.add(slotCols[slotCols.length-1].id); // শেষ slot
+
   const entries = teacher.teachingEntries
     .map(e => _teSanitizeEntry(e))
     .filter(e => (e.class || e.subject || e.section));
@@ -12908,6 +12950,7 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
     const cur = teacher.cells[c.id];
     if(cur && (cur.locked || cur.special || cur.fixed)) return; // 🌟 protected
     if(cur && Array.isArray(cur.parts) && cur.parts.length){ return; } // 🆕 multi-part protected
+    if(_reservedSlotIds.has(c.id)) return; // 🆕 reserved (প্রথম/শেষ) slot — manual class অক্ষত
     teacher.cells[c.id] = {};
   });
 
@@ -13066,6 +13109,7 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
     // চেষ্টা: শুধু preferred slot-গুলো (input order রক্ষা)
     let success = false;
     for(const sid of filteredPreferred){
+      if(_reservedSlotIds.has(sid)) continue;  // 🆕 প্রথম/শেষ slot সংরক্ষিত — auto বসাবে না
       const col = slotById[sid];
       if(!col) continue;
       if(_tryPlaceEntry(e, col)){
@@ -13108,6 +13152,7 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
     if(st.status === 'pending-pass2'){
       let success = false;
       for(const col of slotCols){
+        if(_reservedSlotIds.has(col.id)) continue;  // 🆕 প্রথম/শেষ slot সংরক্ষিত
         if(_tryPlaceEntry(e, col)){ success = true; placed++; break; }
       }
       st.status = success ? 'placed-fallback' : 'skipped-no-slot';
@@ -13124,6 +13169,7 @@ function _teApplyEntriesForTeacher(teacher, slotCols, slotTaken, prioritySet){
     if(isPriorityLoser){
       let success = false;
       for(const col of slotCols){
+        if(_reservedSlotIds.has(col.id)) continue; // 🆕 প্রথম/শেষ slot সংরক্ষিত
         if(e.preferredSlots.includes(col.id)) continue; // আগেই try করা
         if(_tryPlaceEntry(e, col)){ success = true; placed++; break; }
       }
@@ -14622,15 +14668,15 @@ function _qemPrepEditor(tid, cid, field){
   const ssResult = _qemShowSmartSuggest(tid, cid);
 
   // 🆕 AUTO-APPLY SUGGESTION — যদি cell-এ কোনো prior days-state না থাকে এবং
-  //    smart-suggest available — automatically সেই days select + শেয়ার্ড check
-  //    এতে user manually overlap তৈরি করার সুযোগ কমে।
+  //    smart-suggest available — automatically সেই days select করি।
+  //    🆕 শেয়ার্ড auto-check করি না — user প্রয়োজনে নিজে টিক দেবেন।
   try{
     const t2 = state.teachers.find(x => x.id === tid);
     const cell2 = t2 && t2.cells && t2.cells[cid];
     const cellHasDays = cell2 && Array.isArray(cell2.days) && cell2.days.length > 0;
     if(ssResult && ssResult.remaining && ssResult.remaining.length && !cellHasDays){
       _qemSelectPresetForDays(ssResult.remaining.slice());
-      if(shChk) shChk.checked = true;
+      // শেয়ার্ড checkbox auto-check করি না (user decides)
       // cls/sec auto-fill cell-এ যদি ফাঁকা
       if(cell2 && !cell2.class && ssResult.cls) cell2.class = ssResult.cls;
       if(cell2 && !cell2.section && ssResult.sec) cell2.section = ssResult.sec;
@@ -14708,9 +14754,7 @@ function _qemWireEditorEvents(){
       if(!days) return;
       const dayList = days.split(',').filter(Boolean);
       _qemSelectPresetForDays(dayList);
-      // 🆕 শেয়ার্ড checkbox auto-check করি (smart suggest সবসময় shared scenario-তে)
-      const shChk = document.getElementById('qemSharedChk');
-      if(shChk) shChk.checked = true;
+      // 🆕 শেয়ার্ড checkbox auto-check করি না — user প্রয়োজনে নিজে টিক দেবেন
       // 🆕 অন্য teacher-এর (cls, sec) suggest button-এর dataset-এ store — current cell-এ
       //    auto-fill করি যাতে user পরে আলাদা ভাবে class/section সেট না করতে হয়
       const sCls = applyBtn.dataset.qemCls;
@@ -17270,7 +17314,11 @@ function _runAutoRoutineCore(teachers, slotCols, prioritySet){
             if(!cell || (!cell.subject && !(Array.isArray(cell.parts)&&cell.parts.length))){ targetSlot = sid; break; }
           }
           if(!targetSlot){
+            // 🆕 reserved (প্রথম/শেষ) slot এড়িয়ে প্রথম খালি slot
+            const _resvFirst = slotCols.length >= 1 ? slotCols[0].id : null;
+            const _resvLast = slotCols.length >= 2 ? slotCols[slotCols.length-1].id : null;
             for(const c of slotCols){
+              if(c.id === _resvFirst || c.id === _resvLast) continue;
               const cell = t.cells[c.id];
               if(!cell || (!cell.subject && !(Array.isArray(cell.parts)&&cell.parts.length))){ targetSlot = c.id; break; }
             }
@@ -21561,6 +21609,27 @@ function init(){
 
   // ☁️ Firebase রিয়েল-টাইম সিঙ্ক চালু করো (লগইনের আগেই, যাতে teacher dropdown আপডেট হয়)
   startFirebaseSync();
+
+  // 🆕 মোবাইল — রুটিন ডানে scroll করলে নামের অংশ আধা-স্বচ্ছ (floating) করি।
+  //    বাম প্রান্তে ফিরলে আবার পূর্ণ গাঢ় background। ল্যাপটপে কিছু বদলায় না
+  //    (CSS শুধু মোবাইল media query-তে আছে)। কোনো logic/frame ছোঁয় না।
+  try{
+    const _tw = document.getElementById('tableWrap');
+    if(_tw){
+      const _updateNameFloat = () => {
+        try{
+          // scrollLeft > 0 মানে গাঢ় সবুজ ঢাকা পড়া শুরু → floating
+          if(_tw.scrollLeft > 2){
+            if(!_tw.classList.contains('names-floating')) _tw.classList.add('names-floating');
+          } else {
+            if(_tw.classList.contains('names-floating')) _tw.classList.remove('names-floating');
+          }
+        }catch(_){}
+      };
+      _tw.addEventListener('scroll', _updateNameFloat, {passive:true});
+      _updateNameFloat();   // প্রাথমিক অবস্থা
+    }
+  }catch(_){}
 
   // 🆕 চলমান ঘণ্টা pulse — প্রতি ৩০ সেকেন্ডে current slot check করে পুরো column update।
   //    শুধু class toggle — efficient, কিছু ভাঙে না।
