@@ -690,9 +690,6 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   background: var(--bg);
   position: relative;
   padding: 10px;
-  -webkit-overflow-scrolling: touch;   /* iOS মসৃণ মোমেন্টাম স্ক্রোল */
-  overscroll-behavior-x: contain;       /* অনুভূমিক স্ক্রোল পেজে গড়িয়ে না যাক */
-  transform: translateZ(0);             /* নিজস্ব GPU লেয়ার — sticky cell রি-পেইন্ট কমায় */
 }
 @supports (overflow-y: clip){
   .table-wrap{overflow-y:clip}
@@ -845,8 +842,8 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   border-left-color:var(--slot-divider-c, var(--border)) !important;
   border-left-style:solid !important;
 }
-.routine-table td.col-sl{background:var(--sl-bg);color:var(--sl-text);text-align:center;font-weight:700;position:sticky;left:0;z-index:5;min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w);font-size:var(--name-font);padding:4px 3px;will-change:transform}
-.routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:var(--sl-col-w);z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);padding:4px 8px;cursor:pointer;will-change:transform}
+.routine-table td.col-sl{background:var(--sl-bg);color:var(--sl-text);text-align:center;font-weight:700;position:sticky;left:0;z-index:5;min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w);font-size:var(--name-font);padding:4px 3px}
+.routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:var(--sl-col-w);z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);padding:4px 8px;cursor:pointer}
 .routine-table td.col-name .t-name{font-weight:700;font-size:var(--name-font);line-height:1.25}
 .routine-table td.col-name .t-meta{font-size:calc(var(--name-font) - 3px);opacity:.85;margin-top:2px;line-height:1.2}
 .routine-table td.col-name .t-lock{
@@ -4290,11 +4287,10 @@ td.is-multipart{vertical-align:top}
      আধা-স্বচ্ছ হবে (পেছনের cell আবছা দেখা যাবে, নাম পড়া যাবে)।
      names-floating class scroll-listener থেকে যোগ হয়। */
   #tableWrap.names-floating .routine-table td.col-name{
-    background:rgba(15,118,110,.92) !important;
-    box-shadow:2px 0 8px rgba(0,0,0,.15);
+    background:var(--name-bg) !important;
   }
   #tableWrap.names-floating .routine-table td.col-sl{
-    background:rgba(202,138,4,.92) !important;
+    background:var(--sl-bg) !important;
   }
   .routine-table td.col-name .t-name{font-size:12px}
   .routine-table td.col-name .t-meta{font-size:9.5px}
@@ -7919,7 +7915,6 @@ const PERM_DEFS = [
   {key:'displaySettings',label:'প্রদর্শন সেটিংস',        desc:'থিম/আকার/রঙ/টেক্সট সেটিংস'},
   {key:'approveLeave',  label:'ছুটি অনুমোদন',           desc:'ছুটির আবেদন গ্রহণ/বাতিল'},
   {key:'dashboard',     label:'লাইভ ড্যাশবোর্ড',         desc:'ড্যাশবোর্ড দেখা'},
-  {key:'viewFreeBusy',  label:'ফ্রি/ব্যস্ত দেখা',        desc:'রুটিন হেডারে ঘণ্টাভিত্তিক ফ্রি/ব্যস্ত শিক্ষক বাটন দেখা'},
   {key:'auditLog',      label:'অডিট লগ',                desc:'কার্যকলাপ লগ দেখা'},
   {key:'voice',         label:'ভয়েস ইনপুট',            desc:'ভয়েস দিয়ে এন্ট্রি'},
   {key:'routineLock',   label:'রুটিন লক',               desc:'রুটিন লক/আনলক করা'},
@@ -9090,8 +9085,7 @@ function renderTable(){
     const colStyleAttr = colStyles.length ? ` style="${colStyles.join(';')}"` : '';
     // প্রতি ঘন্টায় (স্লট) দুইটি কুইক-বাটন: ফ্রি শিক্ষক / ব্যস্ত শিক্ষক
     let quickBtnsHtml = '';
-    // 🔒 ফ্রি/ব্যস্ত বাটন শুধু অ্যাডমিন (+ অনুমতিপ্রাপ্ত ম্যানেজার) দেখবে — সাধারণ শিক্ষক নয়
-    if(c.type === 'slot' && hasPerm('viewFreeBusy')){
+    if(c.type === 'slot'){
       const fc = slotFreeBusyCount(c.id);
       quickBtnsHtml = `<div class="slot-quick-btns">
         <button type="button" class="slot-qbtn free" onclick="event.stopPropagation();openSlotTeachers('${c.id}','free')" title="এই ঘন্টায় ফ্রি (ক্লাস নেই) শিক্ষকের তালিকা — কল করা যাবে">🟢 ফ্রি <span class="qb-n">${toBnNum(fc.free)}</span></button>
@@ -15641,11 +15635,6 @@ function slotTelLinks(t){
 
 // মূল ফাংশন — হেডার বাটনে ক্লিক করলে এই মডাল খুলবে
 function openSlotTeachers(colId, mode){
-  // 🔒 অনুমতি ছাড়া ফ্রি/ব্যস্ত তালিকা খোলা যাবে না (সাধারণ শিক্ষক / অনুমতিহীন ম্যানেজার)
-  if(!hasPerm('viewFreeBusy')){
-    if(typeof showToast === 'function') showToast('⛔ ফ্রি/ব্যস্ত তালিকা দেখার অনুমতি আপনার নেই','error');
-    return;
-  }
   const col = state.columns.find(c => c.id === colId);
   if(!col){ showToast('স্লট পাওয়া যায়নি','danger'); return; }
 
@@ -21622,25 +21611,18 @@ function init(){
   try{
     const _tw = document.getElementById('tableWrap');
     if(_tw){
-      let _nameFloatRaf = 0;
-      let _nameFloatOn = false;
-      const _applyNameFloat = () => {
-        _nameFloatRaf = 0;
+      const _updateNameFloat = () => {
         try{
           // scrollLeft > 0 মানে গাঢ় সবুজ ঢাকা পড়া শুরু → floating
-          const shouldFloat = _tw.scrollLeft > 2;
-          if(shouldFloat === _nameFloatOn) return;   // অবস্থা বদলায়নি → DOM ছোঁব না
-          _nameFloatOn = shouldFloat;
-          _tw.classList.toggle('names-floating', shouldFloat);
+          if(_tw.scrollLeft > 2){
+            if(!_tw.classList.contains('names-floating')) _tw.classList.add('names-floating');
+          } else {
+            if(_tw.classList.contains('names-floating')) _tw.classList.remove('names-floating');
+          }
         }catch(_){}
       };
-      const _updateNameFloat = () => {
-        // rAF throttle — প্রতি scroll frame-এ সর্বোচ্চ একবার DOM আপডেট
-        if(_nameFloatRaf) return;
-        _nameFloatRaf = requestAnimationFrame(_applyNameFloat);
-      };
       _tw.addEventListener('scroll', _updateNameFloat, {passive:true});
-      _applyNameFloat();   // প্রাথমিক অবস্থা
+      _updateNameFloat();   // প্রাথমিক অবস্থা
     }
   }catch(_){}
 
