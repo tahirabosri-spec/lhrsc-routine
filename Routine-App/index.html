@@ -7431,6 +7431,20 @@ let isReadOnly = false;
 let _firebaseSyncEnabled = true; // Firebase সিঙ্ক চালু/বন্ধ করার ফ্ল্যাগ
 let _applyingRemoteState = false; // রিমোট থেকে আপডেট আসার সময় true
 
+/* 🛡️ সময়সূচি/কলাম-রিসেট সুরক্ষা:
+   কলামগুলোর (সময়সূচি) একটি স্বাক্ষর (signature) রাখি। প্রকৃত এডিটে কলাম
+   বদলালে state.settings.columnsUpdatedAt স্ট্যাম্প হয়। সিঙ্কে কোনো বাসি/পুরোনো
+   ডিভাইস default কলাম পাঠালেও — লোকাল কলাম নতুন হলে সেটাই রাখা হয় (পাসওয়ার্ডের
+   মতোই field-level recency)। ফলে জেনারেটরে বানানো সময়সূচি আর ডিফল্টে ফিরবে না। */
+let _lastColumnsSig = null;
+function _columnsSig(){
+  try{
+    return JSON.stringify((state.columns||[]).map(c => ({
+      i:c.id, l:c.label, t:c.type, w:c.width||0, col:c.color||'', lk:!!c.locked
+    })));
+  }catch(_){ return ''; }
+}
+
 function saveState(localOnly){
   // ───────────────────────────────────────────────────────────────
   // 🛡️ ক্লাউড-ক্লোবার সুরক্ষা:
@@ -7444,6 +7458,17 @@ function saveState(localOnly){
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
     return;
   }
+  // 🛡️ কলাম (সময়সূচি) বদলালে recency স্ট্যাম্প বসাই — সিঙ্কে নতুনটাই জিতবে।
+  //    baseline (_lastColumnsSig) লোড/সিঙ্কের পর সেট হয়, তাই শুধু প্রকৃত
+  //    পরিবর্তনেই স্ট্যাম্প হয় (অপ্রয়োজনীয় false-bump নয়)।
+  try{
+    if(!state.settings || typeof state.settings !== 'object') state.settings = {};
+    const _sig = _columnsSig();
+    if(_lastColumnsSig !== null && _sig !== _lastColumnsSig){
+      state.settings.columnsUpdatedAt = new Date().toISOString();
+    }
+    _lastColumnsSig = _sig;
+  }catch(_){}
   state.lastSaved = new Date().toISOString();
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -7551,6 +7576,9 @@ function loadState(){
   }
   if(state.teachers.length === 0) seedTeachers();
   try{ ensureAccounts(); }catch(e){ console.warn('ensureAccounts failed:', e); }
+  // 🛡️ লোড-শেষে কলাম signature baseline সেট করি — এর পর শুধু প্রকৃত কলাম
+  //    পরিবর্তনেই columnsUpdatedAt স্ট্যাম্প হবে (false-bump এড়াতে)।
+  try{ _lastColumnsSig = _columnsSig(); }catch(_){}
 }
 
 function seedTeachers(){
@@ -7692,12 +7720,18 @@ function _mergePwByRecency(localAcc, localTeachers){
 function applyRemoteState(remoteData){
   _applyingRemoteState = true;
   let _pwReassert = false;
+  let _colReassert = false;
   try{
     // 🛡️ ওভাররাইটের আগে লোকাল পাসওয়ার্ড + সময়-স্ট্যাম্প আলাদা করে রাখি
     const _localAccSnap = state.accounts ? JSON.parse(JSON.stringify(state.accounts)) : null;
     const _localTeachersSnap = Array.isArray(state.teachers)
       ? state.teachers.map(t => ({id:t.id, password:t.password, pwUpdatedAt:t.pwUpdatedAt}))
       : [];
+    // 🛡️ ওভাররাইটের আগে লোকাল কলাম (সময়সূচি) + এর recency স্ট্যাম্প রাখি
+    const _localColsSnap = Array.isArray(state.columns) ? JSON.parse(JSON.stringify(state.columns)) : null;
+    const _localColsAt = (state.settings && state.settings.columnsUpdatedAt) || '';
+    const _localLastSched = (state.settings && state.settings.lastSchedule)
+      ? JSON.parse(JSON.stringify(state.settings.lastSchedule)) : null;
 
     // সমস্ত ফিল্ড আপডেট করো (settings সহ)
     const oldSettings = state.settings;
@@ -7712,6 +7746,24 @@ function applyRemoteState(remoteData){
 
     // 🛡️ পাসওয়ার্ড-সুরক্ষা: লোকাল পাসওয়ার্ড নতুন হলে রিমোটের পুরোনোটা জিততে দিই না
     _pwReassert = _mergePwByRecency(_localAccSnap, _localTeachersSnap);
+
+    // 🛡️ সময়সূচি-সুরক্ষা: লোকাল কলাম রিমোটের চেয়ে নতুন হলে — লোকালটাই রাখি।
+    //    এতে কোনো বাসি/পুরোনো-version ডিভাইস default কলাম পাঠালেও জেনারেটরে
+    //    বানানো সময়সূচি ডিফল্টে ফিরবে না; সঠিকটা আবার ক্লাউডে পাঠানো হবে।
+    try{
+      const _remoteColsAt = (state.settings && state.settings.columnsUpdatedAt) || '';
+      const _lt = _localColsAt ? new Date(_localColsAt).getTime() : 0;
+      const _rt = _remoteColsAt ? new Date(_remoteColsAt).getTime() : 0;
+      if(_localColsSnap && _localColsSnap.length && _lt > _rt){
+        state.columns = _localColsSnap;
+        state.settings.columnsUpdatedAt = _localColsAt;
+        if(_localLastSched) state.settings.lastSchedule = _localLastSched;
+        _colReassert = true;
+      }
+    }catch(_){}
+
+    // 🛡️ নতুন baseline signature সেট করি (merge-পরবর্তী চূড়ান্ত কলাম অনুযায়ী)
+    try{ _lastColumnsSig = _columnsSig(); }catch(_){}
 
     // লোকাল স্টোরেজে সেভ করো (Firebase সেভ ছাড়া)
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
@@ -7737,9 +7789,9 @@ function applyRemoteState(remoteData){
   } finally {
     _applyingRemoteState = false;
   }
-  // রিমোট পুরোনো পাসওয়ার্ড দিয়ে রিভার্ট করার চেষ্টা করেছিল — সঠিকটা আবার
-  // ক্লাউডে পাঠাই যাতে সব ডিভাইসে নতুন পাসওয়ার্ডই থাকে।
-  if(_pwReassert){ try{ saveState(); }catch(_){} }
+  // রিমোট পুরোনো পাসওয়ার্ড/সময়সূচি দিয়ে রিভার্ট করার চেষ্টা করেছিল — সঠিকটা
+  // আবার ক্লাউডে পাঠাই যাতে সব ডিভাইসে নতুন মানই থাকে।
+  if(_pwReassert || _colReassert){ try{ saveState(); }catch(_){} }
 }
 
 /* ===========================================================
@@ -9529,6 +9581,20 @@ function renderTable(){
 
   // 🆕 চলমান ঘণ্টার পুরো column pulse apply
   try{ _applyCurrentSlotPulse(); }catch(_){}
+
+  // 🆕 সক্রিয় সার্চ/ফিল্টার থাকলে রি-রেন্ডারের পরও তা বজায় রাখি। এতে কোনো
+  //    শিক্ষককে সার্চ করে তার নামে ডেটা বসিয়ে সেভ করলেও তিনি সার্চ রেজাল্টে
+  //    স্থিরভাবে দেখাবেন — পরপর একাধিক ক্লাস সহজে বসানো যাবে। সার্চ/ফিল্টার
+  //    খালি থাকলে কিছুই হয় না (আগের আচরণ অপরিবর্তিত)।
+  try{
+    const _sq  = document.getElementById('searchInput');
+    const _fc  = document.getElementById('filterClass');
+    const _fs  = document.getElementById('filterSubject');
+    const _fst = document.getElementById('filterStatus');
+    const _active = (_sq && _sq.value.trim()) || (_fc && _fc.value) ||
+                    (_fs && _fs.value) || (_fst && _fst.value);
+    if(_active && typeof applyFilters === 'function') applyFilters();
+  }catch(_){}
 }
 
 /* প্রতিটি teacher block-এ ৩টি <tr> থাকে এবং SL/Name/বিরতি সেলে rowspan="3" ব্যবহৃত।
@@ -16402,6 +16468,9 @@ function applySchedule(){
       period: parseInt((document.getElementById('schedPeriod')||{}).value) || 50,
       structure: JSON.parse(JSON.stringify(schedStructure))
     };
+    // 🛡️ সময়সূচি প্রয়োগের মুহূর্তেই recency স্ট্যাম্প — সিঙ্কে এই নতুন
+    //    সময়সূচিই জিতবে, কোনো বাসি ডিভাইস ডিফল্টে ফেরাতে পারবে না।
+    state.settings.columnsUpdatedAt = new Date().toISOString();
   }catch(_){}
   saveState();
   renderTable();
