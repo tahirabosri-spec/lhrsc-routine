@@ -7643,9 +7643,61 @@ function startFirebaseSync(){
   });
 }
 
+/* 🛡️ পাসওয়ার্ড-রিসেট সুরক্ষা (field-level merge)
+   ───────────────────────────────────────────────────────────────
+   পুরো-state "last write wins" sync-এ কোনো ডিভাইস পুরোনো accounts নিয়ে
+   এডিট করলে অন্যের নতুন পাসওয়ার্ড ডিফল্টে ফিরে যেত। সমাধান: প্রতিটা
+   পাসওয়ার্ডের নিজস্ব সময়-স্ট্যাম্প (pwUpdatedAt)। রিমোট থেকে ডেটা এলে —
+   লোকাল পাসওয়ার্ড নতুন হলে সেটাই রাখি (পুরোনো রিমোট পাসওয়ার্ডকে জিততে দিই না)।
+   কোনো লোকাল পাসওয়ার্ড রিমোটকে হারালে → সঠিকটা আবার ক্লাউডে পাঠাই। */
+function _mergePwByRecency(localAcc, localTeachers){
+  let reassert = false;
+  const _newer = (a, b) => {
+    const ta = a ? new Date(a).getTime() : 0;
+    const tb = b ? new Date(b).getTime() : 0;
+    return ta > tb;
+  };
+  try{
+    if(localAcc && state.accounts){
+      ['admins','managers'].forEach(group => {
+        const localArr  = Array.isArray(localAcc[group]) ? localAcc[group] : [];
+        const remoteArr = Array.isArray(state.accounts[group]) ? state.accounts[group] : [];
+        localArr.forEach(la => {
+          if(!la || la.password == null || la.password === '') return;
+          const ra = remoteArr.find(x => x && String(x.username) === String(la.username));
+          if(ra && _newer(la.pwUpdatedAt, ra.pwUpdatedAt)){
+            ra.password = la.password;
+            ra.pwUpdatedAt = la.pwUpdatedAt;
+            reassert = true;
+          }
+        });
+      });
+    }
+    if(Array.isArray(localTeachers) && Array.isArray(state.teachers)){
+      localTeachers.forEach(lt => {
+        if(!lt || lt.password == null || lt.password === '') return;
+        const rt = state.teachers.find(x => x && String(x.id) === String(lt.id));
+        if(rt && _newer(lt.pwUpdatedAt, rt.pwUpdatedAt)){
+          rt.password = lt.password;
+          rt.pwUpdatedAt = lt.pwUpdatedAt;
+          reassert = true;
+        }
+      });
+    }
+  }catch(_){}
+  return reassert;
+}
+
 function applyRemoteState(remoteData){
   _applyingRemoteState = true;
+  let _pwReassert = false;
   try{
+    // 🛡️ ওভাররাইটের আগে লোকাল পাসওয়ার্ড + সময়-স্ট্যাম্প আলাদা করে রাখি
+    const _localAccSnap = state.accounts ? JSON.parse(JSON.stringify(state.accounts)) : null;
+    const _localTeachersSnap = Array.isArray(state.teachers)
+      ? state.teachers.map(t => ({id:t.id, password:t.password, pwUpdatedAt:t.pwUpdatedAt}))
+      : [];
+
     // সমস্ত ফিল্ড আপডেট করো (settings সহ)
     const oldSettings = state.settings;
     Object.keys(remoteData).forEach(k => {
@@ -7656,6 +7708,9 @@ function applyRemoteState(remoteData){
 
     // রিমোট ডেটায় missing ফিল্ড (যেমন teacher.password) ভর্তি করো
     if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity();
+
+    // 🛡️ পাসওয়ার্ড-সুরক্ষা: লোকাল পাসওয়ার্ড নতুন হলে রিমোটের পুরোনোটা জিততে দিই না
+    _pwReassert = _mergePwByRecency(_localAccSnap, _localTeachersSnap);
 
     // লোকাল স্টোরেজে সেভ করো (Firebase সেভ ছাড়া)
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
@@ -7681,6 +7736,9 @@ function applyRemoteState(remoteData){
   } finally {
     _applyingRemoteState = false;
   }
+  // রিমোট পুরোনো পাসওয়ার্ড দিয়ে রিভার্ট করার চেষ্টা করেছিল — সঠিকটা আবার
+  // ক্লাউডে পাঠাই যাতে সব ডিভাইসে নতুন পাসওয়ার্ডই থাকে।
+  if(_pwReassert){ try{ saveState(); }catch(_){} }
 }
 
 /* ===========================================================
@@ -8308,7 +8366,7 @@ function acAddAdmin(){
   // 👁️ কনভেনশন: ইউজারনেম "principal" হলে নতুন অ্যাডমিন স্বয়ংক্রিয়ভাবে
   // ভিউ-অনলি হিসেবে যোগ হবে (পরে টগল দিয়ে বদলানো যাবে)।
   const autoVO = (user.toLowerCase() === 'principal');
-  state.accounts.admins.push({username:user, name, password:pass, viewOnly:autoVO});
+  state.accounts.admins.push({username:user, name, password:pass, viewOnly:autoVO, pwUpdatedAt:new Date().toISOString()});
   document.getElementById('acNewAdminName').value='';
   document.getElementById('acNewAdminUser').value='';
   document.getElementById('acNewAdminPass').value='';
@@ -8331,7 +8389,7 @@ function acAddManager(){
   if(taken){ showToast('এই ইউজারনেম আগেই আছে','error'); return; }
   // ডিফল্ট: মৌলিক এডিট অনুমতি (অ্যাডমিন পরে বাড়াতে/কমাতে পারবেন)
   const def = _permsNormalize({editRoutine:true, manageTeachers:true, approveLeave:true, dashboard:true, auditLog:true});
-  state.accounts.managers.push({username:user, name, password:pass, permissions:def});
+  state.accounts.managers.push({username:user, name, password:pass, permissions:def, pwUpdatedAt:new Date().toISOString()});
   document.getElementById('acNewMgrName').value='';
   document.getElementById('acNewMgrUser').value='';
   document.getElementById('acNewMgrPass').value='';
@@ -8376,6 +8434,7 @@ function acResetPw(kind, i){
   const v = np.trim();
   if(v.length < 4){ showToast('পাসওয়ার্ড কমপক্ষে ৪ অক্ষর','warning'); return; }
   x.password = v;
+  x.pwUpdatedAt = new Date().toISOString();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
   _acPersist((kind==='admin'?'অ্যাডমিন':'ম্যানেজার')+' পাসওয়ার্ড পরিবর্তন: '+x.name);
   showToast('✅ পাসওয়ার্ড পরিবর্তিত হয়েছে','success');
 }
@@ -8474,6 +8533,7 @@ function changePassword(){
     getCurrentPw = () => String(acct.password);
     applyNewPw = (pw) => {
       acct.password = pw;
+      acct.pwUpdatedAt = new Date().toISOString();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
       saveState();   // state.accounts → localStorage (+ Firebase) এ সিঙ্ক হয়
       // ব্যাকওয়ার্ড-কম্প্যাট: পুরোনো USERS/localStorage ও আপডেট রাখি
       try{
@@ -8490,6 +8550,7 @@ function changePassword(){
     getCurrentPw = () => (t.password != null && t.password !== '') ? String(t.password) : '1234';
     applyNewPw = (pw) => {
       t.password = pw;
+      t.pwUpdatedAt = new Date().toISOString();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
       saveState();   // state.teachers → localStorage (+ Firebase) এ সংরক্ষিত হয়
     };
   } else {
@@ -8575,6 +8636,7 @@ function submitTeacherPasswordModal(){
 
   // পরিবর্তন প্রয়োগ ও সংরক্ষণ (localStorage + Firebase)
   t.password = newPw;
+  t.pwUpdatedAt = new Date().toISOString();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
   saveState();
   document.getElementById('tPwModalOld').value = '';
   document.getElementById('tPwModalNew').value = '';
@@ -16009,7 +16071,21 @@ let schedStructure = []; // working structure: [{type:'slot'|'break', mins:50}]
 function openScheduleGen(){
   if(!requirePerm('scheduleGen')) return;
   if(!state.schedulePresets) state.schedulePresets = [];
-  loadStructureFromCurrent();
+  // 🆕 শেষবার প্রয়োগ করা কনফিগ থাকলে সেটাই ডিফল্ট হিসেবে পুনরুদ্ধার করি
+  //    (শুরুর সময় + ক্লাস সময়কাল + বিরতিসহ পুরো কাঠামো)। না থাকলে আগের মতো
+  //    বর্তমান কলাম থেকে অনুমান করি — কোনো আচরণ ভাঙে না।
+  const ls = state.settings && state.settings.lastSchedule;
+  if(ls && Array.isArray(ls.structure) && ls.structure.length){
+    try{
+      const startEl = document.getElementById('schedStart');
+      const periodEl = document.getElementById('schedPeriod');
+      if(startEl) startEl.value = ls.start || '07:30';
+      if(periodEl) periodEl.value = ls.period || 50;
+      schedStructure = JSON.parse(JSON.stringify(ls.structure));
+    }catch(_){ loadStructureFromCurrent(); }
+  } else {
+    loadStructureFromCurrent();
+  }
   renderPresets();
   renderStructureList();
   document.getElementById('schedPreview').innerHTML = '<div class="empty">প্রিভিউ দেখতে উপরে "প্রিভিউ দেখুন" চাপুন</div>';
@@ -16291,6 +16367,17 @@ function applySchedule(){
 
   snapshot();
   audit('সময়সূচি প্রয়োগ', `${items.filter(i=>i.type==='slot').length}টি ক্লাস + ${items.filter(i=>i.type==='break').length}টি বিরতি`);
+  // 🆕 শেষবার প্রয়োগ করা পুরো কনফিগ সংরক্ষণ করি (শুরুর সময় + ক্লাস সময়কাল +
+  //    প্রতিটি পিরিয়ড/বিরতির মিনিটসহ কাঠামো)। পরের বার জেনারেটর খুললে এটাই
+  //    ডিফল্ট হিসেবে আসবে — হার্ডকোডেড ৫০/২০ নয়।
+  try{
+    if(!state.settings || typeof state.settings !== 'object') state.settings = {};
+    state.settings.lastSchedule = {
+      start: (document.getElementById('schedStart')||{}).value || '07:30',
+      period: parseInt((document.getElementById('schedPeriod')||{}).value) || 50,
+      structure: JSON.parse(JSON.stringify(schedStructure))
+    };
+  }catch(_){}
   saveState();
   renderTable();
   refreshDashboardSilent(false);
