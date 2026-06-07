@@ -3432,15 +3432,16 @@ td.is-multipart{vertical-align:top}
 .cell-subject.is-shared-cell{position:relative}
 .cell-subject.is-shared-cell::before{ content:none !important; }
 
-/* 🆕 সব শেয়ার্ড ক্লাস — সাধারণ ক্লাস থেকে আলাদা চেনার জন্য নীল-বেগুনি বাম border
-   ও হালকা টিন্ট। coverage রং (হলুদ/সবুজ) এর উপরেই বসে। */
+/* 🆕 শেয়ার্ড ক্লাস — উজ্জ্বল নীল বাম border (ঠান্ডা রঙ = "ভাগাভাগি")।
+   স্প্লিট স্লট থেকে স্পষ্ট আলাদা করতে hue সম্পূর্ণ ভিন্ন রাখা হয়েছে।
+   coverage রং (হলুদ/সবুজ) এর উপরেই বসে। */
 .cell-subject.is-shared-cell{
-  border-left:4px solid #6366f1 !important;   /* নীল-বেগুনি marker */
-  box-shadow:inset 0 0 0 1px rgba(99,102,241,.15);
+  border-left:5px solid #2563eb !important;   /* 🟦 উজ্জ্বল নীল — শেয়ার্ড */
+  box-shadow:inset 0 0 0 1px rgba(37,99,235,.18);
 }
 .cell-subject.is-multipart{
-  border-left:4px solid #a855f7 !important;   /* স্প্লিট — বেগুনি marker */
-  box-shadow:inset 0 0 0 1px rgba(168,85,247,.18);
+  border-left:5px solid #f97316 !important;   /* 🟧 কমলা — স্প্লিট (একই ঘণ্টায় ভিন্ন শাখা) */
+  box-shadow:inset 0 0 0 1px rgba(249,115,22,.20);
 }
 
 /* 🆕 শেয়ার্ড ক্লাস coverage-ভিত্তিক রং:
@@ -9242,7 +9243,7 @@ function renderTable(){
     // Total height for rowspan=3 cells (SL/Name/break) = rowH * 3
     const rowspan3HeightStyle = rowH > 0 ? `height:${rowH*3}px;min-height:${rowH*3}px;` : '';
     // Divider between teachers
-    if(ti>0) body += `<tr class="teacher-block-divider"><td colspan="${state.columns.length+2}"></td></tr>`;
+    if(ti>0) body += `<tr class="teacher-block-divider" data-divider-for="${t.id}"><td colspan="${state.columns.length+2}"></td></tr>`;
 
     // Row 1: Class
     // NOTE: do NOT factor routineLock into draggable here — setting
@@ -9396,7 +9397,11 @@ function renderTable(){
               <div class="cell-mpart-wrap">${partsHTML}</div>
             </div></td>`;
         } else {
-          const isSharedCell = (Array.isArray(cell.days) && cell.days.length) || (Array.isArray(cell.parts) && cell.parts.length);
+          // 🛡️ শেয়ার্ড নির্ধারণ — সেভ-লজিকের সাথে মিলিয়ে শুধু explicit
+          //    "শেয়ার্ড ক্লাস" টিক থাকলেই shared। শুধু days array থাকলেই (৬ দিন
+          //    ডিফল্ট সিলেক্ট করা থাকলেও) আর shared হিসেবে গণ্য হবে না — তাই
+          //    সাধারণ ক্লাসে বাম দিকের নীল-বেগুনি বার আর দেখাবে না।
+          const isSharedCell = (cell.shared === true);
           const isSpecialCell = !!(cell.special || cell.locked);
           const isFixedCell   = !!cell.fixed;
           // 6-day coverage check (only meaningful if cell has class+subject)
@@ -9706,6 +9711,9 @@ function applyFilters(){
   const fs = document.getElementById('filterSubject').value;
   const fst = document.getElementById('filterStatus').value;
 
+  // 🆕 কোন কোন শিক্ষক দৃশ্যমান — divider-পাস-এ ব্যবহারের জন্য সংগ্রহ করি
+  const visibleTids = new Set();
+
   document.querySelectorAll('#tbody tr').forEach(tr=>{
     if(tr.classList.contains('teacher-block-divider')) return;
     const tid = tr.dataset.tid;
@@ -9745,6 +9753,23 @@ function applyFilters(){
       }
     }
     tr.style.display = show ? '' : 'none';
+    if(show) visibleTids.add(tid);
+  });
+
+  // 🆕 DIVIDER পাস — লুকানো শিক্ষকের বিভাজক রেখাও লুকাই, যাতে বড় ফাঁকা গ্যাপ
+  //    না থাকে। একটি রেখা তখনই দেখাবে যখন তার উপরে অন্তত একটি দৃশ্যমান শিক্ষক
+  //    আছে এবং রেখাটির ঠিক পরের শিক্ষকও দৃশ্যমান — অর্থাৎ শুধু দৃশ্যমান
+  //    শিক্ষকদের মাঝেই বিভাজক থাকবে (শুরুতে/শেষে অতিরিক্ত রেখা নয়)।
+  let seenVisible = false;
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
+    if(tr.classList.contains('teacher-block-divider')){
+      const forTid = tr.getAttribute('data-divider-for');
+      const nextVisible = forTid && visibleTids.has(forTid);
+      tr.style.display = (seenVisible && nextVisible) ? '' : 'none';
+    } else {
+      const tid = tr.dataset.tid;
+      if(tid && visibleTids.has(tid)) seenVisible = true;
+    }
   });
 }
 
