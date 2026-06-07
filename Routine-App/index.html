@@ -4891,6 +4891,11 @@ td.is-multipart{vertical-align:top}
 body[data-role="teacher"] .admin-mgr-only{display:none !important}
 body[data-role="admin"] .teacher-only,
 body[data-role="manager"] .teacher-only{display:none !important}
+/* 🛡️ ভিজিবিলিটি গার্ড — শিক্ষক কখনোই ঘণ্টাভিত্তিক ফ্রি/ব্যস্ত বাটন বা
+   লাইভ ড্যাশবোর্ড দেখবে না (render logic ছাড়াও দ্বিতীয় স্তরের সুরক্ষা)।
+   শুধু অ্যাডমিন ও ম্যানেজার এই তথ্য দেখতে পারবেন। */
+body[data-role="teacher"] .slot-quick-btns,
+body[data-role="teacher"] .dashboard-fab{display:none !important}
 
 .tool-btn.notif-btn{position:relative;font-weight:700}
 .notif-badge{
@@ -7425,7 +7430,19 @@ let isReadOnly = false;
 let _firebaseSyncEnabled = true; // Firebase সিঙ্ক চালু/বন্ধ করার ফ্ল্যাগ
 let _applyingRemoteState = false; // রিমোট থেকে আপডেট আসার সময় true
 
-function saveState(){
+function saveState(localOnly){
+  // ───────────────────────────────────────────────────────────────
+  // 🛡️ ক্লাউড-ক্লোবার সুরক্ষা:
+  //   localOnly === true হলে শুধু এই ডিভাইসের localStorage-এ ব্যাকআপ হয় —
+  //   Firebase-এ কিছুই push হয় না এবং lastSaved bump হয় না। ফলে কোনো
+  //   আইডল/বাসি ডিভাইসের নিয়মিত autosave কখনো ক্লাউডের ভালো ডেটা (লক,
+  //   পাসওয়ার্ড, রুটিন) ওভাররাইট করতে পারবে না। প্রকৃত ব্যবহারকারী-অ্যাকশন
+  //   (লক/পাসওয়ার্ড/সেল এডিট) সবসময় আগের মতোই Firebase-এ যাবে।
+  // ───────────────────────────────────────────────────────────────
+  if(localOnly === true){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+    return;
+  }
   state.lastSaved = new Date().toISOString();
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -8737,6 +8754,8 @@ function finishLogin(){
   initNotificationSystem();
   // 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা চালু
   startVoiceAnnouncer();
+  // 🆕 খোলার সাথে সাথে চলমান ঘণ্টার কলামে নিয়ে যাই (টেবিল রেন্ডার শেষ হওয়ার পর)
+  try{ setTimeout(()=>{ try{ scrollToCurrentSlot(); }catch(_){} }, 350); }catch(_){}
   showToast('✅ স্বাগতম, ' + currentUser.name + '!', 'success');
 }
 
@@ -8854,7 +8873,14 @@ function ensureStateIntegrity(){
 
   // 🆕 MULTI-PART CLEANUP — multi-part cell-এ top-level subject/class/section
   //    থাকলে এলোমেলো হয়। parts[] একমাত্র master রাখি — top-level সরিয়ে দিই।
+  //    ⚠️ ডেটা-সুরক্ষা নীতি: ব্যবহারকারী নিজে হাতে না মুছলে কোনো ডেটা কখনো
+  //    মুছবে/হাইড হবে না। তাই এখানে শুধু কাঠামো normalize হয় — শুধু
+  //    সম্পূর্ণ খালি (ক্লাস/বিষয়/শাখা তিনটাই ফাঁকা) junk part বাদ যায়;
+  //    যেকোনো একটিতে ডেটা থাকলে part অক্ষত থাকে, কোনো সেল কখনো খালি হয় না।
   try{
+    const _partHasData = p => p && (
+      (p.subject||'').trim() || (p.class||'').trim() || (p.section||'').trim()
+    );
     state.teachers.forEach(t => {
       if(!t || !t.cells) return;
       Object.keys(t.cells).forEach(cid => {
@@ -8863,16 +8889,22 @@ function ensureStateIntegrity(){
           // parts থাকলে top-level fields অপ্রয়োজনীয় ও বিভ্রান্তিকর — মুছি
           delete cell.subject; delete cell.class; delete cell.section;
           delete cell.days; delete cell.shared;
-          // parts-এ ত্রুটিপূর্ণ (subject/section ছাড়া) entry বাদ দিই
-          cell.parts = cell.parts.filter(p => p && (p.subject||'').trim() && (p.section||'').trim());
-          // একটাই part থাকলে → single cell-এ ফিরিয়ে আনি
+          // শুধুমাত্র সম্পূর্ণ খালি junk part বাদ — ডেটাযুক্ত (এমনকি শাখা
+          // ছাড়া) part সবসময় রক্ষা পায়। মূল গণনা: কয়টি part-এ ডেটা ছিল।
+          const _hadData = cell.parts.some(_partHasData);
+          const _kept = cell.parts.filter(_partHasData);
+          // ডেটাযুক্ত part থাকলে শুধু সেগুলো রাখি; না থাকলেও কিছু মুছি না
+          // (পুরোনো একটামাত্র খালি placeholder থাকলে যেমন ছিল তেমন থাক)।
+          if(_hadData) cell.parts = _kept;
+          // একটাই part থাকলে → single cell-এ ফিরিয়ে আনি (ডেটা অক্ষত রেখে)
           if(cell.parts.length === 1){
             const p = cell.parts[0];
-            cell.subject = p.subject; cell.class = p.class; cell.section = p.section;
+            cell.subject = p.subject || ''; cell.class = p.class || ''; cell.section = p.section || '';
             cell.days = Array.isArray(p.days) ? p.days.slice() : [];
             cell.shared = !!p.shared;
             delete cell.parts;
           } else if(cell.parts.length === 0){
+            // এখানে আসা মানে মূলত কোনো ডেটাই ছিল না — নিরাপদে parts সরাই
             delete cell.parts;
           }
         }
@@ -9090,8 +9122,9 @@ function renderTable(){
     const colStyleAttr = colStyles.length ? ` style="${colStyles.join(';')}"` : '';
     // প্রতি ঘন্টায় (স্লট) দুইটি কুইক-বাটন: ফ্রি শিক্ষক / ব্যস্ত শিক্ষক
     let quickBtnsHtml = '';
-    // 🔒 ফ্রি/ব্যস্ত বাটন শুধু অ্যাডমিন (+ অনুমতিপ্রাপ্ত ম্যানেজার) দেখবে — সাধারণ শিক্ষক নয়
-    if(c.type === 'slot' && hasPerm('viewFreeBusy')){
+    // 🔒 ফ্রি/ব্যস্ত বাটন অ্যাডমিন ও সব ম্যানেজার দেখবেন — শুধু সাধারণ শিক্ষক নয়।
+    //    (পার্-ম্যানেজার পারমিশন-নির্ভর নয়; role-ই যথেষ্ট।)
+    if(c.type === 'slot' && canFullEdit()){
       const fc = slotFreeBusyCount(c.id);
       quickBtnsHtml = `<div class="slot-quick-btns">
         <button type="button" class="slot-qbtn free" onclick="event.stopPropagation();openSlotTeachers('${c.id}','free')" title="এই ঘন্টায় ফ্রি (ক্লাস নেই) শিক্ষকের তালিকা — কল করা যাবে">🟢 ফ্রি <span class="qb-n">${toBnNum(fc.free)}</span></button>
@@ -15542,6 +15575,33 @@ function _applyCurrentSlotPulse(){
   }catch(_){}
 }
 
+/* 🆕 অ্যাপ খোলার সময় — চলমান ঘণ্টার কলামে অনুভূমিকভাবে scroll করে নিয়ে যাই।
+   ───────────────────────────────────────────────────────────────
+   sticky SL + নাম কলামের ঠিক পরেই চলমান ঘণ্টা দৃশ্যমান হবে। চলমান slot
+   না পাওয়া গেলে (সময়সীমার বাইরে) কিছুই করে না — নিরাপদ, কোনো ক্ষতি নেই।
+   শুধু লগইন/অটো-লগইনের পর একবার ডাকা হয় (প্রতি render-এ নয়)। */
+function scrollToCurrentSlot(){
+  try{
+    const wrap = document.getElementById('tableWrap');
+    if(!wrap) return;
+    const curId = (typeof _currentSlotColId === 'function') ? _currentSlotColId() : null;
+    if(!curId) return;
+    const th = wrap.querySelector('th[data-cid="'+curId+'"]');
+    if(!th) return;
+    // sticky SL + নাম কলামের মোট প্রস্থ বের করি (এদের নিচে কলাম লুকাতে চাই না)
+    let fixedW = 0;
+    try{
+      const slTh = wrap.querySelector('thead th.col-sl');
+      const nameTh = wrap.querySelector('thead th.col-name');
+      if(slTh) fixedW += slTh.getBoundingClientRect().width;
+      if(nameTh) fixedW += nameTh.getBoundingClientRect().width;
+    }catch(_){}
+    // চলমান কলামটি sticky অংশের ঠিক পরে আনি (একটু মার্জিন রেখে)
+    const target = th.offsetLeft - fixedW - 12;
+    wrap.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+  }catch(_){}
+}
+
 function _todayDayKey(){
   const map = {0:'Sun', 1:'Mon', 2:'Tue', 3:'Wed', 4:'Thu', 5:'Fri', 6:'Sat'};
   return map[new Date().getDay()] || 'Sat';
@@ -15641,8 +15701,8 @@ function slotTelLinks(t){
 
 // মূল ফাংশন — হেডার বাটনে ক্লিক করলে এই মডাল খুলবে
 function openSlotTeachers(colId, mode){
-  // 🔒 অনুমতি ছাড়া ফ্রি/ব্যস্ত তালিকা খোলা যাবে না (সাধারণ শিক্ষক / অনুমতিহীন ম্যানেজার)
-  if(!hasPerm('viewFreeBusy')){
+  // 🔒 অ্যাডমিন ও ম্যানেজার ফ্রি/ব্যস্ত তালিকা খুলতে পারবেন — সাধারণ শিক্ষক নয়
+  if(!canFullEdit()){
     if(typeof showToast === 'function') showToast('⛔ ফ্রি/ব্যস্ত তালিকা দেখার অনুমতি আপনার নেই','error');
     return;
   }
@@ -20199,7 +20259,10 @@ function startAutoSave(){
   if(saveTimer) clearInterval(saveTimer);
   const interval = (state.settings.autoSaveInterval || 30) * 1000;
   saveTimer = setInterval(()=>{
-    saveState();
+    // 🛡️ শুধু localStorage ব্যাকআপ — Firebase-এ push নয়। এতে আইডল/বাসি
+    //    ডিভাইস রাতে অ্যাডমিনের লক/পাসওয়ার্ড/রুটিন ওভাররাইট করতে পারে না।
+    //    প্রকৃত এডিট আগের মতোই সাথে সাথে Firebase-এ সংরক্ষিত হয়।
+    saveState(true);
     if(state.settings.backupFrequency === 'hourly'){
       // handled separately
     }
