@@ -82,6 +82,7 @@ body:not([data-role="admin"]) .admin-only { display: none !important; }
 .ac-acct-actions button{padding:5px 10px;border-radius:7px;border:none;font-weight:800;font-size:12px;cursor:pointer}
 .ac-btn-edit{background:var(--info,#2563eb);color:#fff}
 .ac-btn-del{background:var(--danger,#dc2626);color:#fff}
+.ac-btn-logout{background:#b45309;color:#fff}
 .ac-btn-pw{background:#7c3aed;color:#fff}
 .ac-perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 14px;margin-top:11px;padding-top:11px;border-top:1px dashed var(--border)}
 @media(max-width:560px){.ac-perm-grid{grid-template-columns:1fr}}
@@ -7526,6 +7527,10 @@ let state = {
   requests: [],
   /* 🛡️ Admin Control — multi-admin/manager, per-manager permissions, trusted devices */
   accounts: { admins: [], managers: [], trustedDevices: [] },
+  /* 🆕 Tombstones — অপসারিত শিক্ষক(id)/অ্যাডমিন·ম্যানেজার(username) এর তালিকা।
+     stale device পুরোনো ডেটা push করলেও এদের sync-merge-এ বাদ দেওয়া হয়,
+     তাই অপসারিত ব্যক্তি/শিক্ষক আর কখনো ফিরে আসে না। */
+  tombstones: { teachers: [], admins: [], managers: [] },
   /* 📚 পাঠ্যসূচি — প্রতি (শ্রেণি, শাখা) এর সাপ্তাহিক বিষয় বণ্টন
      গঠন: curriculum[className][sectionName] = { 'বাংলা': 6, 'গণিত': 6, ... }
      'GLOBAL' কী হলে ঐ শ্রেণির সব শাখার জন্য একই বরাদ্দ।
@@ -7852,6 +7857,9 @@ function applyRemoteState(remoteData){
     const _localColsAt = (state.settings && state.settings.columnsUpdatedAt) || '';
     const _localLastSched = (state.settings && state.settings.lastSchedule)
       ? JSON.parse(JSON.stringify(state.settings.lastSchedule)) : null;
+    // 🆕 ওভাররাইটের আগে লোকাল tombstones রাখি (যাতে union-merge-এ কখনো হারায় না)
+    const _localTombSnap = (state.tombstones && typeof state.tombstones === 'object')
+      ? JSON.parse(JSON.stringify(state.tombstones)) : {teachers:[],admins:[],managers:[]};
 
     // সমস্ত ফিল্ড আপডেট করো (settings সহ)
     const oldSettings = state.settings;
@@ -7860,6 +7868,17 @@ function applyRemoteState(remoteData){
     });
     // settings deep-merge করো যাতে নতুন ডিফল্ট হারিয়ে না যায়
     state.settings = Object.assign({}, oldSettings, remoteData.settings || {});
+
+    // 🆕 TOMBSTONES union-merge — লোকাল ও রিমোট দুই দিকের অপসারণই রাখি (কখনো
+    //    হারায় না)। এরপর ensureStateIntegrity এগুলো দিয়ে অপসারিতদের ফিল্টার করবে।
+    try{
+      if(!state.tombstones || typeof state.tombstones !== 'object') state.tombstones = {teachers:[],admins:[],managers:[]};
+      ['teachers','admins','managers'].forEach(kk => {
+        const a = Array.isArray(_localTombSnap[kk]) ? _localTombSnap[kk] : [];
+        const b = Array.isArray(state.tombstones[kk]) ? state.tombstones[kk] : [];
+        state.tombstones[kk] = Array.from(new Set([...a, ...b].map(String)));
+      });
+    }catch(_){}
 
     // রিমোট ডেটায় missing ফিল্ড (যেমন teacher.password) ভর্তি করো
     if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity();
@@ -7912,6 +7931,10 @@ function applyRemoteState(remoteData){
   // রিমোট পুরোনো পাসওয়ার্ড/সময়সূচি দিয়ে রিভার্ট করার চেষ্টা করেছিল — সঠিকটা
   // আবার ক্লাউডে পাঠাই যাতে সব ডিভাইসে নতুন মানই থাকে।
   if(_pwReassert || _colReassert){ try{ saveState(); }catch(_){} }
+
+  // 🆕 প্রতিটি রিমোট আপডেটের পর যাচাই করি — লগইন থাকা ব্যবহারকারী অপসারিত বা
+  //    সব-ডিভাইস-লগআউট হয়েছেন কিনা; হলে সাথে সাথে নিরাপদে লগআউট করি।
+  try{ if(typeof _validateCurrentSession === 'function') _validateCurrentSession(); }catch(_){}
 }
 
 /* ===========================================================
@@ -8357,7 +8380,8 @@ function autoLoginIfTrusted(){
           role: d.role,
           username: acct.username,
           viewOnly: acct.viewOnly === true,
-          permissions: d.role === 'admin' ? _permsAllTrue() : _permsNormalize(acct.permissions)
+          permissions: d.role === 'admin' ? _permsAllTrue() : _permsNormalize(acct.permissions),
+          sessionEpoch: (parseInt(acct.sessionEpoch)||0)
         };
         audit('স্বয়ংক্রিয় লগইন (বিশ্বস্ত ডিভাইস)', currentUser.name + ' (' + currentUser.role + ')');
         finishLogin();
@@ -8366,7 +8390,7 @@ function autoLoginIfTrusted(){
       if(d.role === 'teacher'){
         const t = (state.teachers||[]).find(x => String(x.id) === String(d.account));
         if(!t) continue;
-        currentUser = { name: t.name, role: 'teacher', teacherId: t.id };
+        currentUser = { name: t.name, role: 'teacher', teacherId: t.id, sessionEpoch: (parseInt(t.sessionEpoch)||0) };
         audit('স্বয়ংক্রিয় লগইন (বিশ্বস্ত ডিভাইস)', currentUser.name + ' (teacher)');
         finishLogin();
         return true;
@@ -8416,6 +8440,7 @@ function renderACAdmins(){
         <div class="ac-acct-actions">
           <button class="ac-btn-edit" onclick="acEditAdmin(${i})">✏️ নাম</button>
           <button class="ac-btn-pw" onclick="acResetPw('admin',${i})">🔐 পাসওয়ার্ড</button>
+          <button class="ac-btn-logout" onclick="acForceLogoutAll('admin',${i})" title="এই অ্যাকাউন্টের সব ডিভাইস থেকে লগআউট করুন">🚪 সব ডিভাইস লগআউট</button>
           ${list.length>1 ? `<button class="ac-btn-del" onclick="acDelAccount('admin',${i})">🗑️ মুছুন</button>` : ''}
         </div>
       </div>
@@ -8471,6 +8496,7 @@ function renderACManagers(){
         <div class="ac-acct-actions">
           <button class="ac-btn-edit" onclick="acEditManager(${i})">✏️ নাম</button>
           <button class="ac-btn-pw" onclick="acResetPw('manager',${i})">🔐 পাসওয়ার্ড</button>
+          <button class="ac-btn-logout" onclick="acForceLogoutAll('manager',${i})" title="এই অ্যাকাউন্টের সব ডিভাইস থেকে লগআউট করুন">🚪 সব ডিভাইস লগআউট</button>
           <button class="ac-btn-del" onclick="acDelAccount('manager',${i})">🗑️ মুছুন</button>
         </div>
       </div>
@@ -8539,6 +8565,7 @@ function acAddAdmin(){
   // 👁️ কনভেনশন: ইউজারনেম "principal" হলে নতুন অ্যাডমিন স্বয়ংক্রিয়ভাবে
   // ভিউ-অনলি হিসেবে যোগ হবে (পরে টগল দিয়ে বদলানো যাবে)।
   const autoVO = (user.toLowerCase() === 'principal');
+  _untombstone('admins', user);
   state.accounts.admins.push({username:user, name, password:pass, viewOnly:autoVO, pwUpdatedAt:new Date().toISOString()});
   document.getElementById('acNewAdminName').value='';
   document.getElementById('acNewAdminUser').value='';
@@ -8562,6 +8589,7 @@ function acAddManager(){
   if(taken){ showToast('এই ইউজারনেম আগেই আছে','error'); return; }
   // ডিফল্ট: মৌলিক এডিট অনুমতি (অ্যাডমিন পরে বাড়াতে/কমাতে পারবেন)
   const def = _permsNormalize({editRoutine:true, manageTeachers:true, approveLeave:true, dashboard:true, auditLog:true});
+  _untombstone('managers', user);
   state.accounts.managers.push({username:user, name, password:pass, permissions:def, pwUpdatedAt:new Date().toISOString()});
   document.getElementById('acNewMgrName').value='';
   document.getElementById('acNewMgrUser').value='';
@@ -8625,10 +8653,48 @@ function acDelAccount(kind, i){
   }
   if(!confirm('"'+x.name+'" (@'+x.username+') মুছে ফেলবেন? এটি ফেরানো যাবে না।')) return;
   arr.splice(i,1);
+  // 🆕 tombstone — অপসারিত অ্যাকাউন্ট যাতে কোনো stale device আর ফেরাতে না পারে
+  try{
+    if(!state.tombstones) state.tombstones = {teachers:[],admins:[],managers:[]};
+    const tk = kind==='admin' ? 'admins' : 'managers';
+    if(!Array.isArray(state.tombstones[tk])) state.tombstones[tk] = [];
+    if(state.tombstones[tk].map(String).indexOf(String(x.username)) < 0) state.tombstones[tk].push(String(x.username));
+  }catch(_){}
   // ঐ অ্যাকাউন্টের বিশ্বস্ত ডিভাইসগুলোও সরাও
   state.accounts.trustedDevices = state.accounts.trustedDevices.filter(d=> !(d.role===kind && String(d.account)===String(x.username)));
   _acPersist((kind==='admin'?'অ্যাডমিন':'ম্যানেজার')+' মুছে ফেলা হয়েছে: '+x.name);
   showToast('🗑️ মুছে ফেলা হয়েছে','info');
+}
+
+/* 🆕 কোনো username/teacher-id আবার তৈরি করলে tombstone থেকে সরাই, যাতে
+   নতুন করে যোগ করা ব্যক্তিকে integrity-filter ভুল করে বাদ না দেয়। */
+function _untombstone(kind, val){
+  try{
+    if(state.tombstones && Array.isArray(state.tombstones[kind])){
+      state.tombstones[kind] = state.tombstones[kind].filter(v => String(v) !== String(val));
+    }
+  }catch(_){}
+}
+
+/* 🆕 এই অ্যাকাউন্টের sessionEpoch বাড়িয়ে দিই → অন্য সব ডিভাইসে লাইভ যাচাইয়ে
+   forced logout হবে। নিজের অ্যাকাউন্ট হলে নিজের সেশন বজায় রাখি (লগআউট হবো না)। */
+function acForceLogoutAll(kind, i){
+  if(!_acGuard()) return;
+  ensureAccounts();
+  const arr = kind==='admin' ? state.accounts.admins : state.accounts.managers;
+  const x = arr[i]; if(!x) return;
+  if(!confirm('"'+x.name+'" (@'+x.username+') কে সব ডিভাইস থেকে লগআউট করবেন? তাকে আবার লগইন করতে হবে।')) return;
+  x.sessionEpoch = (parseInt(x.sessionEpoch)||0) + 1;
+  // ঐ অ্যাকাউন্টের বিশ্বস্ত-ডিভাইসগুলোও সরাই (auto-login ফিরবে না)
+  if(state.accounts && Array.isArray(state.accounts.trustedDevices)){
+    state.accounts.trustedDevices = state.accounts.trustedDevices.filter(d=> !(d && d.role===kind && String(d.account)===String(x.username)));
+  }
+  // নিজের অ্যাকাউন্ট হলে নিজের সেশন আপডেট করি যাতে নিজে লগআউট না হই
+  if(currentUser && currentUser.role===kind && String(currentUser.username)===String(x.username)){
+    currentUser.sessionEpoch = x.sessionEpoch;
+  }
+  _acPersist('সব ডিভাইস থেকে লগআউট — '+x.name);
+  showToast('🚪 "'+x.name+'" এর সব ডিভাইস থেকে লগআউট করা হয়েছে','info',3500);
 }
 
 function acTogglePerm(i, key, val){
@@ -8916,6 +8982,46 @@ function returnFromLeave(tid){
   showToast('✅ ' + t.name + ' কাজে ফিরেছেন','success');
 }
 
+/* ===========================================================
+   🆕 SESSION VALIDATION & FORCED LOGOUT
+   ───────────────────────────────────────────────────────────
+   • অপসারিত (tombstoned/মুছে ফেলা) ব্যবহারকারী → সাথে সাথে লগআউট।
+   • অ্যাকাউন্টের sessionEpoch বাড়লে (সব ডিভাইস থেকে লগআউট) → লগআউট।
+   • ডেটা-সুরক্ষা: forced logout কখনো রুটিন ডেটা (localStorage/Firebase) মোছে
+     না — শুধু এই সেশন বন্ধ করে, SW cache পরিষ্কার করে, লগইন স্ক্রিনে ফেরায়।
+=========================================================== */
+function _validateCurrentSession(){
+  if(typeof currentUser === 'undefined' || !currentUser) return;
+  try{
+    if(currentUser.role === 'teacher'){
+      const t = (state.teachers||[]).find(x => String(x.id) === String(currentUser.teacherId));
+      if(!t){ _forceLogout('আপনার অ্যাকাউন্ট সরিয়ে ফেলা হয়েছে। অ্যাডমিনের সাথে যোগাযোগ করুন।'); return; }
+      if((parseInt(t.sessionEpoch)||0) > (parseInt(currentUser.sessionEpoch)||0)){
+        _forceLogout('আপনাকে সব ডিভাইস থেকে লগআউট করা হয়েছে। আবার লগইন করুন।'); return;
+      }
+    } else if(currentUser.role === 'admin' || currentUser.role === 'manager'){
+      const arr = currentUser.role === 'admin' ? (state.accounts&&state.accounts.admins) : (state.accounts&&state.accounts.managers);
+      const acct = (arr||[]).find(a => String(a.username) === String(currentUser.username));
+      if(!acct){ _forceLogout('আপনার অ্যাক্সেস বাতিল করা হয়েছে। অ্যাডমিনের সাথে যোগাযোগ করুন।'); return; }
+      if((parseInt(acct.sessionEpoch)||0) > (parseInt(currentUser.sessionEpoch)||0)){
+        _forceLogout('আপনাকে সব ডিভাইস থেকে লগআউট করা হয়েছে। আবার লগইন করুন।'); return;
+      }
+    }
+  }catch(_){}
+}
+let _forcedOut = false;
+function _forceLogout(reason){
+  if(_forcedOut) return;            // একবারই — লুপ এড়াই
+  _forcedOut = true;
+  try{ currentUser = null; }catch(_){}
+  // এই সেশনে auto-login বন্ধ → পুনরায় ঢুকে যাবে না; লগইন স্ক্রিন দেখাবে
+  try{ sessionStorage.setItem('routineAutoLoginDisabled','1'); }catch(_){}
+  // SW cache পরিষ্কার (পুরোনো cached শেল যেন না থাকে) — রুটিন ডেটা অক্ষত
+  try{ _clearAllCaches(); }catch(_){}
+  try{ alert(reason || 'আপনার সেশন শেষ হয়েছে। আবার লগইন করুন।'); }catch(_){}
+  try{ location.reload(); }catch(_){ try{ location.href = location.href; }catch(__){} }
+}
+
 function doLogin(){
   const role = document.getElementById('loginRole').value;
   const errEl = document.getElementById('loginError');
@@ -8950,7 +9056,8 @@ function doLogin(){
       // 👁️ ভিউ-অনলি অ্যাডমিন/ম্যানেজার: সব দেখতে পাবেন, কিন্তু কোনো
       // পরিবর্তন সংরক্ষিত হবে না (saveState-এ নীরবে আটকানো হয়)।
       viewOnly: acct.viewOnly === true,
-      permissions: role === 'admin' ? _permsAllTrue() : _permsNormalize(acct.permissions)
+      permissions: role === 'admin' ? _permsAllTrue() : _permsNormalize(acct.permissions),
+      sessionEpoch: (parseInt(acct.sessionEpoch)||0)
     };
   } else if(role === 'teacher'){
     const tid = document.getElementById('loginTeacher').value;
@@ -8965,7 +9072,7 @@ function doLogin(){
       errEl.classList.add('show');
       return;
     }
-    currentUser = {name:t.name, role:'teacher', teacherId:tid};
+    currentUser = {name:t.name, role:'teacher', teacherId:tid, sessionEpoch:(parseInt(t.sessionEpoch)||0)};
   } else {
     errEl.textContent = '❌ সঠিক ভূমিকা নির্বাচন করুন';
     errEl.classList.add('show');
@@ -9130,6 +9237,35 @@ function ensureStateIntegrity(){
   if(!Array.isArray(state.teachers)) state.teachers = [];
   if(!Array.isArray(state.audit)) state.audit = [];
   if(!Array.isArray(state.requests)) state.requests = [];
+
+  // 🆕 TOMBSTONES — অপসারিত শিক্ষক/অ্যাকাউন্ট নিশ্চিতভাবে বাদ রাখি, যাতে কোনো
+  //    stale device পুরোনো ডেটা push করলেও এরা আর কখনো ফিরে না আসে।
+  if(!state.tombstones || typeof state.tombstones !== 'object') state.tombstones = {};
+  if(!Array.isArray(state.tombstones.teachers)) state.tombstones.teachers = [];
+  if(!Array.isArray(state.tombstones.admins)) state.tombstones.admins = [];
+  if(!Array.isArray(state.tombstones.managers)) state.tombstones.managers = [];
+  try{
+    const _tt = new Set(state.tombstones.teachers.map(String));
+    if(_tt.size) state.teachers = state.teachers.filter(t => t && !_tt.has(String(t.id)));
+    if(state.accounts && typeof state.accounts === 'object'){
+      const _ta = new Set(state.tombstones.admins.map(String));
+      const _tm = new Set(state.tombstones.managers.map(String));
+      if(_ta.size && Array.isArray(state.accounts.admins))
+        state.accounts.admins = state.accounts.admins.filter(a => a && !_ta.has(String(a.username)));
+      if(_tm.size && Array.isArray(state.accounts.managers))
+        state.accounts.managers = state.accounts.managers.filter(a => a && !_tm.has(String(a.username)));
+      // অপসারিত অ্যাকাউন্টের বিশ্বস্ত-ডিভাইস এন্ট্রিও সরাই (auto-login ফিরবে না)
+      if(Array.isArray(state.accounts.trustedDevices)){
+        state.accounts.trustedDevices = state.accounts.trustedDevices.filter(d => {
+          if(!d) return false;
+          if(d.role === 'admin'   && _ta.has(String(d.account))) return false;
+          if(d.role === 'manager' && _tm.has(String(d.account))) return false;
+          if(d.role === 'teacher' && _tt.has(String(d.account))) return false;
+          return true;
+        });
+      }
+    }
+  }catch(_){}
 
   // 🆕 MULTI-PART CLEANUP — multi-part cell-এ top-level subject/class/section
   //    থাকলে এলোমেলো হয়। parts[] একমাত্র master রাখি — top-level সরিয়ে দিই।
@@ -10598,6 +10734,7 @@ function addTeacher(){
 
     snapshot();
     const t = makeTeacher('শিক্ষক '+toBnNum(state.teachers.length+1));
+    _untombstone('teachers', t.id);
     state.teachers.push(t);
     saveState();
     renderTable();
@@ -14431,6 +14568,16 @@ function deleteTeacher(){
   if(!confirm(t.name+' কে ডিলিট করবেন?')) return;
   snapshot();
   state.teachers = state.teachers.filter(x=>x.id!==tid);
+  // 🆕 tombstone — যাতে কোনো stale device এই শিক্ষককে আর ফেরাতে না পারে
+  try{
+    if(!state.tombstones) state.tombstones = {teachers:[],admins:[],managers:[]};
+    if(!Array.isArray(state.tombstones.teachers)) state.tombstones.teachers = [];
+    if(state.tombstones.teachers.map(String).indexOf(String(tid)) < 0) state.tombstones.teachers.push(String(tid));
+    // ঐ শিক্ষকের বিশ্বস্ত-ডিভাইস এন্ট্রিও সরাই (auto-login বন্ধ)
+    if(state.accounts && Array.isArray(state.accounts.trustedDevices)){
+      state.accounts.trustedDevices = state.accounts.trustedDevices.filter(d => !(d && d.role==='teacher' && String(d.account)===String(tid)));
+    }
+  }catch(_){}
   saveState();
   renderTable();
   populateLoginTeachers();
@@ -22271,6 +22418,12 @@ function initMenuReorder(){
 function init(){
   loadState();
   try{ initVersionGate(); }catch(e){ console.warn('version gate skipped:', e); }
+  // 🆕 সেশন-যাচাই — অ্যাপ আবার দৃশ্যমান হলে ও প্রতি ২০ সেকেন্ডে (অপসারণ/forced
+  //    logout দ্রুত ধরা পড়ে, রিমোট আপডেট না এলেও)।
+  try{
+    document.addEventListener('visibilitychange', () => { if(!document.hidden){ try{ _validateCurrentSession(); }catch(_){} } });
+    setInterval(() => { try{ _validateCurrentSession(); }catch(_){} }, 20000);
+  }catch(_){}
   try{ initMenuReorder(); }catch(e){ console.warn('menu reorder skipped:', e); }
   // 🏫 নতুন প্রতিষ্ঠান সেটআপের পর reload হলে — অস্থায়ীভাবে রাখা ব্র্যান্ডিং
   // (নাম/লোগো/পরিচালক) এখন state-এ বসাই, তারপর একবার সংরক্ষণ করি।
