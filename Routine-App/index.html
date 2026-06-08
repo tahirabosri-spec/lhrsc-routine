@@ -7279,6 +7279,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, set, get, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDiARR8yuPVFPyzPuqtoPR2P3U_nn58-rY",
@@ -7293,6 +7294,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
   try {
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const auth = getAuth(app);
 
     // মূল স্ক্রিপ্টে ব্যবহারের জন্য গ্লোবাল করা হলো
     window.FB = {
@@ -7302,10 +7304,36 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       get: get,
       onValue: onValue,
       off: off,
-      ready: true
+      auth: auth,
+      ready: false
     };
+
+    // 🆕 ANONYMOUS AUTH — ব্যবহারকারী কিছুই টের পায় না; এটি Firebase Rules-এর
+    //    "auth != null" শর্ত পূরণের জন্য একটি নীরব টোকেন দেয় (বাইরের বট/স্ক্রিপ্ট
+    //    আটকাতে)। টোকেন প্রস্তুত হলে তবেই অ্যাপকে "প্রস্তুত" ঘোষণা করি, যাতে
+    //    auth-required rules-এ প্রথম পড়া ব্যর্থ না হয়।
+    let _fbReadyDispatched = false;
+    function _markFbReady(){
+      if(_fbReadyDispatched) return;
+      _fbReadyDispatched = true;
+      window.FB.ready = true;
+      console.log('✅ Firebase প্রস্তুত');
+      window.dispatchEvent(new Event('firebaseReady'));
+    }
+    try{
+      onAuthStateChanged(auth, (user) => { if(user){ _markFbReady(); } });
+      signInAnonymously(auth).catch((e) => {
+        console.warn('⚠️ Anonymous sign-in ব্যর্থ:', e);
+        _markFbReady();   // ব্যর্থ হলেও অ্যাপ আটকাবে না (rules এখনো public হলে চলবে)
+      });
+    }catch(e){
+      console.warn('⚠️ Auth শুরু করা যায়নি:', e);
+      _markFbReady();
+    }
+    // 🛡️ নিরাপত্তা-fallback: auth ৫ সেকেন্ডে না এলেও অ্যাপ কখনো আটকাবে না
+    setTimeout(_markFbReady, 5000);
+
     console.log('✅ Firebase সংযুক্ত হয়েছে');
-    window.dispatchEvent(new Event('firebaseReady'));
   } catch(err) {
     console.error('❌ Firebase সংযোগ ব্যর্থ:', err);
     window.FB = { ready: false };
@@ -7340,7 +7368,7 @@ const BACKUP_KEY = 'lhrsc_routine_backups';
 /* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
    অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
    ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
-const APP_VERSION = 20250608;
+const APP_VERSION = 20260609;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
@@ -7568,6 +7596,22 @@ function _columnsSig(){
       i:c.id, l:c.label, t:c.type, w:c.width||0, col:c.color||'', lk:!!c.locked
     })));
   }catch(_){ return ''; }
+}
+
+/* 🆕 localStorage-এ সংরক্ষণের আগে স্পর্শকাতর তথ্য (পাসওয়ার্ড ও তার সময়-স্ট্যাম্প)
+   সরিয়ে দিই — অফলাইন ক্যাশে পাসওয়ার্ড কখনো থাকবে না (#৯)। in-memory state ও
+   Firebase-এ পূর্ণ ডেটা থাকে, তাই লগইন/সিঙ্ক/পাসওয়ার্ড-সুরক্ষা কিছুই ভাঙে না। */
+function _sanitizeForLocal(st){
+  try{
+    const c = JSON.parse(JSON.stringify(st));
+    if(c.accounts && typeof c.accounts === 'object'){
+      ['admins','managers'].forEach(k => {
+        if(Array.isArray(c.accounts[k])) c.accounts[k].forEach(a => { if(a){ delete a.password; delete a.pwUpdatedAt; } });
+      });
+    }
+    if(Array.isArray(c.teachers)) c.teachers.forEach(t => { if(t){ delete t.password; delete t.pwUpdatedAt; } });
+    return c;
+  }catch(_){ return st; }
 }
 
 function saveState(localOnly){
@@ -9016,6 +9060,9 @@ function _forceLogout(reason){
   try{ currentUser = null; }catch(_){}
   // এই সেশনে auto-login বন্ধ → পুনরায় ঢুকে যাবে না; লগইন স্ক্রিন দেখাবে
   try{ sessionStorage.setItem('routineAutoLoginDisabled','1'); }catch(_){}
+  // 🆕 #৯ — অপসারিত/বাতিল ব্যক্তির ডিভাইস থেকে পাসওয়ার্ড সরাই (রুটিন ডেটা
+  //    localStorage-এ থাকলেও UI লগইন-গেটে আটকে থাকবে; পাসওয়ার্ড আর থাকবে না)
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(_sanitizeForLocal(state))); }catch(_){}
   // SW cache পরিষ্কার (পুরোনো cached শেল যেন না থাকে) — রুটিন ডেটা অক্ষত
   try{ _clearAllCaches(); }catch(_){}
   try{ alert(reason || 'আপনার সেশন শেষ হয়েছে। আবার লগইন করুন।'); }catch(_){}
@@ -9116,6 +9163,9 @@ function logout(){
   // 🔊 ভয়েস ঘোষণা বন্ধ
   stopVoiceAnnouncer();
   currentUser = null;
+  // 🆕 #৯ — লগআউটের পর এই ডিভাইসের localStorage থেকে পাসওয়ার্ড সরাই (রুটিন
+  //    ডেটা থাকে, শুধু স্পর্শকাতর তথ্য বাদ)। পরের বৈধ লগইনে Firebase থেকে ফিরবে।
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(_sanitizeForLocal(state))); }catch(_){}
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('appRoot').style.display = 'none';
   document.getElementById('loginPass').value = '';
