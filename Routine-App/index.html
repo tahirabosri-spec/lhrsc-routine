@@ -2,6 +2,10 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
+<!-- 🆕 ক্যাশ-নিয়ন্ত্রণ: ব্রাউজার/PWA যেন পুরোনো HTML ধরে না রাখে — সবসময় তাজা পেজ -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="theme-color" content="#0f766e">
 <meta name="description" content="লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ — রুটিন ম্যানেজমেন্ট সিস্টেম">
@@ -673,6 +677,21 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 }
 .mi-reorder button:active{ transform:scale(.9); }
 .mi-reorder button:hover{ filter:brightness(1.1); }
+/* 🆕 অ্যাপ-আপডেট ব্যানার (নতুন ভার্সন এলে, সম্পাদনার মাঝে) */
+#appUpdateBanner{
+  position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+  z-index:1000000; max-width:92vw;
+  display:flex; align-items:center; gap:10px;
+  background:#0f766e; color:#fff; padding:12px 16px; border-radius:12px;
+  box-shadow:0 6px 20px rgba(0,0,0,.30); font-size:14px; font-weight:700;
+  animation:aubSlide .3s ease;
+}
+#appUpdateBanner button{
+  background:#fff; color:#0f766e; border:none; border-radius:8px;
+  padding:7px 14px; font-size:13px; font-weight:800; cursor:pointer; white-space:nowrap;
+}
+#appUpdateBanner button:active{ transform:scale(.95); }
+@keyframes aubSlide{from{opacity:0; transform:translate(-50%,20px)}to{opacity:1; transform:translate(-50%,0)}}
 .tool-menu-panel .tool-divider{
   width:100%;
   height:1px;
@@ -7317,6 +7336,10 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
 =========================================================== */
 const STORAGE_KEY = 'lhrsc_routine_v1';
 const BACKUP_KEY = 'lhrsc_routine_backups';
+/* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
+   অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
+   ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
+const APP_VERSION = 20250608;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
@@ -8968,7 +8991,9 @@ function finishLogin(){
   // 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা চালু
   startVoiceAnnouncer();
   // 🆕 খোলার সাথে সাথে চলমান ঘণ্টার কলামে নিয়ে যাই (টেবিল রেন্ডার শেষ হওয়ার পর)
-  try{ setTimeout(()=>{ try{ scrollToCurrentSlot(); }catch(_){} }, 350); }catch(_){}
+  // 🆕 অ্যাডমিন/ম্যানেজার নতুন ভার্সন খুললে control/minAppVersion বাড়িয়ে দেয়
+  //    → পুরোনো ডিভাইসগুলো স্বয়ংক্রিয়ভাবে আপডেট হয়।
+  try{ _maybeRaiseMinVersion(); }catch(_){}
   showToast('✅ স্বাগতম, ' + currentUser.name + '!', 'success');
 }
 
@@ -21182,11 +21207,13 @@ function setupPWA(){
 
   // ───────────── PWA আইকন + manifest উপরে handle হয়েছে ─────────────
 
-  // Service worker — network-first (নতুন আপডেট দ্রুত আসে, পুরোনো ভার্সনে
-  // আটকে থাকে না), অফলাইনে ক্যাশ থেকে দেখায়। ব্যর্থ হলেও অ্যাপ স্বাভাবিক চলে।
+  // Service worker — কঠোরভাবে network-first (সবসময় সার্ভারের সর্বশেষ আনে),
+  // Firebase/Google ডেটা কখনো cache করে না (sensitive/stale ডেটা অফলাইনে রাখা
+  // নিষেধ), শুধু অ্যাপের নিজস্ব শেল offline fallback হিসেবে রাখে। অ্যাপ থেকে
+  // 'CLEAR_CACHES' বার্তা পেলে সব cache মুছে দেয় (forced refresh/logout-এ লাগে)।
   if('serviceWorker' in navigator){
     const swCode = [
-      "const CACHE='lhrsc-routine-v2';",
+      "const CACHE='lhrsc-routine-v3';",
       "self.addEventListener('install',e=>self.skipWaiting());",
       "self.addEventListener('activate',e=>{",
       "  e.waitUntil((async()=>{",
@@ -21195,19 +21222,32 @@ function setupPWA(){
       "    await self.clients.claim();",
       "  })());",
       "});",
+      "self.addEventListener('message',e=>{",
+      "  const d=e.data||{};",
+      "  if(d.type==='CLEAR_CACHES'){",
+      "    caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k))));",
+      "  }",
+      "  if(d.type==='SKIP_WAITING'){ self.skipWaiting(); }",
+      "});",
       "self.addEventListener('fetch',e=>{",
       "  if(e.request.method!=='GET') return;",
+      "  let url;",
+      "  try{ url=new URL(e.request.url); }catch(_){ return; }",
+      "  // ⚠️ অন্য-origin (Firebase, googleapis, gstatic, CDN) — কখনো intercept/cache নয়;",
+      "  //    সরাসরি network-এ যায়, যাতে পুরোনো/স্পর্শকাতর ডেটা কখনো cache না হয়।",
+      "  if(url.origin!==self.location.origin) return;",
       "  e.respondWith((async()=>{",
       "    try{",
-      "      const res=await fetch(e.request);",
-      "      if(res && res.ok){",
+      "      // no-store → SW নিজেও HTTP cache এড়িয়ে সবসময় সার্ভারের তাজা ফাইল আনে",
+      "      const res=await fetch(e.request,{cache:'no-store'});",
+      "      if(res && res.ok && res.type==='basic'){",
       "        const c=res.clone();",
       "        caches.open(CACHE).then(ch=>ch.put(e.request,c)).catch(()=>{});",
       "      }",
       "      return res;",
       "    }catch(err){",
       "      const cached=await caches.match(e.request);",
-      "      return cached || caches.match('/') || Response.error();",
+      "      return cached || caches.match('./') || Response.error();",
       "    }",
       "  })());",
       "});"
@@ -21215,9 +21255,117 @@ function setupPWA(){
     try{
       const swBlob = new Blob([swCode], {type:'application/javascript'});
       const swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl).catch(()=>{ /* নিরাপদে উপেক্ষা */ });
+      navigator.serviceWorker.register(swUrl).then(reg=>{
+        // নতুন version পাওয়া গেলে সাথে সাথে সক্রিয় করি (পুরোনোতে আটকে থাকে না)
+        try{ reg.update(); }catch(_){}
+        if(reg.waiting){ try{ reg.waiting.postMessage({type:'SKIP_WAITING'}); }catch(_){} }
+        reg.addEventListener('updatefound',()=>{
+          const nw=reg.installing;
+          if(nw){ nw.addEventListener('statechange',()=>{ if(nw.state==='installed' && navigator.serviceWorker.controller){ try{ nw.postMessage({type:'SKIP_WAITING'}); }catch(_){} } }); }
+        });
+      }).catch(()=>{ /* নিরাপদে উপেক্ষা */ });
+      // নতুন SW সক্রিয় হলে একবার পেজ রিলোড → তাজা শেল নিশ্চিত
+      let _swReloaded=false;
+      navigator.serviceWorker.addEventListener('controllerchange',()=>{
+        if(_swReloaded) return; _swReloaded=true;
+        try{ location.reload(); }catch(_){}
+      });
     }catch(e){ /* SW ব্যর্থ হলেও অ্যাপ স্বাভাবিক চলবে */ }
   }
+}
+
+/* 🆕 সব cache মুছে ফেলার সহায়ক — forced refresh ও forced logout-এ ব্যবহৃত */
+async function _clearAllCaches(){
+  try{
+    if('caches' in window){
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  }catch(_){}
+  try{
+    if(navigator.serviceWorker && navigator.serviceWorker.controller){
+      navigator.serviceWorker.controller.postMessage({type:'CLEAR_CACHES'});
+    }
+  }catch(_){}
+}
+
+/* ===========================================================
+   🆕 APP-VERSION GATE — পুরোনো/cached ভার্সনে আটকে থাকা ডিভাইসকে নিরাপদে
+   সর্বশেষ ভার্সনে আনে। ডেটা-হারানো ঠেকাতে: সম্পাদনার মাঝে কখনো জোর করে
+   reload হয় না (তখন "আপডেট" ব্যানার), আর reload-এর আগে localStorage
+   নিশ্চিত করা হয় (localStorage কখনো মোছা হয় না — শুধু SW cache মোছে)।
+=========================================================== */
+function _isBusyEditing(){
+  try{
+    // কোনো মডাল/পিকার খোলা থাকলে বা ইনপুটে টাইপ করলে — "ব্যস্ত"
+    if(document.querySelector('.modal.show, .bp-overlay.show, .teacher-modal.show')) return true;
+    const ae = document.activeElement;
+    if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return true;
+  }catch(_){}
+  return false;
+}
+async function _forceUpdateReload(){
+  // ⚠️ ডেটা-সুরক্ষা: শুধু এই ডিভাইসের localStorage-এ নিশ্চিত করি (Firebase push নয়),
+  //    তারপর শুধু SW cache মুছি ও SW unregister করি — localStorage অক্ষত থাকে।
+  try{ if(typeof saveState === 'function') saveState(true); }catch(_){}
+  try{ await _clearAllCaches(); }catch(_){}
+  try{
+    if(navigator.serviceWorker){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  }catch(_){}
+  try{ sessionStorage.setItem('_vgReloaded', String(APP_VERSION)); }catch(_){}
+  try{ location.reload(); }catch(_){ try{ location.href = location.href; }catch(__){} }
+}
+function _showUpdateBanner(){
+  if(document.getElementById('appUpdateBanner')) return;
+  const b = document.createElement('div');
+  b.id = 'appUpdateBanner';
+  b.innerHTML = '🔄 নতুন আপডেট এসেছে &nbsp;<button type="button" id="appUpdateBtn">এখন আপডেট করুন</button>';
+  document.body.appendChild(b);
+  const btn = document.getElementById('appUpdateBtn');
+  if(btn) btn.addEventListener('click', () => { _forceUpdateReload(); });
+}
+function _handleMinVersion(minV){
+  minV = parseInt(minV) || 0;
+  if(minV <= APP_VERSION) return;                 // ইতিমধ্যে সর্বশেষ
+  // লুপ-গার্ড: এই সেশনে একবার reload করেও যদি এখনো পুরোনো (deploy বাকি) →
+  //   অসীম reload না করে ব্যানার দেখাই।
+  let already = 0;
+  try{ already = parseInt(sessionStorage.getItem('_vgReloaded')) || 0; }catch(_){}
+  if(already >= minV){ _showUpdateBanner(); return; }
+  // সম্পাদনার মাঝে থাকলে কখনো জোর করব না → ব্যানার; আইডল হলে নিরাপদে auto-update
+  if(_isBusyEditing()){ _showUpdateBanner(); }
+  else { _forceUpdateReload(); }
+}
+/* অ্যাডমিন/ম্যানেজার নতুন ভার্সন খুললে control/minAppVersion বাড়িয়ে দেয়
+   (শুধু বাড়ে, কখনো কমে না) → পুরোনো ডিভাইসগুলো লাইভ লিসেনারে আপডেট পায়। */
+function _maybeRaiseMinVersion(){
+  try{
+    if(!window.FB || !window.FB.ready) return;
+    if(typeof currentUser === 'undefined' || !currentUser) return;
+    if(currentUser.role !== 'admin' && currentUser.role !== 'manager') return;
+    const r = window.FB.ref(window.FB.db, 'control/minAppVersion');
+    window.FB.get(r).then(snap => {
+      const cur = parseInt(snap.val()) || 0;
+      if(APP_VERSION > cur){ window.FB.set(r, APP_VERSION).catch(()=>{}); }
+    }).catch(()=>{});
+  }catch(_){}
+}
+let _versionGateStarted = false;
+function initVersionGate(){
+  if(_versionGateStarted) return;
+  if(!window.FB || !window.FB.ready){
+    window.addEventListener('firebaseReady', initVersionGate, {once:true});
+    return;
+  }
+  _versionGateStarted = true;
+  try{
+    const r = window.FB.ref(window.FB.db, 'control/minAppVersion');
+    // লাইভ লিসেনার — খোলা পুরোনো ডিভাইস কয়েক সেকেন্ডের মধ্যে আপডেট পায়
+    window.FB.onValue(r, snap => { try{ _handleMinVersion(snap.val()); }catch(_){} });
+  }catch(_){}
 }
 
 /* ===========================================================
@@ -22122,6 +22270,7 @@ function initMenuReorder(){
 =========================================================== */
 function init(){
   loadState();
+  try{ initVersionGate(); }catch(e){ console.warn('version gate skipped:', e); }
   try{ initMenuReorder(); }catch(e){ console.warn('menu reorder skipped:', e); }
   // 🏫 নতুন প্রতিষ্ঠান সেটআপের পর reload হলে — অস্থায়ীভাবে রাখা ব্র্যান্ডিং
   // (নাম/লোগো/পরিচালক) এখন state-এ বসাই, তারপর একবার সংরক্ষণ করি।
