@@ -653,6 +653,26 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   background:var(--surface); color:var(--text-1); cursor:pointer;
 }
 .tool-menu-panel .filter-select:focus{ outline:none; border-color:var(--primary); }
+/* 🆕 মেনু আইটেম সাজানো (reorder) — "সাজান" টগল ও ▲▼ বাটন */
+.menu-arrange-toggle{
+  font-weight:800 !important;
+  background:var(--primary-soft) !important; color:var(--primary) !important;
+  border:1px dashed var(--primary) !important;
+}
+.tool-menu-panel.arranging{ outline:2px dashed var(--primary); outline-offset:-2px; }
+.tool-menu-panel.arranging .tool-btn:not(.menu-arrange-toggle){
+  border-style:dashed; cursor:default;
+}
+.mi-reorder{ display:none; margin-left:auto; gap:4px; align-items:center; }
+.tool-menu-panel.arranging .tool-btn .mi-reorder{ display:inline-flex; }
+.mi-reorder button{
+  width:30px; height:30px; padding:0; line-height:1;
+  border:1px solid var(--border); border-radius:7px;
+  background:var(--primary); color:#fff; font-size:13px; font-weight:900;
+  cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+}
+.mi-reorder button:active{ transform:scale(.9); }
+.mi-reorder button:hover{ filter:brightness(1.1); }
 .tool-menu-panel .tool-divider{
   width:100%;
   height:1px;
@@ -4965,25 +4985,6 @@ body[data-role="manager"] .teacher-only{display:none !important}
 body[data-role="teacher"] .slot-quick-btns,
 body[data-role="teacher"] .dashboard-fab{display:none !important}
 
-/* 🆕 PORTRAIT-LOCK — ফোন কাত (landscape) করলে অ্যাপ কাত হয়ে ভাঙা না দেখিয়ে
-   একটি পরিষ্কার বার্তা দেখাই: "ফোন সোজা করুন"। শুধু ছোট-উচ্চতার ডিভাইসে
-   (ফোন) প্রযোজ্য — ট্যাবলেট/ডেস্কটপ landscape-এ স্বাভাবিক থাকবে। */
-#rotateLock{display:none;}
-@media screen and (orientation: landscape) and (max-height: 520px){
-  #rotateLock{
-    display:flex !important;
-    position:fixed; inset:0; z-index:999999;
-    flex-direction:column; align-items:center; justify-content:center;
-    gap:14px; text-align:center; padding:24px;
-    background:#0f766e; color:#fff;
-    font-size:18px; font-weight:700; line-height:1.6;
-  }
-  #rotateLock .rl-icon{font-size:54px; animation:rlSpin 1.8s ease-in-out infinite;}
-  /* কাত অবস্থায় মূল অ্যাপ লুকাই যাতে ভাঙা layout দেখা না যায় */
-  body > *:not(#rotateLock){visibility:hidden !important;}
-}
-@keyframes rlSpin{0%,100%{transform:rotate(0)}50%{transform:rotate(-90deg)}}
-
 .tool-btn.notif-btn{position:relative;font-weight:700}
 .notif-badge{
   position:absolute; top:-6px; right:-6px;
@@ -5178,13 +5179,6 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
 </style>
 </head>
 <body data-theme="light" data-density="normal">
-
-<!-- 🆕 ফোন কাত করলে দেখানো হয় — অ্যাপ খাড়া (portrait) মোডে ব্যবহারের জন্য -->
-<div id="rotateLock">
-  <div class="rl-icon">📱</div>
-  <div>অনুগ্রহ করে ফোনটি সোজা করুন</div>
-  <div style="font-size:14px;font-weight:500;opacity:.9">এই অ্যাপটি খাড়া (portrait) মোডে ব্যবহারের জন্য তৈরি</div>
-</div>
 
 
 <!-- ============================================
@@ -21139,7 +21133,7 @@ function setupPWA(){
       start_url: location.pathname + '?app=routine',
       scope: location.pathname,
       display: 'standalone',
-      orientation: 'portrait',   // 🆕 অ্যাপ সবসময় খাড়া (portrait) মোডে — কাত হবে না
+      orientation: 'any',   // 🆕 সোজা ও কাত — দুই দিকেই রুটিন দেখাবে
       lang: 'bn',
       dir: 'ltr',
       background_color: '#ffffff',
@@ -21924,9 +21918,17 @@ function closeToolMenu(){
   const btn = document.getElementById('toolMenuBtn');
   if(panel){
     panel.classList.remove('show');
+    try{ _resetArrange(panel); }catch(_){}   // arrange মোড থাকলে বন্ধ করি
     _restoreToolMenuHome();   // বন্ধ হলে আগের জায়গায় ফিরিয়ে দাও
   }
   if(btn) btn.setAttribute('aria-expanded','false');
+}
+/* arrange মোড রিসেট — মেনু বন্ধ হলে "সাজান" অবস্থা থেকে বেরিয়ে আসি */
+function _resetArrange(panel){
+  if(!panel || !panel.classList.contains('arranging')) return;
+  panel.classList.remove('arranging');
+  const t = panel.querySelector('.menu-arrange-toggle');
+  if(t) t.innerHTML = '🔀 <span class="lbl">সাজান</span>';
 }
 /* Close tool menu when clicking outside */
 document.addEventListener('click', (e) => {
@@ -21990,7 +21992,7 @@ function toggleSysMenu(e){
 function closeSysMenu(){
   const panel = document.getElementById('sysMenuPanel');
   const btn = document.getElementById('sysMenuBtn');
-  if(panel) panel.classList.remove('show');
+  if(panel){ panel.classList.remove('show'); try{ _resetArrange(panel); }catch(_){} }
   if(btn) btn.setAttribute('aria-expanded','false');
 }
 /* বাইরে ক্লিক করলে ☰ মেনু বন্ধ */
@@ -22030,20 +22032,97 @@ window.addEventListener('resize', () => {
 })();
 
 /* ===========================================================
+   🆕 মেনু আইটেম সাজানো (per-device reorder) — ⋮ ও ☰ দুটো মেনুতেই
+   ব্যবহারকারী "সাজান" চেপে ▲▼ দিয়ে আইটেম আগে-পরে নিতে পারবেন। ক্রম এই
+   ডিভাইসের localStorage-এ থাকে (Firebase-এ নয় → কোনো clobber ঝুঁকি নেই)।
+   onclick/পারমিশন/role-visibility সব অক্ষত — শুধু ক্রম বদলায়।
+=========================================================== */
+function _menuKey(btn){
+  const lbl = btn.querySelector('.lbl');
+  return ((lbl ? lbl.textContent : btn.textContent) || '').trim();
+}
+function _menuItems(panel){
+  return Array.from(panel.querySelectorAll('.tool-btn')).filter(b => !b.classList.contains('menu-arrange-toggle'));
+}
+function _saveMenuOrder(panel, storageKey){
+  try{ localStorage.setItem(storageKey, JSON.stringify(_menuItems(panel).map(_menuKey))); }catch(_){}
+}
+function _applyMenuOrder(panel, storageKey){
+  let order = [];
+  try{ order = JSON.parse(localStorage.getItem(storageKey) || '[]'); }catch(_){ order = []; }
+  if(!Array.isArray(order) || !order.length) return;
+  const items = _menuItems(panel);
+  if(!items.length) return;
+  const byKey = {}; items.forEach(b => { byKey[_menuKey(b)] = b; });
+  // saved order (existing keys) + যেকোনো নতুন আইটেম (যা saved order-এ নেই) শেষে
+  const seq = order.filter(k => byKey[k]);
+  items.forEach(b => { const k = _menuKey(b); if(seq.indexOf(k) < 0) seq.push(k); });
+  // প্রতিটি বাটনের বর্তমান অবস্থানে placeholder রাখি, তারপর নতুন ক্রমে বসাই
+  // (এতে header/divider যেখানে আছে সেখানেই থাকে, শুধু বাটনগুলো নতুন ক্রমে)
+  const anchors = items.map(it => { const m = document.createComment('mslot'); it.parentNode.insertBefore(m, it); it.remove(); return m; });
+  seq.forEach((k, i) => { const b = byKey[k]; if(b && anchors[i]) anchors[i].parentNode.replaceChild(b, anchors[i]); });
+  anchors.forEach(a => { if(a.parentNode) a.parentNode.removeChild(a); });
+}
+function _moveMenuItem(panel, storageKey, btn, dir){
+  const items = _menuItems(panel);
+  const i = items.indexOf(btn);
+  const j = i + dir;
+  if(j < 0 || j >= items.length) return;
+  if(dir < 0) items[j].parentNode.insertBefore(btn, items[j]);
+  else items[j].parentNode.insertBefore(btn, items[j].nextSibling);
+  _saveMenuOrder(panel, storageKey);
+}
+function _setupMenuReorder(panelId, storageKey){
+  const panel = document.getElementById(panelId);
+  if(!panel) return;
+  // প্রতিটি reorderable বাটনে ▲▼ কন্ট্রোল যোগ (arrange মোডে দৃশ্যমান)
+  _menuItems(panel).forEach(b => {
+    if(b.querySelector('.mi-reorder')) return;
+    const ctl = document.createElement('span');
+    ctl.className = 'mi-reorder';
+    ctl.innerHTML = '<button type="button" class="mi-up" title="উপরে নিন">▲</button><button type="button" class="mi-down" title="নিচে নিন">▼</button>';
+    b.appendChild(ctl);
+    ctl.querySelector('.mi-up').addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); _moveMenuItem(panel, storageKey, b, -1); });
+    ctl.querySelector('.mi-down').addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); _moveMenuItem(panel, storageKey, b, 1); });
+  });
+  // "সাজান" টগল বাটন — প্যানেলের প্রথম header-এর পরে বসাই
+  if(!panel.querySelector('.menu-arrange-toggle')){
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'tool-btn menu-arrange-toggle';
+    toggle.innerHTML = '🔀 <span class="lbl">সাজান</span>';
+    toggle.addEventListener('click', ev => {
+      ev.preventDefault(); ev.stopPropagation();
+      const on = panel.classList.toggle('arranging');
+      toggle.innerHTML = on ? '✓ <span class="lbl">সম্পন্ন</span>' : '🔀 <span class="lbl">সাজান</span>';
+    });
+    panel.insertBefore(toggle, panel.firstChild);   // প্যানেলের একদম উপরে
+  }
+  // arrange মোডে আইটেমে ক্লিক করলে তার অ্যাকশন চলবে না (capture phase-এ আটকাই)
+  if(!panel._reorderGuard){
+    panel._reorderGuard = true;
+    panel.addEventListener('click', ev => {
+      if(!panel.classList.contains('arranging')) return;
+      const btn = ev.target.closest('.tool-btn');
+      if(!btn || btn.classList.contains('menu-arrange-toggle')) return;
+      if(ev.target.closest('.mi-reorder')) return;   // ▲▼ চলবে
+      ev.preventDefault(); ev.stopPropagation();
+    }, true);
+  }
+  // সংরক্ষিত ক্রম প্রয়োগ করি
+  _applyMenuOrder(panel, storageKey);
+}
+function initMenuReorder(){
+  try{ _setupMenuReorder('toolMenuPanel', 'menuOrder:tool'); }catch(_){}
+  try{ _setupMenuReorder('sysMenuPanel', 'menuOrder:sys'); }catch(_){}
+}
+
+/* ===========================================================
    INITIALIZATION
 =========================================================== */
 function init(){
   loadState();
-  // 🆕 খাড়া (portrait) মোডে আটকে রাখার চেষ্টা — installed PWA/standalone-এ
-  //    কার্যকর; সাধারণ ব্রাউজারে সমর্থিত না হলে নিরীহভাবে উপেক্ষিত হয় (CSS
-  //    overlay তখন fallback হিসেবে কাজ করে)। কোনো ক্র্যাশ নেই।
-  try{
-    const _lockPortrait = () => {
-      try{ if(screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(()=>{}); }catch(_){}
-    };
-    _lockPortrait();
-    window.addEventListener('orientationchange', _lockPortrait);
-  }catch(_){}
+  try{ initMenuReorder(); }catch(e){ console.warn('menu reorder skipped:', e); }
   // 🏫 নতুন প্রতিষ্ঠান সেটআপের পর reload হলে — অস্থায়ীভাবে রাখা ব্র্যান্ডিং
   // (নাম/লোগো/পরিচালক) এখন state-এ বসাই, তারপর একবার সংরক্ষণ করি।
   // এতে নতুন স্কুল প্রথম থেকেই নিজের পরিচয়ে অ্যাপ দেখবে, LHRSC নয়।
