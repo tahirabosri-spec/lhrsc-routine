@@ -846,9 +846,30 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   border-left-style:solid !important;
 }
 .routine-table td.col-sl{background:var(--sl-bg);color:var(--sl-text);text-align:center;font-weight:700;position:sticky;left:0;z-index:5;min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w);font-size:var(--name-font);padding:4px 3px;will-change:transform}
-.routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:var(--sl-col-w);z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);padding:4px 8px;cursor:pointer;will-change:transform}
+.routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:var(--sl-col-w);z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);padding:4px 8px;cursor:default;will-change:transform}
 .routine-table td.col-name .t-name{font-weight:700;font-size:var(--name-font);line-height:1.25}
 .routine-table td.col-name .t-meta{font-size:calc(var(--name-font) - 3px);opacity:.85;margin-top:2px;line-height:1.2}
+/* 🆕 শিক্ষকের তথ্য খোলার বাটন (নাম-সেলে) — ছোট, শুধু "তথ্য" লেখা, কালারফুল।
+   লক করা থাকলে নিষ্ক্রিয় (ক্লিক হবে না)। */
+.routine-table td.col-name .t-info-btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  margin-top:6px; padding:2px 10px;
+  background:linear-gradient(135deg,#6d28d9,#9333ea);
+  color:#fff !important; border:none; border-radius:999px;
+  font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;
+  box-shadow:0 1px 4px rgba(109,40,217,.35);
+  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.routine-table td.col-name .t-info-btn:hover{ filter:brightness(1.10); box-shadow:0 3px 8px rgba(109,40,217,.45); }
+.routine-table td.col-name .t-info-btn:active{ transform:scale(.94); }
+/* লক করা শিক্ষক — বাটন নিষ্ক্রিয় (ধূসর, ক্লিক হবে না) */
+.routine-table td.col-name .t-info-btn.is-locked,
+.routine-table td.col-name .t-info-btn:disabled{
+  background:#9ca3af; color:#f3f4f6 !important; cursor:not-allowed;
+  box-shadow:none; filter:none; opacity:.85; pointer-events:none;
+}
+[data-density="compact"] .routine-table td.col-name .t-info-btn{ padding:1px 8px; font-size:10.5px; margin-top:4px; }
 .routine-table td.col-name .t-lock{
   position:absolute;top:3px;right:3px;
   font-size:11px;cursor:pointer;
@@ -4898,6 +4919,25 @@ body[data-role="manager"] .teacher-only{display:none !important}
 body[data-role="teacher"] .slot-quick-btns,
 body[data-role="teacher"] .dashboard-fab{display:none !important}
 
+/* 🆕 PORTRAIT-LOCK — ফোন কাত (landscape) করলে অ্যাপ কাত হয়ে ভাঙা না দেখিয়ে
+   একটি পরিষ্কার বার্তা দেখাই: "ফোন সোজা করুন"। শুধু ছোট-উচ্চতার ডিভাইসে
+   (ফোন) প্রযোজ্য — ট্যাবলেট/ডেস্কটপ landscape-এ স্বাভাবিক থাকবে। */
+#rotateLock{display:none;}
+@media screen and (orientation: landscape) and (max-height: 520px){
+  #rotateLock{
+    display:flex !important;
+    position:fixed; inset:0; z-index:999999;
+    flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; text-align:center; padding:24px;
+    background:#0f766e; color:#fff;
+    font-size:18px; font-weight:700; line-height:1.6;
+  }
+  #rotateLock .rl-icon{font-size:54px; animation:rlSpin 1.8s ease-in-out infinite;}
+  /* কাত অবস্থায় মূল অ্যাপ লুকাই যাতে ভাঙা layout দেখা না যায় */
+  body > *:not(#rotateLock){visibility:hidden !important;}
+}
+@keyframes rlSpin{0%,100%{transform:rotate(0)}50%{transform:rotate(-90deg)}}
+
 .tool-btn.notif-btn{position:relative;font-weight:700}
 .notif-badge{
   position:absolute; top:-6px; right:-6px;
@@ -5092,6 +5132,14 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
 </style>
 </head>
 <body data-theme="light" data-density="normal">
+
+<!-- 🆕 ফোন কাত করলে দেখানো হয় — অ্যাপ খাড়া (portrait) মোডে ব্যবহারের জন্য -->
+<div id="rotateLock">
+  <div class="rl-icon">📱</div>
+  <div>অনুগ্রহ করে ফোনটি সোজা করুন</div>
+  <div style="font-size:14px;font-weight:500;opacity:.9">এই অ্যাপটি খাড়া (portrait) মোডে ব্যবহারের জন্য তৈরি</div>
+</div>
+
 
 <!-- ============================================
      LOGIN SCREEN
@@ -8753,8 +8801,8 @@ function renderLeaveListModal(){
     return;
   }
 
-  // ছুটিতে থাকা শিক্ষকদের তালিকা — admin/manager হলে "কাজে ফেরাও" বাটন দেখাও
-  const canManage = (typeof canFullEdit === 'function') && canFullEdit();
+  // ছুটিতে থাকা শিক্ষকদের তালিকা — "কাজে ফেরাও" বাটন শুধু ছুটি-অনুমোদন (approveLeave) ক্ষমতাধারীকে
+  const canManage = (typeof hasPerm === 'function') && hasPerm('approveLeave');
   contentEl.innerHTML = list.map((t, i) => {
     const slIdx = state.teachers.findIndex(x => x.id === t.id) + 1;
     const title = t.title ? `<span class="lrm-sep">•</span>${esc(t.title)}` : '';
@@ -8780,7 +8828,8 @@ function renderLeaveListModal(){
 
 // Admin/manager: এক ক্লিকে শিক্ষককে কাজে ফেরানো
 function returnFromLeave(tid){
-  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!isEditorAccount()){ showToast('অনুমতি নেই','error'); return; }
+  if(!requirePerm('approveLeave')) return;
   const t = state.teachers.find(x => x.id === tid);
   if(!t){ showToast('শিক্ষক পাওয়া যায়নি','error'); return; }
   if(!t.onLeave){ showToast('এই শিক্ষক ছুটিতে নেই','info'); return; }
@@ -8913,14 +8962,36 @@ function applyRolePermissions(){
 }
 
 function canEdit(){ return !!currentUser && currentUser.role !== 'teacher'; }
-function canFullEdit(){
+/* কোনো এডিটর-অ্যাকাউন্ট কিনা (role-ভিত্তিক, পারমিশন নির্বিশেষে)।
+   ফিচার-ফাংশনের coarse গেট ও ফ্রি/ব্যস্ত ভিজিবিলিটিতে ব্যবহৃত — যেখানে
+   নির্দিষ্ট পারমিশন আলাদাভাবে যাচাই হয় বা role-ই যথেষ্ট। */
+function isEditorAccount(){
   if(!currentUser) return false;
   return (currentUser.role === 'admin' || currentUser.role === 'manager');
+}
+
+function canFullEdit(){
+  if(!currentUser) return false;
+  if(currentUser.role === 'admin') return true;            // অ্যাডমিন → সর্বময়
+  // ⚠️ ম্যানেজার শুধু "রুটিন এডিট" (editRoutine) ক্ষমতা থাকলেই রুটিন/সেল/কলাম
+  //    এডিট করতে পারবে। ক্ষমতা না দিলে কোনোভাবেই এডিট নয়।
+  if(currentUser.role === 'manager') return hasPerm('editRoutine');
+  return false;
 }
 
 function canEditTeacher(tid){
   if(!currentUser) return false;
   if(canFullEdit()) return true;
+  if(currentUser.role === 'teacher' && currentUser.teacherId === tid) return true;
+  return false;
+}
+/* শিক্ষকের প্রোফাইল (নাম/তথ্য) যোগ/সম্পাদনা/মুছার অনুমতি — "শিক্ষক ব্যবস্থাপনা"
+   (manageTeachers) ক্ষমতার উপর নির্ভর। শিক্ষক শুধু নিজের প্রোফাইল (যেমন পাসওয়ার্ড)
+   সম্পাদনা করতে পারেন। এটি সেল-এডিট (editRoutine) থেকে আলাদা। */
+function canManageTeacherProfile(tid){
+  if(!currentUser) return false;
+  if(currentUser.role === 'admin') return true;
+  if(currentUser.role === 'manager') return hasPerm('manageTeachers');
   if(currentUser.role === 'teacher' && currentUser.teacherId === tid) return true;
   return false;
 }
@@ -9239,7 +9310,7 @@ function renderTable(){
     let quickBtnsHtml = '';
     // 🔒 ফ্রি/ব্যস্ত বাটন অ্যাডমিন ও সব ম্যানেজার দেখবেন — শুধু সাধারণ শিক্ষক নয়।
     //    (পার্-ম্যানেজার পারমিশন-নির্ভর নয়; role-ই যথেষ্ট।)
-    if(c.type === 'slot' && canFullEdit()){
+    if(c.type === 'slot' && isEditorAccount()){
       const fc = slotFreeBusyCount(c.id);
       quickBtnsHtml = `<div class="slot-quick-btns">
         <button type="button" class="slot-qbtn free" onclick="event.stopPropagation();openSlotTeachers('${c.id}','free')" title="এই ঘন্টায় ফ্রি (ক্লাস নেই) শিক্ষকের তালিকা — কল করা যাবে">🟢 ফ্রি <span class="qb-n">${toBnNum(fc.free)}</span></button>
@@ -9334,12 +9405,23 @@ function renderTable(){
     // Req #6: Leave badge in name cell — schedule cells stay visible for proxy assignment
     const leaveBadgeHtml = t.onLeave ? `<div class="leave-badge" title="ছুটিতে আছেন — প্রক্সির জন্য ক্লাস তালিকা দৃশ্যমান">${esc(leaveText)}</div>` : '';
     // 🔻 weekly badges (সপ্তাহের বিভিন্ন দিনের subject) সরানো হলো — শুধু নাম/পদবি/প্রধান বিষয় থাকবে
-    const nameCellHtml = `<td class="col-name${teacherLocked?' is-locked is-locked-name':''}${t.onLeave?' is-on-leave':''}" rowspan="3"${nameBodyStyle} onclick="${teacherCanEdit?`editTeacher('${t.id}')`:''}">
+    // 🆕 শিক্ষকের তথ্য খোলার স্পষ্ট, কালারফুল বাটন — শুধু এই বাটনে ক্লিক করলেই
+    //    তথ্য/সম্পাদনা মডাল খুলবে (নাম-ঘরের অন্য কোথাও ক্লিকে নয়)। বাটনটি শুধু
+    //    তাদেরই দেখাব যাদের তথ্য খোলার অনুমতি আছে (অ্যাডমিন / manageTeachers
+    //    ম্যানেজার / নিজের রো-তে শিক্ষক) — render টেমপ্লেটে থাকায় নতুন শিক্ষকেও আসবে।
+    const canOpenInfo = (typeof canManageTeacherProfile === 'function') && canManageTeacherProfile(t.id);
+    const infoBtnHtml = canOpenInfo
+      ? (teacherLocked
+          ? `<button type="button" class="t-info-btn is-locked" disabled title="লক করা — আনলক করে তথ্য দেখুন">তথ্য</button>`
+          : `<button type="button" class="t-info-btn" onclick="event.stopPropagation();editTeacher('${t.id}')" title="শিক্ষকের তথ্য ও সম্পাদনা">তথ্য</button>`)
+      : '';
+    const nameCellHtml = `<td class="col-name${teacherLocked?' is-locked is-locked-name':''}${t.onLeave?' is-on-leave':''}" rowspan="3"${nameBodyStyle}>
       ${teacherLocked?`<div class="t-lock-badge" title="এই শিক্ষক লক করা — সম্পাদনা বন্ধ">🔒 লক করা</div>`:''}
       <div class="t-name">${esc(t.name)}</div>
       ${t.title?`<div class="t-meta">${esc(t.title)}</div>`:''}
       ${t.mainSubject?`<div class="t-meta">📚 ${esc(t.mainSubject)}</div>`:''}
       ${leaveBadgeHtml}
+      ${infoBtnHtml}
     </td>`;
     body += swapped ? (nameCellHtml + slCellHtml) : (slCellHtml + nameCellHtml);
     state.columns.forEach(c=>{
@@ -10430,7 +10512,7 @@ function addTeacher(){
   try {
     console.log("🔵 addTeacher called");
     
-    if(!canFullEdit()){
+    if(!isEditorAccount()){
       console.warn("❌ No permission to add teacher");
       showToast('অনুমতি নেই','error');
       return;
@@ -10529,7 +10611,7 @@ function _updateLiveTeacherDisplay(){
 
 function editTeacher(tid){
   if(routineLocked() && canFullEdit()){showToast('🔒 রুটিন লক করা আছে — আনলক করে এডিট করুন','warning',2200);return}
-  if(!canEditTeacher(tid)){showToast('অনুমতি নেই','error');return}
+  if(!canManageTeacherProfile(tid)){showToast('অনুমতি নেই','error');return}
   const t = state.teachers.find(x=>x.id===tid);
   if(!t) return;
   document.getElementById('tEditId').value = t.id;
@@ -14176,10 +14258,10 @@ function saveTeacher(){
   const tid = document.getElementById('tEditId').value;
   const t = state.teachers.find(x=>x.id===tid);
   if(!t) return;
-  if(!canEditTeacher(tid)){showToast('অনুমতি নেই','error');return}
+  if(!canManageTeacherProfile(tid)){showToast('অনুমতি নেই','error');return}
   snapshot();
   const wasLeave = t.onLeave;
-  if(canFullEdit()){
+  if(isEditorAccount() && hasPerm('manageTeachers')){
     t.name = document.getElementById('tEditName').value.trim() || t.name;
     t.title = document.getElementById('tEditTitle').value.trim();
     t.mainSubject = document.getElementById('tEditSubject').value.trim();
@@ -14267,7 +14349,8 @@ function saveTeacher(){
 
 function deleteTeacher(){
   if(blockIfViewOnly('শিক্ষক মুছে ফেলা')) return;
-  if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!isEditorAccount()){showToast('অনুমতি নেই','error');return}
+  if(!requirePerm('manageTeachers')) return;
   const tid = document.getElementById('tEditId').value;
   const t = state.teachers.find(x=>x.id===tid);
   if(!t) return;
@@ -15854,8 +15937,8 @@ function slotTelLinks(t){
 
 // মূল ফাংশন — হেডার বাটনে ক্লিক করলে এই মডাল খুলবে
 function openSlotTeachers(colId, mode){
-  // 🔒 অ্যাডমিন ও ম্যানেজার ফ্রি/ব্যস্ত তালিকা খুলতে পারবেন — সাধারণ শিক্ষক নয়
-  if(!canFullEdit()){
+  // 🔒 অ্যাডমিন ও সব ম্যানেজার ফ্রি/ব্যস্ত তালিকা খুলতে পারবেন — সাধারণ শিক্ষক নয়
+  if(!isEditorAccount()){
     if(typeof showToast === 'function') showToast('⛔ ফ্রি/ব্যস্ত তালিকা দেখার অনুমতি আপনার নেই','error');
     return;
   }
@@ -15979,13 +16062,29 @@ function _pickVoice(){
     const exact = list.find(v => v.voiceURI === wantURI);
     if(exact) return exact;
   }
-  // bn, bn-BD, bn-IN — যেকোনো বাংলা ভয়েস
-  const bn = list.find(v => /^bn(-|_|$)/i.test(v.lang || ''));
-  if(bn) return bn;
-  // hi (হিন্দি) বাংলা স্বরবর্ণের কাছাকাছি — fallback হিসেবে গ্রহণযোগ্য
-  const hi = list.find(v => /^hi(-|_|$)/i.test(v.lang || ''));
-  if(hi) return hi;
-  return list[0] || null;
+  // ⚠️ শুধুমাত্র বাংলা ভয়েস — হিন্দি বা অন্য কোনো ভাষা কখনোই নয়।
+  const bnVoices = list.filter(v => /^bn(-|_|$)/i.test(v.lang || ''));
+  if(bnVoices.length){
+    // অগ্রাধিকার: (১) bn-BD সর্বোচ্চ  (২) Google/online/Bangla নামের স্পষ্ট ভয়েস
+    //   (৩) অন্য যেকোনো বাংলা (bn-IN ইত্যাদি)। সবচেয়ে স্পষ্টটা বেছে নিই।
+    const score = v => {
+      let s = 0;
+      const lang = (v.lang||'').toLowerCase().replace('_','-');
+      const name = (v.name||'').toLowerCase();
+      if(lang === 'bn-bd') s += 100;            // বাংলাদেশের বাংলা সর্বোচ্চ
+      else if(lang.indexOf('bn') === 0) s += 60; // অন্য বাংলা
+      if(/google|bangla|bengali|natural|neural|online/.test(name)) s += 25; // সাধারণত স্পষ্ট
+      if(v.localService === false) s += 8;       // online voice প্রায়ই পরিষ্কার
+      if(v.default) s += 2;
+      return s;
+    };
+    bnVoices.sort((a,b) => score(b) - score(a));
+    return bnVoices[0];
+  }
+  // কোনো বাংলা ভয়েস নেই — হিন্দি দিই না (হিন্দি ভয়েস বাংলা ভুল উচ্চারণ করে)।
+  // null ফেরত দিই; speakBangla তখন u.lang='bn-BD' সেট করবে, যাতে ডিভাইসে
+  // বাংলা TTS ইঞ্জিন থাকলে সেটাই বাংলায় বলে।
+  return null;
 }
 
 /* সেটিংসের ভয়েস ড্রপডাউন ভরাট করি */
@@ -16063,8 +16162,8 @@ function speakBangla(text){
     window.speechSynthesis.cancel(); // আগের কিছু চললে থামাও
     const u = new SpeechSynthesisUtterance(text);
     const v = _pickVoice();
-    if(v){ u.voice = v; u.lang = v.lang || 'bn-BD'; }
-    else { u.lang = 'bn-BD'; }
+    if(v){ u.voice = v; u.lang = (v.lang && /^bn-/i.test(v.lang)) ? v.lang : 'bn-BD'; }
+    else { u.lang = 'bn-BD'; }   // বাংলা ভয়েস না থাকলেও বাংলা-বাংলাদেশ ভাষা চাই
     const s = state.settings || {};
     u.rate = (typeof s.voiceRate === 'number' && s.voiceRate >= 0.5 && s.voiceRate <= 1.5) ? s.voiceRate : 0.92;
     u.pitch = (typeof s.voicePitch === 'number' && s.voicePitch >= 0.5 && s.voicePitch <= 2) ? s.voicePitch : 1.0;
@@ -16560,7 +16659,7 @@ let aiGenAbortController = null;
 let aiLastResult = null;
 
 function openAIGenerator(){
-  if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!isEditorAccount()){showToast('অনুমতি নেই','error');return}
   if(!requirePerm('aiRoutine')) return;
   // Req #3: Init provider dropdown — use saved provider, fall back to gemini
   if(!state.aiSettings) state.aiSettings = {};
@@ -17141,7 +17240,7 @@ function aiApplyResult(){
    মূল আর্কিটেকচার অক্ষত — শুধু বিদ্যমান cell স্ট্রাকচার ব্যবহার করা হয়েছে।
 =========================================================== */
 function autoGenerateRoutine(){
-  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!isEditorAccount()){ showToast('অনুমতি নেই','error'); return; }
   if(!requirePerm('aiRoutine')) return;
   try{
     if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity();
@@ -17691,7 +17790,8 @@ function getBulkSelection(){
 }
 
 function bulkApply(){
-  if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!isEditorAccount()){showToast('অনুমতি নেই','error');return}
+  if(!requirePerm('bulkEdit')) return;
   const {tids, cids} = getBulkSelection();
   if(!tids.length || !cids.length){showToast('শিক্ষক ও স্লট নির্বাচন করুন','warning');return}
   const cls = document.getElementById('bulkClass').value;
@@ -17719,7 +17819,8 @@ function bulkApply(){
 }
 
 function bulkClear(){
-  if(!canFullEdit()) return;
+  if(!isEditorAccount()){showToast('অনুমতি নেই','error');return}
+  if(!requirePerm('bulkEdit')) return;
   const {tids, cids} = getBulkSelection();
   if(!tids.length || !cids.length){showToast('শিক্ষক ও স্লট নির্বাচন করুন','warning');return}
   if(!confirm(`${tids.length}×${cids.length} সেল মুছে ফেলবেন?`)) return;
@@ -17735,7 +17836,8 @@ function bulkClear(){
 }
 
 function bulkFree(){
-  if(!canFullEdit()) return;
+  if(!isEditorAccount()){showToast('অনুমতি নেই','error');return}
+  if(!requirePerm('bulkEdit')) return;
   const {tids, cids} = getBulkSelection();
   if(!tids.length || !cids.length){showToast('শিক্ষক ও স্লট নির্বাচন করুন','warning');return}
   snapshot();
@@ -17822,7 +17924,7 @@ function removeOption(i){
 }
 
 function saveOptions(){
-  if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!isEditorAccount()){showToast('অনুমতি নেই','error');return}
   if(!requirePerm('manageOptions')) return;
   snapshot();
   ['class','subject','section'].forEach(tab=>{
@@ -17904,7 +18006,7 @@ function getCurriculumTotal(clsName, secName){
 
 /* ── modal খোলা / বন্ধ ────────────────────────────────── */
 function openCurriculumModal(){
-  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!isEditorAccount()){ showToast('অনুমতি নেই','error'); return; }
   if(!requirePerm('manageOptions')) return;
   try{ if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity(); }catch(_){}
 
@@ -18193,7 +18295,7 @@ function _curAutoFillFromTeachers(){
 
 /* ── সংরক্ষণ ─────────────────────────────────────────── */
 function _curSave(){
-  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!isEditorAccount()){ showToast('অনুমতি নেই','error'); return; }
   if(!requirePerm('manageOptions')) return;
   if(!_curDraft){ closeModal('curriculumModal'); return; }
 
@@ -18391,7 +18493,7 @@ function _covSummary(built){
 
 /* ── modal খোলা ─────────────────────────────────────────── */
 function openCoverageReport(){
-  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!isEditorAccount()){ showToast('অনুমতি নেই','error'); return; }
   if(!requirePerm('aiRoutine')) return;
   try{ if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity(); }catch(_){}
 
@@ -18651,7 +18753,7 @@ function exportCSV(){
    re-parent হওয়া (portal/restore) সম্পূর্ণ হওয়ার পরই native picker খোলে।
    এতে মোবাইলে JSON/CSV নির্বাচনের change ইভেন্ট আর হারায় না। */
 function triggerImport(){
-  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!isEditorAccount()){ showToast('অনুমতি নেই','error'); return; }
   if(!requirePerm('importExport')) return;
   const inp = document.getElementById('importFile');
   if(!inp){ showToast('❌ ইম্পোর্ট ইনপুট পাওয়া যায়নি','error'); return; }
@@ -18661,7 +18763,7 @@ function triggerImport(){
 }
 
 function handleImport(e){
-  if(!canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!isEditorAccount()){ showToast('অনুমতি নেই','error'); return; }
   if(!requirePerm('importExport')) return;
   const file = e.target.files && e.target.files[0];
   if(!file){ return; }
@@ -19613,7 +19715,8 @@ function msRead(which){
 
 /* Commit to state + persist + full re-render */
 function saveMasterSize(){
-  if(typeof canFullEdit==='function' && !canFullEdit()){ showToast('অনুমতি নেই','error'); return; }
+  if(!isEditorAccount()){ showToast('অনুমতি নেই','error'); return; }
+  if(!requirePerm('displaySettings')) return;
   if(typeof snapshot==='function') snapshot();
   const s = state.settings;
   s.slColWidth     = msRead('Sl');
@@ -20317,7 +20420,8 @@ function quickSlotWidth(px){
 
 /* Apply auto color theme to all slot columns (NOT break columns) */
 function applyColorTheme(theme){
-  if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!isEditorAccount()){showToast('অনুমতি নেই','error');return}
+  if(!requirePerm('displaySettings')) return;
   const themes = {
     pastel: ['#fef3c7','#dcfce7','#dbeafe','#fce7f3','#f3e8ff','#fee2e2','#ccfbf1','#ffedd5','#e0e7ff','#fef9c3','#d1fae5','#fed7aa'],
     warm:   ['#fee2e2','#fed7aa','#fef3c7','#fde68a','#fecaca','#fbcfe8','#fee2e2','#ffedd5','#fef3c7','#fed7d7','#ffe4e6','#fde68a'],
@@ -20364,7 +20468,7 @@ function resetData(){
 }
 
 function saveBranding(){
-  if(!canFullEdit()){showToast('অনুমতি নেই','error');return}
+  if(!isEditorAccount()){showToast('অনুমতি নেই','error');return}
   if(!requirePerm('branding')) return;
   snapshot();
   state.branding.schoolName = document.getElementById('bSchool').value.trim();
@@ -20980,7 +21084,7 @@ function setupPWA(){
       start_url: location.pathname + '?app=routine',
       scope: location.pathname,
       display: 'standalone',
-      orientation: 'any',
+      orientation: 'portrait',   // 🆕 অ্যাপ সবসময় খাড়া (portrait) মোডে — কাত হবে না
       lang: 'bn',
       dir: 'ltr',
       background_color: '#ffffff',
@@ -21806,6 +21910,16 @@ window.addEventListener('resize', () => {
 =========================================================== */
 function init(){
   loadState();
+  // 🆕 খাড়া (portrait) মোডে আটকে রাখার চেষ্টা — installed PWA/standalone-এ
+  //    কার্যকর; সাধারণ ব্রাউজারে সমর্থিত না হলে নিরীহভাবে উপেক্ষিত হয় (CSS
+  //    overlay তখন fallback হিসেবে কাজ করে)। কোনো ক্র্যাশ নেই।
+  try{
+    const _lockPortrait = () => {
+      try{ if(screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(()=>{}); }catch(_){}
+    };
+    _lockPortrait();
+    window.addEventListener('orientationchange', _lockPortrait);
+  }catch(_){}
   // 🏫 নতুন প্রতিষ্ঠান সেটআপের পর reload হলে — অস্থায়ীভাবে রাখা ব্র্যান্ডিং
   // (নাম/লোগো/পরিচালক) এখন state-এ বসাই, তারপর একবার সংরক্ষণ করি।
   // এতে নতুন স্কুল প্রথম থেকেই নিজের পরিচয়ে অ্যাপ দেখবে, LHRSC নয়।
