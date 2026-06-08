@@ -646,6 +646,13 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   text-align:left;
 }
 .tool-menu-panel .tool-btn .lbl{display:inline !important}
+/* 🆕 মেনুর ভেতরে ফিল্টার ড্রপডাউন — পরিষ্কার full-width */
+.tool-menu-panel .filter-select{
+  width:100%; margin:1px 0; padding:8px 10px;
+  font-size:13px; border:1px solid var(--border); border-radius:8px;
+  background:var(--surface); color:var(--text-1); cursor:pointer;
+}
+.tool-menu-panel .filter-select:focus{ outline:none; border-color:var(--primary); }
 .tool-menu-panel .tool-divider{
   width:100%;
   height:1px;
@@ -665,6 +672,45 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 /* If both editable-only buttons and admin-mgr-only buttons are hidden for current role,
    the dropdown could become empty. CSS :has() hides the trigger button itself in that case. */
 .tool-menu-wrapper:has(.tool-menu-panel:empty) .tool-menu-btn{display:none}
+
+/* 🆕 ☰ সিস্টেম-মেনু — ⋮ মেনুর ভিজুয়াল reuse করে, কিন্তু আলাদা wrapper ও
+   position:fixed প্যানেল (হেডারে স্থিতিশীল, portal লাগে না)। */
+.sys-menu-wrapper{position:relative;display:inline-flex}
+.sys-menu-panel{position:fixed !important;top:60px;right:8px;left:auto;}
+
+/* 🆕 ⋮ ও ☰ ট্রিগার বাটন — বড়, স্পষ্ট, প্রবাহিত রঙিন বর্ডার + পালসিং গ্লো
+   (চোখে পড়ার মতো অ্যানিমেশন)। সব আধুনিক ব্রাউজারে কাজ করে; না করলেও
+   স্থির রঙিন বর্ডার থাকে — কখনো ভাঙে না। */
+.menu-trigger-fancy{
+  position:relative;
+  font-weight:800 !important;
+  padding:6px 13px !important;
+  border-radius:12px !important;
+  color:var(--primary) !important;
+  border:2px solid transparent !important;
+  background:
+    linear-gradient(var(--surface),var(--surface)) padding-box,
+    linear-gradient(90deg,#6366f1,#8b5cf6,#ec4899,#f59e0b,#10b981,#6366f1) border-box !important;
+  background-size:100% 100%, 300% 100% !important;
+  animation:menuBorderFlow 4s linear infinite;
+}
+.menu-trigger-fancy .icon{ font-size:20px; line-height:1; letter-spacing:2px; font-weight:900; }
+.menu-trigger-fancy .lbl{ font-weight:800; }
+.menu-trigger-fancy:hover{ filter:brightness(1.03); }
+.menu-trigger-fancy[aria-expanded="true"]{
+  color:#fff !important;
+  background:
+    linear-gradient(135deg,#6d28d9,#9333ea) padding-box,
+    linear-gradient(90deg,#6366f1,#8b5cf6,#ec4899,#f59e0b,#10b981,#6366f1) border-box !important;
+}
+@keyframes menuBorderFlow{
+  0%{   background-position:0 0, 0%   0; box-shadow:0 0 6px 1px rgba(139,92,246,.30); }
+  50%{  background-position:0 0, 150% 0; box-shadow:0 0 13px 4px rgba(236,72,153,.42); }
+  100%{ background-position:0 0, 300% 0; box-shadow:0 0 6px 1px rgba(139,92,246,.30); }
+}
+@media (prefers-reduced-motion: reduce){
+  .menu-trigger-fancy{ animation:none; }
+}
 
 /* 📱 MOBILE: টুলবার overflow-x:auto এর কারণে absolute panel clip হয়ে যায়।
    তাই মোবাইলে position:fixed করে viewport এর সাপেক্ষে আঁটকাই —
@@ -5216,13 +5262,32 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       <span class="role-badge" id="userChipRole">—</span>
     </div>
     <div class="header-tools">
-      <button class="icon-btn editable-only" data-perm="branding" onclick="openModal('brandingModal')" title="ব্র্যান্ডিং এডিট">🎨</button>
-      <button class="icon-btn" onclick="openModal('developerModal')" title="ডেভলপার তথ্য">ℹ️</button>
-      <button class="icon-btn" onclick="testNotifSound()" title="নোটিফিকেশন শব্দ পরীক্ষা করুন">🔊</button>
-      <button class="icon-btn editable-only" onclick="openModal('settingsModal')" title="সেটিংস">⚙️</button>
-      <button class="icon-btn" onclick="logout()" title="লগআউট">🚪</button>
+      <div class="sys-menu-wrapper">
+        <button class="tool-btn tool-menu-btn menu-trigger-fancy" id="sysMenuBtn" onclick="toggleSysMenu(event)" aria-expanded="false" aria-haspopup="true" title="সিস্টেম ও অ্যাকাউন্ট মেনু">
+          <span class="icon">☰</span>
+        </button>
+      </div>
     </div>
   </header>
+
+  <!-- ☰ সিস্টেম ও অ্যাকাউন্ট মেনু (position:fixed প্যানেল) -->
+  <div class="tool-menu-panel sys-menu-panel" id="sysMenuPanel" role="menu">
+    <div class="tool-menu-panel-header">সিস্টেম ও অ্যাকাউন্ট</div>
+    <button class="tool-btn editable-only" onclick="openModal('settingsModal');closeSysMenu()" title="সেটিংস">⚙️ <span class="lbl">সেটিংস</span></button>
+    <button class="tool-btn editable-only" data-perm="branding" onclick="openModal('brandingModal');closeSysMenu()" title="ব্র্যান্ডিং এডিট">🎨 <span class="lbl">ব্র্যান্ডিং</span></button>
+    <button class="tool-btn" onclick="openModal('developerModal');closeSysMenu()" title="ডেভেলপার তথ্য">ℹ️ <span class="lbl">ডেভেলপার তথ্য</span></button>
+    <button class="tool-btn" onclick="testNotifSound();closeSysMenu()" title="নোটিফিকেশন শব্দ পরীক্ষা করুন">🔊 <span class="lbl">সাউন্ড টেস্ট</span></button>
+    <button class="tool-btn teacher-only" id="teacherPwBtn" onclick="openPasswordSettings();closeSysMenu()" title="নিজের পাসওয়ার্ড পরিবর্তন করুন">🔐 <span class="lbl">পাসওয়ার্ড</span></button>
+    <div class="tool-divider"></div>
+    <button class="tool-btn" data-perm="auditLog" onclick="openModal('auditModal');renderAudit();closeSysMenu()">📜 <span class="lbl">অডিট লগ</span></button>
+    <button class="tool-btn editable-only" data-perm="importExport" onclick="exportJSON();closeSysMenu()">⬇ <span class="lbl">JSON এক্সপোর্ট</span></button>
+    <button class="tool-btn editable-only" data-perm="importExport" onclick="exportCSV();closeSysMenu()">⬇ <span class="lbl">CSV এক্সপোর্ট</span></button>
+    <button class="tool-btn editable-only" data-perm="importExport" onclick="triggerImport();closeSysMenu()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
+    <button class="tool-btn" onclick="window.print();closeSysMenu()">🖨 <span class="lbl">প্রিন্ট</span></button>
+    <button class="tool-btn editable-only" onclick="shareView();closeSysMenu()">🔗 <span class="lbl">শেয়ার</span></button>
+    <div class="tool-divider"></div>
+    <button class="tool-btn danger" onclick="logout()" title="লগআউট">🚪 <span class="lbl">লগআউট</span></button>
+  </div>
 
   <!-- TOOLBAR -->
 
@@ -5246,23 +5311,27 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       <span class="icon">🌙</span> <span class="lbl">ছুটি</span>
       <span class="leave-count-badge" id="leaveCountBadge" style="display:none">0</span>
     </button>
-    <!-- 🔊 Voice Announce — এখনই বর্তমান পিরিয়ড ঘোষণা করো (অ্যাডমিন+ম্যানেজার) -->
-    <button class="tool-btn admin-mgr-only" id="voiceAnnounceBtn" onclick="announceNow()" title="এখনই বর্তমান পিরিয়ড ও ছুটির শিক্ষক ঘোষণা করুন">
-      <span class="icon">🔊</span> <span class="lbl">এখনই ঘোষণা</span>
-    </button>
     <!-- 📊 Live Dashboard — Admin/Manager only -->
     <button class="tool-btn admin-mgr-only" data-perm="dashboard" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
 
-    <!-- ⋮ আরও — Consolidated dropdown for all secondary actions -->
+    <!-- ⋮ আরও — রুটিন তৈরির টুল -->
     <div class="tool-menu-wrapper">
-      <button class="tool-btn tool-menu-btn" id="toolMenuBtn" onclick="toggleToolMenu(event)" aria-expanded="false" aria-haspopup="true" title="আরও অপশন">
+      <button class="tool-btn tool-menu-btn menu-trigger-fancy" id="toolMenuBtn" onclick="toggleToolMenu(event)" aria-expanded="false" aria-haspopup="true" title="রুটিন তৈরির টুল">
         <span class="icon">⋮</span> <span class="lbl">আরও</span> <span class="caret">▾</span>
       </button>
       <div class="tool-menu-panel" id="toolMenuPanel" role="menu">
-        <!-- 🔐 Change own Password — Teacher only -->
-        <button class="tool-btn teacher-only" id="teacherPwBtn" onclick="openPasswordSettings();closeToolMenu()" title="নিজের পাসওয়ার্ড পরিবর্তন করুন">
-          <span class="icon">🔐</span> <span class="lbl">পাসওয়ার্ড</span>
-        </button>
+        <div class="tool-menu-panel-header admin-mgr-only">ফিল্টার</div>
+        <select class="filter-select admin-mgr-only" id="filterClass" onchange="applyFilters()"><option value="">সব শ্রেণি</option></select>
+        <select class="filter-select admin-mgr-only" id="filterSubject" onchange="applyFilters()"><option value="">সব বিষয়</option></select>
+        <select class="filter-select admin-mgr-only" id="filterStatus" onchange="applyFilters()">
+          <option value="">সব স্ট্যাটাস</option>
+          <option value="free">শুধু ফ্রি</option>
+          <option value="busy">শুধু ব্যস্ত</option>
+          <option value="leave">ছুটিতে</option>
+          <option value="conflict">কনফ্লিক্ট</option>
+        </select>
+        <div class="tool-divider admin-mgr-only"></div>
+        <div class="tool-menu-panel-header">রুটিন তৈরির টুল</div>
         <button class="tool-btn editable-only" data-perm="manageTeachers" onclick="addTeacher();closeToolMenu()">➕ <span class="lbl">শিক্ষক যোগ করুন</span></button>
         <button class="tool-btn editable-only" onclick="undo();closeToolMenu()" id="undoBtn" disabled>↩️ <span class="lbl">আনডু</span></button>
         <button class="tool-btn editable-only" onclick="redo();closeToolMenu()" id="redoBtn" disabled>↪️ <span class="lbl">রিডু</span></button>
@@ -5272,19 +5341,14 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
         <button class="tool-btn editable-only" data-perm="aiRoutine" onclick="autoGenerateRoutine();closeToolMenu()" title="API ছাড়াই ৪০–৫০ জন শিক্ষকের রুটিন স্বয়ংক্রিয়ভাবে তৈরি করুন">⚙️ <span class="lbl">স্বয়ংক্রিয় রুটিন</span></button>
         <button class="tool-btn editable-only" data-perm="aiRoutine" id="qemToggleBtn" onclick="toggleQuickEntryMode();closeToolMenu()" title="রুটিন cell-এ সরাসরি ক্লাস বসান → শিক্ষকের entries-এ auto-add">🔄 <span class="lbl">দ্রুত এন্ট্রি মোড: বন্ধ</span></button>
         <button class="tool-btn editable-only" data-perm="aiRoutine" onclick="openCoverageReport();closeToolMenu()" title="প্রতি শ্রেণি-শাখার কোন পিরিয়ড ফাঁকা — পাঠ্যসূচির সাথে মিলিয়ে কভারেজ রিপোর্ট">🗺 <span class="lbl">কভারেজ রিপোর্ট</span></button>
-        <button class="tool-btn editable-only" data-perm="voice" onclick="toggleVoice();closeToolMenu()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
-        <button class="tool-btn editable-only" data-perm="routineLock" id="routineLockBtn" data-locked="false" onclick="toggleRoutineLock();closeToolMenu()" title="রুটিন লক/আনলক — এলোমেলো ক্লিক থেকে সুরক্ষা">🔓 <span class="lbl">রুটিন লক</span></button>
         <div class="tool-divider"></div>
         <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openModal('optionsModal');closeToolMenu()">📝 <span class="lbl">অপশন</span></button>
         <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openCurriculumModal();closeToolMenu()" title="প্রতি শ্রেণিতে কোন বিষয় সপ্তাহে কত পিরিয়ড — স্বয়ংক্রিয় রুটিনের ভিত্তি">📚 <span class="lbl">পাঠ্যসূচি</span></button>
         <button class="tool-btn editable-only" data-perm="bulkEdit" onclick="openModal('bulkModal');closeToolMenu()">✂️ <span class="lbl">বাল্ক এডিট</span></button>
-        <button class="tool-btn" data-perm="auditLog" onclick="openModal('auditModal');renderAudit();closeToolMenu()">📜 <span class="lbl">অডিট লগ</span></button>
         <div class="tool-divider"></div>
-        <button class="tool-btn editable-only" data-perm="importExport" onclick="exportJSON();closeToolMenu()">⬇ <span class="lbl">JSON এক্সপোর্ট</span></button>
-        <button class="tool-btn editable-only" data-perm="importExport" onclick="exportCSV();closeToolMenu()">⬇ <span class="lbl">CSV এক্সপোর্ট</span></button>
-        <button class="tool-btn editable-only" data-perm="importExport" onclick="triggerImport();closeToolMenu()">⬆ <span class="lbl">ইম্পোর্ট</span></button>
-        <button class="tool-btn" onclick="window.print();closeToolMenu()">🖨 <span class="lbl">প্রিন্ট</span></button>
-        <button class="tool-btn editable-only" onclick="shareView();closeToolMenu()">🔗 <span class="lbl">শেয়ার</span></button>
+        <button class="tool-btn admin-mgr-only" id="voiceAnnounceBtn" onclick="announceNow();closeToolMenu()" title="এখনই বর্তমান পিরিয়ড ও ছুটির শিক্ষক ঘোষণা করুন">🔊 <span class="lbl">এখনই ঘোষণা</span></button>
+        <button class="tool-btn editable-only" data-perm="voice" onclick="toggleVoice();closeToolMenu()" id="voiceBtn">🎤 <span class="lbl">ভয়েস</span></button>
+        <button class="tool-btn editable-only" data-perm="routineLock" id="routineLockBtn" data-locked="false" onclick="toggleRoutineLock();closeToolMenu()" title="রুটিন লক/আনলক — এলোমেলো ক্লিক থেকে সুরক্ষা">🔓 <span class="lbl">রুটিন লক</span></button>
       </div>
     </div>
 
@@ -5292,15 +5356,6 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
     <div class="search-box admin-mgr-only">
       🔍 <input type="text" id="searchInput" placeholder="খুঁজুন..." oninput="applyFilters()">
     </div>
-    <select class="filter-select admin-mgr-only" id="filterClass" onchange="applyFilters()"><option value="">সব শ্রেণি</option></select>
-    <select class="filter-select admin-mgr-only" id="filterSubject" onchange="applyFilters()"><option value="">সব বিষয়</option></select>
-    <select class="filter-select admin-mgr-only" id="filterStatus" onchange="applyFilters()">
-      <option value="">সব স্ট্যাটাস</option>
-      <option value="free">শুধু ফ্রি</option>
-      <option value="busy">শুধু ব্যস্ত</option>
-      <option value="leave">ছুটিতে</option>
-      <option value="conflict">কনফ্লিক্ট</option>
-    </select>
     <span class="save-status" id="saveStatus">সব সংরক্ষিত</span>
   </div>
 
@@ -21904,6 +21959,75 @@ window.addEventListener('resize', () => {
     positionToolMenuMobile();
   }
 });
+
+/* ===========================================================
+   ☰ সিস্টেম-মেনু (হেডার) — position:fixed, portal ছাড়া স্বয়ংসম্পূর্ণ
+=========================================================== */
+function positionSysMenu(){
+  const panel = document.getElementById('sysMenuPanel');
+  const btn = document.getElementById('sysMenuBtn');
+  if(!panel || !btn) return;
+  const rect = btn.getBoundingClientRect();
+  const w = Math.min(300, window.innerWidth - 16);
+  let left = rect.right - w;
+  if(left < 8) left = 8;
+  if(left + w > window.innerWidth - 8) left = window.innerWidth - w - 8;
+  panel.style.top = (rect.bottom + 8) + 'px';
+  panel.style.left = left + 'px';
+  panel.style.right = 'auto';
+}
+function toggleSysMenu(e){
+  if(e){ e.stopPropagation(); }
+  const panel = document.getElementById('sysMenuPanel');
+  const btn = document.getElementById('sysMenuBtn');
+  if(!panel || !btn) return;
+  try{ closeToolMenu(); }catch(_){}   // অন্য মেনু খোলা থাকলে বন্ধ করি
+  const willShow = !panel.classList.contains('show');
+  if(willShow) positionSysMenu();
+  panel.classList.toggle('show', willShow);
+  btn.setAttribute('aria-expanded', willShow ? 'true' : 'false');
+}
+function closeSysMenu(){
+  const panel = document.getElementById('sysMenuPanel');
+  const btn = document.getElementById('sysMenuBtn');
+  if(panel) panel.classList.remove('show');
+  if(btn) btn.setAttribute('aria-expanded','false');
+}
+/* বাইরে ক্লিক করলে ☰ মেনু বন্ধ */
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('sysMenuPanel');
+  const btn = document.getElementById('sysMenuBtn');
+  if(!panel || !panel.classList.contains('show')) return;
+  if(panel.contains(e.target)) return;
+  if(btn && btn.contains(e.target)) return;
+  closeSysMenu();
+});
+/* Escape চাপলে ☰ মেনু বন্ধ */
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    const panel = document.getElementById('sysMenuPanel');
+    if(panel && panel.classList.contains('show')) closeSysMenu();
+  }
+});
+/* স্ক্রল/রিসাইজে ☰ প্যানেল বাটনের সাথে রাখি */
+window.addEventListener('scroll', () => {
+  const panel = document.getElementById('sysMenuPanel');
+  if(panel && panel.classList.contains('show')) positionSysMenu();
+}, {passive:true});
+window.addEventListener('resize', () => {
+  const panel = document.getElementById('sysMenuPanel');
+  if(panel && panel.classList.contains('show')) positionSysMenu();
+});
+/* ⋮ মেনু খুললে ☰ বন্ধ — দুটো একসাথে খোলা থাকবে না */
+(function(){
+  const _origToggleTool = window.toggleToolMenu;
+  if(typeof _origToggleTool === 'function'){
+    window.toggleToolMenu = function(e){
+      try{ closeSysMenu(); }catch(_){}
+      return _origToggleTool.call(this, e);
+    };
+  }
+})();
 
 /* ===========================================================
    INITIALIZATION
