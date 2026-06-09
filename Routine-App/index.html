@@ -1488,8 +1488,18 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
   transition:var(--transition);
 }
 .fab:hover{transform:scale(1.08) translateY(-2px);box-shadow:0 12px 32px rgba(15,118,110,.5)}
-.fab.dashboard-fab{right:24px;width:66px;height:66px;font-size:27px;background:var(--info);touch-action:none}
-.fab.dashboard-fab:hover{box-shadow:0 12px 32px rgba(2,132,199,.5)}
+.fab.dashboard-fab{right:18px;bottom:84px;z-index:90;width:58px;height:58px;background:#ffffff;border:2px solid #15803d;touch-action:none}
+.fab.dashboard-fab:hover{box-shadow:0 12px 32px rgba(21,128,61,.45)}
+/* 🆕 "Live" লেখা — গাঢ় সবুজ, বোল্ড, পালস এনিমেশন */
+.fab.dashboard-fab .fab-live{
+  font-size:15px; font-weight:900; letter-spacing:.3px;
+  color:#15803d; line-height:1;
+  animation: fabLivePulse 1.3s ease-in-out infinite;
+}
+@keyframes fabLivePulse{
+  0%,100%{ opacity:1; transform:scale(1); }
+  50%{ opacity:.45; transform:scale(.9); }
+}
 /* 🆕 চারপাশে ঘোরে এমন লাল রিং এনিমেশন */
 .fab.dashboard-fab::after{
   content:'';
@@ -1922,7 +1932,7 @@ body[data-qem="on"] .table-wrap::before{
 }
 .qem-chip-row{display:flex;flex-wrap:wrap;gap:5px}
 
-/* 🆕 চলমান ঘণ্টা — পুরো column (header + cells) সবুজ glowing pulse */
+/* 🆕 চলমান ঘণ্টা — পুরো column (header + cells) লাল glowing pulse */
 .routine-table th.is-current-slot,
 .routine-table td.is-current-slot{
   position:relative;
@@ -1932,12 +1942,12 @@ body[data-qem="on"] .table-wrap::before{
 .routine-table th.is-current-slot{ z-index:3; }
 @keyframes currentSlotGlow{
   0%, 100%{
-    box-shadow:inset 0 0 0 0 rgba(16,185,129,0);
+    box-shadow:inset 0 0 0 0 rgba(239,68,68,0);
     background-color:transparent;
   }
   50%{
-    box-shadow:inset 0 0 0 2px rgba(16,185,129,.85);
-    background-color:rgba(16,185,129,.10);
+    box-shadow:inset 0 0 0 2px rgba(239,68,68,.85);
+    background-color:rgba(239,68,68,.10);
   }
 }
 /* current column-এর top header — একটু বেশি উজ্জ্বল */
@@ -1945,8 +1955,8 @@ body[data-qem="on"] .table-wrap::before{
   animation:currentSlotGlowHead 2s ease-in-out infinite;
 }
 @keyframes currentSlotGlowHead{
-  0%, 100%{ box-shadow:inset 0 0 0 0 rgba(16,185,129,0), 0 0 0 0 rgba(16,185,129,0); }
-  50%{ box-shadow:inset 0 0 0 3px rgba(16,185,129,.95), 0 0 16px 3px rgba(16,185,129,.6); }
+  0%, 100%{ box-shadow:inset 0 0 0 0 rgba(239,68,68,0), 0 0 0 0 rgba(239,68,68,0); }
+  50%{ box-shadow:inset 0 0 0 3px rgba(239,68,68,.95), 0 0 16px 3px rgba(239,68,68,.6); }
 }
 
 /* 🆕 MULTI-PART CELL DISPLAY — দিন-বিষয়-শাখা compact ফরম্যাট */
@@ -4429,7 +4439,7 @@ td.is-multipart{vertical-align:top}
   .header-tools{gap:4px}
   .icon-btn{width:32px;height:32px;font-size:14px}
   .fab{width:50px;height:50px;font-size:20px;bottom:14px;right:14px}
-  .fab.dashboard-fab{right:74px}
+  .fab.dashboard-fab{right:14px;bottom:78px}
   .toolbar{position:relative;top:0}
 }
 
@@ -5422,7 +5432,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
   <div class="h-scroll-float" id="hScrollFloat"><div class="h-scroll-track" id="hScrollTrack"></div></div>
 
   <!-- FAB -->
-  <button class="fab dashboard-fab admin-mgr-only" data-perm="dashboard" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊</button>
+  <button class="fab dashboard-fab admin-mgr-only" data-perm="dashboard" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড"><span class="fab-live">Live</span></button>
 
   <!-- Routine-lock indicator (position:fixed — takes ZERO layout space,
        so the routine & theme stay exactly normal and fully visible) -->
@@ -7379,7 +7389,7 @@ const BACKUP_KEY = 'lhrsc_routine_backups';
 /* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
    অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
    ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
-const APP_VERSION = 20260611;
+const APP_VERSION = 20260614;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
@@ -22502,21 +22512,56 @@ function _setupDashboardFab(){
   if(!fab || fab._dragReady) return;
   fab._dragReady = true;
 
-  // সংরক্ষিত অবস্থান প্রয়োগ (থাকলে), পর্দার ভেতরে clamp করে
+  // 🆕 এক-বারের সংশোধন: পুরোনো ভার্সনে কোনো ভুল/বাইরের অবস্থান সংরক্ষিত হয়ে
+  //    থাকলে তা মুছে ফেলি — যাতে বাটন নিশ্চিতভাবে ডিফল্ট দৃশ্যমান জায়গায় আসে।
+  try{
+    if(localStorage.getItem('fabPosReset_v3') !== '1'){
+      localStorage.removeItem('dashboardFabPos');
+      localStorage.setItem('fabPosReset_v3','1');
+    }
+  }catch(_){}
+
+  const MARGIN = 6;
+  // পর্দার দৃশ্যমান অংশের ভেতরে আটকে রাখার একক হিসাব — কোনো অবস্থাতেই বাইরে নয়
+  function _clamp(left, top){
+    const w = fab.offsetWidth || 58, h = fab.offsetHeight || 58;
+    const maxL = Math.max(MARGIN, window.innerWidth  - w - MARGIN);
+    const maxT = Math.max(MARGIN, window.innerHeight - h - MARGIN);
+    // ⚠️ ভুল/NaN মান এলে নিরাপদ ডিফল্ট (ডান-নিচে) ব্যবহার করি — বাটন কখনো হারাবে না
+    let L = Number(left), T = Number(top);
+    if(!isFinite(L)) L = maxL;
+    if(!isFinite(T)) T = maxT;
+    return {
+      left: Math.max(MARGIN, Math.min(maxL, L)),
+      top:  Math.max(MARGIN, Math.min(maxT, T))
+    };
+  }
+  function _place(left, top){
+    const c = _clamp(left, top);
+    fab.style.left = c.left + 'px'; fab.style.top = c.top + 'px';
+    fab.style.right = 'auto'; fab.style.bottom = 'auto';
+    return c;
+  }
+  // সংরক্ষিত অবস্থান প্রয়োগ — শুধু বৈধ (finite) সংখ্যা হলে; নাহলে সংরক্ষণ মুছে
+  // ডিফল্ট দৃশ্যমান অবস্থানে (CSS: ডান-নিচে) রেখে দিই।
   function _applySaved(){
     try{
       const p = JSON.parse(localStorage.getItem('dashboardFabPos') || 'null');
-      if(p && typeof p.left === 'number' && typeof p.top === 'number'){
-        const w = fab.offsetWidth || 66, h = fab.offsetHeight || 66;
-        const nl = Math.max(4, Math.min(window.innerWidth  - w - 4, p.left));
-        const nt = Math.max(4, Math.min(window.innerHeight - h - 4, p.top));
-        fab.style.left = nl + 'px'; fab.style.top = nt + 'px';
-        fab.style.right = 'auto'; fab.style.bottom = 'auto';
+      if(p && isFinite(Number(p.left)) && isFinite(Number(p.top))){
+        _place(Number(p.left), Number(p.top));
+      } else if(p){
+        // ভুল মান — সরিয়ে দিই, বাটন ডিফল্ট জায়গায় দেখাবে
+        localStorage.removeItem('dashboardFabPos');
       }
-    }catch(_){}
+    }catch(_){ try{ localStorage.removeItem('dashboardFabPos'); }catch(__){} }
   }
   _applySaved();
-  window.addEventListener('resize', _applySaved);
+  // লোডের একটু পরে আবার যাচাই (dimensions নিশ্চিত হলে) — যাতে কখনো বাইরে না থাকে
+  setTimeout(_applySaved, 400);
+  // পর্দার আকার বদলালে (ঘোরানো/রিসাইজ) আবার ভেতরে টেনে আনি
+  window.addEventListener('resize', () => {
+    if(fab.style.left) _place(parseFloat(fab.style.left), parseFloat(fab.style.top));
+  });
 
   let dragging = false, moved = false, sx = 0, sy = 0, startLeft = 0, startTop = 0;
 
@@ -22531,17 +22576,13 @@ function _setupDashboardFab(){
     if(!dragging) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
     if(!moved && (Math.abs(dx) > 6 || Math.abs(dy) > 6)){ moved = true; fab.classList.add('dragging'); }
-    if(moved){
-      const w = fab.offsetWidth, h = fab.offsetHeight;
-      let nl = Math.max(4, Math.min(window.innerWidth  - w - 4, startLeft + dx));
-      let nt = Math.max(4, Math.min(window.innerHeight - h - 4, startTop  + dy));
-      fab.style.left = nl + 'px'; fab.style.top = nt + 'px';
-      fab.style.right = 'auto'; fab.style.bottom = 'auto';
-    }
+    if(moved) _place(startLeft + dx, startTop + dy);
   });
   function _endDrag(){
     if(dragging && moved){
-      try{ localStorage.setItem('dashboardFabPos', JSON.stringify({left: parseFloat(fab.style.left), top: parseFloat(fab.style.top)})); }catch(_){}
+      // মুক্তির আগে আরেকবার ভেতরে নিশ্চিত করে সংরক্ষণ করি
+      const c = _place(parseFloat(fab.style.left), parseFloat(fab.style.top));
+      try{ localStorage.setItem('dashboardFabPos', JSON.stringify(c)); }catch(_){}
       _fabSuppressClick = true;                       // টেনে সরানোর পরের click বাতিল
       setTimeout(() => { _fabSuppressClick = false; }, 60);
     }
