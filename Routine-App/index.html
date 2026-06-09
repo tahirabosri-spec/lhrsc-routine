@@ -1488,17 +1488,22 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
   transition:var(--transition);
 }
 .fab:hover{transform:scale(1.08) translateY(-2px);box-shadow:0 12px 32px rgba(15,118,110,.5)}
-.fab.dashboard-fab{right:18px;bottom:84px;z-index:90;width:58px;height:58px;background:#ffffff;border:2px solid #15803d;touch-action:none}
-.fab.dashboard-fab:hover{box-shadow:0 12px 32px rgba(21,128,61,.45)}
-/* 🆕 "Live" লেখা — গাঢ় সবুজ, বোল্ড, পালস এনিমেশন */
+.fab.dashboard-fab{right:18px;bottom:84px;z-index:200 !important;width:58px;height:58px;background:#ffffff;border:2px solid #000;touch-action:none;animation:fabBtnBreathe 1.3s ease-in-out infinite}
+.fab.dashboard-fab:hover{box-shadow:0 12px 32px rgba(21,128,61,.45);transform:scale(1.1) translateY(-2px) !important}
+/* 🆕 "Live" লেখা — লাল, বোল্ড, পালস এনিমেশন (শুধু opacity, scale পুরো বাটনে) */
 .fab.dashboard-fab .fab-live{
   font-size:15px; font-weight:900; letter-spacing:.3px;
-  color:#15803d; line-height:1;
+  color:#dc2626; line-height:1;
   animation: fabLivePulse 1.3s ease-in-out infinite;
 }
 @keyframes fabLivePulse{
-  0%,100%{ opacity:1; transform:scale(1); }
-  50%{ opacity:.45; transform:scale(.9); }
+  0%,100%{ opacity:1; }
+  50%{ opacity:.45; }
+}
+/* 🆕 পুরো বাটনের "শ্বাস" এনিমেশন — ভেসে উঠলে বড়, ডাউন হলে ছোট */
+@keyframes fabBtnBreathe{
+  0%,100%{ transform:scale(1.06); }
+  50%{ transform:scale(0.92); }
 }
 /* 🆕 চারপাশে ঘোরে এমন লাল রিং এনিমেশন */
 .fab.dashboard-fab::after{
@@ -1511,7 +1516,7 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
 }
 @keyframes fabRingSpin{ to{ transform:rotate(360deg); } }
 /* টেনে সরানোর সময় ব্যবহারকারীকে বোঝাতে */
-.fab.dashboard-fab.dragging{ cursor:grabbing; transform:scale(1.06); box-shadow:0 14px 36px rgba(239,68,68,.5); }
+.fab.dashboard-fab.dragging{ cursor:grabbing; transform:scale(1.06) !important; box-shadow:0 14px 36px rgba(239,68,68,.5); }
 
 /* =============================================================
    MODALS
@@ -22525,15 +22530,19 @@ function _setupDashboardFab(){
   // পর্দার দৃশ্যমান অংশের ভেতরে আটকে রাখার একক হিসাব — কোনো অবস্থাতেই বাইরে নয়
   function _clamp(left, top){
     const w = fab.offsetWidth || 58, h = fab.offsetHeight || 58;
+    // 🆕 মেইন হেডারের নিচে — বাটন যেন হেডারের সাথে ওভারল্যাপ করে নিচে/পেছনে চলে না যায়
+    const hdr = document.querySelector('.app-header');
+    const headerBottom = hdr ? Math.max(0, hdr.getBoundingClientRect().bottom) : 64;
+    const minT = headerBottom + MARGIN;
     const maxL = Math.max(MARGIN, window.innerWidth  - w - MARGIN);
-    const maxT = Math.max(MARGIN, window.innerHeight - h - MARGIN);
+    const maxT = Math.max(minT, window.innerHeight - h - MARGIN);
     // ⚠️ ভুল/NaN মান এলে নিরাপদ ডিফল্ট (ডান-নিচে) ব্যবহার করি — বাটন কখনো হারাবে না
     let L = Number(left), T = Number(top);
     if(!isFinite(L)) L = maxL;
     if(!isFinite(T)) T = maxT;
     return {
       left: Math.max(MARGIN, Math.min(maxL, L)),
-      top:  Math.max(MARGIN, Math.min(maxT, T))
+      top:  Math.max(minT, Math.min(maxT, T))
     };
   }
   function _place(left, top){
