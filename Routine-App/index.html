@@ -1488,8 +1488,20 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
   transition:var(--transition);
 }
 .fab:hover{transform:scale(1.08) translateY(-2px);box-shadow:0 12px 32px rgba(15,118,110,.5)}
-.fab.dashboard-fab{right:88px;background:var(--info)}
+.fab.dashboard-fab{right:24px;width:66px;height:66px;font-size:27px;background:var(--info);touch-action:none}
 .fab.dashboard-fab:hover{box-shadow:0 12px 32px rgba(2,132,199,.5)}
+/* 🆕 চারপাশে ঘোরে এমন লাল রিং এনিমেশন */
+.fab.dashboard-fab::after{
+  content:'';
+  position:absolute; inset:-7px;
+  border-radius:50%;
+  border:3px dashed #ef4444;
+  animation: fabRingSpin 4s linear infinite;
+  pointer-events:none;
+}
+@keyframes fabRingSpin{ to{ transform:rotate(360deg); } }
+/* টেনে সরানোর সময় ব্যবহারকারীকে বোঝাতে */
+.fab.dashboard-fab.dragging{ cursor:grabbing; transform:scale(1.06); box-shadow:0 14px 36px rgba(239,68,68,.5); }
 
 /* =============================================================
    MODALS
@@ -5325,8 +5337,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       <span class="icon">🌙</span> <span class="lbl">ছুটি</span>
       <span class="leave-count-badge" id="leaveCountBadge" style="display:none">0</span>
     </button>
-    <!-- 📊 Live Dashboard — Admin/Manager only -->
-    <button class="tool-btn admin-mgr-only" data-perm="dashboard" onclick="openModal('dashboardModal');refreshDashboard()" title="লাইভ ড্যাশবোর্ড">📊 <span class="lbl">লাইভ ড্যাশবোর্ড</span></button>
+    <!-- 📊 Live Dashboard টুলবার বাটন সরানো হয়েছে — ভাসমান FAB বাটনই ব্যবহৃত হবে -->
 
     <!-- ⋮ আরও — রুটিন তৈরির টুল -->
     <div class="tool-menu-wrapper">
@@ -7368,7 +7379,7 @@ const BACKUP_KEY = 'lhrsc_routine_backups';
 /* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
    অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
    ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
-const APP_VERSION = 20260609;
+const APP_VERSION = 20260611;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
@@ -7890,6 +7901,7 @@ function applyRemoteState(remoteData){
   _applyingRemoteState = true;
   let _pwReassert = false;
   let _colReassert = false;
+  let _tombReassert = false;
   try{
     // 🛡️ ওভাররাইটের আগে লোকাল পাসওয়ার্ড + সময়-স্ট্যাম্প আলাদা করে রাখি
     const _localAccSnap = state.accounts ? JSON.parse(JSON.stringify(state.accounts)) : null;
@@ -7923,6 +7935,24 @@ function applyRemoteState(remoteData){
         state.tombstones[kk] = Array.from(new Set([...a, ...b].map(String)));
       });
     }catch(_){}
+
+    // 🆕 stale device কি কোনো tombstoned (মুছে ফেলা) অ্যাকাউন্ট/শিক্ষক ফেরত
+    //    আনার চেষ্টা করছে? করলে — ফিল্টারের পর সংশোধিত state আবার Firebase-এ
+    //    পাঠাব, যাতে অপসারণ ও tombstone সব ডিভাইসে স্থায়ী হয় (নাহলে মুছে ফেলা
+    //    ব্যক্তি ফিরে আসত ও লগআউট হতো না)।
+    let _tombReassertCheck = false;
+    try{
+      const _tb = state.tombstones || {teachers:[],admins:[],managers:[]};
+      const _tt = new Set((_tb.teachers||[]).map(String));
+      const _ta = new Set((_tb.admins||[]).map(String));
+      const _tm = new Set((_tb.managers||[]).map(String));
+      if(_tt.size && Array.isArray(remoteData.teachers) && remoteData.teachers.some(t => t && _tt.has(String(t.id)))) _tombReassertCheck = true;
+      if(remoteData.accounts && typeof remoteData.accounts === 'object'){
+        if(_ta.size && Array.isArray(remoteData.accounts.admins)   && remoteData.accounts.admins.some(a => a && _ta.has(String(a.username))))   _tombReassertCheck = true;
+        if(_tm.size && Array.isArray(remoteData.accounts.managers) && remoteData.accounts.managers.some(a => a && _tm.has(String(a.username)))) _tombReassertCheck = true;
+      }
+    }catch(_){}
+    _tombReassert = _tombReassertCheck;
 
     // রিমোট ডেটায় missing ফিল্ড (যেমন teacher.password) ভর্তি করো
     if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity();
@@ -7974,7 +8004,7 @@ function applyRemoteState(remoteData){
   }
   // রিমোট পুরোনো পাসওয়ার্ড/সময়সূচি দিয়ে রিভার্ট করার চেষ্টা করেছিল — সঠিকটা
   // আবার ক্লাউডে পাঠাই যাতে সব ডিভাইসে নতুন মানই থাকে।
-  if(_pwReassert || _colReassert){ try{ saveState(); }catch(_){} }
+  if(_pwReassert || _colReassert || _tombReassert){ try{ saveState(); }catch(_){} }
 
   // 🆕 প্রতিটি রিমোট আপডেটের পর যাচাই করি — লগইন থাকা ব্যবহারকারী অপসারিত বা
   //    সব-ডিভাইস-লগআউট হয়েছেন কিনা; হলে সাথে সাথে নিরাপদে লগআউট করি।
@@ -22463,6 +22493,70 @@ function initMenuReorder(){
 }
 
 /* ===========================================================
+   🆕 ভাসমান ড্যাশবোর্ড বাটন — টেনে যেকোনো জায়গায় সরানো যায় (অবস্থান এই
+   ডিভাইসে সংরক্ষিত)। শুধু ট্যাপ করলে ড্যাশবোর্ড খোলে; টেনে সরালে খোলে না।
+=========================================================== */
+let _fabSuppressClick = false;
+function _setupDashboardFab(){
+  const fab = document.querySelector('.fab.dashboard-fab');
+  if(!fab || fab._dragReady) return;
+  fab._dragReady = true;
+
+  // সংরক্ষিত অবস্থান প্রয়োগ (থাকলে), পর্দার ভেতরে clamp করে
+  function _applySaved(){
+    try{
+      const p = JSON.parse(localStorage.getItem('dashboardFabPos') || 'null');
+      if(p && typeof p.left === 'number' && typeof p.top === 'number'){
+        const w = fab.offsetWidth || 66, h = fab.offsetHeight || 66;
+        const nl = Math.max(4, Math.min(window.innerWidth  - w - 4, p.left));
+        const nt = Math.max(4, Math.min(window.innerHeight - h - 4, p.top));
+        fab.style.left = nl + 'px'; fab.style.top = nt + 'px';
+        fab.style.right = 'auto'; fab.style.bottom = 'auto';
+      }
+    }catch(_){}
+  }
+  _applySaved();
+  window.addEventListener('resize', _applySaved);
+
+  let dragging = false, moved = false, sx = 0, sy = 0, startLeft = 0, startTop = 0;
+
+  fab.addEventListener('pointerdown', e => {
+    dragging = true; moved = false;
+    sx = e.clientX; sy = e.clientY;
+    const r = fab.getBoundingClientRect();
+    startLeft = r.left; startTop = r.top;
+    try{ fab.setPointerCapture(e.pointerId); }catch(_){}
+  });
+  fab.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if(!moved && (Math.abs(dx) > 6 || Math.abs(dy) > 6)){ moved = true; fab.classList.add('dragging'); }
+    if(moved){
+      const w = fab.offsetWidth, h = fab.offsetHeight;
+      let nl = Math.max(4, Math.min(window.innerWidth  - w - 4, startLeft + dx));
+      let nt = Math.max(4, Math.min(window.innerHeight - h - 4, startTop  + dy));
+      fab.style.left = nl + 'px'; fab.style.top = nt + 'px';
+      fab.style.right = 'auto'; fab.style.bottom = 'auto';
+    }
+  });
+  function _endDrag(){
+    if(dragging && moved){
+      try{ localStorage.setItem('dashboardFabPos', JSON.stringify({left: parseFloat(fab.style.left), top: parseFloat(fab.style.top)})); }catch(_){}
+      _fabSuppressClick = true;                       // টেনে সরানোর পরের click বাতিল
+      setTimeout(() => { _fabSuppressClick = false; }, 60);
+    }
+    dragging = false; moved = false; fab.classList.remove('dragging');
+  }
+  fab.addEventListener('pointerup', _endDrag);
+  fab.addEventListener('pointercancel', _endDrag);
+
+  // capture-phase গার্ড: টেনে সরানোর পর inline onclick (ড্যাশবোর্ড খোলা) চলবে না
+  fab.addEventListener('click', e => {
+    if(_fabSuppressClick){ e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
+}
+
+/* ===========================================================
    INITIALIZATION
 =========================================================== */
 function init(){
@@ -22475,6 +22569,7 @@ function init(){
     setInterval(() => { try{ _validateCurrentSession(); }catch(_){} }, 20000);
   }catch(_){}
   try{ initMenuReorder(); }catch(e){ console.warn('menu reorder skipped:', e); }
+  try{ _setupDashboardFab(); }catch(e){ console.warn('dashboard fab skipped:', e); }
   // 🏫 নতুন প্রতিষ্ঠান সেটআপের পর reload হলে — অস্থায়ীভাবে রাখা ব্র্যান্ডিং
   // (নাম/লোগো/পরিচালক) এখন state-এ বসাই, তারপর একবার সংরক্ষণ করি।
   // এতে নতুন স্কুল প্রথম থেকেই নিজের পরিচয়ে অ্যাপ দেখবে, LHRSC নয়।
