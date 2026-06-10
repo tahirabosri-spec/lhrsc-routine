@@ -1346,6 +1346,12 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   box-sizing:border-box;
 }
 .routine-table td .cell-content:hover{background:rgba(15,118,110,.08)}
+/* 🆕 শ্রেণি (উপরে) ও শাখা (নিচে) সেল এখন শুধু আয়না — ক্লিকে কিছু হয় না */
+.routine-table td.cell-class .cell-content,
+.routine-table td.cell-section .cell-content{ cursor:default; }
+.routine-table td.cell-class .cell-content:hover,
+.routine-table td.cell-section .cell-content:hover{ background:transparent; }
+.cell-arrow.ce-mirror{ opacity:.32; font-weight:400; }
 
 /* Multi-line wrapping for Name column only (has more space) */
 .routine-table td.col-name{
@@ -1826,6 +1832,17 @@ input[type="range"]::-moz-range-thumb{
   box-shadow:0 2px 6px rgba(15,118,110,.3);
 }
 .ce-chip-add{ border-style:dashed; border-color:#10b981; color:#059669; background:#ecfdf5; }
+.ce-chip.ce-chip-free{ color:var(--danger); border-color:var(--danger); }
+.ce-chip.ce-chip-free.sel{ background:var(--danger); border-color:var(--danger); color:#fff; box-shadow:0 2px 6px rgba(220,38,38,.3); }
+/* 🆕 ফেজ ২ — অপশন ডিলিট */
+.ce-chip-delbtn{ border-style:dashed; border-color:#dc2626; color:#dc2626; background:#fef2f2; }
+.ce-chip-delbtn:hover{ background:#fee2e2; }
+.ce-chip-delitem{ border-color:#dc2626; color:#b91c1c; background:#fff5f5; font-weight:700; }
+.ce-chip-delitem:hover{ background:#fee2e2; }
+.ce-chip-done{ border-color:#10b981; background:#10b981; color:#fff; }
+.ce-chip-done:hover{ background:#059669; }
+/* 🆕 এই শিক্ষকের প্রস্তাবিত বিষয় — হালকা সবুজ আভা (নির্বাচিত হলে গাঢ় সবুজ জিতবে) */
+.ce-chip-sug{ border-color:#34d399; background:#ecfdf5; color:#065f46; }
 .ce-addnew{ display:flex; gap:6px; }
 .ce-addnew input{
   flex:1; padding:6px 9px; border:1px solid var(--border);
@@ -5540,18 +5557,9 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       <button type="button" class="qem-ss-apply" id="qemSmartSuggestApply">ব্যবহার করুন</button>
     </div>
 
-    <!-- ১ · বিষয় -->
-    <div class="ce-step" id="ceStepSubject">
-      <div class="ce-step-head"><span class="ce-step-no">১</span><span>বিষয়</span><span class="ce-pick-val" id="ceSubjectVal"></span></div>
-      <div class="cell-editor-search">
-        <input type="text" id="cellEditorSearch" placeholder="বিষয় খুঁজুন বা নতুন লিখুন…" oninput="filterCellOptions()">
-      </div>
-      <div class="cell-editor-list" id="cellEditorList"></div>
-    </div>
-
-    <!-- ২ · শ্রেণি -->
+    <!-- ১ · শ্রেণি -->
     <div class="ce-step" id="ceStepClass">
-      <div class="ce-step-head"><span class="ce-step-no">২</span><span>শ্রেণি</span><span class="ce-pick-val" id="ceClassVal"></span></div>
+      <div class="ce-step-head"><span class="ce-step-no">১</span><span>শ্রেণি</span><span class="ce-pick-val" id="ceClassVal"></span></div>
       <div class="ce-chip-pick" id="ceClassChips"></div>
       <div class="ce-addnew" id="ceClassAdd" style="display:none">
         <input id="ceClassNewInput" placeholder="নতুন শ্রেণির নাম" onkeydown="if(event.key==='Enter'){event.preventDefault();ceCommitNew('class')}">
@@ -5559,13 +5567,23 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       </div>
     </div>
 
-    <!-- ৩ · শাখা -->
+    <!-- ২ · শাখা -->
     <div class="ce-step" id="ceStepSection">
-      <div class="ce-step-head"><span class="ce-step-no">৩</span><span>শাখা</span><span class="ce-pick-val" id="ceSectionVal"></span></div>
+      <div class="ce-step-head"><span class="ce-step-no">২</span><span>শাখা</span><span class="ce-pick-val" id="ceSectionVal"></span></div>
       <div class="ce-chip-pick" id="ceSectionChips"></div>
       <div class="ce-addnew" id="ceSectionAdd" style="display:none">
         <input id="ceSectionNewInput" placeholder="নতুন শাখার নাম" onkeydown="if(event.key==='Enter'){event.preventDefault();ceCommitNew('section')}">
         <button type="button" onclick="ceCommitNew('section')">✓ যোগ</button>
+      </div>
+    </div>
+
+    <!-- ৩ · বিষয় -->
+    <div class="ce-step" id="ceStepSubject">
+      <div class="ce-step-head"><span class="ce-step-no">৩</span><span>বিষয়</span><span class="ce-pick-val" id="ceSubjectVal"></span></div>
+      <div class="ce-chip-pick" id="ceSubjectChips"></div>
+      <div class="ce-addnew" id="ceSubjectAdd" style="display:none">
+        <input id="ceSubjectNewInput" placeholder="নতুন বিষয়ের নাম" onkeydown="if(event.key==='Enter'){event.preventDefault();ceCommitNew('subject')}">
+        <button type="button" onclick="ceCommitNew('subject')">✓ যোগ</button>
       </div>
     </div>
 
@@ -7714,6 +7732,7 @@ let currentEditCell = null;
 let _ceDraft = null;       // {subject, class, section}
 let _ceOpenPrev = null;    // editor খোলার সময় cell-এ যা ছিল (entry sync-এ লাগে)
 let _ceTapField = null;    // কোন সারির সেলে ট্যাপ হয়েছে — শুধু scroll focus-এর জন্য
+let _ceDelMode = {subject:false, class:false, section:false}; // অপশন-তালিকা ডিলিট-মোড
 let currentOptTab = 'class';
 let dashTimer = null;
 let saveTimer = null;
@@ -9877,10 +9896,10 @@ function renderTable(){
         const uniqueClasses = [...new Set(cell.parts.map(p => (p.class||'').trim()).filter(Boolean))];
         classDisplay = uniqueClasses.length === 1 ? uniqueClasses[0] : (uniqueClasses.join(' / ') || '');
       }
-      const classVal = classDisplay ? esc(classDisplay) : '<span class="cell-arrow" title="ক্লিক করে শ্রেণি নির্বাচন">▾</span>';
+      const classVal = classDisplay ? esc(classDisplay) : '<span class="cell-arrow ce-mirror" title="বিষয় ঘরে ক্লিক করে নির্বাচন করুন">–</span>';
       const classCls = classDisplay ? '' : 'is-empty-arrow';
       body += `<td class="cell-class${lockedCellCls} ${conflict?'has-conflict':''} ${isFree?'is-free':''} ${classCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="class"${styleAttr}>
-        <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','class')`:''}">
+        <div class="cell-content">
           <span class="row-label">শ্রেণি</span>${classVal}
         </div></td>`;
     });
@@ -10055,7 +10074,7 @@ function renderTable(){
           const uniqueSecs = [...new Set(cell.parts.map(p => (p.section||'').trim()).filter(Boolean))];
           sectionDisplay = uniqueSecs.length === 1 ? uniqueSecs[0] : (uniqueSecs.join(' / ') || '');
         }
-        const sectionVal = sectionDisplay ? esc(sectionDisplay) : '<span class="cell-arrow" title="ক্লিক করে শাখা নির্বাচন">▾</span>';
+        const sectionVal = sectionDisplay ? esc(sectionDisplay) : '<span class="cell-arrow ce-mirror" title="বিষয় ঘরে ক্লিক করে নির্বাচন করুন">–</span>';
         const secCls = sectionDisplay ? '' : 'is-empty-arrow';
         const colW = (c.width && c.width > 0) ? c.width : 0;
         const widthCss = colW > 0 ? `width:${colW}px;min-width:${colW}px;max-width:${colW}px;` : '';
@@ -10064,7 +10083,7 @@ function renderTable(){
         const styleAttr = (widthCss+bgCss) ? ` style="${widthCss+bgCss}"` : '';
         const lockedCellCls = '';  // 🆕 schedule cell-এ lock রঙ নয় (নামের row-তে আইকন দেখাই)
         body += `<td class="cell-section${lockedCellCls} ${isFree?'is-free':''} ${secCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="section"${styleAttr}>
-          <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','section')`:''}">
+          <div class="cell-content">
             <span class="row-label">শাখা</span>${sectionVal}
           </div></td>`;
       });
@@ -14831,13 +14850,10 @@ function openCellEditor(tid, cid, field){
     class:   cell.class   || '',
     section: cell.section || ''
   };
+  _ceDelMode = {subject:false, class:false, section:false};
 
   // শিরোনাম — শিক্ষকের নাম + slot
   document.getElementById('cellEditorTitle').textContent = t.name + (slotLabel ? ' · ' + slotLabel : '');
-  const srch = document.getElementById('cellEditorSearch'); if(srch) srch.value = '';
-
-  // স্টেপ ১ — বিষয় তালিকা (highlight সহ)
-  renderCellOptions(_ceDraft.subject);
 
   // 🆕 দিন/শেয়ার্ড/ফিক্সড/স্প্লিট — পুরোনো prep reuse (field='subject' দিয়ে show+prefill)
   try{ _qemPrepEditor(tid, cid, 'subject'); }catch(_){}
@@ -14868,17 +14884,9 @@ function openCellEditor(tid, cid, field){
   editor.classList.add('show');
   try{ _showCellEditorBackdrop(); }catch(_){}
 
-  // ট্যাপ-করা সারি অনুযায়ী focus/scroll
+  // নতুন ক্রম (১ শ্রেণি → ২ শাখা → ৩ বিষয় → ৪ দিন) — সবসময় উপর থেকে শুরু দেখাই
   setTimeout(()=>{
-    try{
-      if(_ceTapField === 'class'){
-        const e = document.getElementById('ceStepClass'); if(e) e.scrollIntoView({block:'nearest', behavior:'smooth'});
-      } else if(_ceTapField === 'section'){
-        const e = document.getElementById('ceStepSection'); if(e) e.scrollIntoView({block:'nearest', behavior:'smooth'});
-      } else {
-        const s = document.getElementById('cellEditorSearch'); if(s) s.focus();
-      }
-    }catch(_){}
+    try{ const sc = document.querySelector('#cellEditor .ce-scroll'); if(sc) sc.scrollTop = 0; }catch(_){}
   }, 60);
 }
 
@@ -14894,39 +14902,171 @@ function cePick(kind, value){
   ceRefreshSelections();
 }
 
-/* শ্রেণি/শাখা chip render — single-select */
+/* বিষয়/শ্রেণি/শাখা chip render — single-select */
+function _ceChipHostId(kind){ return kind === 'class' ? 'ceClassChips' : kind === 'section' ? 'ceSectionChips' : 'ceSubjectChips'; }
+function _ceAddBoxId(kind){ return kind === 'class' ? 'ceClassAdd' : kind === 'section' ? 'ceSectionAdd' : 'ceSubjectAdd'; }
+function _ceAddInpId(kind){ return kind === 'class' ? 'ceClassNewInput' : kind === 'section' ? 'ceSectionNewInput' : 'ceSubjectNewInput'; }
+
+/* 🆕 এই শিক্ষকের সম্ভাব্য বিষয় (৩ উৎস: mainSubject + subjects[] + entries/cells) */
+function _ceTeacherSubjectSet(tid){
+  const set = new Set();
+  const add = v => { v = (v||'').trim(); if(v && v !== 'Free') set.add(v); };
+  try{
+    const t = state.teachers.find(x => x.id === tid);
+    if(!t) return set;
+    add(t.mainSubject);                                   // উৎস ১ — নামের পাশের প্রধান বিষয়
+    (Array.isArray(t.subjects) ? t.subjects : []).forEach(add); // উৎস ২ — শিক্ষকের বিষয়-তালিকা
+    (Array.isArray(t.teachingEntries) ? t.teachingEntries : []).forEach(e => { // উৎস ৩ — ব্যবহৃত
+      const s = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(e) : e;
+      if(s) add(s.subject);
+    });
+    const cells = t.cells || {};
+    Object.keys(cells).forEach(cid => {
+      const c = cells[cid] || {}; add(c.subject);
+      if(Array.isArray(c.parts)) c.parts.forEach(p => add(p && p.subject));
+    });
+  }catch(_){}
+  return set;
+}
+
+/* 🆕 সারা রুটিনে প্রতিটি বিষয় কতবার ব্যবহৃত — বেশি-ব্যবহৃত উপরে দেখাতে */
+function _ceGlobalSubjectFreq(){
+  const m = Object.create(null);
+  const bump = v => { v = (v||'').trim(); if(v && v !== 'Free') m[v] = (m[v]||0) + 1; };
+  try{
+    (state.teachers||[]).forEach(t => {
+      (Array.isArray(t.teachingEntries) ? t.teachingEntries : []).forEach(e => {
+        const s = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(e) : e;
+        if(s) bump(s.subject);
+      });
+      const cells = t.cells || {};
+      Object.keys(cells).forEach(cid => {
+        const c = cells[cid] || {}; bump(c.subject);
+        if(Array.isArray(c.parts)) c.parts.forEach(p => bump(p && p.subject));
+      });
+    });
+  }catch(_){}
+  return m;
+}
+
 function ceRenderChips(kind){
-  const host = document.getElementById(kind === 'class' ? 'ceClassChips' : 'ceSectionChips');
+  const host = document.getElementById(_ceChipHostId(kind));
   if(!host) return;
-  const opts = (state.options && Array.isArray(state.options[kind])) ? state.options[kind] : [];
+  let opts = (state.options && Array.isArray(state.options[kind])) ? state.options[kind].slice() : [];
   const cur = (_ceDraft && _ceDraft[kind]) || '';
+  const del = !!(_ceDelMode && _ceDelMode[kind]);
+
+  // 🆕 শুধু বিষয় — স্মার্ট সাজানো: ১) এই শিক্ষকের বিষয় আগে, ২) বেশি-ব্যবহৃত, ৩) বর্ণানুক্রম; Free সবার শেষে
+  let tset = null;
+  if(kind === 'subject'){
+    tset = _ceTeacherSubjectSet(currentEditCell ? currentEditCell.tid : null);
+    const freq = _ceGlobalSubjectFreq();
+    const rest = opts.filter(o => o !== 'Free');
+    rest.sort((a,b) => {
+      const ta = tset.has(a) ? 1 : 0, tb = tset.has(b) ? 1 : 0;
+      if(ta !== tb) return tb - ta;
+      const fa = freq[a]||0, fb = freq[b]||0;
+      if(fa !== fb) return fb - fa;
+      try{ return a.localeCompare(b, 'bn'); }catch(_){ return a < b ? -1 : a > b ? 1 : 0; }
+    });
+    if(opts.indexOf('Free') >= 0) rest.push('Free');
+    opts = rest;
+  }
+
   let html = opts.map(o => {
-    const sel = (o === cur);
+    const isFree = (kind === 'subject' && o === 'Free');
     const v = esc(o).replace(/'/g, "\\'");
-    return `<button type="button" class="ce-chip ${sel?'sel':''}" onclick="cePick('${kind}','${v}')">${esc(o)}</button>`;
+    if(del){
+      // ডিলিট-মোড — Free বাদে প্রতিটি chip মুছে ফেলার টার্গেট (লাল ✕)
+      if(isFree) return `<button type="button" class="ce-chip ce-chip-free" disabled style="opacity:.45">${esc(o)}</button>`;
+      return `<button type="button" class="ce-chip ce-chip-delitem" onclick="ceAskDeleteOption('${kind}','${v}')">${esc(o)} ✕</button>`;
+    }
+    const sel = (o === cur);
+    const sug = (kind === 'subject' && tset && !isFree && tset.has(o));  // এই শিক্ষকের প্রস্তাবিত বিষয়
+    return `<button type="button" class="ce-chip ${sel?'sel':''} ${isFree?'ce-chip-free':''} ${sug?'ce-chip-sug':''}" onclick="cePick('${kind}','${v}')">${esc(o)}</button>`;
   }).join('');
-  html += `<button type="button" class="ce-chip ce-chip-add" onclick="ceShowAddNew('${kind}')">+ নতুন</button>`;
+  if(del){
+    html += `<button type="button" class="ce-chip ce-chip-done" onclick="ceToggleDelMode('${kind}')">✓ সম্পন্ন</button>`;
+  } else {
+    html += `<button type="button" class="ce-chip ce-chip-add" onclick="ceShowAddNew('${kind}')">+ নতুন</button>`;
+    if(opts.length) html += `<button type="button" class="ce-chip ce-chip-delbtn" onclick="ceToggleDelMode('${kind}')">🗑 মুছুন</button>`;
+  }
   host.innerHTML = html;
+}
+
+/* ডিলিট-মোড টগল */
+function ceToggleDelMode(kind){
+  if(!_ceDelMode) _ceDelMode = {subject:false, class:false, section:false};
+  _ceDelMode[kind] = !_ceDelMode[kind];
+  // ডিলিট-মোডে গেলে add-box বন্ধ
+  const box = document.getElementById(_ceAddBoxId(kind)); if(box) box.style.display = 'none';
+  ceRenderChips(kind);
+}
+
+/* একটি অপশন রুটিনে কতবার ব্যবহৃত — সতর্কবার্তার জন্য */
+function _ceOptionUsageCount(kind, value){
+  let n = 0;
+  try{
+    (state.teachers||[]).forEach(t => {
+      (t.teachingEntries||[]).forEach(e => {
+        const s = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(e) : e;
+        if(s && (s[kind]||'') === value) n++;
+      });
+      const cells = t.cells || {};
+      Object.keys(cells).forEach(cid => {
+        const c = cells[cid] || {};
+        if((c[kind]||'') === value) n++;
+        if(Array.isArray(c.parts)) c.parts.forEach(p => { if(p && (p[kind]||'') === value) n++; });
+      });
+    });
+  }catch(_){}
+  return n;
+}
+
+/* অপশন মুছি — কনফার্মেশনসহ (রুটিন-ডেটায় হাত দিই না, শুধু তালিকা থেকে) */
+function ceAskDeleteOption(kind, value){
+  if(!value) return;
+  if(kind === 'subject' && value === 'Free'){
+    try{ showToast('“Free” মুছে ফেলা যাবে না','info',2000); }catch(_){}
+    return;
+  }
+  const label = kind === 'subject' ? 'বিষয়' : kind === 'class' ? 'শ্রেণি' : 'শাখা';
+  const used = _ceOptionUsageCount(kind, value);
+  let msg = `“${value}” ${label}টি তালিকা থেকে মুছে ফেলবেন?`;
+  if(used > 0){
+    const bn = (typeof toBnNum === 'function') ? toBnNum(used) : used;
+    msg += `\n\n⚠ এটি বর্তমানে রুটিনে ${bn} জায়গায় আছে। মুছলেও ঐ রুটিন-ডেটা ঠিক থাকবে — শুধু তালিকা থেকে অপশনটি সরে যাবে।`;
+  }
+  if(!confirm(msg)) return;
+  if(!state.options) state.options = {};
+  if(Array.isArray(state.options[kind])){
+    const i = state.options[kind].indexOf(value);
+    if(i >= 0) state.options[kind].splice(i, 1);
+  }
+  if(_ceDraft && _ceDraft[kind] === value) _ceDraft[kind] = '';
+  try{ saveState(); }catch(_){}
+  try{ ceRefreshSelections(); }catch(_){}
+  try{ showToast(`🗑 “${value}” তালিকা থেকে মুছে ফেলা হলো`,'success',1800); }catch(_){}
 }
 
 /* "+ নতুন" → ছোট ইনপুট খোলে */
 function ceShowAddNew(kind){
-  const box = document.getElementById(kind === 'class' ? 'ceClassAdd' : 'ceSectionAdd');
+  const box = document.getElementById(_ceAddBoxId(kind));
   if(!box) return;
   box.style.display = 'flex';
   const inp = box.querySelector('input');
   if(inp){ inp.value = ''; setTimeout(()=>{ try{ inp.focus(); }catch(_){} }, 30); }
 }
 
-/* নতুন শ্রেণি/শাখা global options-এ যোগ করে select করি */
+/* নতুন বিষয়/শ্রেণি/শাখা global options-এ যোগ করে select করি */
 function ceCommitNew(kind){
-  const inp = document.getElementById(kind === 'class' ? 'ceClassNewInput' : 'ceSectionNewInput');
+  const inp = document.getElementById(_ceAddInpId(kind));
   const v = ((inp && inp.value) || '').trim();
   if(!v) return;
   if(!state.options) state.options = {};
   if(!Array.isArray(state.options[kind])) state.options[kind] = [];
   if(state.options[kind].indexOf(v) < 0){ state.options[kind].push(v); try{ saveState(); }catch(_){} }
-  const box = document.getElementById(kind === 'class' ? 'ceClassAdd' : 'ceSectionAdd');
+  const box = document.getElementById(_ceAddBoxId(kind));
   if(box) box.style.display = 'none';
   cePick(kind, v);
 }
@@ -14973,7 +15113,7 @@ function ceRefreshSelections(){
   _ceToggleDone('ceStepClass',   isFree || !!d.class);
   _ceToggleDone('ceStepSection', isFree || !!d.section);
 
-  try{ renderCellOptions(d.subject); }catch(_){}
+  try{ ceRenderChips('subject'); }catch(_){}
   ceRenderChips('class');
   ceRenderChips('section');
 
@@ -15079,13 +15219,15 @@ function _hideCellEditorBackdrop(){
 
 function renderCellOptions(currentValue){
   const list = document.getElementById('cellEditorList');
-  const field = currentEditCell.field;
+  if(!list) return; // 🆕 বিষয় এখন chip — পুরোনো list/search element নেই (legacy guard)
+  const field = (currentEditCell && currentEditCell.field) || 'subject';
   let opts = (state.options && state.options[field]) || [];
   // "Free" only relevant in middle (subject) field
   if(field !== 'subject'){
     opts = opts.filter(o => o !== 'Free' && o !== 'free' && o !== 'FREE');
   }
-  const q = (document.getElementById('cellEditorSearch').value||'').trim();
+  const srchEl = document.getElementById('cellEditorSearch');
+  const q = ((srchEl && srchEl.value) || '').trim();
   const ql = q.toLowerCase();
   const filtered = opts.filter(o => !ql || o.toLowerCase().includes(ql));
 
@@ -23084,9 +23226,14 @@ document.addEventListener('DOMContentLoaded', init);
 // Click outside cell editor to close
 document.addEventListener('click', e => {
   const editor = document.getElementById('cellEditor');
-  if(editor.classList.contains('show') && !editor.contains(e.target) && !e.target.closest('.cell-content')){
-    closeCellEditor();
-  }
+  if(!editor || !editor.classList.contains('show')) return;
+  // 🆕 FIX — বিষয়/শ্রেণি/শাখা সিলেক্ট করলে তালিকা/chip re-render হয়, ফলে ক্লিক-করা
+  //    element DOM থেকে সরে যায়। তখন এটাকে "বাইরের ক্লিক" ভেবে মডাল বন্ধ করা যাবে না।
+  if(!document.contains(e.target)) return;
+  // এডিটর বা split modal-এর ভেতরে ক্লিক হলে বন্ধ করব না
+  if(editor.contains(e.target)) return;
+  if(e.target.closest && (e.target.closest('.cell-content') || e.target.closest('#qemSplitModal') || e.target.closest('.cell-editor-backdrop'))) return;
+  closeCellEditor();
 });
 
 // Keyboard shortcuts
