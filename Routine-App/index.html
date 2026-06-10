@@ -1488,11 +1488,11 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
   transition:var(--transition);
 }
 .fab:hover{transform:scale(1.08) translateY(-2px);box-shadow:0 12px 32px rgba(15,118,110,.5)}
-.fab.dashboard-fab{right:18px;bottom:84px;z-index:200 !important;width:58px;height:58px;background:#ffffff;border:2px solid #000;touch-action:none;animation:fabBtnBreathe 1.3s ease-in-out infinite}
+.fab.dashboard-fab{right:18px;bottom:84px;z-index:200 !important;width:48px;height:48px;background:#ffffff;border:2px solid #000;touch-action:none;animation:fabBtnBreathe 1.3s ease-in-out infinite}
 .fab.dashboard-fab:hover{box-shadow:0 12px 32px rgba(21,128,61,.45);transform:scale(1.1) translateY(-2px) !important}
 /* 🆕 "Live" লেখা — লাল, বোল্ড, পালস এনিমেশন (শুধু opacity, scale পুরো বাটনে) */
 .fab.dashboard-fab .fab-live{
-  font-size:15px; font-weight:900; letter-spacing:.3px;
+  font-size:13px; font-weight:900; letter-spacing:.2px;
   color:#dc2626; line-height:1;
   animation: fabLivePulse 1.3s ease-in-out infinite;
 }
@@ -1502,13 +1502,13 @@ tr.leave-spacer td{padding:0 !important;border:none !important;height:0 !importa
 }
 /* 🆕 পুরো বাটনের "শ্বাস" এনিমেশন — ভেসে উঠলে বড়, ডাউন হলে ছোট */
 @keyframes fabBtnBreathe{
-  0%,100%{ transform:scale(1.06); }
-  50%{ transform:scale(0.92); }
+  0%,100%{ transform:scale(1.02); }
+  50%{ transform:scale(0.9); }
 }
 /* 🆕 চারপাশে ঘোরে এমন লাল রিং এনিমেশন */
 .fab.dashboard-fab::after{
   content:'';
-  position:absolute; inset:-7px;
+  position:absolute; inset:-5px;
   border-radius:50%;
   border:3px dashed #ef4444;
   animation: fabRingSpin 4s linear infinite;
@@ -1779,6 +1779,82 @@ input[type="range"]::-moz-range-thumb{
   border-radius:0 0 12px 12px;
 }
 .cell-editor-footer .tool-btn{font-size:12px;padding:8px 12px;flex:1;justify-content:center;font-weight:700}
+
+/* =============================================================
+   🆕 একীভূত "এক ধাপে ক্লাস যোগ" শিট
+============================================================= */
+.ce-scroll{
+  flex:1 1 auto; overflow-y:auto;
+  padding:11px 12px; display:flex; flex-direction:column; gap:13px;
+  -webkit-overflow-scrolling:touch;
+}
+.ce-step{ display:flex; flex-direction:column; gap:7px; }
+.ce-step-head{
+  display:flex; align-items:center; gap:7px;
+  font-size:12.5px; font-weight:800; color:var(--text);
+}
+.ce-step-no{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:21px; height:21px; border-radius:50%;
+  background:var(--primary); color:#fff; font-size:11px; font-weight:800;
+  flex-shrink:0;
+}
+.ce-step.done .ce-step-no{ background:#10b981; }
+.ce-pick-val{
+  margin-left:auto; font-size:11.5px; font-weight:800;
+  color:#059669; max-width:52%; text-align:right;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.ce-step .cell-editor-search{ padding:0; border:none; }
+.ce-step .cell-editor-list{
+  flex:0 0 auto;
+  border:1px solid var(--border); border-radius:8px;
+  min-height:84px; max-height:188px; padding:4px;
+}
+@media (max-height:700px){ .ce-step .cell-editor-list{ max-height:150px; } }
+@media (max-height:560px){ .ce-step .cell-editor-list{ max-height:120px; min-height:64px; } }
+.ce-chip-pick{ display:flex; flex-wrap:wrap; gap:6px; }
+.ce-chip{
+  font-size:12px; font-weight:700;
+  padding:6px 13px; border-radius:99px;
+  background:#fff; border:1.5px solid var(--border);
+  color:var(--text); cursor:pointer; transition:.12s; user-select:none;
+}
+.ce-chip:hover{ border-color:var(--primary); }
+.ce-chip.sel{
+  background:var(--primary); color:#fff; border-color:var(--primary);
+  box-shadow:0 2px 6px rgba(15,118,110,.3);
+}
+.ce-chip-add{ border-style:dashed; border-color:#10b981; color:#059669; background:#ecfdf5; }
+.ce-addnew{ display:flex; gap:6px; }
+.ce-addnew input{
+  flex:1; padding:6px 9px; border:1px solid var(--border);
+  border-radius:6px; font-size:12.5px; background:var(--surface-2);
+}
+.ce-addnew button{
+  padding:6px 13px; border-radius:6px; border:none;
+  background:var(--primary); color:#fff; font-weight:800; cursor:pointer;
+}
+/* qem ব্লক এখন স্টেপ-৪ container — bolted-on চেহারা সরাই */
+.ce-scroll .cell-editor-qem{
+  border-top:none; background:transparent; padding:0;
+  max-height:none; overflow:visible; gap:11px;
+}
+.ce-adv{ border:1px solid var(--border); border-radius:8px; background:var(--surface-2); }
+.ce-adv > summary{
+  list-style:none; cursor:pointer; user-select:none;
+  padding:9px 11px; font-size:12px; font-weight:800; color:var(--text-2);
+  display:flex; align-items:center; gap:6px;
+}
+.ce-adv > summary::-webkit-details-marker{ display:none; }
+.ce-adv > summary::after{ content:'▾'; margin-left:auto; transition:.15s; }
+.ce-adv[open] > summary::after{ transform:rotate(180deg); }
+.ce-adv > summary:hover{ color:var(--primary); }
+.ce-adv-body{ padding:2px 11px 11px; display:flex; flex-direction:column; gap:9px; }
+.ce-note{
+  font-size:11px; color:#7c3aed; background:#faf5ff;
+  border:1px solid #e9d5ff; border-radius:6px; padding:6px 8px; line-height:1.4;
+}
 
 /* =============================================================
    🔄 QUICK-ENTRY MODE (.qem-*) — scoped, additive
@@ -5456,59 +5532,96 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
     <span id="cellEditorTitle">নির্বাচন</span>
     <button class="modal-close" onclick="closeCellEditor()">×</button>
   </div>
-  <div class="cell-editor-search">
-    <input type="text" id="cellEditorSearch" placeholder="খুঁজুন..." oninput="filterCellOptions()">
-  </div>
-  <div class="cell-editor-list" id="cellEditorList"></div>
-  <!-- 🆕 QUICK-ENTRY MODE EXTENSION — শুধু mode চালু থাকলে show হবে -->
-  <div class="cell-editor-qem" id="cellEditorQem" style="display:none">
+  <div class="ce-scroll">
+    <!-- ⚡ স্মার্ট সাজেশন পিল -->
     <div class="qem-smart-suggest" id="qemSmartSuggest" style="display:none">
       <span class="qem-ss-icon">⚡</span>
       <span class="qem-ss-text" id="qemSmartSuggestText"></span>
       <button type="button" class="qem-ss-apply" id="qemSmartSuggestApply">ব্যবহার করুন</button>
     </div>
-    <div class="qem-days-section">
-      <div class="qem-section-label">📅 কয়দিন এই বিষয়?</div>
-      <div class="qem-radio-row">
-        <label class="qem-radio"><input type="radio" name="qemDays" value="6" checked><span>৬ দিন</span></label>
-        <label class="qem-radio"><input type="radio" name="qemDays" value="3a"><span>৩ দিন (শনি-সোম)</span></label>
-        <label class="qem-radio"><input type="radio" name="qemDays" value="3b"><span>৩ দিন (মঙ্গল-বৃহঃ)</span></label>
-        <label class="qem-radio"><input type="radio" name="qemDays" value="2"><span>২ দিন (মঙ্গল-বুধ)</span></label>
-        <label class="qem-radio"><input type="radio" name="qemDays" value="custom"><span>Custom</span></label>
+
+    <!-- ১ · বিষয় -->
+    <div class="ce-step" id="ceStepSubject">
+      <div class="ce-step-head"><span class="ce-step-no">১</span><span>বিষয়</span><span class="ce-pick-val" id="ceSubjectVal"></span></div>
+      <div class="cell-editor-search">
+        <input type="text" id="cellEditorSearch" placeholder="বিষয় খুঁজুন বা নতুন লিখুন…" oninput="filterCellOptions()">
       </div>
-      <div class="qem-custom-days" id="qemCustomDays" style="display:none">
-        <span class="qem-chip" data-day="Sat">শনি</span>
-        <span class="qem-chip" data-day="Sun">রবি</span>
-        <span class="qem-chip" data-day="Mon">সোম</span>
-        <span class="qem-chip" data-day="Tue">মঙ্গল</span>
-        <span class="qem-chip" data-day="Wed">বুধ</span>
-        <span class="qem-chip" data-day="Thu">বৃহঃ</span>
-      </div>
-    </div>
-    <div class="qem-fixed-section">
-      <label class="qem-checkbox qem-shared-chk-label">
-        <input type="checkbox" id="qemSharedChk">
-        <span>🔄 শেয়ার্ড ক্লাস — এই ক্লাসটি একাধিক শিক্ষক/বিষয়ের মধ্যে ভাগাভাগি হবে</span>
-      </label>
-      <label class="qem-checkbox">
-        <input type="checkbox" id="qemFixedChk">
-        <span>🔒 ফিক্সড স্লট — এই slot ছাড়া অন্য কোথাও সরাবে না</span>
-      </label>
+      <div class="cell-editor-list" id="cellEditorList"></div>
     </div>
 
-    <!-- 🆕 MULTI-PART (SPLIT) SECTION — একই সময়ে ভিন্ন শাখা/দিনে আলাদা ক্লাস -->
-    <div class="qem-split-section" id="qemSplitSection">
-      <div class="qem-split-head">
-        <span>🔀 স্প্লিট স্লট — একই সময়ে ভিন্ন শাখা</span>
-        <span class="qem-split-hint">যদি এই শিক্ষক একই ঘণ্টায় কিছু দিন এক শাখায়, বাকি দিন অন্য শাখায় ক্লাস নেন</span>
+    <!-- ২ · শ্রেণি -->
+    <div class="ce-step" id="ceStepClass">
+      <div class="ce-step-head"><span class="ce-step-no">২</span><span>শ্রেণি</span><span class="ce-pick-val" id="ceClassVal"></span></div>
+      <div class="ce-chip-pick" id="ceClassChips"></div>
+      <div class="ce-addnew" id="ceClassAdd" style="display:none">
+        <input id="ceClassNewInput" placeholder="নতুন শ্রেণির নাম" onkeydown="if(event.key==='Enter'){event.preventDefault();ceCommitNew('class')}">
+        <button type="button" onclick="ceCommitNew('class')">✓ যোগ</button>
       </div>
-      <div class="qem-split-list" id="qemSplitList"></div>
-      <button type="button" class="qem-split-add" id="qemSplitAddBtn" onclick="_qemSplitAddPart()">➕ আরেকটি শাখা/দিন যোগ করুন</button>
+    </div>
+
+    <!-- ৩ · শাখা -->
+    <div class="ce-step" id="ceStepSection">
+      <div class="ce-step-head"><span class="ce-step-no">৩</span><span>শাখা</span><span class="ce-pick-val" id="ceSectionVal"></span></div>
+      <div class="ce-chip-pick" id="ceSectionChips"></div>
+      <div class="ce-addnew" id="ceSectionAdd" style="display:none">
+        <input id="ceSectionNewInput" placeholder="নতুন শাখার নাম" onkeydown="if(event.key==='Enter'){event.preventDefault();ceCommitNew('section')}">
+        <button type="button" onclick="ceCommitNew('section')">✓ যোগ</button>
+      </div>
+    </div>
+
+    <!-- ৪ · কয়দিন + আরও অপশন (qem ব্লক পুনঃব্যবহার) -->
+    <div class="cell-editor-qem" id="cellEditorQem" style="display:none">
+      <div class="ce-step" id="ceStepDays">
+        <div class="ce-step-head"><span class="ce-step-no">৪</span><span>কয়দিন এই বিষয়?</span></div>
+        <div class="qem-radio-row">
+          <label class="qem-radio"><input type="radio" name="qemDays" value="6" checked><span>৬ দিন</span></label>
+          <label class="qem-radio"><input type="radio" name="qemDays" value="3a"><span>৩ দিন (শনি-সোম)</span></label>
+          <label class="qem-radio"><input type="radio" name="qemDays" value="3b"><span>৩ দিন (মঙ্গল-বৃহঃ)</span></label>
+          <label class="qem-radio"><input type="radio" name="qemDays" value="2"><span>২ দিন (মঙ্গল-বুধ)</span></label>
+          <label class="qem-radio"><input type="radio" name="qemDays" value="custom"><span>Custom</span></label>
+        </div>
+        <div class="qem-custom-days" id="qemCustomDays" style="display:none">
+          <span class="qem-chip" data-day="Sat">শনি</span>
+          <span class="qem-chip" data-day="Sun">রবি</span>
+          <span class="qem-chip" data-day="Mon">সোম</span>
+          <span class="qem-chip" data-day="Tue">মঙ্গল</span>
+          <span class="qem-chip" data-day="Wed">বুধ</span>
+          <span class="qem-chip" data-day="Thu">বৃহঃ</span>
+        </div>
+      </div>
+
+      <details class="ce-adv" id="ceAdv">
+        <summary>⚙️ আরও অপশন — শেয়ার্ড / ফিক্সড / স্প্লিট</summary>
+        <div class="ce-adv-body">
+          <div class="ce-note" id="ceSplitNote" style="display:none">🔀 এই স্লটে একাধিক স্প্লিট-পার্ট রয়েছে — নিচে দেখুন/সম্পাদনা করুন।</div>
+          <div class="qem-fixed-section">
+            <label class="qem-checkbox qem-shared-chk-label">
+              <input type="checkbox" id="qemSharedChk">
+              <span>🔄 শেয়ার্ড ক্লাস — এই ক্লাসটি একাধিক শিক্ষক/বিষয়ের মধ্যে ভাগাভাগি হবে</span>
+            </label>
+            <label class="qem-checkbox">
+              <input type="checkbox" id="qemFixedChk">
+              <span>🔒 ফিক্সড স্লট — এই slot ছাড়া অন্য কোথাও সরাবে না</span>
+            </label>
+          </div>
+
+          <!-- 🆕 MULTI-PART (SPLIT) SECTION — একই সময়ে ভিন্ন শাখা/দিনে আলাদা ক্লাস -->
+          <div class="qem-split-section" id="qemSplitSection">
+            <div class="qem-split-head">
+              <span>🔀 স্প্লিট স্লট — একই সময়ে ভিন্ন শাখা</span>
+              <span class="qem-split-hint">যদি এই শিক্ষক একই ঘণ্টায় কিছু দিন এক শাখায়, বাকি দিন অন্য শাখায় ক্লাস নেন</span>
+            </div>
+            <div class="qem-split-list" id="qemSplitList"></div>
+            <button type="button" class="qem-split-add" id="qemSplitAddBtn" onclick="_qemSplitAddPart()">➕ আরেকটি শাখা/দিন যোগ করুন</button>
+          </div>
+        </div>
+      </details>
     </div>
   </div>
+
   <div class="cell-editor-footer">
-    <button class="tool-btn" onclick="clearCell()">🗑 মুছুন</button>
-    <button class="tool-btn primary" onclick="closeCellEditor()">সম্পন্ন</button>
+    <button class="tool-btn" onclick="ceClearAll()">🗑 মুছুন</button>
+    <button class="tool-btn primary" onclick="ceSaveAll()">✓ সংরক্ষণ</button>
   </div>
 </div>
 
@@ -7597,6 +7710,10 @@ let historyStack = [];
 let redoStack = [];
 let currentUser = null;
 let currentEditCell = null;
+/* 🆕 একীভূত সেল-এডিটরের draft অবস্থা — সংরক্ষণ চাপলে তবেই cell-এ লেখা হবে */
+let _ceDraft = null;       // {subject, class, section}
+let _ceOpenPrev = null;    // editor খোলার সময় cell-এ যা ছিল (entry sync-এ লাগে)
+let _ceTapField = null;    // কোন সারির সেলে ট্যাপ হয়েছে — শুধু scroll focus-এর জন্য
 let currentOptTab = 'class';
 let dashTimer = null;
 let saveTimer = null;
@@ -14693,35 +14810,254 @@ function openCellEditor(tid, cid, field){
     return;
   }
 
-  /* Grid-driven default — cell editor সর্বদা inline খুলবে (subject field-এ
-     শেয়ার্ড/ফিক্সড/দিন section automatically দেখাবে — _qemPrepEditor handle করবে) */
-
-  currentEditCell = {tid, cid, field};
   const t = state.teachers.find(x=>x.id===tid);
+  if(!t) return;
   const cell = t.cells[cid] || {};
-  const cur = cell[field];
   const col = state.columns.find(c=>c.id===cid);
   const slotLabel = col ? col.label : '';
 
-  // Title shows just teacher name + slot (field type is obvious from row context)
+  /* 🆕 একীভূত শিট — সর্বদা subject-কেন্দ্রিক একক হিসেবে কাজ করে।
+     যে সারিতেই ট্যাপ হোক, একই শিট খুলবে (বিষয়+শ্রেণি+শাখা+দিন একসাথে)।
+     field সবসময় 'subject' — তাতে renderCellOptions/_qemPrepEditor/sync সমান কাজ করে। */
+  currentEditCell = {tid, cid, field: 'subject'};
+  _ceTapField = field;
+  _ceOpenPrev = {
+    subject: cell.subject || '',
+    class:   cell.class   || '',
+    section: cell.section || ''
+  };
+  _ceDraft = {
+    subject: cell.subject || '',
+    class:   cell.class   || '',
+    section: cell.section || ''
+  };
+
+  // শিরোনাম — শিক্ষকের নাম + slot
   document.getElementById('cellEditorTitle').textContent = t.name + (slotLabel ? ' · ' + slotLabel : '');
-  document.getElementById('cellEditorSearch').value = '';
+  const srch = document.getElementById('cellEditorSearch'); if(srch) srch.value = '';
 
-  renderCellOptions(cur);
+  // স্টেপ ১ — বিষয় তালিকা (highlight সহ)
+  renderCellOptions(_ceDraft.subject);
 
-  // 🆕 Cell editor extension prep — subject field-এ শেয়ার্ড/ফিক্সড/দিন section দেখাবে
-  try{ _qemPrepEditor(tid, cid, field); }catch(_){}
+  // 🆕 দিন/শেয়ার্ড/ফিক্সড/স্প্লিট — পুরোনো prep reuse (field='subject' দিয়ে show+prefill)
+  try{ _qemPrepEditor(tid, cid, 'subject'); }catch(_){}
 
-  // 🆕 Center modal positioning — সব ডিভাইসে (মোবাইল/ট্যাবলেট/ল্যাপটপ) সমানভাবে
-  //    স্ক্রিনের মাঝখানে দেখাবে যাতে সব বাটন/section সবসময় দৃশ্যমান থাকে
+  // _qemPrepEditor smart-suggest cell-এ class/section auto-fill করতে পারে — draft-এ তুলি
+  try{
+    const c2 = t.cells[cid] || {};
+    if(_ceDraft && !_ceDraft.class && c2.class) _ceDraft.class = c2.class;
+    if(_ceDraft && !_ceDraft.section && c2.section) _ceDraft.section = c2.section;
+  }catch(_){}
+  // স্টেপ ২/৩ — শ্রেণি ও শাখা chip + নির্বাচন/লেবেল রিফ্রেশ
+  try{ ceRefreshSelections(); }catch(_){}
+
+  // multi-part থাকলে advanced খুলে দিই + নোট দেখাই
+  try{
+    const hasParts = Array.isArray(cell.parts) && cell.parts.length;
+    const note = document.getElementById('ceSplitNote');
+    if(note) note.style.display = hasParts ? 'block' : 'none';
+    const adv = document.getElementById('ceAdv');
+    if(adv && hasParts) adv.setAttribute('open','');
+  }catch(_){}
+
+  // স্ক্রিনের মাঝখানে দেখাই
   const editor = document.getElementById('cellEditor');
   editor.style.left = '50%';
   editor.style.top = '50%';
   editor.style.transform = 'translate(-50%, -50%)';
   editor.classList.add('show');
-  // backdrop overlay show
   try{ _showCellEditorBackdrop(); }catch(_){}
-  setTimeout(()=>document.getElementById('cellEditorSearch').focus(), 50);
+
+  // ট্যাপ-করা সারি অনুযায়ী focus/scroll
+  setTimeout(()=>{
+    try{
+      if(_ceTapField === 'class'){
+        const e = document.getElementById('ceStepClass'); if(e) e.scrollIntoView({block:'nearest', behavior:'smooth'});
+      } else if(_ceTapField === 'section'){
+        const e = document.getElementById('ceStepSection'); if(e) e.scrollIntoView({block:'nearest', behavior:'smooth'});
+      } else {
+        const s = document.getElementById('cellEditorSearch'); if(s) s.focus();
+      }
+    }catch(_){}
+  }, 60);
+}
+
+/* 🆕 ─── একীভূত শিটের নির্বাচন (draft) হ্যান্ডলার ───────────────────── */
+function cePick(kind, value){
+  if(!currentEditCell) return;
+  if(!_ceDraft) _ceDraft = {subject:'', class:'', section:''};
+  if(kind === 'subject'){
+    _ceDraft.subject = value;
+    if(value === 'Free'){ _ceDraft.class = ''; _ceDraft.section = ''; }
+  } else if(kind === 'class'){ _ceDraft.class = value; }
+  else if(kind === 'section'){ _ceDraft.section = value; }
+  ceRefreshSelections();
+}
+
+/* শ্রেণি/শাখা chip render — single-select */
+function ceRenderChips(kind){
+  const host = document.getElementById(kind === 'class' ? 'ceClassChips' : 'ceSectionChips');
+  if(!host) return;
+  const opts = (state.options && Array.isArray(state.options[kind])) ? state.options[kind] : [];
+  const cur = (_ceDraft && _ceDraft[kind]) || '';
+  let html = opts.map(o => {
+    const sel = (o === cur);
+    const v = esc(o).replace(/'/g, "\\'");
+    return `<button type="button" class="ce-chip ${sel?'sel':''}" onclick="cePick('${kind}','${v}')">${esc(o)}</button>`;
+  }).join('');
+  html += `<button type="button" class="ce-chip ce-chip-add" onclick="ceShowAddNew('${kind}')">+ নতুন</button>`;
+  host.innerHTML = html;
+}
+
+/* "+ নতুন" → ছোট ইনপুট খোলে */
+function ceShowAddNew(kind){
+  const box = document.getElementById(kind === 'class' ? 'ceClassAdd' : 'ceSectionAdd');
+  if(!box) return;
+  box.style.display = 'flex';
+  const inp = box.querySelector('input');
+  if(inp){ inp.value = ''; setTimeout(()=>{ try{ inp.focus(); }catch(_){} }, 30); }
+}
+
+/* নতুন শ্রেণি/শাখা global options-এ যোগ করে select করি */
+function ceCommitNew(kind){
+  const inp = document.getElementById(kind === 'class' ? 'ceClassNewInput' : 'ceSectionNewInput');
+  const v = ((inp && inp.value) || '').trim();
+  if(!v) return;
+  if(!state.options) state.options = {};
+  if(!Array.isArray(state.options[kind])) state.options[kind] = [];
+  if(state.options[kind].indexOf(v) < 0){ state.options[kind].push(v); try{ saveState(); }catch(_){} }
+  const box = document.getElementById(kind === 'class' ? 'ceClassAdd' : 'ceSectionAdd');
+  if(box) box.style.display = 'none';
+  cePick(kind, v);
+}
+
+function _ceToggleDone(id, on){ const el = document.getElementById(id); if(el) el.classList.toggle('done', !!on); }
+
+/* নির্বাচন/লেবেল/Free-অবস্থা রিফ্রেশ */
+function ceRefreshSelections(){
+  const d = _ceDraft || {subject:'', class:'', section:''};
+
+  // এই সেলে multi-part (split) আছে কিনা
+  let hasParts = false;
+  try{
+    const t = state.teachers.find(x => x.id === currentEditCell.tid);
+    const c = t && t.cells && t.cells[currentEditCell.cid];
+    hasParts = !!(c && Array.isArray(c.parts) && c.parts.length);
+  }catch(_){}
+
+  const note = document.getElementById('ceSplitNote');
+  if(note) note.style.display = hasParts ? 'block' : 'none';
+
+  // multi-part হলে — single steps লুকাই, split list-ই master
+  ['ceStepSubject','ceStepClass','ceStepSection'].forEach(id => {
+    const e = document.getElementById(id); if(e) e.style.display = hasParts ? 'none' : '';
+  });
+  const daysStep = document.getElementById('ceStepDays');
+  if(daysStep) daysStep.style.display = hasParts ? 'none' : '';
+
+  if(hasParts){
+    const adv = document.getElementById('ceAdv'); if(adv) adv.setAttribute('open','');
+    const elQ = document.getElementById('cellEditorQem'); if(elQ) elQ.style.display = 'flex';
+    try{ _qemRenderSplitList(); }catch(_){}
+    return;
+  }
+
+  // ── একক ক্লাস (সাধারণ) প্রবাহ ──
+  const isFree = (d.subject === 'Free');
+
+  const sv = document.getElementById('ceSubjectVal'); if(sv) sv.textContent = d.subject ? '✓ ' + d.subject : '';
+  const cv = document.getElementById('ceClassVal');   if(cv) cv.textContent   = d.class   ? '✓ ' + d.class   : '';
+  const xv = document.getElementById('ceSectionVal'); if(xv) xv.textContent   = d.section ? '✓ ' + d.section : '';
+
+  _ceToggleDone('ceStepSubject', !!d.subject);
+  _ceToggleDone('ceStepClass',   isFree || !!d.class);
+  _ceToggleDone('ceStepSection', isFree || !!d.section);
+
+  try{ renderCellOptions(d.subject); }catch(_){}
+  ceRenderChips('class');
+  ceRenderChips('section');
+
+  // Free হলে শ্রেণি/শাখা/দিন লুকাই
+  const show = !isFree;
+  const elC = document.getElementById('ceStepClass');   if(elC) elC.style.display = show ? 'flex' : 'none';
+  const elS = document.getElementById('ceStepSection'); if(elS) elS.style.display = show ? 'flex' : 'none';
+  const elQ = document.getElementById('cellEditorQem'); if(elQ) elQ.style.display = show ? 'flex' : 'none';
+}
+
+/* 🆕 সংরক্ষণ — পুরো slot একবারে cell-এ লিখে পুরোনো sync plumbing চালাই */
+function ceSaveAll(){
+  if(!currentEditCell) return;
+  const {tid, cid} = currentEditCell;
+  const t = state.teachers.find(x => x.id === tid);
+  if(!t) return;
+
+  // 🛡 multi-part (split) সেল — parts-ই master; single draft দিয়ে overwrite করব না।
+  //    split modal নিজেই সেভ করেছে — এখানে শুধু রিফ্রেশ করে বন্ধ করি।
+  const curCell = t.cells && t.cells[cid];
+  if(curCell && Array.isArray(curCell.parts) && curCell.parts.length){
+    renderTable();
+    refreshDashboardSilent();
+    try{ refreshRealtimeConflicts(true); }catch(_){}
+    closeCellEditor();
+    return;
+  }
+
+  const d = _ceDraft || {subject:'', class:'', section:''};
+
+  if(!d.subject){
+    try{ showToast('⚠ আগে একটি বিষয় নির্বাচন করুন','warning',2500); }catch(_){}
+    return;
+  }
+  const isFree = (d.subject === 'Free');
+  if(!isFree && (!d.class || !d.section)){
+    try{ showToast('⚠ শ্রেণি ও শাখা দুটিই দিন (অথবা Free নির্বাচন করুন)','warning',3000); }catch(_){}
+    return;
+  }
+
+  snapshot();
+  if(!t.cells[cid]) t.cells[cid] = {};
+  const cell = t.cells[cid];
+  const prev = _ceOpenPrev || {subject: cell.subject||'', class: cell.class||'', section: cell.section||''};
+
+  cell.subject = d.subject;
+  if(isFree){ cell.class = ''; cell.section = ''; }
+  else { cell.class = d.class; cell.section = d.section; }
+  saveState();
+
+  // entry sync — field='subject' দেওয়ায় days/shared/fixed editor DOM থেকে পড়বে
+  try{ _qemSyncCellToEntry(tid, cid, 'subject', prev); }catch(err){ console.warn('ce sync skipped:', err); }
+  try{ _qemAutoSyncAllCells(); }catch(_){}
+
+  renderTable();
+  refreshDashboardSilent();
+  try{ audit('সেল এডিট', `${t.name} • ${getColLabel(cid)} • ${prev.subject||'—'} → ${d.subject}`); }catch(_){}
+  try{ refreshRealtimeConflicts(true); }catch(_){}
+  if(state.settings && state.settings.notifications) showToast('✓ সংরক্ষিত','success',1400);
+  closeCellEditor();
+}
+
+/* 🆕 পুরো slot মুছি (বিষয়+শ্রেণি+শাখা+পার্ট) ও entry থেকে slot সরাই */
+function ceClearAll(){
+  if(!currentEditCell) return;
+  const {tid, cid} = currentEditCell;
+  const t = state.teachers.find(x => x.id === tid);
+  if(!t || !t.cells || !t.cells[cid]){ closeCellEditor(); return; }
+  const prev = Object.assign({}, t.cells[cid]);
+
+  snapshot();
+  if(prev.subject && prev.class && prev.section){
+    try{ _qemRemoveSlotFromEntry(t, prev.subject, prev.class, prev.section, cid); }catch(_){}
+  }
+  const cell = t.cells[cid];
+  cell.subject = ''; cell.class = ''; cell.section = '';
+  delete cell.parts; delete cell.days; delete cell.shared; delete cell.fixed;
+  saveState();
+
+  renderTable();
+  refreshDashboardSilent();
+  try{ audit('সেল মুছে ফেলা', `${t.name} • ${getColLabel(cid)}`); }catch(_){}
+  try{ refreshRealtimeConflicts(true); }catch(_){}
+  closeCellEditor();
 }
 
 /* 🆕 Backdrop overlay — cell editor modal-এর পেছনে dim background */
@@ -14756,7 +15092,7 @@ function renderCellOptions(currentValue){
   let html = filtered.map(o => {
     const isFree = (o === 'Free');
     const sel = (o === currentValue);
-    return `<div class="cell-option ${sel?'selected':''} ${isFree?'is-free':''}" onclick="selectCellOption('${esc(o).replace(/'/g,"\\'")}')">
+    return `<div class="cell-option ${sel?'selected':''} ${isFree?'is-free':''}" onclick="cePick('subject','${esc(o).replace(/'/g,"\\'")}')">
       ${esc(o)} ${sel?'<span style="font-size:14px">✓</span>':''}
     </div>`;
   }).join('');
@@ -14774,21 +15110,22 @@ function renderCellOptions(currentValue){
   list.innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--text-3)">খুঁজুন বক্সে টাইপ করে নতুন যোগ করুন</div>';
 }
 
-/* 🆕 নতুন option globally যোগ করে সেটাই select করি */
+/* 🆕 নতুন option globally যোগ করে সেটাই select করি (একীভূত শিট — বন্ধ হবে না) */
 function _cellOptionCreateAndSelect(value){
   const v = (value||'').trim();
   if(!v) return;
-  const field = currentEditCell.field;
+  const field = (currentEditCell && currentEditCell.field) || 'subject';
   if(!state.options) state.options = {};
   if(!Array.isArray(state.options[field])) state.options[field] = [];
   if(state.options[field].indexOf(v) < 0){
     state.options[field].push(v);
     try{ saveState(); }catch(_){}
   }
-  selectCellOption(v);
+  const srch = document.getElementById('cellEditorSearch'); if(srch) srch.value = '';
+  cePick('subject', v);
 }
 
-function filterCellOptions(){renderCellOptions((state.teachers.find(t=>t.id===currentEditCell.tid).cells[currentEditCell.cid]||{})[currentEditCell.field])}
+function filterCellOptions(){ renderCellOptions(_ceDraft ? _ceDraft.subject : ''); }
 
 function selectCellOption(value){
   const {tid, cid, field} = currentEditCell;
@@ -15164,6 +15501,7 @@ function _qemSplitModalSave(){
   saveState();
   _qemSplitModalClose();
   _qemRenderSplitList();
+  try{ ceRefreshSelections(); }catch(_){}
   try{ renderTable(); }catch(_){}
   try{ refreshRealtimeConflicts(true); }catch(_){}
   try{ showToast(`✓ যোগ হলো: ${sub} · ${sec} (${days.length} দিন)`, 'success', 2500); }catch(_){}
@@ -15190,6 +15528,15 @@ function _qemSplitRemovePart(index){
   }
   saveState();
   _qemRenderSplitList();
+  // 🆕 একীভূত শিট — parts বদলালে draft + UI রিফ্রেশ
+  try{
+    if(_ceDraft && !cell.parts){
+      _ceDraft.subject = cell.subject || '';
+      _ceDraft.class   = cell.class   || '';
+      _ceDraft.section = cell.section || '';
+    }
+    ceRefreshSelections();
+  }catch(_){}
   try{ renderTable(); }catch(_){}
   try{ refreshRealtimeConflicts(true); }catch(_){}
   try{ showToast('✓ অংশটি মুছে ফেলা হলো', 'info', 1800); }catch(_){}
@@ -15355,6 +15702,8 @@ function _qemWireEditorEvents(){
             t.cells[sCid].class = sCls;
             t.cells[sCid].section = sSec;
             saveState();
+            // 🆕 একীভূত শিট — draft-এও তুলি যাতে chip + সংরক্ষণে টিকে থাকে
+            try{ if(_ceDraft){ _ceDraft.class = sCls; _ceDraft.section = sSec; } ceRefreshSelections(); }catch(_){}
             try{ showToast(`✓ Class ${sCls}, Section ${sSec} অটো-সেট হয়েছে`, 'success', 2000); }catch(_){}
           }
         }catch(_){}
@@ -21400,7 +21749,7 @@ function setupPWA(){
       start_url: location.pathname + '?app=routine',
       scope: location.pathname,
       display: 'standalone',
-      orientation: 'any',   // 🆕 সোজা ও কাত — দুই দিকেই রুটিন দেখাবে
+      orientation: 'portrait',   // 🆕 সবসময় সোজা (portrait) — কাত করলেও ঘুরবে না
       lang: 'bn',
       dir: 'ltr',
       background_color: '#ffffff',
@@ -21448,6 +21797,25 @@ function setupPWA(){
   }
 
   // ───────────── PWA আইকন + manifest উপরে handle হয়েছে ─────────────
+
+  /* 🆕 সবসময় portrait-এ আটকে রাখার নিরাপদ চেষ্টা।
+     - standalone/ইনস্টল করা অ্যাপে (Android Chrome / Play Store TWA) সরাসরি কাজ করে।
+     - সাপোর্ট না থাকলে বা reject হলে নিঃশব্দে উপেক্ষা — কিছুই ভাঙে না। */
+  function _lockPortrait(){
+    try{
+      const so = window.screen && screen.orientation;
+      if(so && typeof so.lock === 'function'){
+        const p = so.lock('portrait');
+        if(p && typeof p.catch === 'function') p.catch(()=>{});   // fullscreen না থাকলে reject হতে পারে — উপেক্ষা
+      }
+    }catch(_){ /* অসমর্থিত ব্রাউজার — নিরাপদে এড়িয়ে যাই */ }
+  }
+  try{
+    _lockPortrait();
+    // ফোন কাত করলে / অ্যাপ আবার সামনে এলে পুনরায় চেষ্টা
+    window.addEventListener('orientationchange', _lockPortrait);
+    document.addEventListener('visibilitychange', () => { if(!document.hidden) _lockPortrait(); });
+  }catch(_){}
 
   // Service worker — কঠোরভাবে network-first (সবসময় সার্ভারের সর্বশেষ আনে),
   // Firebase/Google ডেটা কখনো cache করে না (sensitive/stale ডেটা অফলাইনে রাখা
