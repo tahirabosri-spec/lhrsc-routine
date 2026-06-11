@@ -5624,7 +5624,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
           </div>
 
           <!-- 🆕 MULTI-PART (SPLIT) SECTION — একই সময়ে ভিন্ন শাখা/দিনে আলাদা ক্লাস -->
-          <div class="qem-split-section" id="qemSplitSection">
+          <div class="qem-split-section" id="qemSplitSectionBox">
             <div class="qem-split-head">
               <span>🔀 স্প্লিট স্লট — একই সময়ে ভিন্ন শাখা</span>
               <span class="qem-split-hint">যদি এই শিক্ষক একই ঘণ্টায় কিছু দিন এক শাখায়, বাকি দিন অন্য শাখায় ক্লাস নেন</span>
@@ -5643,6 +5643,31 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
   </div>
 </div>
 
+<!-- 🆕 অতিরিক্ত-অংশ মডাল ও সেল-এডিটর হেডার উন্নতকরণ (নাম+সময় বড়/স্পষ্ট) -->
+<style>
+  /* প্রথম মডালের শিরোনাম — শিক্ষকের নাম বড়, সময় পিল আকারে (হালকা হেডারে কন্ট্রাস্ট) */
+  #cellEditorTitle{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+  #cellEditorTitle .ceh-name{ font-size:17px; font-weight:900; color:var(--text); letter-spacing:.2px; }
+  #cellEditorTitle .ceh-time{
+    font-size:12.5px; font-weight:800; color:var(--primary);
+    background:var(--primary-soft); padding:2px 11px; border-radius:999px; white-space:nowrap;
+  }
+  /* দ্বিতীয় মডাল — প্রথম মডালের মতো শিক্ষকের নাম+সময়ের প্রকট ব্যানার */
+  #qemSplitModal .qem-split-who{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:13px 16px; margin:0;
+    background:linear-gradient(135deg,#0f766e 0%,#0d9488 100%); color:#fff;
+  }
+  #qemSplitModal .qem-split-who .qsw-name{ font-size:19px; font-weight:900; letter-spacing:.2px; }
+  #qemSplitModal .qem-split-who .qsw-time{
+    font-size:13.5px; font-weight:800; padding:3px 12px; border-radius:999px;
+    background:rgba(255,255,255,.22); color:#fff; white-space:nowrap;
+  }
+  /* প্রথম মডালের মতো ধাপ-বিন্যাস — দ্বিতীয় মডালের ইনপুট পরিষ্কার করতে */
+  #qemSplitModal .ce-step{ display:flex; flex-direction:column; gap:7px; }
+  #qemSplitModal .ce-step .input{ width:100%; }
+</style>
+
 <!-- 🆕 SPLIT PART EDITOR MODAL — একটি অতিরিক্ত অংশ (শাখা/বিষয়/দিন) সেট করার জন্য -->
 <div class="modal-overlay" id="qemSplitModal">
   <div class="modal narrow">
@@ -5650,24 +5675,26 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       <h2>🔀 অতিরিক্ত অংশ — শাখা/বিষয়/দিন</h2>
       <div class="modal-close" onclick="_qemSplitModalClose()">✕</div>
     </div>
-    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
-      <div class="field">
-        <label>📖 বিষয়</label>
-        <input type="text" id="qemSplitSubject" class="input" placeholder="যেমন: ইসলাম শিক্ষা" autocomplete="off">
-        <div class="qem-split-sug" id="qemSplitSubjectSug"></div>
-      </div>
-      <div class="field">
-        <label>🎓 শ্রেণি</label>
+    <!-- 🆕 শিক্ষকের নাম ও নির্ধারিত সময় — প্রথম মডালের মতো প্রকটভাবে -->
+    <div class="qem-split-who" id="qemSplitWho"></div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:13px">
+      <div class="ce-step">
+        <div class="ce-step-head"><span class="ce-step-no">১</span><span>শ্রেণি</span></div>
         <input type="text" id="qemSplitClass" class="input" placeholder="যেমন: দশম শ্রেণি" autocomplete="off">
         <div class="qem-split-sug" id="qemSplitClassSug"></div>
       </div>
-      <div class="field">
-        <label>📑 শাখা</label>
+      <div class="ce-step">
+        <div class="ce-step-head"><span class="ce-step-no">২</span><span>শাখা</span></div>
         <input type="text" id="qemSplitSection" class="input" placeholder="যেমন: মানবিক" autocomplete="off">
         <div class="qem-split-sug" id="qemSplitSectionSug"></div>
       </div>
-      <div class="field">
-        <label>📅 কোন দিনগুলো? <span id="qemSplitDaysHint" style="font-size:11px;color:#16a34a;font-weight:600"></span></label>
+      <div class="ce-step">
+        <div class="ce-step-head"><span class="ce-step-no">৩</span><span>বিষয়</span></div>
+        <input type="text" id="qemSplitSubject" class="input" placeholder="যেমন: ইসলাম শিক্ষা" autocomplete="off">
+        <div class="qem-split-sug" id="qemSplitSubjectSug"></div>
+      </div>
+      <div class="ce-step">
+        <div class="ce-step-head"><span class="ce-step-no">৪</span><span>কোন দিনগুলো?</span> <span id="qemSplitDaysHint" style="font-size:11px;color:#16a34a;font-weight:600"></span></div>
         <div class="qem-chip-row" id="qemSplitDays">
           <span class="qem-chip" data-day="Sat">শনি</span>
           <span class="qem-chip" data-day="Sun">রবি</span>
@@ -7435,7 +7462,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
 ============================================================= -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, get, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, set, get, onValue, off, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -7461,9 +7488,29 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       get: get,
       onValue: onValue,
       off: off,
+      runTransaction: runTransaction,
       auth: auth,
-      ready: false
+      ready: false,
+      serverOffset: 0,      // 🆕 সার্ভার ও ডিভাইসের ঘড়ির পার্থক্য (ms)
+      connected: false      // 🆕 রিয়েল-টাইম সংযোগ আছে কিনা
     };
+
+    // 🆕 Layer 1: অভিন্ন সার্ভার-ঘড়ি — সব ডিভাইসের সময়-স্ট্যাম্প একই ভিত্তিতে।
+    //    .info/serverTimeOffset = এই ডিভাইসের ঘড়ি সার্ভার থেকে কত এগিয়ে/পিছিয়ে।
+    //    .info/connected = লাইভ সংযোগ আছে কিনা (অফলাইন-সতর্কতা ও পুনঃপুশের জন্য)।
+    try{
+      onValue(ref(db, '.info/serverTimeOffset'), (snap)=>{
+        const o = snap.val();
+        if(typeof o === 'number' && isFinite(o)) window.FB.serverOffset = o;
+      });
+      onValue(ref(db, '.info/connected'), (snap)=>{
+        const was = window.FB.connected;
+        window.FB.connected = (snap.val() === true);
+        if(window.FB.connected && !was){
+          try{ window.dispatchEvent(new Event('fbConnected')); }catch(_){}
+        }
+      });
+    }catch(e){ console.warn('⚠️ serverTimeOffset/connected listener ব্যর্থ:', e); }
 
     // 🆕 ANONYMOUS AUTH — ব্যবহারকারী কিছুই টের পায় না; এটি Firebase Rules-এর
     //    "auth != null" শর্ত পূরণের জন্য একটি নীরব টোকেন দেয় (বাইরের বট/স্ক্রিপ্ট
@@ -7746,6 +7793,12 @@ let isReadOnly = false;
 let _firebaseSyncEnabled = true; // Firebase সিঙ্ক চালু/বন্ধ করার ফ্ল্যাগ
 let _applyingRemoteState = false; // রিমোট থেকে আপডেট আসার সময় true
 
+// 🆕 Layer 2: monotonic rev (লগবইয়ের ক্রমিক নম্বর — কখনো পেছায় না) + সিঙ্ক-সহায়ক
+let _baseRev = 0;                  // সর্বশেষ যে rev পর্যন্ত এই ডিভাইস sync করেছে
+let _lastSyncedSnapshot = null;    // সর্বশেষ sync হওয়া state-এর অনুলিপি (per-teacher diff-এর জন্য)
+let _suppressSelfEchoRev = null;   // নিজের লেখা echo এলে অপ্রয়োজনীয় re-apply দমন
+let _pendingCloudPush = false;     // অফলাইন/ব্যর্থতায় অপেক্ষমাণ পুশ আছে কিনা
+
 /* 🛡️ সময়সূচি/কলাম-রিসেট সুরক্ষা:
    কলামগুলোর (সময়সূচি) একটি স্বাক্ষর (signature) রাখি। প্রকৃত এডিটে কলাম
    বদলালে state.settings.columnsUpdatedAt স্ট্যাম্প হয়। সিঙ্কে কোনো বাসি/পুরোনো
@@ -7776,6 +7829,183 @@ function _sanitizeForLocal(st){
   }catch(_){ return st; }
 }
 
+/* ============================================================
+   🆕 শক্তিশালী সিঙ্ক-ইঞ্জিন (স্তর ১: সার্ভার-ঘড়ি, স্তর ২: rev + recency-merge)
+   ─────────────────────────────────────────────────────────
+   লক্ষ্য: (ক) সবার আসল এডিট সবার কাছে পৌঁছাবে; (খ) কোনো বাসি/ব্যাকডেটেড
+   ডিভাইস কখনো ভালো ডেটা মুছবে/পেছাবে না।
+============================================================ */
+
+// স্তর ১ — অভিন্ন সার্ভার-ঘড়ি (ডিভাইসের ঘড়ি ভুল থাকলেও সঠিক সময়)
+function serverNow(){
+  try{
+    if(window.FB && typeof window.FB.serverOffset === 'number' && isFinite(window.FB.serverOffset)){
+      return Date.now() + window.FB.serverOffset;
+    }
+  }catch(_){}
+  return Date.now();   // fallback — সার্ভার-অফসেট না পেলে লোকাল সময়
+}
+function serverNowISO(){ return new Date(serverNow()).toISOString(); }
+
+// প্রতিটি শিক্ষকের পরিবর্তনে server-time স্ট্যাম্প (updatedAt) — কেন্দ্রীয়ভাবে,
+// সর্বশেষ-sync স্ন্যাপশটের সাথে diff করে। কোনো এডিট-সাইটে হাত দিতে হয় না।
+function _stampChangedTeachers(){
+  try{
+    const snap = (_lastSyncedSnapshot && Array.isArray(_lastSyncedSnapshot.teachers))
+      ? _lastSyncedSnapshot.teachers : null;
+    const byId = {};
+    if(snap) snap.forEach(t => { if(t && t.id != null) byId[String(t.id)] = t; });
+    (Array.isArray(state.teachers) ? state.teachers : []).forEach(t => {
+      if(!t || t.id == null) return;
+      const prev = snap ? byId[String(t.id)] : undefined;
+      const cur = Object.assign({}, t); delete cur.updatedAt;
+      let old = null;
+      if(prev){ old = Object.assign({}, prev); delete old.updatedAt; }
+      if(!old || JSON.stringify(cur) !== JSON.stringify(old)){
+        t.updatedAt = serverNowISO();   // এই শিক্ষক বদলেছে → নতুন স্ট্যাম্প
+      }
+    });
+  }catch(_){}
+}
+
+// স্তর ২ — recency-merge: base (সর্বশেষ ক্লাউড) এর উপর incoming (লোকাল) এর শুধু
+// নতুন অংশ আনি। কখনো পুরোনো দিয়ে নতুন মোছা হয় না। (কলাম/পাসওয়ার্ড/tombstone-এর
+// বিদ্যমান সুরক্ষার মতোই, এখন রুটিন/শিক্ষক পর্যন্ত বিস্তৃত।)
+function _mergeStateByRecency(base, incoming){
+  const out = JSON.parse(JSON.stringify(base || {}));
+  const _ms = v => v ? new Date(v).getTime() : 0;
+  try{
+    // tombstones union (মুছে ফেলা কখনো ফিরে আসবে না)
+    if(!out.tombstones || typeof out.tombstones !== 'object') out.tombstones = {teachers:[],admins:[],managers:[]};
+    const inT = (incoming && incoming.tombstones) || {};
+    ['teachers','admins','managers'].forEach(k => {
+      const a = Array.isArray(out.tombstones[k]) ? out.tombstones[k] : [];
+      const b = Array.isArray(inT[k]) ? inT[k] : [];
+      out.tombstones[k] = Array.from(new Set([...a, ...b].map(String)));
+    });
+    const tt = new Set((out.tombstones.teachers || []).map(String));
+
+    // teachers — per-teacher updatedAt recency
+    let outTeachers = Array.isArray(out.teachers) ? out.teachers : [];
+    const outIdx = {};
+    outTeachers.forEach((t, i) => { if(t && t.id != null) outIdx[String(t.id)] = i; });
+    const incTeachers = (incoming && Array.isArray(incoming.teachers)) ? incoming.teachers : [];
+    incTeachers.forEach(it => {
+      if(!it || it.id == null) return;
+      if(tt.has(String(it.id))) return;            // মুছে ফেলা — আনব না
+      const idx = outIdx[String(it.id)];
+      if(idx === undefined){
+        if(it.updatedAt) outTeachers.push(it);     // লোকালে নতুন যোগ
+      } else if(_ms(it.updatedAt) > _ms(outTeachers[idx].updatedAt)){
+        outTeachers[idx] = it;                     // লোকাল নতুন → আনি
+      }
+    });
+    out.teachers = outTeachers.filter(t => t && t.id != null && !tt.has(String(t.id)));
+
+    // password recency (teachers + accounts) — নতুন পাসওয়ার্ড জিতবে
+    const _pwBring = (arr, incArr, key) => {
+      if(!Array.isArray(arr) || !Array.isArray(incArr)) return;
+      incArr.forEach(ia => {
+        if(!ia || ia.password == null || ia.password === '') return;
+        const oa = arr.find(x => x && String(x[key]) === String(ia[key]));
+        if(oa && _ms(ia.pwUpdatedAt) > _ms(oa.pwUpdatedAt)){ oa.password = ia.password; oa.pwUpdatedAt = ia.pwUpdatedAt; }
+      });
+    };
+    _pwBring(out.teachers, incTeachers, 'id');
+    if(out.accounts && incoming && incoming.accounts){
+      ['admins','managers'].forEach(g => { _pwBring(out.accounts[g], incoming.accounts[g], 'username'); });
+    }
+
+    // columns (সময়সূচি) recency
+    const oAt = _ms(out.settings && out.settings.columnsUpdatedAt);
+    const iAt = _ms(incoming && incoming.settings && incoming.settings.columnsUpdatedAt);
+    if(iAt > oAt && incoming && Array.isArray(incoming.columns) && incoming.columns.length){
+      out.columns = JSON.parse(JSON.stringify(incoming.columns));
+      if(!out.settings) out.settings = {};
+      out.settings.columnsUpdatedAt = incoming.settings.columnsUpdatedAt;
+      if(incoming.settings.lastSchedule) out.settings.lastSchedule = JSON.parse(JSON.stringify(incoming.settings.lastSchedule));
+    }
+  }catch(e){ console.warn('⚠️ recency-merge ব্যর্থ — ক্লাউড-ভিত্তি রাখা হলো:', e); }
+  return out;
+}
+
+// স্তর ২ — atomic transaction দিয়ে ক্লাউডে লেখা। rev সবসময় বাড়ে; পিছিয়ে থাকা
+// ডিভাইস পুরো ডকুমেন্ট চাপিয়ে দিতে পারে না — সর্বশেষের উপর শুধু নিজের নতুন অংশ বসে।
+function _cloudPushState(){
+  // SDK প্রস্তুত নয় → পরে চেষ্টা
+  if(!(window.FB && window.FB.ready && window.FB.db && typeof window.FB.runTransaction === 'function')){
+    _pendingCloudPush = true;
+    setSaveStatus('লোকাল সংরক্ষিত (ক্লাউড অপেক্ষমাণ)','saved');
+    return;
+  }
+  // অফলাইন → সতর্ক করি; সংযোগ ফিরলে স্বয়ংক্রিয়ভাবে পাঠাব
+  if(window.FB.connected === false || (typeof navigator !== 'undefined' && navigator.onLine === false)){
+    _pendingCloudPush = true;
+    setSaveStatus('☁️ অফলাইন — সংযোগ ফিরলে যাবে','error');
+    showToast('☁️ অফলাইন — পরিবর্তন এখন ক্লাউডে যায়নি; ইন্টারনেট ফিরলে স্বয়ংক্রিয়ভাবে চলে যাবে','warning', 3500);
+    return;
+  }
+  _pendingCloudPush = false;
+  _stampChangedTeachers();   // 🆕 পুশের মুহূর্তে freshest server-time স্ট্যাম্প (অফলাইন-এডিটের প্লেসহোল্ডার সময় সংশোধন)
+  const dbRef = window.FB.ref(window.FB.db, fbDataPath());
+  const baseRevAtStart = _baseRev;
+  setSaveStatus('☁️ ক্লাউডে সংরক্ষণ হচ্ছে...','saved');
+  window.FB.runTransaction(dbRef, (current) => {
+    if(current == null){
+      const out = JSON.parse(JSON.stringify(state));
+      out.rev = 1;
+      out.lastSaved = serverNowISO();
+      return out;
+    }
+    const cloudRev = (current.rev != null) ? current.rev : 0;
+    let out;
+    if(cloudRev <= baseRevAtStart){
+      // ক্লাউডে নতুন কিছু আসেনি → আমাদের পূর্ণ লোকাল নিরাপদে লিখি
+      out = JSON.parse(JSON.stringify(state));
+    } else {
+      // দ্বন্দ্ব: ক্লাউড এগিয়ে আছে → ক্লাউডের উপর শুধু আমাদের নতুন অংশ আনি
+      out = _mergeStateByRecency(current, state);
+    }
+    out.rev = cloudRev + 1;
+    out.lastSaved = serverNowISO();
+    return out;
+  }).then((res) => {
+    try{
+      const ok = res && res.committed;
+      const committed = (ok && res.snapshot && typeof res.snapshot.val === 'function') ? res.snapshot.val() : null;
+      if(committed){
+        _suppressSelfEchoRev = committed.rev;
+        const wasConflict = (committed.rev != null) && (committed.rev > (baseRevAtStart + 1));
+        if(wasConflict){
+          // আমাদের লেখায় ক্লাউড-merge হয়েছে → সেটাই লোকালে গ্রহণ করি
+          applyRemoteState(committed);
+        } else {
+          state.rev = committed.rev;
+          _baseRev = committed.rev;
+          _lastSyncedSnapshot = JSON.parse(JSON.stringify(state));
+          try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(_){}
+        }
+        setSaveStatus('☁️ ক্লাউডে সংরক্ষিত','saved');
+      } else {
+        _pendingCloudPush = true;
+        setSaveStatus('লোকাল সংরক্ষিত (ক্লাউড অপেক্ষমাণ)','error');
+      }
+    }catch(e){ console.warn('push post-process ব্যর্থ:', e); }
+  }).catch((e) => {
+    console.error('Firebase transaction error:', e);
+    _pendingCloudPush = true;
+    setSaveStatus('লোকাল সংরক্ষিত (ক্লাউড ব্যর্থ)','error');
+    showToast('☁️ ক্লাউড সংরক্ষণ ব্যর্থ — ইন্টারনেট চেক করুন','error', 3000);
+  });
+}
+
+// সংযোগ ফিরে এলে অপেক্ষমাণ পরিবর্তন স্বয়ংক্রিয়ভাবে পাঠাই
+try{
+  window.addEventListener('fbConnected', () => {
+    if(_pendingCloudPush){ try{ _cloudPushState(); }catch(_){} }
+  });
+}catch(_){}
+
 function saveState(localOnly){
   // ───────────────────────────────────────────────────────────────
   // 🛡️ ক্লাউড-ক্লোবার সুরক্ষা:
@@ -7796,25 +8026,19 @@ function saveState(localOnly){
     if(!state.settings || typeof state.settings !== 'object') state.settings = {};
     const _sig = _columnsSig();
     if(_lastColumnsSig !== null && _sig !== _lastColumnsSig){
-      state.settings.columnsUpdatedAt = new Date().toISOString();
+      state.settings.columnsUpdatedAt = serverNowISO();
     }
     _lastColumnsSig = _sig;
   }catch(_){}
-  state.lastSaved = new Date().toISOString();
+  state.lastSaved = serverNowISO();
+  _stampChangedTeachers();   // 🆕 বদলে যাওয়া প্রতিটি শিক্ষকে server-time স্ট্যাম্প (recency)
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
-    // Firebase এ সিঙ্ক করো (যদি ইউজার এডিট করতে পারে)
-    if(_firebaseSyncEnabled && !_applyingRemoteState && window.FB && window.FB.ready
+    // Firebase এ সিঙ্ক করো (যদি ইউজার এডিট করতে পারে) — atomic transaction পথে
+    if(_firebaseSyncEnabled && !_applyingRemoteState
        && currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.role === 'teacher')){
-      setSaveStatus('☁️ ক্লাউডে সংরক্ষণ হচ্ছে...','saved');
-      window.FB.set(window.FB.ref(window.FB.db, fbDataPath()), state)
-        .then(() => setSaveStatus('☁️ ক্লাউডে সংরক্ষিত','saved'))
-        .catch(e => {
-          console.error('Firebase save error:', e);
-          setSaveStatus('লোকাল সংরক্ষিত (ক্লাউড ব্যর্থ)','error');
-          showToast('☁️ ক্লাউড সংরক্ষণ ব্যর্থ — ইন্টারনেট চেক করুন','error', 3000);
-        });
+      _cloudPushState();
     } else {
       setSaveStatus('সব সংরক্ষিত','saved');
     }
@@ -7902,6 +8126,11 @@ function loadState(){
       if(ss.voicePitch === undefined) ss.voicePitch = 1.0;
       if(ss.voiceURI === undefined) ss.voiceURI = '';
     }
+    // 🆕 সিঙ্ক-baseline: লোড হওয়া state-ই শুরুর ভিত্তি (per-teacher diff ও rev ট্র্যাকিং)
+    try{
+      _lastSyncedSnapshot = JSON.parse(JSON.stringify(state));
+      if(state.rev != null) _baseRev = state.rev;
+    }catch(_){}
   }catch(e){
     console.warn('Failed to load state:', e);
   }
@@ -7992,9 +8221,25 @@ function startFirebaseSync(){
 
     const remoteTime = remoteData.lastSaved ? new Date(remoteData.lastSaved).getTime() : 0;
     const localTime = state.lastSaved ? new Date(state.lastSaved).getTime() : 0;
+    const remoteRev = (remoteData.rev != null) ? remoteData.rev : null;
+    const localRev  = (state.rev != null) ? state.rev : 0;
 
-    // ক্লাউডের ডেটা যদি নতুন হয়, তাহলে সেটা প্রয়োগ করো
-    if(remoteTime > localTime){
+    // 🆕 নিজের লেখার echo — অপ্রয়োজনীয় re-apply ও টোস্ট দমন
+    if(remoteRev != null && _suppressSelfEchoRev != null && remoteRev === _suppressSelfEchoRev){
+      _suppressSelfEchoRev = null;
+      _baseRev = remoteRev; if(state.rev == null) state.rev = remoteRev;
+      return;
+    }
+
+    // 🆕 rev দিয়ে সিদ্ধান্ত: ক্লাউডের ক্রমিক নম্বর বড় হলেই প্রয়োগ (rev না থাকলে
+    //    পুরোনো ডেটার জন্য সময়-ভিত্তিক ফলব্যাক)। ব্যাকডেটেড rev কখনো প্রয়োগ হবে না।
+    let _shouldApply;
+    if(remoteRev != null){
+      _shouldApply = (remoteRev > localRev) || (remoteRev === localRev && remoteTime > localTime);
+    } else {
+      _shouldApply = remoteTime > localTime;
+    }
+    if(_shouldApply){
       applyRemoteState(remoteData);
     }
   }, (error) => {
@@ -8053,12 +8298,16 @@ function applyRemoteState(remoteData){
   let _pwReassert = false;
   let _colReassert = false;
   let _tombReassert = false;
+  let _teacherReassert = false;   // 🆕 লোকাল শিক্ষক-পরিবর্তন রিমোটের চেয়ে নতুন হলে
   try{
     // 🛡️ ওভাররাইটের আগে লোকাল পাসওয়ার্ড + সময়-স্ট্যাম্প আলাদা করে রাখি
     const _localAccSnap = state.accounts ? JSON.parse(JSON.stringify(state.accounts)) : null;
     const _localTeachersSnap = Array.isArray(state.teachers)
       ? state.teachers.map(t => ({id:t.id, password:t.password, pwUpdatedAt:t.pwUpdatedAt}))
       : [];
+    // 🆕 রুটিন-সুরক্ষার জন্য পূর্ণ লোকাল শিক্ষক-অনুলিপি (updatedAt সহ)
+    const _localTeachersFull = Array.isArray(state.teachers)
+      ? JSON.parse(JSON.stringify(state.teachers)) : [];
     // 🛡️ ওভাররাইটের আগে লোকাল কলাম (সময়সূচি) + এর recency স্ট্যাম্প রাখি
     const _localColsSnap = Array.isArray(state.columns) ? JSON.parse(JSON.stringify(state.columns)) : null;
     const _localColsAt = (state.settings && state.settings.columnsUpdatedAt) || '';
@@ -8105,6 +8354,27 @@ function applyRemoteState(remoteData){
     }catch(_){}
     _tombReassert = _tombReassertCheck;
 
+    // 🆕 রুটিন-সুরক্ষা (ব্যাকডেটেড ঠেকানো): কোনো শিক্ষকের লোকাল পরিবর্তন রিমোটের
+    //    চেয়ে নতুন হলে — লোকালটাই রাখি (কলাম/পাসওয়ার্ড-সুরক্ষার অনুরূপ)। ফলে কোনো
+    //    বাসি ডিভাইস পুরোনো cells দিয়ে নতুন রুটিন মুছতে পারবে না।
+    try{
+      const _tt = new Set(((state.tombstones && state.tombstones.teachers) || []).map(String));
+      const _incById = {};
+      (Array.isArray(state.teachers) ? state.teachers : []).forEach(t => { if(t && t.id != null) _incById[String(t.id)] = t; });
+      const _newerT = (a, b) => { const x = a ? new Date(a).getTime() : 0, y = b ? new Date(b).getTime() : 0; return x > y; };
+      _localTeachersFull.forEach(lt => {
+        if(!lt || lt.id == null) return;
+        if(_tt.has(String(lt.id))) return;          // মুছে ফেলা — ফেরাব না
+        const inc = _incById[String(lt.id)];
+        if(!inc){
+          if(lt.updatedAt){ state.teachers.push(lt); _teacherReassert = true; }   // রিমোটে নেই, লোকালে সম্প্রতি বদলেছে
+        } else if(_newerT(lt.updatedAt, inc.updatedAt)){
+          const idx = state.teachers.findIndex(x => x && String(x.id) === String(lt.id));
+          if(idx >= 0){ state.teachers[idx] = lt; _teacherReassert = true; }       // লোকাল নতুন → রাখি
+        }
+      });
+    }catch(_){}
+
     // রিমোট ডেটায় missing ফিল্ড (যেমন teacher.password) ভর্তি করো
     if(typeof ensureStateIntegrity === 'function') ensureStateIntegrity();
 
@@ -8128,6 +8398,13 @@ function applyRemoteState(remoteData){
 
     // 🛡️ নতুন baseline signature সেট করি (merge-পরবর্তী চূড়ান্ত কলাম অনুযায়ী)
     try{ _lastColumnsSig = _columnsSig(); }catch(_){}
+
+    // 🆕 rev গ্রহণ + sync-baseline হালনাগাদ (per-teacher diff ও পরবর্তী পুশের ভিত্তি)
+    try{
+      if(remoteData.rev != null) state.rev = remoteData.rev;
+      _baseRev = (state.rev != null) ? state.rev : _baseRev;
+      _lastSyncedSnapshot = JSON.parse(JSON.stringify(state));
+    }catch(_){}
 
     // লোকাল স্টোরেজে সেভ করো (Firebase সেভ ছাড়া)
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
@@ -8155,7 +8432,7 @@ function applyRemoteState(remoteData){
   }
   // রিমোট পুরোনো পাসওয়ার্ড/সময়সূচি দিয়ে রিভার্ট করার চেষ্টা করেছিল — সঠিকটা
   // আবার ক্লাউডে পাঠাই যাতে সব ডিভাইসে নতুন মানই থাকে।
-  if(_pwReassert || _colReassert || _tombReassert){ try{ saveState(); }catch(_){} }
+  if(_pwReassert || _colReassert || _tombReassert || _teacherReassert){ try{ saveState(); }catch(_){} }
 
   // 🆕 প্রতিটি রিমোট আপডেটের পর যাচাই করি — লগইন থাকা ব্যবহারকারী অপসারিত বা
   //    সব-ডিভাইস-লগআউট হয়েছেন কিনা; হলে সাথে সাথে নিরাপদে লগআউট করি।
@@ -8860,7 +9137,7 @@ function acResetPw(kind, i){
   const v = np.trim();
   if(v.length < 4){ showToast('পাসওয়ার্ড কমপক্ষে ৪ অক্ষর','warning'); return; }
   x.password = v;
-  x.pwUpdatedAt = new Date().toISOString();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
+  x.pwUpdatedAt = serverNowISO();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
   _acPersist((kind==='admin'?'অ্যাডমিন':'ম্যানেজার')+' পাসওয়ার্ড পরিবর্তন: '+x.name);
   showToast('✅ পাসওয়ার্ড পরিবর্তিত হয়েছে','success');
 }
@@ -8997,7 +9274,7 @@ function changePassword(){
     getCurrentPw = () => String(acct.password);
     applyNewPw = (pw) => {
       acct.password = pw;
-      acct.pwUpdatedAt = new Date().toISOString();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
+      acct.pwUpdatedAt = serverNowISO();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
       saveState();   // state.accounts → localStorage (+ Firebase) এ সিঙ্ক হয়
       // ব্যাকওয়ার্ড-কম্প্যাট: পুরোনো USERS/localStorage ও আপডেট রাখি
       try{
@@ -9014,7 +9291,7 @@ function changePassword(){
     getCurrentPw = () => (t.password != null && t.password !== '') ? String(t.password) : '1234';
     applyNewPw = (pw) => {
       t.password = pw;
-      t.pwUpdatedAt = new Date().toISOString();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
+      t.pwUpdatedAt = serverNowISO();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
       saveState();   // state.teachers → localStorage (+ Firebase) এ সংরক্ষিত হয়
     };
   } else {
@@ -9100,7 +9377,7 @@ function submitTeacherPasswordModal(){
 
   // পরিবর্তন প্রয়োগ ও সংরক্ষণ (localStorage + Firebase)
   t.password = newPw;
-  t.pwUpdatedAt = new Date().toISOString();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
+  t.pwUpdatedAt = serverNowISO();   // 🛡️ পাসওয়ার্ড-সুরক্ষা স্ট্যাম্প
   saveState();
   document.getElementById('tPwModalOld').value = '';
   document.getElementById('tPwModalNew').value = '';
@@ -14852,8 +15129,10 @@ function openCellEditor(tid, cid, field){
   };
   _ceDelMode = {subject:false, class:false, section:false};
 
-  // শিরোনাম — শিক্ষকের নাম + slot
-  document.getElementById('cellEditorTitle').textContent = t.name + (slotLabel ? ' · ' + slotLabel : '');
+  // শিরোনাম — শিক্ষকের নাম + slot (নাম বড়, সময় পিল আকারে)
+  document.getElementById('cellEditorTitle').innerHTML =
+    '<span class="ceh-name">' + esc(t.name) + '</span>' +
+    (slotLabel ? '<span class="ceh-time">' + esc(slotLabel) + '</span>' : '');
 
   // 🆕 দিন/শেয়ার্ড/ফিক্সড/স্প্লিট — পুরোনো prep reuse (field='subject' দিয়ে show+prefill)
   try{ _qemPrepEditor(tid, cid, 'subject'); }catch(_){}
@@ -15447,7 +15726,40 @@ function _qemSplitAddPart(){
   // 🆕 target আলাদা variable-এ ধরে রাখি (cell editor বন্ধ হলেও টিকবে)
   _qemSplitTarget = {tid, cid};
   const t = state.teachers.find(x => x.id === tid);
-  const cell = t && t.cells && t.cells[cid];
+  let cell = t && t.cells && t.cells[cid];
+
+  // 🆕 শিক্ষকের নাম + নির্ধারিত সময় ব্যানারে দেখাই (প্রথম মডালের মতো)
+  try{
+    const who = document.getElementById('qemSplitWho');
+    if(who && t){
+      const col = state.columns.find(c => c.id === cid);
+      const slot = col ? col.label : '';
+      who.innerHTML = '<span class="qsw-name">' + esc(t.name) + '</span>' +
+        (slot ? '<span class="qsw-time">' + esc(slot) + '</span>' : '');
+    }
+  }catch(_){}
+
+  // 🆕 প্রথম মডালের খসড়াকে part 1 হিসেবে কমিট — আলাদা সংরক্ষণ ও পুনঃপ্রবেশ ছাড়াই
+  //    একই সেশনে পরপর একাধিক অংশ ইনপুট করা যায়। (parts না থাকলে এবং খসড়া বৈধ হলেই)
+  try{
+    const d = _ceDraft || null;
+    const noParts = !(cell && Array.isArray(cell.parts) && cell.parts.length);
+    if(t && d && noParts){
+      const dsub = (d.subject || '').trim();
+      const dcls = (d.class || '').trim();
+      const dsec = (d.section || '').trim();
+      const isFree = dsub === 'Free';
+      if(dsub && (isFree || (dcls && dsec))){
+        if(!t.cells) t.cells = {};
+        if(!t.cells[cid]) t.cells[cid] = {};
+        cell = t.cells[cid];
+        cell.subject = dsub;
+        cell.class = isFree ? '' : dcls;
+        cell.section = isFree ? '' : dsec;
+        try{ _qemPersistEditorToCell(); }catch(_){}   // cell.days/shared/fixed radio থেকে নেয়
+      }
+    }
+  }catch(_){}
 
   // modal field reset
   ['qemSplitSubject','qemSplitClass','qemSplitSection'].forEach(id => {
@@ -15483,15 +15795,22 @@ function _qemSplitAddPart(){
     if(hint) hint.textContent = '';
   }
 
-  // 🆕 শ্রেণি auto-fill — যদি cell-এ ইতিমধ্যে class থাকে, সেটাই বসাই (সাধারণত একই শ্রেণি)
+  // 🆕 শ্রেণি ও বিষয় auto-fill — সাধারণত একই শ্রেণি ও একই বিষয়, শুধু শাখা ভিন্ন
+  //    (শাখা ফাঁকা রাখি যাতে ব্যবহারকারী নতুন শাখা বেছে নেন)
   if(cell){
     let baseClass = cell.class || '';
-    if((!baseClass) && Array.isArray(cell.parts) && cell.parts.length){
-      baseClass = cell.parts[0].class || '';
+    let baseSub   = cell.subject || '';
+    if(Array.isArray(cell.parts) && cell.parts.length){
+      if(!baseClass) baseClass = cell.parts[0].class || '';
+      if(!baseSub)   baseSub   = cell.parts[0].subject || '';
     }
     if(baseClass){
       const cInp = document.getElementById('qemSplitClass');
       if(cInp) cInp.value = baseClass;
+    }
+    if(baseSub){
+      const sInp = document.getElementById('qemSplitSubject');
+      if(sInp) sInp.value = baseSub;
     }
   }
 
@@ -17376,7 +17695,7 @@ function applySchedule(){
     };
     // 🛡️ সময়সূচি প্রয়োগের মুহূর্তেই recency স্ট্যাম্প — সিঙ্কে এই নতুন
     //    সময়সূচিই জিতবে, কোনো বাসি ডিভাইস ডিফল্টে ফেরাতে পারবে না।
-    state.settings.columnsUpdatedAt = new Date().toISOString();
+    state.settings.columnsUpdatedAt = serverNowISO();
   }catch(_){}
   saveState();
   renderTable();
