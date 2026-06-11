@@ -7621,7 +7621,7 @@ const SUBJECT_LIST = [
   'কৃষিশিক্ষা','চারু ও কারুকলা','শারীরিক শিক্ষা ও স্বাস্থ্য','ধর্ম ও নৈতিক শিক্ষা'
 ];
 const MAX_HISTORY = 30;
-const MAX_BACKUPS = 5;
+const MAX_BACKUPS = 15;
 
 const DEFAULT_OPTIONS = {
   class: ['ষষ্ঠ শ্রেণি','সপ্তম শ্রেণি','অষ্টম শ্রেণি','নবম শ্রেণি','দশম শ্রেণি','একাদশ শ্রেণি','দ্বাদশ শ্রেণি'],
@@ -7798,6 +7798,7 @@ let _baseRev = 0;                  // সর্বশেষ যে rev পর্
 let _lastSyncedSnapshot = null;    // সর্বশেষ sync হওয়া state-এর অনুলিপি (per-teacher diff-এর জন্য)
 let _suppressSelfEchoRev = null;   // নিজের লেখা echo এলে অপ্রয়োজনীয় re-apply দমন
 let _pendingCloudPush = false;     // অফলাইন/ব্যর্থতায় অপেক্ষমাণ পুশ আছে কিনা
+let _selfAdopt = false;            // 🆕 নিজের merge-ফলাফল গ্রহণের সময় "অন্য ডিভাইস" টোস্ট দমন
 
 /* 🛡️ সময়সূচি/কলাম-রিসেট সুরক্ষা:
    কলামগুলোর (সময়সূচি) একটি স্বাক্ষর (signature) রাখি। প্রকৃত এডিটে কলাম
@@ -7949,25 +7950,44 @@ function _cloudPushState(){
   _stampChangedTeachers();   // 🆕 পুশের মুহূর্তে freshest server-time স্ট্যাম্প (অফলাইন-এডিটের প্লেসহোল্ডার সময় সংশোধন)
   const dbRef = window.FB.ref(window.FB.db, fbDataPath());
   const baseRevAtStart = _baseRev;
+  const _editorInfo = currentUser ? { name: (currentUser.name || ''), role: (currentUser.role || '') } : null;  // 🆕 কে আপডেট করছে
+  let _pushNeedsAdopt = false;   // 🆕 merge/union-এ ক্লাউড-only ডেটা এলে কমিটেড ফলাফল লোকালে গ্রহণ করব
   setSaveStatus('☁️ ক্লাউডে সংরক্ষণ হচ্ছে...','saved');
   window.FB.runTransaction(dbRef, (current) => {
-    if(current == null){
-      const out = JSON.parse(JSON.stringify(state));
-      out.rev = 1;
-      out.lastSaved = serverNowISO();
-      return out;
-    }
-    const cloudRev = (current.rev != null) ? current.rev : 0;
+    _pushNeedsAdopt = false;
+    const cloudRevNum = (current && current.rev != null) ? current.rev : 0;
     let out;
-    if(cloudRev <= baseRevAtStart){
-      // ক্লাউডে নতুন কিছু আসেনি → আমাদের পূর্ণ লোকাল নিরাপদে লিখি
+    if(current == null){
+      // ক্লাউড একদম খালি → প্রথম লেখা (পূর্ণ লোকাল)
+      out = JSON.parse(JSON.stringify(state));
+    } else if(current.rev != null && current.rev === baseRevAtStart){
+      // ✅ প্রমাণিত up-to-date (rev মিলেছে) → পূর্ণ লোকাল নিরাপদ; আমার সব এডিট লেখা হয়
       out = JSON.parse(JSON.stringify(state));
     } else {
-      // দ্বন্দ্ব: ক্লাউড এগিয়ে আছে → ক্লাউডের উপর শুধু আমাদের নতুন অংশ আনি
+      // ⚠️ legacy (rev নেই) বা দ্বন্দ্ব → সবসময় MERGE: ক্লাউডে থাকা কোনো শিক্ষক/ক্লাস
+      //    কখনো বাদ পড়বে না; আমি শুধু নিজে যা বদলেছি তা-ই আনি।
       out = _mergeStateByRecency(current, state);
+      _pushNeedsAdopt = true;
     }
-    out.rev = cloudRev + 1;
+    // 🛡️ শেষ-রক্ষাকবচ: tombstone (স্পষ্ট মোছা) ছাড়া current-এর কোনো শিক্ষক out থেকে
+    //    বাদ পড়লে ফিরিয়ে আনি — "অনুপস্থিতি" দিয়ে কখনো ডেটা হারাবে না।
+    if(current){
+      try{
+        const _tomb = new Set(((out.tombstones && out.tombstones.teachers) || []).map(String));
+        if(!Array.isArray(out.teachers)) out.teachers = [];
+        const _outIds = new Set(out.teachers.map(t => (t && t.id != null) ? String(t.id) : null));
+        (Array.isArray(current.teachers) ? current.teachers : []).forEach(ct => {
+          if(ct && ct.id != null && !_tomb.has(String(ct.id)) && !_outIds.has(String(ct.id))){
+            out.teachers.push(ct);
+            _pushNeedsAdopt = true;
+          }
+        });
+      }catch(_){}
+    }
+    out.rev = cloudRevNum + 1;
     out.lastSaved = serverNowISO();
+    out.lastSavedBy = _editorInfo;    // 🆕 কে আপডেট করল (নাম+ভূমিকা)
+    _suppressSelfEchoRev = out.rev;   // 🆕 promise resolve-এর আগেই — নিজের echo দমন
     return out;
   }).then((res) => {
     try{
@@ -7975,10 +7995,11 @@ function _cloudPushState(){
       const committed = (ok && res.snapshot && typeof res.snapshot.val === 'function') ? res.snapshot.val() : null;
       if(committed){
         _suppressSelfEchoRev = committed.rev;
-        const wasConflict = (committed.rev != null) && (committed.rev > (baseRevAtStart + 1));
-        if(wasConflict){
-          // আমাদের লেখায় ক্লাউড-merge হয়েছে → সেটাই লোকালে গ্রহণ করি
-          applyRemoteState(committed);
+        if(_pushNeedsAdopt){
+          // merge/union-এ ক্লাউড-only ডেটা যুক্ত হয়েছে → কমিটেড ফলাফল লোকালে গ্রহণ করি
+          //    (টোস্ট ছাড়া), যাতে এই ডিভাইসেও সম্পূর্ণ ডেটা দেখায়।
+          _selfAdopt = true;
+          try{ applyRemoteState(committed); } finally { _selfAdopt = false; }
         } else {
           state.rev = committed.rev;
           _baseRev = committed.rev;
@@ -8131,6 +8152,9 @@ function loadState(){
       _lastSyncedSnapshot = JSON.parse(JSON.stringify(state));
       if(state.rev != null) _baseRev = state.rev;
     }catch(_){}
+    // 🆕 নিরাপত্তা-ব্যাকআপ: লোড হওয়া (ভালো) state এখনই সংরক্ষণ করি — পরে কোনো
+    //    সিঙ্ক ভুল করে ডেটা কমিয়ে দিলেও এই কপি থেকে ফেরানো যাবে।
+    try{ if(typeof createBackup === 'function') createBackup(true, 'লোড'); }catch(_){}
   }catch(e){
     console.warn('Failed to load state:', e);
   }
@@ -8224,10 +8248,11 @@ function startFirebaseSync(){
     const remoteRev = (remoteData.rev != null) ? remoteData.rev : null;
     const localRev  = (state.rev != null) ? state.rev : 0;
 
-    // 🆕 নিজের লেখার echo — অপ্রয়োজনীয় re-apply ও টোস্ট দমন
+    // 🆕 নিজের লেখার echo (optimistic + confirmed — দুটোরই একই অনন্য rev) — চুপচাপ
+    //    rev মিলিয়ে রাখি, টোস্ট/re-apply নয়। চিহ্ন মুছি না; পরের লেখায় নিজেই বদলাবে।
+    //    প্রকৃত অন্য-ডিভাইসের লেখার rev সবসময় বড় হবে, তাই সেটা ঠিকঠাক প্রয়োগ হবে।
     if(remoteRev != null && _suppressSelfEchoRev != null && remoteRev === _suppressSelfEchoRev){
-      _suppressSelfEchoRev = null;
-      _baseRev = remoteRev; if(state.rev == null) state.rev = remoteRev;
+      state.rev = remoteRev; _baseRev = remoteRev;
       return;
     }
 
@@ -8300,6 +8325,15 @@ function applyRemoteState(remoteData){
   let _tombReassert = false;
   let _teacherReassert = false;   // 🆕 লোকাল শিক্ষক-পরিবর্তন রিমোটের চেয়ে নতুন হলে
   try{
+    // 🆕 নিরাপত্তা: আসন্ন রিমোট আপডেট যদি ডেটা কমিয়ে দেয় (সম্ভাব্য ক্লোবার), তবে
+    //    ওভাররাইটের আগেই বর্তমান লোকাল কপির ব্যাকআপ রাখি — যাতে কিছু হারালে ফেরানো যায়।
+    try{
+      const _curSum = _backupSummary(state);
+      const _incSum = _backupSummary(remoteData || {});
+      if(_incSum.nCells < _curSum.nCells || _incSum.nTeachers < _curSum.nTeachers){
+        if(typeof createBackup === 'function') createBackup(true, 'সম্ভাব্য হ্রাসের আগে');
+      }
+    }catch(_){}
     // 🛡️ ওভাররাইটের আগে লোকাল পাসওয়ার্ড + সময়-স্ট্যাম্প আলাদা করে রাখি
     const _localAccSnap = state.accounts ? JSON.parse(JSON.stringify(state.accounts)) : null;
     const _localTeachersSnap = Array.isArray(state.teachers)
@@ -8412,7 +8446,18 @@ function applyRemoteState(remoteData){
     // UI রিফ্রেশ করো
     if(currentUser && typeof renderAll === 'function'){
       renderAll();
-      showToast('🔄 অন্য ডিভাইস থেকে আপডেট এসেছে','info', 2000);
+      // 🆕 কে আপডেট করল — নামসহ টোস্ট (তথ্য থাকলে)
+      let _whoMsg = '🔄 অন্য ডিভাইস থেকে আপডেট এসেছে';
+      try{
+        const lb = state.lastSavedBy;
+        if(lb && lb.name){
+          const _r = lb.role === 'admin' ? 'অ্যাডমিন'
+                   : lb.role === 'manager' ? 'ম্যানেজার'
+                   : lb.role === 'teacher' ? 'শিক্ষক' : '';
+          _whoMsg = '🔄 ' + lb.name + (_r ? ' (' + _r + ')' : '') + ' আপডেট করেছেন';
+        }
+      }catch(_){}
+      if(!_selfAdopt) showToast(_whoMsg,'info', 2500);
       // 🔔 also refresh notification UI in case requests changed on another device
       try{
         if(currentUser.role === 'admin' || currentUser.role === 'manager'){
@@ -8536,9 +8581,33 @@ function clearAudit(){
 function getBackups(){
   try{return JSON.parse(localStorage.getItem(BACKUP_KEY)||'[]')}catch(e){return []}
 }
-function createBackup(silent){
+// 🆕 একটি state-এ কত শিক্ষক ও কত ভরা ক্লাস আছে — ব্যাকআপ চেনা ও হ্রাস-শনাক্তে
+function _backupSummary(st){
+  let nT = 0, nC = 0;
+  try{
+    const ts = Array.isArray(st && st.teachers) ? st.teachers : [];
+    nT = ts.length;
+    ts.forEach(t => {
+      const cells = (t && t.cells) ? t.cells : {};
+      Object.keys(cells).forEach(k => {
+        const c = cells[k];
+        if(c && (c.subject || (Array.isArray(c.parts) && c.parts.length))) nC++;
+      });
+    });
+  }catch(_){}
+  return {nTeachers:nT, nCells:nC};
+}
+function createBackup(silent, reason){
   const backups = getBackups();
-  backups.push({at:new Date().toISOString(), data:JSON.parse(JSON.stringify(state))});
+  const sum = _backupSummary(state);
+  backups.push({
+    at: serverNowISO(),
+    reason: reason || 'ম্যানুয়াল',
+    rev: (state.rev != null ? state.rev : null),
+    nTeachers: sum.nTeachers,
+    nCells: sum.nCells,
+    data: JSON.parse(JSON.stringify(state))
+  });
   while(backups.length > MAX_BACKUPS) backups.shift();
   try{localStorage.setItem(BACKUP_KEY, JSON.stringify(backups))}
   catch(e){if(!silent)showToast('ব্যাকআপ ব্যর্থ — স্টোরেজ পূর্ণ','error');return}
@@ -8550,16 +8619,29 @@ function createBackup(silent){
 function restoreFromBackup(){
   const backups = getBackups();
   if(!backups.length){showToast('কোনো ব্যাকআপ পাওয়া যায়নি','warning');return}
-  const list = backups.map((b,i)=>`${i+1}. ${formatTime(b.at)}`).join('\n');
-  const idx = prompt('কোন ব্যাকআপ থেকে রিস্টোর করবেন? নম্বর লিখুন:\n\n'+list);
+  const list = backups.map((b,i)=>{
+    const t = (b.nTeachers!=null) ? b.nTeachers : ((b.data&&b.data.teachers)?b.data.teachers.length:'?');
+    const c = (b.nCells!=null) ? b.nCells : '?';
+    return `${i+1}. ${formatTime(b.at)} — ${toBnNum(t)} শিক্ষক, ${toBnNum(c)} ক্লাস${b.reason?(' ['+b.reason+']'):''}`;
+  }).join('\n');
+  const idx = prompt('কোন ব্যাকআপ থেকে রিস্টোর করবেন? নম্বর লিখুন:\n(সবচেয়ে বেশি "ক্লাস" সংখ্যাযুক্তটি সাধারণত সবচেয়ে সম্পূর্ণ)\n\n'+list);
   const i = parseInt(idx)-1;
   if(isNaN(i) || !backups[i]) return;
-  if(!confirm('সব বর্তমান ডেটা ব্যাকআপ ('+formatTime(backups[i].at)+') দিয়ে প্রতিস্থাপিত হবে। নিশ্চিত?')) return;
-  Object.assign(state, backups[i].data);
+  const b = backups[i];
+  if(!confirm('সব বর্তমান ডেটা এই ব্যাকআপ দিয়ে প্রতিস্থাপিত হবে এবং সব ডিভাইসে চলে যাবে:\n'+formatTime(b.at)+' — '+toBnNum(b.nCells!=null?b.nCells:'?')+' ক্লাস।\n\nনিশ্চিত?')) return;
+  Object.assign(state, JSON.parse(JSON.stringify(b.data)));
+  // 🆕 রিস্টোর authoritative করি — সব শিক্ষক/কলামে fresh server-time স্ট্যাম্প, যাতে
+  //    এই পুনরুদ্ধার সিঙ্ক-merge-এ সবচেয়ে নতুন গণ্য হয়ে সব ডিভাইসে জেতে।
+  try{
+    const nowISO = serverNowISO();
+    (Array.isArray(state.teachers)?state.teachers:[]).forEach(t=>{ if(t) t.updatedAt = nowISO; });
+    if(!state.settings || typeof state.settings !== 'object') state.settings = {};
+    state.settings.columnsUpdatedAt = nowISO;
+  }catch(_){}
   saveState();
   renderAll();
-  audit('রিস্টোর','ব্যাকআপ থেকে পুনরুদ্ধার ('+formatTime(backups[i].at)+')');
-  showToast('✅ ব্যাকআপ রিস্টোর সফল','success');
+  audit('রিস্টোর','ব্যাকআপ থেকে পুনরুদ্ধার ('+formatTime(b.at)+')');
+  showToast('✅ ব্যাকআপ রিস্টোর সফল — সব ডিভাইসে যাচ্ছে','success');
 }
 
 /* ===========================================================
