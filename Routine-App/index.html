@@ -7734,7 +7734,7 @@ const BACKUP_KEY = 'lhrsc_routine_backups';
 /* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
    অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
    ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
-const APP_VERSION = 20260619;
+const APP_VERSION = 20260620;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
@@ -8040,6 +8040,23 @@ function _stampChangedTeachers(){
   }catch(_){}
 }
 
+/* 🆕 settings বদলালে settings._updatedAt স্ট্যাম্প — সব settings-লেখককে
+   স্বয়ংক্রিয়ভাবে ধরে (saveSettings, রুটিন-লক, স্ব-ইনপুট টগল ইত্যাদি)।
+   এতে মার্জে "নতুন settings জেতে" — অ্যাডমিনের বন্ধ-আদেশ আর কখনো পুরোনো
+   ডিভাইসের বাসি settings দিয়ে উল্টে যাবে না। */
+function _stampSettingsIfChanged(){
+  try{
+    if(!state.settings || typeof state.settings !== 'object') return;
+    const prev = (_lastSyncedSnapshot && _lastSyncedSnapshot.settings) ? _lastSyncedSnapshot.settings : null;
+    const cur = Object.assign({}, state.settings); delete cur._updatedAt;
+    let old = null;
+    if(prev){ old = Object.assign({}, prev); delete old._updatedAt; }
+    if(!old || JSON.stringify(cur) !== JSON.stringify(old)){
+      state.settings._updatedAt = serverNowISO();
+    }
+  }catch(_){}
+}
+
 // স্তর ২ — recency-merge: base (সর্বশেষ ক্লাউড) এর উপর incoming (লোকাল) এর শুধু
 // নতুন অংশ আনি। কখনো পুরোনো দিয়ে নতুন মোছা হয় না। (কলাম/পাসওয়ার্ড/tombstone-এর
 // বিদ্যমান সুরক্ষার মতোই, এখন রুটিন/শিক্ষক পর্যন্ত বিস্তৃত।)
@@ -8088,6 +8105,19 @@ function _mergeStateByRecency(base, incoming){
       ['admins','managers'].forEach(g => { _pwBring(out.accounts[g], incoming.accounts[g], 'username'); });
     }
 
+    // 🆕 settings recency — নতুন settings-ব্লক জেতে (টগল/কনফিগ যেমন স্ব-ইনপুট,
+    //    রুটিন-লক ইত্যাদি)। কলাম-সম্পর্কিত স্ট্যাম্প আলাদা — নিচের কলাম-ব্লকই সামলায়।
+    const sOut = _ms(out.settings && out.settings._updatedAt);
+    const sInc = _ms(incoming && incoming.settings && incoming.settings._updatedAt);
+    if(sInc > sOut && incoming && incoming.settings){
+      const keepColsAt = out.settings ? out.settings.columnsUpdatedAt : undefined;
+      const keepSched = (out.settings && out.settings.lastSchedule)
+        ? JSON.parse(JSON.stringify(out.settings.lastSchedule)) : undefined;
+      out.settings = JSON.parse(JSON.stringify(incoming.settings));
+      if(keepColsAt !== undefined) out.settings.columnsUpdatedAt = keepColsAt;
+      if(keepSched !== undefined) out.settings.lastSchedule = keepSched;
+    }
+
     // columns (সময়সূচি) recency
     const oAt = _ms(out.settings && out.settings.columnsUpdatedAt);
     const iAt = _ms(incoming && incoming.settings && incoming.settings.columnsUpdatedAt);
@@ -8119,6 +8149,7 @@ function _cloudPushState(){
   }
   _pendingCloudPush = false;
   _stampChangedTeachers();   // 🆕 পুশের মুহূর্তে freshest server-time স্ট্যাম্প (অফলাইন-এডিটের প্লেসহোল্ডার সময় সংশোধন)
+  _stampSettingsIfChanged(); // 🆕 settings বদলেছে কিনা — পুশের মুহূর্তে স্ট্যাম্প
   const dbRef = window.FB.ref(window.FB.db, fbDataPath());
   const baseRevAtStart = _baseRev;
   const _editorInfo = currentUser ? { name: (currentUser.name || ''), role: (currentUser.role || '') } : null;  // 🆕 কে আপডেট করছে
@@ -8225,6 +8256,7 @@ function saveState(localOnly){
   }catch(_){}
   state.lastSaved = serverNowISO();
   _stampChangedTeachers();   // 🆕 বদলে যাওয়া প্রতিটি শিক্ষকে server-time স্ট্যাম্প (recency)
+  _stampSettingsIfChanged(); // 🆕 settings বদলালে settings._updatedAt স্ট্যাম্প
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
@@ -8502,6 +8534,7 @@ function applyRemoteState(remoteData){
   let _colReassert = false;
   let _tombReassert = false;
   let _teacherReassert = false;   // 🆕 লোকাল শিক্ষক-পরিবর্তন রিমোটের চেয়ে নতুন হলে
+  let _settingsReassert = false;  // 🆕 লোকাল settings রিমোটের চেয়ে নতুন হলে
   try{
     // 🆕 নিরাপত্তা: আসন্ন রিমোট আপডেট যদি ডেটা কমিয়ে দেয় (সম্ভাব্য ক্লোবার), তবে
     //    ওভাররাইটের আগেই বর্তমান লোকাল কপির ব্যাকআপ রাখি — যাতে কিছু হারালে ফেরানো যায়।
@@ -8524,6 +8557,10 @@ function applyRemoteState(remoteData){
     // 🛡️ ওভাররাইটের আগে লোকাল কলাম (সময়সূচি) + এর recency স্ট্যাম্প রাখি
     const _localColsSnap = Array.isArray(state.columns) ? JSON.parse(JSON.stringify(state.columns)) : null;
     const _localColsAt = (state.settings && state.settings.columnsUpdatedAt) || '';
+    // 🆕 ওভাররাইটের আগে লোকাল settings + এর recency স্ট্যাম্প রাখি
+    const _localSettingsSnap = (state.settings && typeof state.settings === 'object')
+      ? JSON.parse(JSON.stringify(state.settings)) : null;
+    const _localSettingsAt = (state.settings && state.settings._updatedAt) || '';
     const _localLastSched = (state.settings && state.settings.lastSchedule)
       ? JSON.parse(JSON.stringify(state.settings.lastSchedule)) : null;
     // 🆕 ওভাররাইটের আগে লোকাল tombstones রাখি (যাতে union-merge-এ কখনো হারায় না)
@@ -8609,6 +8646,24 @@ function applyRemoteState(remoteData){
       }
     }catch(_){}
 
+    // 🛡️ settings-সুরক্ষা: লোকাল settings রিমোটের চেয়ে নতুন হলে — লোকালটাই রাখি।
+    //    (যেমন: অ্যাডমিন স্ব-ইনপুট মোড বন্ধ করেছেন, কিন্তু কোনো বাসি ডিভাইসের পুরোনো
+    //    settings এসে সেটি আবার চালু করার চেষ্টা করছে — তা জিততে দিই না।)
+    try{
+      const _remoteSetAt = (state.settings && state.settings._updatedAt) || '';
+      const _lst = _localSettingsAt ? new Date(_localSettingsAt).getTime() : 0;
+      const _rst = _remoteSetAt ? new Date(_remoteSetAt).getTime() : 0;
+      if(_localSettingsSnap && _lst > _rst){
+        const _curColsAt = state.settings ? state.settings.columnsUpdatedAt : undefined;
+        const _curSched = (state.settings && state.settings.lastSchedule)
+          ? JSON.parse(JSON.stringify(state.settings.lastSchedule)) : undefined;
+        state.settings = _localSettingsSnap;
+        if(_curColsAt !== undefined) state.settings.columnsUpdatedAt = _curColsAt;
+        if(_curSched !== undefined) state.settings.lastSchedule = _curSched;
+        _settingsReassert = true;
+      }
+    }catch(_){}
+
     // 🛡️ নতুন baseline signature সেট করি (merge-পরবর্তী চূড়ান্ত কলাম অনুযায়ী)
     try{ _lastColumnsSig = _columnsSig(); }catch(_){}
 
@@ -8637,6 +8692,18 @@ function applyRemoteState(remoteData){
         }
       }catch(_){}
       if(!_selfAdopt) showToast(_whoMsg,'info', 2500);
+      // 🆕 স্ব-ইনপুট মোড দূর থেকে বন্ধ হলে — শিক্ষকের খোলা এডিটর সাথে সাথে বন্ধ
+      try{
+        if(currentUser && currentUser.role === 'teacher' && !canFullEdit()
+           && !(state.settings && state.settings.teacherSelfInput)){
+          const _ce = document.getElementById('cellEditor');
+          const _sm2 = document.getElementById('qemSplitModal');
+          const _wasOpen = (_ce && _ce.classList.contains('show')) || (_sm2 && _sm2.classList.contains('show'));
+          if(_ce) _ce.classList.remove('show');
+          if(_sm2) _sm2.classList.remove('show');
+          if(_wasOpen) showToast('✏️ স্ব-ইনপুট মোড বন্ধ করা হয়েছে — ইনপুট আর সম্ভব নয়','warning',3200);
+        }
+      }catch(_){}
       // 🔔 also refresh notification UI in case requests changed on another device
       try{
         if(currentUser.role === 'admin' || currentUser.role === 'manager'){
@@ -8656,7 +8723,7 @@ function applyRemoteState(remoteData){
   }
   // রিমোট পুরোনো পাসওয়ার্ড/সময়সূচি দিয়ে রিভার্ট করার চেষ্টা করেছিল — সঠিকটা
   // আবার ক্লাউডে পাঠাই যাতে সব ডিভাইসে নতুন মানই থাকে।
-  if(_pwReassert || _colReassert || _tombReassert || _teacherReassert){ try{ saveState(); }catch(_){} }
+  if(_pwReassert || _colReassert || _tombReassert || _teacherReassert || _settingsReassert){ try{ saveState(); }catch(_){} }
 
   // 🆕 প্রতিটি রিমোট আপডেটের পর যাচাই করি — লগইন থাকা ব্যবহারকারী অপসারিত বা
   //    সব-ডিভাইস-লগআউট হয়েছেন কিনা; হলে সাথে সাথে নিরাপদে লগআউট করি।
@@ -16351,6 +16418,13 @@ function _qemSplitModalSave(){
   const tgt = _qemSplitTarget || currentEditCell;
   if(!tgt){ try{ showToast('⚠ আবার চেষ্টা করুন — slot নির্বাচন হারিয়ে গেছে','warning',2500); }catch(_){} return; }
   const {tid, cid} = tgt;
+  // 🛡 শিক্ষক স্ব-ইনপুট প্রতিরক্ষা — শিক্ষক শুধু নিজের row, শুধু মোড চালু থাকলে, লক না থাকলে
+  if(currentUser && currentUser.role === 'teacher' && !canFullEdit()){
+    const _ok = !!(state.settings && state.settings.teacherSelfInput)
+             && String(currentUser.teacherId) === String(tid)
+             && !routineLocked();
+    if(!_ok){ showToast('অনুমতি নেই','error'); return; }
+  }
   const t = state.teachers.find(x => x.id === tid);
   if(!t){ try{ showToast('⚠ শিক্ষক খুঁজে পাওয়া যায়নি','warning',2500); }catch(_){} return; }
   if(!t.cells[cid]) t.cells[cid] = {};
