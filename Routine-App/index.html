@@ -1868,6 +1868,29 @@ input[type="range"]::-moz-range-thumb{
 .ce-adv[open] > summary::after{ transform:rotate(180deg); }
 .ce-adv > summary:hover{ color:var(--primary); }
 .ce-adv-body{ padding:2px 11px 11px; display:flex; flex-direction:column; gap:9px; }
+
+/* 🆕 ফিক্সড টগল — মডালের একেবারে উপরে */
+.ce-fixed-top{ display:flex; align-items:center; gap:9px; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px; background:var(--surface-2); cursor:pointer; margin-bottom:10px; transition:.15s; }
+.ce-fixed-top input{ width:18px; height:18px; accent-color:var(--primary); flex:0 0 auto; cursor:pointer; }
+.ce-fixed-top .ce-fixed-ic{ font-size:16px; flex:0 0 auto; }
+.ce-fixed-top .ce-fixed-tx{ font-size:12.5px; color:var(--text-2); line-height:1.4; }
+.ce-fixed-top .ce-fixed-tx b{ color:var(--text); }
+.ce-fixed-top:has(input:checked){ border-color:var(--primary); background:rgba(15,118,110,.08); }
+
+/* 🆕 শেয়ার্ড/স্প্লিট — সরাসরি বাটন (accordion-এর বদলে) */
+.ce-split-zone{ margin-top:6px; }
+.ce-split-btn{ width:100%; display:flex; align-items:center; gap:11px; padding:13px 14px; border:1.5px dashed var(--primary); border-radius:12px; background:linear-gradient(135deg, rgba(15,118,110,.06), rgba(124,58,237,.06)); cursor:pointer; text-align:left; transition:.15s; }
+.ce-split-btn:hover{ background:linear-gradient(135deg, rgba(15,118,110,.12), rgba(124,58,237,.12)); border-style:solid; }
+.ce-split-btn:active{ transform:scale(.99); }
+.ce-split-btn .ce-split-ic{ font-size:20px; flex:0 0 auto; }
+.ce-split-btn .ce-split-main{ display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+.ce-split-btn .ce-split-main b{ font-size:13.5px; color:var(--text); }
+.ce-split-btn .ce-split-sub{ font-size:11px; color:var(--text-2); line-height:1.35; }
+.ce-split-btn .ce-split-arr{ font-size:22px; color:var(--primary); font-weight:700; flex:0 0 auto; line-height:1; }
+
+/* 🆕 দ্বিতীয় মডাল — শেয়ার্ড নোটিশ */
+.qem-shared-notice{ font-size:12.5px; color:#0f766e; background:rgba(15,118,110,.08); border:1px solid rgba(15,118,110,.25); border-radius:9px; padding:9px 12px; line-height:1.4; }
+.qem-shared-notice b{ color:#0f766e; }
 .ce-note{
   font-size:11px; color:#7c3aed; background:#faf5ff;
   border:1px solid #e9d5ff; border-radius:6px; padding:6px 8px; line-height:1.4;
@@ -5563,6 +5586,13 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       <button type="button" class="qem-ss-apply" id="qemSmartSuggestApply">ব্যবহার করুন</button>
     </div>
 
+    <!-- 🔒 ফিক্সড স্লট — পুরো ঘণ্টা লক (একেবারে উপরে; শেয়ার্ড হোক বা না হোক) -->
+    <label class="ce-fixed-top">
+      <input type="checkbox" id="qemFixedChk">
+      <span class="ce-fixed-ic">🔒</span>
+      <span class="ce-fixed-tx"><b>ফিক্সড স্লট</b> — এই পুরো ঘণ্টাটি লক থাকবে, অন্য কোথাও সরবে না</span>
+    </label>
+
     <!-- ১ · শ্রেণি -->
     <div class="ce-step" id="ceStepClass">
       <div class="ce-step-head"><span class="ce-step-no">১</span><span>শ্রেণি</span><span class="ce-pick-val" id="ceClassVal"></span></div>
@@ -5614,32 +5644,19 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
         </div>
       </div>
 
-      <details class="ce-adv" id="ceAdv">
-        <summary>⚙️ আরও অপশন — শেয়ার্ড / ফিক্সড / স্প্লিট</summary>
-        <div class="ce-adv-body">
-          <div class="ce-note" id="ceSplitNote" style="display:none">🔀 এই স্লটে একাধিক স্প্লিট-পার্ট রয়েছে — নিচে দেখুন/সম্পাদনা করুন।</div>
-          <div class="qem-fixed-section">
-            <label class="qem-checkbox qem-shared-chk-label">
-              <input type="checkbox" id="qemSharedChk">
-              <span>🔄 শেয়ার্ড ক্লাস — এই ক্লাসটি একাধিক শিক্ষক/বিষয়ের মধ্যে ভাগাভাগি হবে</span>
-            </label>
-            <label class="qem-checkbox">
-              <input type="checkbox" id="qemFixedChk">
-              <span>🔒 ফিক্সড স্লট — এই slot ছাড়া অন্য কোথাও সরাবে না</span>
-            </label>
-          </div>
-
-          <!-- 🆕 MULTI-PART (SPLIT) SECTION — একই সময়ে ভিন্ন শাখা/দিনে আলাদা ক্লাস -->
-          <div class="qem-split-section" id="qemSplitSectionBox">
-            <div class="qem-split-head">
-              <span>🔀 স্প্লিট স্লট — একই সময়ে ভিন্ন শাখা</span>
-              <span class="qem-split-hint">যদি এই শিক্ষক একই ঘণ্টায় কিছু দিন এক শাখায়, বাকি দিন অন্য শাখায় ক্লাস নেন</span>
-            </div>
-            <div class="qem-split-list" id="qemSplitList"></div>
-            <button type="button" class="qem-split-add" id="qemSplitAddBtn" onclick="_qemSplitAddPart()">➕ আরেকটি শাখা/দিন যোগ করুন</button>
-          </div>
-        </div>
-      </details>
+      <!-- 🔀 শেয়ার্ড/স্প্লিট অংশ — সরাসরি বাটন (accordion ছাড়া) -->
+      <div class="ce-split-zone" id="qemSplitSectionBox">
+        <div class="ce-note" id="ceSplitNote" style="display:none">🔀 এই স্লটে একাধিক স্প্লিট-পার্ট রয়েছে — নিচে দেখুন/সম্পাদনা করুন।</div>
+        <div class="qem-split-list" id="qemSplitList"></div>
+        <button type="button" class="ce-split-btn" id="qemSplitAddBtn" onclick="_qemSplitAddPart()">
+          <span class="ce-split-ic">🔀</span>
+          <span class="ce-split-main">
+            <b>শেয়ার্ড / স্প্লিট ক্লাস যোগ করুন</b>
+            <span class="ce-split-sub">একই ঘণ্টায় ভিন্ন শাখা/দিনে আলাদা ক্লাস — শেয়ার্ড হিসেবে যুক্ত হবে</span>
+          </span>
+          <span class="ce-split-arr">›</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -5684,6 +5701,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
     <!-- 🆕 শিক্ষকের নাম ও নির্ধারিত সময় — প্রথম মডালের মতো প্রকটভাবে -->
     <div class="qem-split-who" id="qemSplitWho"></div>
     <div class="modal-body" style="display:flex;flex-direction:column;gap:13px">
+      <div class="qem-shared-notice">ℹ️ এই ক্লাসটি <b>শেয়ার্ড ক্লাস</b> হিসেবে যুক্ত হবে।</div>
       <div class="ce-step">
         <div class="ce-step-head"><span class="ce-step-no">১</span><span>শ্রেণি</span></div>
         <input type="text" id="qemSplitClass" class="input" placeholder="যেমন: দশম শ্রেণি" autocomplete="off">
@@ -5710,10 +5728,6 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
           <span class="qem-chip" data-day="Thu">বৃহঃ</span>
         </div>
       </div>
-      <label class="qem-checkbox qem-shared-chk-label">
-        <input type="checkbox" id="qemSplitShared" checked>
-        <span>🔄 শেয়ার্ড ক্লাস</span>
-      </label>
       <div style="display:flex;gap:8px;margin-top:4px">
         <button class="tool-btn" style="flex:1;justify-content:center" onclick="_qemSplitModalClose()">বাতিল</button>
         <button class="tool-btn primary" style="flex:1;justify-content:center" onclick="_qemSplitModalSave()">✓ যোগ করুন</button>
@@ -6185,6 +6199,9 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
         <div class="divider"></div>
         <button class="tool-btn primary admin-mgr-only" data-perm="dataReset" onclick="openCloudBackups()" style="width:100%">☁️ ক্লাউড ব্যাকআপ ও পুনরুদ্ধার</button>
         <div style="font-size:11px;color:var(--text-2);margin-top:6px">ক্লাউডে স্বয়ংক্রিয় কপি রাখা হয় — যেকোনো ডিভাইস থেকে ফেরানো যায় (ডিভাইস হারালেও নিরাপদ)।</div>
+        <div class="divider"></div>
+        <div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">সকল শিক্ষকের ইনপুট করা <strong>সব ক্লাস</strong> এক ক্লিকে মুছে যাবে (শিক্ষক ও সময়-কলাম থাকবে)। মুছে ফেলার আগে স্বয়ংক্রিয় ব্যাকআপ নেওয়া হবে — পরে উপরের রিস্টোর দিয়ে ফেরানো যাবে।</div>
+        <button class="tool-btn danger admin-mgr-only" data-perm="dataReset" style="width:100%" onclick="clearAllClasses()">🧹 সকল ক্লাস মুছে ফেলুন</button>
       </div>
 
       <!-- Danger tab -->
@@ -6808,10 +6825,10 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
         📱 মোবাইল: <strong>০১৭৩২৭৭১৪৩৮</strong><br>
         🏫 প্রতিষ্ঠান: লালমোহন হা-মীম রেসিডেন্সিয়াল স্কুল এন্ড কলেজ<br>
         💻 অ্যাপ: রুটিন ম্যানেজমেন্ট সিস্টেম<br>
-        🔖 ভার্সন: ১.০
+        🔖 ভার্সন: <span id="appVerLabel">১.০</span>
       </div>
       <div style="margin-top:14px;font-size:11.5px;color:var(--text-3)">
-        © ২০২৫ — সকল অধিকার সংরক্ষিত
+        © ২০২৬ — সকল অধিকার সংরক্ষিত
       </div>
     </div>
     <div class="modal-footer">
@@ -7599,7 +7616,7 @@ const BACKUP_KEY = 'lhrsc_routine_backups';
 /* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
    অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
    ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
-const APP_VERSION = 20260614;
+const APP_VERSION = 20260616;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
@@ -8675,6 +8692,42 @@ function restoreFromBackup(){
   renderAll();
   audit('রিস্টোর','ব্যাকআপ থেকে পুনরুদ্ধার ('+formatTime(b.at)+')');
   showToast('✅ ব্যাকআপ রিস্টোর সফল — সব ডিভাইসে যাচ্ছে','success');
+}
+
+// 🆕 সকল শিক্ষকের ইনপুট করা সব ক্লাস (সেল) মুছে ফেলা — ২ বার নিশ্চিতকরণ + আগে ব্যাকআপ
+//    (শিক্ষক ও সময়-কলাম অক্ষত থাকে; শুধু ক্লাসগুলো খালি হয়; পরে ব্যাকআপ থেকে ফেরানো যায়)
+function clearAllClasses(){
+  if(typeof requirePerm === 'function' && !requirePerm('dataReset')) return;
+  const sum = (typeof _backupSummary === 'function')
+    ? _backupSummary(state)
+    : {nTeachers:(state.teachers||[]).length, nCells:0};
+  if(!sum.nCells){ showToast('মুছে ফেলার মতো কোনো ক্লাস নেই','info'); return; }
+
+  // ১ম নিশ্চিতকরণ
+  if(!confirm('⚠️ সতর্কতা!\n\nসকল শিক্ষকের ইনপুট করা সব ক্লাস ('+toBnNum(sum.nCells)+'টি) মুছে যাবে।\nশিক্ষক ও সময়-কলাম থাকবে — শুধু ক্লাসগুলো খালি হবে।\n\nএগিয়ে যাবেন?')) return;
+  // ২য় নিশ্চিতকরণ (আরও স্পষ্ট)
+  if(!confirm('🚨 শেষ নিশ্চিতকরণ!\n\nএটি সব ডিভাইসে প্রযোজ্য হবে। মুছে ফেলার আগে স্বয়ংক্রিয় ব্যাকআপ রাখা হবে, তাই প্রয়োজনে ফেরানো যাবে।\n\nনিশ্চিতভাবে সব ক্লাস মুছে ফেলতে চান?')) return;
+
+  // মুছে ফেলার ঠিক আগে ব্যাকআপ (লোকাল + ক্লাউড) — পুনরুদ্ধারের নিশ্চয়তা
+  try{ if(typeof createBackup === 'function') createBackup(true, 'সব ক্লাস মুছে ফেলার আগে'); }catch(_){}
+  try{ if(typeof _cloudSnapshot === 'function') _cloudSnapshot('সব ক্লাস মুছে ফেলার আগে'); }catch(_){}
+
+  // সব শিক্ষকের cells খালি করি (শিক্ষক-অবজেক্ট থাকবে)
+  let cleared = 0;
+  (state.teachers || []).forEach(t=>{
+    if(t && t.cells && typeof t.cells === 'object'){
+      Object.keys(t.cells).forEach(k=>{
+        const c = t.cells[k];
+        if(c && (c.subject || (Array.isArray(c.parts) && c.parts.length))) cleared++;
+      });
+    }
+    if(t) t.cells = {};
+  });
+
+  if(typeof audit === 'function') audit('সকল ক্লাস মুছে ফেলা', toBnNum(cleared)+'টি ক্লাস মুছে ফেলা হয়েছে');
+  saveState();
+  if(typeof renderAll === 'function') renderAll();
+  showToast('🧹 সকল ক্লাস মুছে ফেলা হয়েছে ('+toBnNum(cleared)+'টি) — প্রয়োজনে "ব্যাকআপ থেকে রিস্টোর" দিয়ে ফেরাতে পারবেন','success', 4500);
 }
 
 /* ============================================================
@@ -16020,6 +16073,12 @@ function _qemSplitAddPart(){
     const dayShort = {Sat:'শনি', Sun:'রবি', Mon:'সোম', Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ'};
     if(hint) hint.textContent = '(বাকি দিন স্বয়ংক্রিয় নির্বাচিত: ' + remaining.map(d=>dayShort[d]||d).join(', ') + ')';
   } else {
+    // 🆕 প্রথম পার্টে কোনো দিন নেই → ডিফল্ট শনি, রবি, সোম নির্বাচিত (অন্য দিনও বাছাই করা যাবে)
+    const def = ['Sat','Sun','Mon'];
+    document.querySelectorAll('#qemSplitDays .qem-chip').forEach(ch => {
+      const d = ch.getAttribute('data-day');
+      if(def.indexOf(d) >= 0) ch.classList.add('selected');
+    });
     if(hint) hint.textContent = '';
   }
 
@@ -16061,11 +16120,7 @@ function _qemSplitAddPart(){
       if(bd) bd.classList.remove('show');
     }catch(_){}
     m.classList.add('show');
-    // প্রথম input-এ focus (subject)
-    setTimeout(() => {
-      const si = document.getElementById('qemSplitSubject');
-      if(si) si.focus();
-    }, 60);
+    // 🆕 auto-focus সরানো হয়েছে — মডাল খুললে মোবাইল কীবোর্ড আর নিজে থেকে উঠবে না
   }
 }
 
@@ -16141,7 +16196,8 @@ function _qemSplitModalSave(){
   const sub = (subEl.value||'').trim();
   const cls = (clsEl.value||'').trim();
   const sec = (secEl.value||'').trim();
-  const shared = !!(shEl && shEl.checked);
+  // 🆕 দ্বিতীয় মডাল ব্যবহার করা মানেই ক্লাসটি শেয়ার্ড — তাই সর্বদা true
+  const shared = true;
   const days = [];
   document.querySelectorAll('#qemSplitDays .qem-chip.selected').forEach(ch => {
     const d = ch.getAttribute('data-day'); if(d) days.push(d);
@@ -16171,7 +16227,7 @@ function _qemSplitModalSave(){
     if(cell.subject && cell.class && cell.section){
       cell.parts.push({
         subject: cell.subject, class: cell.class, section: cell.section,
-        days: curDays, shared: !!cell.shared
+        days: curDays, shared: true
       });
     }
   }
@@ -23681,6 +23737,16 @@ function _setupDashboardFab(){
 =========================================================== */
 function init(){
   loadState();
+  // 🆕 ফুটারে দৃশ্যমান ভার্সন = বিল্ড-নম্বর (APP_VERSION) — প্রতি আপডেটে নিজে থেকেই বদলাবে
+  try{
+    const _v = String(APP_VERSION);
+    const _vl = document.getElementById('appVerLabel');
+    if(_vl){
+      _vl.textContent = (_v.length === 8)
+        ? (toBnNum(_v.slice(0,4)) + '.' + toBnNum(_v.slice(4,6)) + '.' + toBnNum(_v.slice(6,8)))
+        : toBnNum(_v);
+    }
+  }catch(_){}
   try{ initVersionGate(); }catch(e){ console.warn('version gate skipped:', e); }
   // 🆕 সেশন-যাচাই — অ্যাপ আবার দৃশ্যমান হলে ও প্রতি ২০ সেকেন্ডে (অপসারণ/forced
   //    logout দ্রুত ধরা পড়ে, রিমোট আপডেট না এলেও)।
