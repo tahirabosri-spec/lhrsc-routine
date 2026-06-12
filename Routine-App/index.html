@@ -5689,6 +5689,97 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
   /* প্রথম মডালের মতো ধাপ-বিন্যাস — দ্বিতীয় মডালের ইনপুট পরিষ্কার করতে */
   #qemSplitModal .ce-step{ display:flex; flex-direction:column; gap:7px; }
   #qemSplitModal .ce-step .input{ width:100%; }
+
+  /* ============================================================
+     🎨 মডাল রিডিজাইন — দুই মডালে সামঞ্জস্যপূর্ণ, পরিচ্ছন্ন, সহজ-ইনপুট
+        (শুধু #cellEditor ও #qemSplitModal — অন্য কোথাও কোনো প্রভাব নেই)
+  ============================================================ */
+  /* ---- হেডার: প্রথম মডালেও প্রকট টিল ব্যানার (পৃথকযোগ্য) ---- */
+  #cellEditor .cell-editor-header{
+    background:linear-gradient(135deg,#0f766e 0%,#0d9488 100%);
+    border-bottom:none; padding:14px 16px;
+  }
+  #cellEditor #cellEditorTitle .ceh-name{ color:#fff; font-size:18px; }
+  #cellEditor #cellEditorTitle .ceh-time{
+    color:#fff; background:rgba(255,255,255,.22); font-size:13px; padding:3px 12px;
+  }
+  #cellEditor .cell-editor-header .modal-close{ color:#fff; opacity:.92; font-size:22px; }
+  #cellEditor .cell-editor-header .modal-close:hover{ opacity:1; }
+
+  /* ---- বডি: হালকা পটভূমি যাতে ধাপ-কার্ড আলাদা দেখায় ---- */
+  #cellEditor .ce-scroll{ background:#eef3f3; }
+  #qemSplitModal .modal-body{ background:#eef3f3; padding:14px 15px; }
+
+  /* ---- ধাপ-কার্ড: প্রতিটি ধাপ আলাদা সাদা কার্ড (পৃথকযোগ্য) ---- */
+  #cellEditor .ce-step,
+  #qemSplitModal .ce-step{
+    background:#fff; border:1px solid #e2e8e8; border-radius:13px;
+    padding:12px 13px 13px; gap:10px; box-shadow:0 1px 2px rgba(15,23,42,.04);
+  }
+  #cellEditor .ce-step-head,
+  #qemSplitModal .ce-step-head{ font-size:13.5px; }
+  #cellEditor .ce-step-no,
+  #qemSplitModal .ce-step-no{
+    width:23px; height:23px; font-size:12px;
+    background:linear-gradient(135deg,#0f766e,#0d9488);
+    box-shadow:0 2px 5px rgba(15,118,110,.3);
+  }
+  #cellEditor .ce-pick-val{ color:var(--primary); }
+
+  /* ---- অপশন চিপ (শ্রেণি/শাখা/বিষয়) — আরামদায়ক টাচ, টিল নির্বাচন ---- */
+  #cellEditor .ce-chip{ font-size:12.5px; padding:8px 15px; border:1.5px solid #d7dede; }
+  #cellEditor .ce-chip:hover{ border-color:var(--primary); background:#f0fdfa; }
+  #cellEditor .ce-chip.sel{
+    background:linear-gradient(135deg,#0f766e,#0d9488); color:#fff;
+    border-color:#0f766e; box-shadow:0 3px 9px rgba(15,118,110,.32);
+  }
+  #cellEditor .ce-chip-sug{ border-color:#5eead4; background:#f0fdfa; color:#0f766e; }
+  #cellEditor .ce-chip-add{ border-style:dashed; border-color:var(--primary); color:var(--primary); background:#f0fdfa; }
+
+  /* ---- দিন রেডিও (প্রথম মডাল) — বড়, পরিষ্কার, টিল নির্বাচন ---- */
+  #cellEditor .qem-radio-row{ gap:7px; }
+  #cellEditor .qem-radio{ font-size:12.5px; padding:7px 13px; gap:6px; border:1.5px solid #d7dede; }
+  #cellEditor .qem-radio input{ width:15px; height:15px; accent-color:var(--primary); }
+  #cellEditor .qem-radio input:checked + span{ color:var(--primary); font-weight:800; }
+  #cellEditor .qem-radio:has(input:checked){ border-color:var(--primary); background:#e6f5f3; }
+
+  /* ---- দিন চিপ (custom + দ্বিতীয় মডাল) — বড়, টিল নির্বাচন ---- */
+  #cellEditor .qem-chip,
+  #qemSplitModal .qem-chip{
+    font-size:12.5px; padding:8px 15px; font-weight:700;
+    border:1.5px solid #d7dede; border-radius:999px;
+  }
+  #cellEditor .qem-chip:hover,
+  #qemSplitModal .qem-chip:hover{ border-color:var(--primary); }
+  #cellEditor .qem-chip.selected,
+  #qemSplitModal .qem-chip.selected{
+    background:linear-gradient(135deg,#0f766e,#0d9488); color:#fff; border-color:#0f766e;
+    box-shadow:0 3px 9px rgba(15,118,110,.3);
+  }
+  #qemSplitModal .qem-chip-row{ gap:7px; }
+
+  /* ---- দ্বিতীয় মডাল টেক্সট-ইনপুট — পরিষ্কার, টিল ফোকাস/পূরণ ---- */
+  #qemSplitModal .ce-step .input{
+    padding:10px 12px; border:1.5px solid #d7dede; border-radius:9px;
+    font-size:13.5px; background:#fff;
+  }
+  #qemSplitModal .ce-step .input:focus{
+    border-color:var(--primary); box-shadow:0 0 0 3px rgba(15,118,110,.12); outline:none;
+  }
+  #qemSplitModal .ce-step .input:not(:placeholder-shown){
+    border-color:var(--primary); background:#f0fdfa; color:#0f5048; font-weight:700;
+  }
+
+  /* ---- দ্বিতীয় মডাল সাজেশন চিপ — টিল নির্বাচন ---- */
+  #qemSplitModal .ss-chip{ font-size:11.5px; padding:5px 11px; }
+  #qemSplitModal .ss-chip.selected{
+    background:linear-gradient(135deg,#0f766e,#0d9488); color:#fff; border-color:#0f766e;
+    box-shadow:0 1px 4px rgba(15,118,110,.35);
+  }
+
+  /* ---- ফিক্সড-টপ ও ফুটার — সাদা কার্ড/আরামদায়ক বোতাম ---- */
+  #cellEditor .ce-fixed-top{ background:#fff; border-radius:12px; }
+  #cellEditor .cell-editor-footer .tool-btn{ padding:11px 14px; font-size:13px; border-radius:10px; }
 </style>
 
 <!-- 🆕 SPLIT PART EDITOR MODAL — একটি অতিরিক্ত অংশ (শাখা/বিষয়/দিন) সেট করার জন্য -->
@@ -6334,6 +6425,29 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
             <div class="toggle-row" style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:8px">
               <div class="info"><div class="lbl">📲 হোয়াটসঅ্যাপে পাঠানো</div><div class="desc">শিক্ষক আবেদন জমা দিলে অ্যাডমিনের হোয়াটসঅ্যাপে পাঠানোর সুযোগ দেখাবে</div></div>
               <label class="switch"><input type="checkbox" id="setLeaveSendWhatsapp"><span class="slider"></span></label>
+            </div>
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:10px">
+              <label style="font-weight:800;font-size:12.5px;color:var(--text);display:block;margin-bottom:5px">📩 অ্যাপের বাইরে সরাসরি বিজ্ঞপ্তি — অধ্যক্ষ/একাধিক অ্যাডমিন</label>
+              <div style="font-size:11px;color:var(--text-3);line-height:1.6;margin-bottom:9px">অ্যাপ বন্ধ থাকলেও Telegram বা ntfy-তে ছুটির আবেদন পৌঁছাবে। যেকোনো একটি বা দুটিই চালু করতে পারেন।</div>
+
+              <div class="toggle-row" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px">
+                <div class="info"><div class="lbl">✈️ Telegram বিজ্ঞপ্তি</div><div class="desc">আবেদন এলে Telegram-এ স্বয়ংক্রিয় বার্তা</div></div>
+                <label class="switch"><input type="checkbox" id="setTgEnabled"><span class="slider"></span></label>
+              </div>
+              <label style="font-size:11.5px;margin-top:7px;display:block;color:var(--text-2)">Bot Token (BotFather থেকে)</label>
+              <input id="setTgToken" type="text" autocomplete="off" placeholder="যেমন: 123456789:AAH...xyz" style="width:100%;box-sizing:border-box">
+              <label style="font-size:11.5px;margin-top:6px;display:block;color:var(--text-2)">Chat ID — একাধিক অ্যাডমিন হলে কমা দিয়ে আলাদা করুন</label>
+              <input id="setTgChatIds" type="text" autocomplete="off" placeholder="যেমন: 11111111, 22222222" style="width:100%;box-sizing:border-box">
+
+              <div class="toggle-row" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:11px">
+                <div class="info"><div class="lbl">🔔 ntfy পুশ বিজ্ঞপ্তি</div><div class="desc">সব অ্যাডমিন একই টপিকে সাবস্ক্রাইব করলে পুশ পাবেন</div></div>
+                <label class="switch"><input type="checkbox" id="setNtfyEnabled"><span class="slider"></span></label>
+              </div>
+              <label style="font-size:11.5px;margin-top:7px;display:block;color:var(--text-2)">ntfy টপিক — গোপন নাম (সবাই একই টপিকে সাবস্ক্রাইব করবেন)</label>
+              <input id="setNtfyTopic" type="text" autocomplete="off" placeholder="যেমন: lhrsc-chuti-x7k9q2" style="width:100%;box-sizing:border-box">
+
+              <button class="tool-btn" style="width:100%;margin-top:11px" type="button" onclick="_leaveNotifyTest()">📨 পরীক্ষামূলক বিজ্ঞপ্তি পাঠান</button>
+              <div style="font-size:10.5px;color:var(--text-3);margin-top:6px;line-height:1.6">সেট করার পর নিচে "💾 সংরক্ষণ করুন" চাপুন। পরীক্ষা বোতামটি এখনকার ইনপুট দিয়েই বার্তা পাঠায়।</div>
             </div>
             <button class="tool-btn" style="width:100%;margin-top:10px" type="button" onclick="testNotifSound()">🔊 অ্যালার্ম শব্দ পরীক্ষা করুন</button>
           </div>
@@ -7616,7 +7730,7 @@ const BACKUP_KEY = 'lhrsc_routine_backups';
 /* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
    অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
    ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
-const APP_VERSION = 20260616;
+const APP_VERSION = 20260618;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
@@ -7762,6 +7876,9 @@ let state = {
     leaveAlarmRepeat: true,     // পেন্ডিং আবেদন থাকলে বারবার অ্যালার্ম বাজবে
     leaveAlarmCount: 3,         // আবেদন এলে অ্যালার্ম কতবার বাজবে (১/২/৩)
     leaveSendWhatsapp: true,    // আবেদন জমা দিলে হোয়াটসঅ্যাপে পাঠানোর সুযোগ
+    /* 🆕 Telegram + ntfy ছুটি-বিজ্ঞপ্তি (একাধিক অ্যাডমিন, সার্ভার ছাড়াই, অ্যাপ বন্ধ থাকলেও পৌঁছায়) */
+    tgEnabled: false, tgToken: '', tgChatIds: '',
+    ntfyEnabled: false, ntfyTopic: '',
     /* Feature toggles */
     showRowLabels: false,
     floatingScrollbar: true,
@@ -8185,6 +8302,11 @@ function loadState(){
       if(ss.adminWhatsapp === undefined) ss.adminWhatsapp = '';
       if(ss.leaveAlarmRepeat === undefined) ss.leaveAlarmRepeat = true;
       if(ss.leaveSendWhatsapp === undefined) ss.leaveSendWhatsapp = true;
+      if(ss.tgEnabled === undefined) ss.tgEnabled = false;
+      if(ss.tgToken === undefined) ss.tgToken = '';
+      if(ss.tgChatIds === undefined) ss.tgChatIds = '';
+      if(ss.ntfyEnabled === undefined) ss.ntfyEnabled = false;
+      if(ss.ntfyTopic === undefined) ss.ntfyTopic = '';
       // Migrate v1.5: অ্যালার্ম কতবার বাজবে (১/২/৩) — শুধু 1,2,3 গ্রহণযোগ্য
       if(![1,2,3].includes(ss.leaveAlarmCount)){
         ss.leaveAlarmCount = (ss.leaveAlarmCount === 4) ? 3 : 3;
@@ -21313,6 +21435,8 @@ function applySettings(){
     setAdminWhatsapp: 'adminWhatsapp', setLeaveAlarmRepeat: 'leaveAlarmRepeat',
     setLeaveAlarmCount: 'leaveAlarmCount',
     setLeaveSendWhatsapp: 'leaveSendWhatsapp',
+    setTgEnabled:'tgEnabled', setTgToken:'tgToken', setTgChatIds:'tgChatIds',
+    setNtfyEnabled:'ntfyEnabled', setNtfyTopic:'ntfyTopic',
     setVoiceAnnounce: 'voiceAnnounce', setVoiceAnnounceLeave: 'voiceAnnounceLeave',
     setVoiceRate: 'voiceRate', setVoicePitch: 'voicePitch', setVoiceURI: 'voiceURI'
   };
@@ -21440,6 +21564,11 @@ function saveSettings(){
     s.leaveAlarmCount = _lac;
   }
   s.leaveSendWhatsapp = readSetting('setLeaveSendWhatsapp','bool',true);
+  s.tgEnabled = readSetting('setTgEnabled','bool',false);
+  s.tgToken = readSetting('setTgToken','str','');
+  s.tgChatIds = readSetting('setTgChatIds','str','');
+  s.ntfyEnabled = readSetting('setNtfyEnabled','bool',false);
+  s.ntfyTopic = readSetting('setNtfyTopic','str','');
   // 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা
   s.voiceAnnounce = readSetting('setVoiceAnnounce','bool',true);
   s.voiceAnnounceLeave = readSetting('setVoiceAnnounceLeave','bool',true);
@@ -22957,8 +23086,8 @@ function submitLeaveApplication(){
   closeModal('leaveApplyModal');
   showToast('✅ আপনার আবেদন পাঠানো হয়েছে','success');
 
-  // 📲 অ্যাডমিনের হোয়াটসঅ্যাপে আবেদনটি পাঠানোর সুযোগ
-  try{ maybeSendLeaveToWhatsapp(req); }catch(e){ console.warn('WhatsApp send skipped:', e); }
+  // 📩 Telegram + ntfy-তে সরাসরি বিজ্ঞপ্তি (অ্যাপ বন্ধ থাকলেও অধ্যক্ষ/অ্যাডমিনে পৌঁছায়)
+  try{ sendLeaveExternalNotify(req); }catch(e){ console.warn('leave notify skipped:', e); }
 }
 
 /* শিক্ষকের ছুটির আবেদন অ্যাডমিনের হোয়াটসঅ্যাপ নম্বরে পাঠাও।
@@ -22991,6 +23120,78 @@ function maybeSendLeaveToWhatsapp(req){
     }
     audit('ছুটির আবেদন হোয়াটসঅ্যাপে', `${req.teacherName} → ${num}`);
   }
+}
+
+/* 🆕 অ্যাপের বাইরে সরাসরি ছুটি-বিজ্ঞপ্তি — Telegram + ntfy (সার্ভার ছাড়াই, একাধিক অ্যাডমিন,
+   অ্যাপ বন্ধ থাকলেও পৌঁছায়)। WhatsApp-এর বিকল্প/সম্পূরক। */
+function _leaveNotifyBuild(req){
+  const typeBn = {casual:'নৈমিত্তিক', sick:'অসুস্থতা', emergency:'জরুরি', personal:'ব্যক্তিগত', other:'অন্যান্য'}[req.type] || req.type || '';
+  const dateRange = (req.from === req.to) ? req.from : (req.from + ' থেকে ' + req.to);
+  let tm = '';
+  try{ tm = fmtTime(req.createdAt); }catch(_){ tm = ''; }
+  return '🔔 নতুন ছুটির আবেদন\n\n' +
+    '👤 শিক্ষক: ' + (req.teacherName || '') + '\n' +
+    '📋 ধরন: ' + typeBn + '\n' +
+    '📅 তারিখ: ' + dateRange + '\n' +
+    '📝 কারণ: ' + (req.reason || '') + '\n' +
+    (tm ? ('🕒 সময়: ' + tm + '\n') : '') +
+    '— রুটিন ম্যানেজমেন্ট সিস্টেম';
+}
+function sendLeaveExternalNotify(req, cfg){
+  const s = state.settings || {};
+  cfg = cfg || {
+    tgEnabled: !!s.tgEnabled, tgToken: s.tgToken || '', tgChatIds: s.tgChatIds || '',
+    ntfyEnabled: !!s.ntfyEnabled, ntfyTopic: s.ntfyTopic || ''
+  };
+  const text = _leaveNotifyBuild(req);
+  let sent = false;
+
+  // Telegram — একাধিক chat id (প্রতিটি অ্যাডমিনে আলাদা বার্তা)
+  if(cfg.tgEnabled && cfg.tgToken && cfg.tgChatIds){
+    const ids = String(cfg.tgChatIds).split(/[,\s]+/).map(x => x.trim()).filter(Boolean);
+    ids.forEach(cid => {
+      const url = 'https://api.telegram.org/bot' + String(cfg.tgToken).trim() +
+        '/sendMessage?chat_id=' + encodeURIComponent(cid) + '&text=' + encodeURIComponent(text);
+      try{ fetch(url).catch(() => { try{ fetch(url, {mode:'no-cors'}); }catch(_){} }); }catch(_){}
+    });
+    if(ids.length) sent = true;
+  }
+
+  // ntfy — একটি শেয়ার্ড টপিক (সব অ্যাডমিন একই টপিকে সাবস্ক্রাইব → এক পাঠানোতেই সবাই পায়)
+  if(cfg.ntfyEnabled && cfg.ntfyTopic){
+    const topic = String(cfg.ntfyTopic).trim().replace(/\s+/g,'').replace(/^https?:\/\/ntfy\.sh\//i,'');
+    if(topic){
+      try{
+        fetch('https://ntfy.sh/' + encodeURIComponent(topic), {
+          method:'POST', body: text,
+          headers:{ 'Title':'LHRSC - Chutir Abedon', 'Priority':'high', 'Tags':'bell' }
+        }).catch(() => {});
+      }catch(_){}
+      sent = true;
+    }
+  }
+
+  if(sent){ try{ audit('ছুটি-বিজ্ঞপ্তি পাঠানো', (req.teacherName || '') + ' → Telegram/ntfy'); }catch(_){} }
+  else { try{ showToast('ℹ️ Telegram/ntfy সেটআপ করা নেই — শুধু অ্যাপে আবেদন জমা হয়েছে','info',3000); }catch(_){} }
+  return sent;
+}
+function _leaveNotifyTest(){
+  function gv(id){ const e = document.getElementById(id); return e ? String(e.value||'').trim() : ''; }
+  function gc(id){ const e = document.getElementById(id); return e ? !!e.checked : false; }
+  const cfg = {
+    tgEnabled: gc('setTgEnabled'), tgToken: gv('setTgToken'), tgChatIds: gv('setTgChatIds'),
+    ntfyEnabled: gc('setNtfyEnabled'), ntfyTopic: gv('setNtfyTopic')
+  };
+  const tgReady = cfg.tgEnabled && cfg.tgToken && cfg.tgChatIds;
+  const ntfyReady = cfg.ntfyEnabled && cfg.ntfyTopic;
+  if(!tgReady && !ntfyReady){
+    showToast('আগে Telegram (টোকেন+chat id) অথবা ntfy (টপিক) পূরণ করে চালু করুন','warning',3500);
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  const testReq = { teacherName:'পরীক্ষা শিক্ষক', type:'casual', from:today, to:today, reason:'এটি একটি পরীক্ষামূলক বিজ্ঞপ্তি', createdAt:Date.now() };
+  sendLeaveExternalNotify(testReq, cfg);
+  showToast('📨 পরীক্ষামূলক বিজ্ঞপ্তি পাঠানো হলো — অধ্যক্ষ/অ্যাডমিনের ফোনে এসেছে কিনা দেখুন','success',4500);
 }
 
 /* ---- TEACHER: My Applications view ---- */
