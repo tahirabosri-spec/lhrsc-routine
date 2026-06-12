@@ -7734,7 +7734,7 @@ const BACKUP_KEY = 'lhrsc_routine_backups';
 /* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
    অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
    ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
-const APP_VERSION = 20260620;
+const APP_VERSION = 20260621;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
@@ -8041,16 +8041,27 @@ function _stampChangedTeachers(){
 }
 
 /* 🆕 settings বদলালে settings._updatedAt স্ট্যাম্প — সব settings-লেখককে
-   স্বয়ংক্রিয়ভাবে ধরে (saveSettings, রুটিন-লক, স্ব-ইনপুট টগল ইত্যাদি)।
-   এতে মার্জে "নতুন settings জেতে" — অ্যাডমিনের বন্ধ-আদেশ আর কখনো পুরোনো
-   ডিভাইসের বাসি settings দিয়ে উল্টে যাবে না। */
+   স্বয়ংক্রিয়ভাবে ধরে। গুরুত্বপূর্ণ: চঞ্চল ফিল্ডগুলো (columnsUpdatedAt,
+   lastSchedule) তুলনার বাইরে — নাহলে সাধারণ সেভেও পুরো ব্লক "নতুন" স্ট্যাম্প
+   পেয়ে বাসি টগল-মান (যেমন teacherSelfInput) জিতে যেত। নিরাপত্তা-জরুরি
+   teacherSelfInput টগলের জন্য আলাদা ফিল্ড-পর্যায়ের স্ট্যাম্প (teacherSelfInputAt) —
+   মানটি সত্যিই বদলালে তবেই বসে। */
+const _SETTINGS_VOLATILE_KEYS = ['_updatedAt','columnsUpdatedAt','lastSchedule','teacherSelfInputAt'];
 function _stampSettingsIfChanged(){
   try{
     if(!state.settings || typeof state.settings !== 'object') return;
     const prev = (_lastSyncedSnapshot && _lastSyncedSnapshot.settings) ? _lastSyncedSnapshot.settings : null;
-    const cur = Object.assign({}, state.settings); delete cur._updatedAt;
+    // 🔐 teacherSelfInput — ফিল্ড-পর্যায়ের স্ট্যাম্প (মান বদলালে তবেই)
+    const curSelf = !!state.settings.teacherSelfInput;
+    const oldSelf = prev ? !!prev.teacherSelfInput : curSelf;
+    if(curSelf !== oldSelf){
+      state.settings.teacherSelfInputAt = serverNowISO();
+    }
+    // সাধারণ ব্লক-স্ট্যাম্প — চঞ্চল ফিল্ড বাদ দিয়ে তুলনা
+    const cur = Object.assign({}, state.settings);
+    _SETTINGS_VOLATILE_KEYS.forEach(k => { delete cur[k]; });
     let old = null;
-    if(prev){ old = Object.assign({}, prev); delete old._updatedAt; }
+    if(prev){ old = Object.assign({}, prev); _SETTINGS_VOLATILE_KEYS.forEach(k => { delete old[k]; }); }
     if(!old || JSON.stringify(cur) !== JSON.stringify(old)){
       state.settings._updatedAt = serverNowISO();
     }
@@ -8117,6 +8128,26 @@ function _mergeStateByRecency(base, incoming){
       if(keepColsAt !== undefined) out.settings.columnsUpdatedAt = keepColsAt;
       if(keepSched !== undefined) out.settings.lastSchedule = keepSched;
     }
+
+    // 🔐 teacherSelfInput — ফিল্ড-পর্যায়ের recency (ব্লক-মার্জের ফল যাই হোক,
+    //    এই নিরাপত্তা-টগলের মান নির্ধারিত হয় শুধু তার নিজস্ব স্ট্যাম্পে)।
+    //    স্ট্যাম্পবিহীন/সমান + মতভেদ → নিরাপদ-বন্ধ (OFF) — পুরোনো ডেটা কখনো
+    //    এই মোড নিজে থেকে চালু করতে পারবে না।
+    try{
+      const bS = (base && base.settings) || {};
+      const iS = (incoming && incoming.settings) || {};
+      if(!out.settings) out.settings = {};
+      const bAt = _ms(bS.teacherSelfInputAt), iAt2 = _ms(iS.teacherSelfInputAt);
+      if(iAt2 > bAt){
+        out.settings.teacherSelfInput = !!iS.teacherSelfInput;
+        out.settings.teacherSelfInputAt = iS.teacherSelfInputAt;
+      } else if(bAt > iAt2){
+        out.settings.teacherSelfInput = !!bS.teacherSelfInput;
+        out.settings.teacherSelfInputAt = bS.teacherSelfInputAt;
+      } else if(!!bS.teacherSelfInput !== !!iS.teacherSelfInput){
+        out.settings.teacherSelfInput = false;   // স্ট্যাম্প নেই/সমান + মতভেদ → বন্ধই নিরাপদ
+      }
+    }catch(_){}
 
     // columns (সময়সূচি) recency
     const oAt = _ms(out.settings && out.settings.columnsUpdatedAt);
@@ -8561,6 +8592,9 @@ function applyRemoteState(remoteData){
     const _localSettingsSnap = (state.settings && typeof state.settings === 'object')
       ? JSON.parse(JSON.stringify(state.settings)) : null;
     const _localSettingsAt = (state.settings && state.settings._updatedAt) || '';
+    // 🔐 teacherSelfInput — ফিল্ড-পর্যায়ের মান+স্ট্যাম্প আলাদা করে রাখি
+    const _localSelfVal = !!(state.settings && state.settings.teacherSelfInput);
+    const _localSelfAt = (state.settings && state.settings.teacherSelfInputAt) || '';
     const _localLastSched = (state.settings && state.settings.lastSchedule)
       ? JSON.parse(JSON.stringify(state.settings.lastSchedule)) : null;
     // 🆕 ওভাররাইটের আগে লোকাল tombstones রাখি (যাতে union-merge-এ কখনো হারায় না)
@@ -8660,6 +8694,24 @@ function applyRemoteState(remoteData){
         state.settings = _localSettingsSnap;
         if(_curColsAt !== undefined) state.settings.columnsUpdatedAt = _curColsAt;
         if(_curSched !== undefined) state.settings.lastSchedule = _curSched;
+        _settingsReassert = true;
+      }
+    }catch(_){}
+
+    // 🔐 teacherSelfInput — ফিল্ড-পর্যায়ের চূড়ান্ত রেজোলিউশন (ব্লক যাই বলুক):
+    //    যার স্ট্যাম্প নতুন তার মান; স্ট্যাম্পহীন/সমান + মতভেদ → নিরাপদ-বন্ধ (OFF)।
+    try{
+      if(!state.settings || typeof state.settings !== 'object') state.settings = {};
+      const _rVal = !!state.settings.teacherSelfInput;
+      const _rAt = state.settings.teacherSelfInputAt || '';
+      const _lms = _localSelfAt ? new Date(_localSelfAt).getTime() : 0;
+      const _rms = _rAt ? new Date(_rAt).getTime() : 0;
+      if(_lms > _rms){
+        if(_rVal !== _localSelfVal){ _settingsReassert = true; }
+        state.settings.teacherSelfInput = _localSelfVal;
+        state.settings.teacherSelfInputAt = _localSelfAt;
+      } else if(_rms === _lms && _rVal !== _localSelfVal){
+        state.settings.teacherSelfInput = false;   // মতভেদ + স্ট্যাম্প সমান/নেই → বন্ধ
         _settingsReassert = true;
       }
     }catch(_){}
