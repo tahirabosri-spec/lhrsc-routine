@@ -5919,6 +5919,10 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
           <div class="info"><div class="lbl">🔒 রুটিন লক (এলোমেলো ক্লিক থেকে সুরক্ষা)</div><div class="desc">চালু থাকলে শিক্ষকদের শ্রেণি/বিষয়/শাখা সেল এডিট হবে না। নোটিফিকেশন, ছুটি, ড্যাশবোর্ড ইত্যাদি স্বাভাবিক চলবে।</div></div>
           <label class="switch"><input type="checkbox" id="setRoutineLock" onchange="toggleRoutineLock(this.checked)"><span class="slider"></span></label>
         </div>
+        <div class="toggle-row admin-mgr-only">
+          <div class="info"><div class="lbl">✏️ শিক্ষক স্ব-ইনপুট মোড</div><div class="desc">চালু থাকলে প্রত্যেক শিক্ষক নিজ row-তে নিজের ক্লাস ও পদবি/মোবাইল ইনপুট করতে পারবেন (নাম পরিবর্তন নয়, অন্যের row নয়)। রুটিন লক থাকলে কাজ করবে না।</div></div>
+          <label class="switch"><input type="checkbox" id="setTeacherSelfInput"><span class="slider"></span></label>
+        </div>
         <div class="toggle-row">
           <div class="info"><div class="lbl">কম্প্যাক্ট মোড</div><div class="desc">ছোট রো হাইট, বেশি ডেটা</div></div>
           <label class="switch"><input type="checkbox" id="setCompact" onchange="toggleCompact()"><span class="slider"></span></label>
@@ -7730,7 +7734,7 @@ const BACKUP_KEY = 'lhrsc_routine_backups';
 /* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
    অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
    ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
-const APP_VERSION = 20260618;
+const APP_VERSION = 20260619;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
@@ -7879,6 +7883,8 @@ let state = {
     /* 🆕 Telegram + ntfy ছুটি-বিজ্ঞপ্তি (একাধিক অ্যাডমিন, সার্ভার ছাড়াই, অ্যাপ বন্ধ থাকলেও পৌঁছায়) */
     tgEnabled: false, tgToken: '', tgChatIds: '',
     ntfyEnabled: false, ntfyTopic: '',
+    /* 🆕 শিক্ষক স্ব-ইনপুট মোড — চালু থাকলে শিক্ষক নিজের row-এর ক্লাস + পদবি/মোবাইল ইনপুট করতে পারে (নাম নয়) */
+    teacherSelfInput: false,
     /* Feature toggles */
     showRowLabels: false,
     floatingScrollbar: true,
@@ -8307,6 +8313,7 @@ function loadState(){
       if(ss.tgChatIds === undefined) ss.tgChatIds = '';
       if(ss.ntfyEnabled === undefined) ss.ntfyEnabled = false;
       if(ss.ntfyTopic === undefined) ss.ntfyTopic = '';
+      if(ss.teacherSelfInput === undefined) ss.teacherSelfInput = false;
       // Migrate v1.5: অ্যালার্ম কতবার বাজবে (১/২/৩) — শুধু 1,2,3 গ্রহণযোগ্য
       if(![1,2,3].includes(ss.leaveAlarmCount)){
         ss.leaveAlarmCount = (ss.leaveAlarmCount === 4) ? 3 : 3;
@@ -10460,11 +10467,21 @@ function renderTable(){
   const teachersToRender = (currentUser && currentUser.role === 'teacher' && currentUser.teacherId)
     ? state.teachers.filter(x => x.id === currentUser.teacherId)
     : state.teachers;
+  try{
+    if(currentUser && currentUser.role === 'teacher'){
+      const _sm = !!(state.settings && state.settings.teacherSelfInput);
+      if(_sm && !window._siHintShown){ window._siHintShown = true; showToast('✏️ আপনি এখন নিজের রুটিন (ক্লাস) ও পদবি/মোবাইল ইনপুট করতে পারেন — নিজের ঘরে চাপুন','info',5000); }
+      else if(!_sm){ window._siHintShown = false; }
+    }
+  }catch(_){}
   teachersToRender.forEach((t, ti)=>{
     // Preserve the *real* SL index from the master list, not the filtered one
     const realIdx = state.teachers.findIndex(x => x.id === t.id);
     const slIdx = (realIdx >= 0 ? realIdx : ti) + 1;
-    const teacherCanEdit = canEditTeacher(t.id) && !isReadOnly && !t.locked && !routineLocked();
+    const _selfMode = !!(state.settings && state.settings.teacherSelfInput);
+    const _teacherSelfOwn = currentUser && currentUser.role === 'teacher' && _selfMode && String(currentUser.teacherId) === String(t.id);
+    const teacherCanEdit = (canEditTeacher(t.id) && !isReadOnly && !t.locked && !routineLocked())
+                        || (_teacherSelfOwn && !t.locked && !routineLocked());
     const teacherLocked = t.locked;
     const lockBtn = canFullEdit() ? `<span class="t-lock" onclick="event.stopPropagation();toggleTeacherLock('${t.id}')" title="${teacherLocked?'আনলক করুন':'লক করুন'}">${teacherLocked?'🔒':'🔓'}</span>` : '';
     const rowControls = canFullEdit() ? `
@@ -11757,6 +11774,18 @@ function editTeacher(tid){
   const subList = (state.options && state.options.subject) || SUBJECT_LIST;
   subSel.innerHTML = '<option value="">— নির্বাচন করুন —</option>' +
     subList.map(s => `<option value="${esc(s)}" ${t.mainSubject===s?'selected':''}>${esc(s)}</option>`).join('');
+
+  // 🆕 শিক্ষক স্ব-ইনপুট: নাম ও প্রধান বিষয় সবসময় লক; পদবি/মোবাইল শুধু মোড চালু (ও লক না) থাকলে এডিটযোগ্য
+  if(currentUser && currentUser.role === 'teacher'){
+    const _selfMode = !!(state.settings && state.settings.teacherSelfInput)
+                   && String(currentUser.teacherId) === String(tid) && !routineLocked();
+    const _nm = document.getElementById('tEditName'); if(_nm){ _nm.readOnly = true; }
+    if(subSel){ subSel.disabled = true; }
+    ['tEditTitle','tEditMobile1','tEditMobile2'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el){ if(el.tagName === 'SELECT'){ el.disabled = !_selfMode; } else { el.readOnly = !_selfMode; } }
+    });
+  }
 
   // Populate the chip pickers — subjects, classes, sections
   renderChipPicker('subjectsPicker', subList, t.subjects || []);
@@ -15453,6 +15482,13 @@ function saveTeacher(){
     }catch(err){
       console.warn('preview placement skipped:', err);
     }
+  } else if(currentUser && currentUser.role === 'teacher'
+            && state.settings && state.settings.teacherSelfInput
+            && String(currentUser.teacherId) === String(tid) && !routineLocked()){
+    // 🆕 শিক্ষক স্ব-ইনপুট: শুধু পদবি + মোবাইল সংরক্ষণ (নাম/বিষয়/পাসওয়ার্ড নয়)
+    t.title = (document.getElementById('tEditTitle').value || '').trim();
+    t.mobile1 = (document.getElementById('tEditMobile1').value || '').trim();
+    t.mobile2 = (document.getElementById('tEditMobile2').value || '').trim();
   }
   t.onLeave = document.getElementById('tEditLeave').checked;
   saveState();
@@ -15505,8 +15541,12 @@ function openCellEditor(tid, cid, field){
   if(routineLocked()){showToast('🔒 রুটিন লক করা আছে — আনলক করে এডিট করুন','warning',2200);return}
   if(!canEditTeacher(tid)){showToast('অনুমতি নেই','error');return}
   if(currentUser.role === 'teacher' && !canFullEdit()){
-    showToast('শিক্ষক শুধু "ছুটিতে আছি" টগল করতে পারেন','warning');
-    return;
+    const _selfMode = !!(state.settings && state.settings.teacherSelfInput);
+    const _ownRow = String(currentUser.teacherId) === String(tid);
+    if(!(_selfMode && _ownRow)){
+      showToast(_selfMode ? 'আপনি শুধু নিজের রুটিন ইনপুট করতে পারেন' : 'শিক্ষক শুধু "ছুটিতে আছি" টগল করতে পারেন','warning');
+      return;
+    }
   }
 
   const t = state.teachers.find(x=>x.id===tid);
@@ -15810,6 +15850,13 @@ function ceRefreshSelections(){
 function ceSaveAll(){
   if(!currentEditCell) return;
   const {tid, cid} = currentEditCell;
+  // 🛡 শিক্ষক স্ব-ইনপুট প্রতিরক্ষা — শিক্ষক শুধু নিজের row, শুধু মোড চালু থাকলে, লক না থাকলে
+  if(currentUser && currentUser.role === 'teacher' && !canFullEdit()){
+    const _ok = !!(state.settings && state.settings.teacherSelfInput)
+             && String(currentUser.teacherId) === String(tid)
+             && !routineLocked();
+    if(!_ok){ showToast('অনুমতি নেই','error'); return; }
+  }
   const t = state.teachers.find(x => x.id === tid);
   if(!t) return;
 
@@ -21437,6 +21484,7 @@ function applySettings(){
     setLeaveSendWhatsapp: 'leaveSendWhatsapp',
     setTgEnabled:'tgEnabled', setTgToken:'tgToken', setTgChatIds:'tgChatIds',
     setNtfyEnabled:'ntfyEnabled', setNtfyTopic:'ntfyTopic',
+    setTeacherSelfInput:'teacherSelfInput',
     setVoiceAnnounce: 'voiceAnnounce', setVoiceAnnounceLeave: 'voiceAnnounceLeave',
     setVoiceRate: 'voiceRate', setVoicePitch: 'voicePitch', setVoiceURI: 'voiceURI'
   };
@@ -21569,6 +21617,7 @@ function saveSettings(){
   s.tgChatIds = readSetting('setTgChatIds','str','');
   s.ntfyEnabled = readSetting('setNtfyEnabled','bool',false);
   s.ntfyTopic = readSetting('setNtfyTopic','str','');
+  s.teacherSelfInput = readSetting('setTeacherSelfInput','bool',false);
   // 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা
   s.voiceAnnounce = readSetting('setVoiceAnnounce','bool',true);
   s.voiceAnnounceLeave = readSetting('setVoiceAnnounceLeave','bool',true);
