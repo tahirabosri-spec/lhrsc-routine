@@ -15864,30 +15864,25 @@ function _ceOptionUsageCount(kind, value){
   return n;
 }
 
-/* অপশন মুছি — কনফার্মেশনসহ (রুটিন-ডেটায় হাত দিই না, শুধু তালিকা থেকে) */
+/* অপশন মুছি — কনফার্মেশনসহ। 🔗 কেন্দ্রীয় optionsRemove ব্যবহার করে —
+   তালিকা থেকে সরানোর পাশাপাশি রুটিনে ব্যবহৃত অকেজো সেল/পার্ট/এন্ট্রিও সরায়। */
 function ceAskDeleteOption(kind, value){
   if(!value) return;
   if(kind === 'subject' && value === 'Free'){
     try{ showToast('“Free” মুছে ফেলা যাবে না','info',2000); }catch(_){}
     return;
   }
-  const label = kind === 'subject' ? 'বিষয়' : kind === 'class' ? 'শ্রেণি' : 'শাখা';
-  const used = _ceOptionUsageCount(kind, value);
-  let msg = `“${value}” ${label}টি তালিকা থেকে মুছে ফেলবেন?`;
+  const label = _optLabel(kind);
+  const used = _optRoutineUsage(kind, value);
+  let msg = `“${value}” ${label}টি মুছে ফেলবেন?`;
   if(used > 0){
     const bn = (typeof toBnNum === 'function') ? toBnNum(used) : used;
-    msg += `\n\n⚠ এটি বর্তমানে রুটিনে ${bn} জায়গায় আছে। মুছলেও ঐ রুটিন-ডেটা ঠিক থাকবে — শুধু তালিকা থেকে অপশনটি সরে যাবে।`;
+    msg += `\n\n⚠ এটি বর্তমানে রুটিনে ${bn} জায়গায় ব্যবহৃত। মুছলে ঐ ক্লাসগুলোও রুটিন থেকে সরে যাবে (অকেজো হলে)। আনডু দিয়ে ফেরানো যাবে।`;
   }
   if(!confirm(msg)) return;
-  if(!state.options) state.options = {};
-  if(Array.isArray(state.options[kind])){
-    const i = state.options[kind].indexOf(value);
-    if(i >= 0) state.options[kind].splice(i, 1);
-  }
-  if(_ceDraft && _ceDraft[kind] === value) _ceDraft[kind] = '';
-  try{ saveState(); }catch(_){}
-  try{ ceRefreshSelections(); }catch(_){}
-  try{ showToast(`🗑 “${value}” তালিকা থেকে মুছে ফেলা হলো`,'success',1800); }catch(_){}
+  try{ snapshot(); }catch(_){}                 // undo-র জন্য
+  optionsRemove(kind, value);                  // 🔗 কেন্দ্রীয় সিঙ্ক + রুটিন ক্লিনআপ
+  try{ showToast(`🗑 “${value}” মুছে ফেলা হলো`,'success',1800); }catch(_){}
 }
 
 /* "+ নতুন" → ছোট ইনপুট খোলে */
@@ -15904,12 +15899,146 @@ function ceCommitNew(kind){
   const inp = document.getElementById(_ceAddInpId(kind));
   const v = ((inp && inp.value) || '').trim();
   if(!v) return;
-  if(!state.options) state.options = {};
-  if(!Array.isArray(state.options[kind])) state.options[kind] = [];
-  if(state.options[kind].indexOf(v) < 0){ state.options[kind].push(v); try{ saveState(); }catch(_){} }
+  optionsAdd(kind, v);                 // 🔗 কেন্দ্রীয় সিঙ্ক (সব মডাল + Settings)
   const box = document.getElementById(_ceAddBoxId(kind));
   if(box) box.style.display = 'none';
   cePick(kind, v);
+}
+
+/* ===========================================================
+   🔗 কেন্দ্রীয় অপশন-সিঙ্ক স্তর — SINGLE SOURCE OF TRUTH
+   ───────────────────────────────────────────────────────────
+   বিষয়/শ্রেণি/শাখা তালিকায় যোগ বা মুছার একমাত্র সরকারি রাস্তা।
+   প্রথম মডাল (cell editor), দ্বিতীয় মডাল (split) ও Settings অপশন
+   ট্যাব — তিন জায়গাই এই দুই ফাংশন ব্যবহার করে, তাই এক জায়গায়
+   বদলালে সর্বত্র লাইভ সিঙ্ক হয়। মূল ডেটা-মডেলে কোনো পরিবর্তন নেই।
+═══════════════════════════════════════════════════════════ */
+var _OPT_KINDS = ['class','subject','section'];
+
+function _optLabel(kind){
+  return kind === 'subject' ? 'বিষয়' : kind === 'class' ? 'শ্রেণি' : 'শাখা';
+}
+
+/* তালিকায় একটি অপশন যোগ — ডুপ্লিকেট হলে কিছু করে না; সর্বত্র রিফ্রেশ */
+function optionsAdd(kind, val){
+  if(_OPT_KINDS.indexOf(kind) < 0) return false;
+  val = (val == null ? '' : String(val)).trim();
+  if(!val) return false;
+  if(!state.options) state.options = {};
+  if(!Array.isArray(state.options[kind])) state.options[kind] = [];
+  if(state.options[kind].indexOf(val) >= 0){ refreshAllOptionPickers(); return false; }
+  state.options[kind].push(val);
+  try{ saveState(); }catch(_){}
+  refreshAllOptionPickers();
+  return true;
+}
+
+/* একটি অপশন মুছি — তালিকা থেকে + রুটিন-সেল/পার্ট/এন্ট্রি থেকে (অকেজো হলে সরিয়ে)।
+   ⚠ ডেস্ট্রাক্টিভ: কল করার আগে call-site-এ snapshot() রাখুন (undo-র জন্য)। */
+function optionsRemove(kind, val){
+  if(_OPT_KINDS.indexOf(kind) < 0) return;
+  val = (val == null ? '' : String(val)).trim();
+  if(!val) return;
+  if(kind === 'subject' && val === 'Free') return;          // “Free” অরক্ষিত
+  // 1) তালিকা থেকে সরাই
+  if(state.options && Array.isArray(state.options[kind])){
+    const i = state.options[kind].indexOf(val);
+    if(i >= 0) state.options[kind].splice(i, 1);
+  }
+  // 2) রুটিন-ডেটা পরিষ্কার (অকেজো সেল/পার্ট/এন্ট্রি সরাই)
+  _optScrubRoutine(kind, val);
+  // 3) এডিটর draft-এও থাকলে মুছি
+  try{ if(_ceDraft && _ceDraft[kind] === val) _ceDraft[kind] = ''; }catch(_){}
+  try{ saveState(); }catch(_){}
+  // 4) সব জায়গা রিফ্রেশ
+  refreshAllOptionPickers();
+  try{ renderTable(); }catch(_){}
+  try{ refreshRealtimeConflicts(true); }catch(_){}
+  try{ ceRefreshSelections(); }catch(_){}
+  try{ if(typeof _qemRenderSplitList === 'function') _qemRenderSplitList(); }catch(_){}
+}
+
+/* রুটিন থেকে একটি deleted মান সরিয়ে অকেজো সেল/পার্ট/এন্ট্রি বাদ দিই।
+   বৈধতা: subject==='Free' হলে valid; নইলে subject+class+section তিনটিই লাগবে। */
+function _optScrubRoutine(kind, val){
+  if(!state || !Array.isArray(state.teachers)) return;
+  state.teachers.forEach(t => {
+    // (ক) teachingEntries — এই মান-যুক্ত এন্ট্রি পুরো বাদ (এন্ট্রি = class+section+subject টপল)
+    if(Array.isArray(t.teachingEntries)){
+      t.teachingEntries = t.teachingEntries.filter(raw => {
+        const e = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : (raw || {});
+        return (e[kind] || '') !== val;
+      });
+    }
+    // (খ) cells — single ও split parts
+    const cells = t.cells || {};
+    Object.keys(cells).forEach(cid => {
+      const cell = cells[cid];
+      if(!cell) return;
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        // এই মান ব্যবহারকারী part অকেজো → বাদ
+        cell.parts = cell.parts.filter(p => p && (p[kind] || '') !== val);
+        if(cell.parts.length === 1){
+          // একটাই অংশ বাকি → আবার single cell-এ collapse (বিদ্যমান লজিকের মতো)
+          const p = cell.parts[0];
+          cell.subject = p.subject; cell.class = p.class; cell.section = p.section;
+          cell.days   = Array.isArray(p.days) ? p.days.slice() : [];
+          cell.shared = !!p.shared;
+          delete cell.parts;
+        } else if(cell.parts.length === 0){
+          delete cells[cid];                 // সব অংশ অকেজো → সেলটাই সরাই
+        }
+      } else {
+        // single cell — এই মান থাকলে সেলটাই অকেজো → সরাই
+        if((cell[kind] || '') === val) delete cells[cid];
+      }
+    });
+  });
+}
+
+/* একটি মান রুটিনে কতগুলো সেল/পার্ট/এন্ট্রিতে আছে — confirm বার্তার জন্য */
+function _optRoutineUsage(kind, val){
+  let n = 0;
+  try{
+    (state.teachers || []).forEach(t => {
+      (t.teachingEntries || []).forEach(raw => {
+        const e = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : (raw || {});
+        if((e[kind] || '') === val) n++;
+      });
+      const cells = t.cells || {};
+      Object.keys(cells).forEach(cid => {
+        const c = cells[cid] || {};
+        if((c[kind] || '') === val) n++;
+        if(Array.isArray(c.parts)) c.parts.forEach(p => { if(p && (p[kind] || '') === val) n++; });
+      });
+    });
+  }catch(_){}
+  return n;
+}
+
+/* স্ক্রিনে খোলা সব অপশন-পিকার একসাথে রি-রেন্ডার — লাইভ সিঙ্কের কেন্দ্র */
+function refreshAllOptionPickers(){
+  // 1) প্রথম মডাল (cell editor) চিপ — খোলা থাকলে
+  try{
+    const ce = document.getElementById('cellEditor');
+    if(ce && ce.classList.contains('show')){
+      _OPT_KINDS.forEach(k => { try{ ceRenderChips(k); }catch(_){} });
+    }
+  }catch(_){}
+  // 2) দ্বিতীয় মডাল (split) সাজেশন চিপ — খোলা থাকলে
+  try{
+    const sm = document.getElementById('qemSplitModal');
+    if(sm && sm.classList.contains('show') && typeof _qemSplitFillSuggestions === 'function'){
+      _qemSplitFillSuggestions();
+    }
+  }catch(_){}
+  // 3) Settings অপশন তালিকা — মডাল খোলা থাকলে
+  try{
+    const om = document.getElementById('optionsModal');
+    if(om && om.classList.contains('show') && typeof renderOptionList === 'function'){
+      renderOptionList();
+    }
+  }catch(_){}
 }
 
 function _ceToggleDone(id, on){ const el = document.getElementById(id); if(el) el.classList.toggle('done', !!on); }
@@ -16507,12 +16636,9 @@ function _qemSplitModalSave(){
     return;
   }
 
-  // নতুন global options-এ যোগ (যদি না থাকে)
+  // নতুন global options-এ যোগ (যদি না থাকে) — 🔗 কেন্দ্রীয় সিঙ্ক
   ['subject','class','section'].forEach((f, idx) => {
-    const val = [sub, cls, sec][idx];
-    if(!state.options) state.options = {};
-    if(!Array.isArray(state.options[f])) state.options[f] = [];
-    if(state.options[f].indexOf(val) < 0) state.options[f].push(val);
+    optionsAdd(f, [sub, cls, sec][idx]);
   });
 
   // cell-কে multi-part-এ রূপান্তর — যদি এখনো parts না থাকে, current cell-কে part 1 বানাই
@@ -19622,45 +19748,77 @@ function switchSetTab(tab){
 
 function renderOptionList(){
   const list = document.getElementById('optionList');
-  const opts = state.options[currentOptTab] || [];
-  list.innerHTML = opts.map((o, i) => `
+  if(!list) return;
+  const opts = (state.options && state.options[currentOptTab]) || [];
+  list.innerHTML = opts.map((o) => `
     <div class="option-row">
-      <input type="text" value="${esc(o)}" data-idx="${i}" oninput="this.dataset.changed=1">
-      <button class="del-btn" onclick="removeOption(${i})">×</button>
+      <input type="text" value="${esc(o)}" oninput="this.dataset.changed=1">
+      <button class="del-btn" onclick="removeOption(this)">×</button>
     </div>
   `).join('');
 }
 
+/* নতুন একটি ফাঁকা সারি যোগ করি (state এখনই বদলাই না — সংরক্ষণে কমিট হবে)।
+   এতে আগের “নতুন অপশন” junk আর state-এ ঢোকে না। */
 function addOption(){
-  state.options[currentOptTab].push('নতুন অপশন');
-  renderOptionList();
+  const list = document.getElementById('optionList');
+  if(!list) return;
+  const row = document.createElement('div');
+  row.className = 'option-row';
+  row.innerHTML = `<input type="text" value="" oninput="this.dataset.changed=1">
+      <button class="del-btn" onclick="removeOption(this)">×</button>`;
+  list.appendChild(row);
+  const inp = row.querySelector('input');
+  if(inp) setTimeout(() => { try{ inp.focus(); }catch(_){} }, 30);
 }
 
-function removeOption(i){
-  state.options[currentOptTab].splice(i, 1);
-  renderOptionList();
+/* সারি সরাই — শুধু DOM থেকে (state সংরক্ষণে কমিট হবে)। */
+function removeOption(arg){
+  const list = document.getElementById('optionList');
+  let row = null;
+  if(arg && arg.closest){ row = arg.closest('.option-row'); }
+  else if(typeof arg === 'number' && list){ row = list.querySelectorAll('.option-row')[arg]; }
+  if(row) row.remove();
 }
 
 function saveOptions(){
   if(!isEditorAccount()){showToast('অনুমতি নেই','error');return}
   if(!requirePerm('manageOptions')) return;
-  snapshot();
-  ['class','subject','section'].forEach(tab=>{
-    // gather inputs from current rendered state
-  });
-  // Instead: read all option-row inputs of current tab, but for safety, we collect from DOM:
-  const collect = () => {
-    const inputs = document.querySelectorAll('#optionList .option-row input');
-    return Array.from(inputs).map(i=>i.value.trim()).filter(Boolean);
-  };
-  // Save current tab's edits before switching
-  state.options[currentOptTab] = collect();
+  const tab = currentOptTab;
+  const before = (state.options && Array.isArray(state.options[tab])) ? state.options[tab].slice() : [];
+  // DOM থেকে বর্তমান তালিকা — ফাঁকা বাদ, ডুপ্লিকেট বাদ, ক্রম রক্ষিত
+  const rawList = Array.from(document.querySelectorAll('#optionList .option-row input'))
+                       .map(i => i.value.trim()).filter(Boolean);
+  const seen = new Set();
+  const after = rawList.filter(v => seen.has(v) ? false : (seen.add(v), true));
+  // diff — নাম এডিট = পুরনো removed + নতুন added (আপনার সিদ্ধান্ত মতো রুটিন প্রভাবিত হবে)
+  const removed = before.filter(x => after.indexOf(x) < 0);
+  const added   = after.filter(x => before.indexOf(x) < 0);
+
+  // ডেস্ট্রাক্টিভ removed থাকলে রুটিন-প্রভাব দেখিয়ে confirm
+  if(removed.length){
+    let usedTotal = 0;
+    removed.forEach(v => { usedTotal += _optRoutineUsage(tab, v); });
+    const lbl = _optLabel(tab);
+    const cnt = (typeof toBnNum === 'function') ? toBnNum(removed.length) : removed.length;
+    let m = `${cnt} টি ${lbl} মুছে ফেলা হচ্ছে:\n• ${removed.join('\n• ')}`;
+    if(usedTotal > 0){
+      const bn = (typeof toBnNum === 'function') ? toBnNum(usedTotal) : usedTotal;
+      m += `\n\n⚠ এগুলো রুটিনে ${bn} জায়গায় ব্যবহৃত — অকেজো ক্লাসগুলোও সরে যাবে। আনডু দিয়ে ফেরানো যাবে।`;
+    }
+    if(!confirm(m)) return;   // বাতিল → মডাল খোলা থাকবে, কিছুই বদলাবে না
+  }
+
+  snapshot();                                        // undo-র জন্য (একবার)
+  removed.forEach(v => optionsRemove(tab, v));        // তালিকা + রুটিন ক্লিনআপ
+  state.options[tab] = after.slice();                // চূড়ান্ত তালিকা ও ক্রম (added + পুনর্বিন্যাস)
   saveState();
-  renderFilters();
-  populateBulk();
-  renderTable();
+  refreshAllOptionPickers();
+  try{ renderFilters(); }catch(_){}
+  try{ populateBulk(); }catch(_){}
+  try{ renderTable(); }catch(_){}
   closeModal('optionsModal');
-  audit('অপশন আপডেট', currentOptTab+' তালিকা');
+  audit('অপশন আপডেট', tab+' তালিকা');
   showToast('অপশন সংরক্ষিত','success');
 }
 
