@@ -1353,6 +1353,14 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   0%,100%{ box-shadow: inset 0 0 0 0 rgba(37,99,235,0); }
   50%{ box-shadow: inset 0 0 0 3px #2563eb, 0 0 16px rgba(37,99,235,.6); }
 }
+/* 🆕 ফাঁকা ঘণ্টা কার্ড — দিন → ঘণ্টা তালিকা */
+.rt-gap-list{display:flex;flex-direction:column;gap:5px;margin-top:5px}
+.rt-gap-line{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.rt-gap-day{font-size:12px;font-weight:800;color:#0f766e;flex:0 0 auto;min-width:46px}
+.rt-gap-slot{
+  font-size:11px;font-weight:700;color:#0f766e;background:#ccfbf1;
+  border:1px solid #99f6e4;border-radius:7px;padding:2px 8px;
+}
 
 .routine-table td .cell-content{
   padding:var(--cell-pad);
@@ -15130,7 +15138,7 @@ function _rtIsLoadedCell(cell){
    }
 */
 function _detectRealtimeConflicts(){
-  const out = {cellConflicts: [], overloads: [], unauthorized: [], overCount: [], underCount: []};
+  const out = {cellConflicts: [], overloads: [], unauthorized: [], overCount: [], underCount: [], classGaps: [], timeOverlaps: []};
   if(!state || !Array.isArray(state.teachers) || !Array.isArray(state.columns)) return out;
   const slotCols = state.columns.filter(c => c && c.type === 'slot');
   if(!slotCols.length) return out;
@@ -15468,6 +15476,105 @@ function _detectRealtimeConflicts(){
     */
   });
 
+  // ══════════════════════════════════════════════════════════════
+  // 🆕 PASS A — শ্রেণির ফাঁকা ঘণ্টা (সেশন-সচেতন; বিরতি = সেশন সীমা)
+  //   একই সেশনের ভেতরে কোনো শ্রেণি-শাখার দুই ভর্তি ঘণ্টার মাঝে খালি ঘণ্টা = gap
+  //   residential split-session-এ সকাল/সন্ধ্যা আলাদা সেশন বলে false alarm হয় না
+  // ══════════════════════════════════════════════════════════════
+  try{
+    const sessions = []; let cur = [];
+    state.columns.forEach(c => {
+      if(c && c.type === 'slot'){ cur.push(c); }
+      else { if(cur.length) sessions.push(cur); cur = []; }
+    });
+    if(cur.length) sessions.push(cur);
+
+    const classOcc = {};   // classKey → day → {cid:true}
+    const addOcc = (ck, day, cid) => {
+      if(!ck || ck === '||') return;
+      if(!classOcc[ck]) classOcc[ck] = {};
+      if(!classOcc[ck][day]) classOcc[ck][day] = {};
+      classOcc[ck][day][cid] = true;
+    };
+    state.teachers.forEach(t => {
+      if(!t || !t.cells || t.onLeave) return;
+      slotCols.forEach(c => {
+        const cell = t.cells[c.id];
+        if(!_rtIsLoadedCell(cell)) return;
+        if(Array.isArray(cell.parts) && cell.parts.length){
+          cell.parts.forEach(p => {
+            const pcls = (p.class||'').trim() || (cell.class||'').trim();
+            const psec = (p.section||'').trim() || (cell.section||'').trim();
+            (Array.isArray(p.days) ? p.days : []).forEach(d => addOcc(pcls + '||' + psec, d, c.id));
+          });
+        } else {
+          const ck = (cell.class||'').trim() + '||' + (cell.section||'').trim();
+          _rtCellDays(cell).forEach(d => addOcc(ck, d, c.id));
+        }
+      });
+    });
+
+    Object.keys(classOcc).forEach(ck => {
+      Object.keys(classOcc[ck]).forEach(day => {
+        const filled = classOcc[ck][day];
+        const gapCols = [];
+        sessions.forEach(sess => {
+          const idxFilled = [];
+          sess.forEach((c, i) => { if(filled[c.id]) idxFilled.push(i); });
+          if(idxFilled.length < 2) return;
+          const lo = idxFilled[0], hi = idxFilled[idxFilled.length - 1];
+          for(let i = lo + 1; i < hi; i++){ if(!filled[sess[i].id]) gapCols.push(sess[i]); }
+        });
+        if(gapCols.length){
+          out.classGaps.push({
+            classKey: ck,
+            classLabel: ck.replace('||', ' / শাখা '),
+            day, dayLabel: dayLabelMap[day] || day,
+            slots: gapCols.map(c => c.label || c.id)
+          });
+        }
+      });
+    });
+  }catch(_){}
+
+  // ══════════════════════════════════════════════════════════════
+  // 🆕 PASS B — সময়-ওভারল্যাপ (দুটো ঘণ্টা-কলামের সময় overlap)
+  //   লেবেল পার্স; না পারলে skip (fail-safe — ভুল অ্যালার্ম নয়)
+  // ══════════════════════════════════════════════════════════════
+  try{
+    const _parseSlot = (label) => {
+      if(!label) return null;
+      const bn = '০১২৩৪৫৬৭৮৯';
+      const s = String(label).replace(/[০-৯]/g, d => bn.indexOf(d));
+      const m = /(AM|PM|am|pm)/.exec(s);
+      const mer = m ? m[1].toUpperCase() : null;
+      const times = s.match(/(\d{1,2}):(\d{2})/g);
+      if(!times || times.length < 2) return null;
+      const toMin = (hhmm, mm2) => {
+        const pp = hhmm.split(':'); let h = +pp[0]; const mn = +pp[1];
+        if(mm2 === 'PM' && h !== 12) h += 12;
+        if(mm2 === 'AM' && h === 12) h = 0;
+        return h * 60 + mn;
+      };
+      const endMer = mer || 'AM';
+      const endMin = toMin(times[1], endMer);
+      let startMer = endMer, startMin = toMin(times[0], startMer);
+      if(startMin > endMin){ startMer = (endMer === 'PM') ? 'AM' : 'PM'; startMin = toMin(times[0], startMer); }
+      if(startMin > endMin) return null;
+      return {start: startMin, end: endMin};
+    };
+    const parsed = [];
+    slotCols.forEach(c => { const tt = _parseSlot(c.label); if(tt) parsed.push({id: c.id, label: c.label || c.id, start: tt.start, end: tt.end}); });
+    for(let i = 0; i < parsed.length; i++){
+      for(let j = i + 1; j < parsed.length; j++){
+        const a = parsed[i], b = parsed[j];
+        if(a.start < b.end && b.start < a.end){
+          out.timeOverlaps.push({aId: a.id, bId: b.id, aLabel: a.label, bLabel: b.label});
+        }
+      }
+    }
+  }catch(_){}
+
   return out;
 }
 
@@ -15533,7 +15640,9 @@ function _updateConflictBanner(conflicts){
   const un = (conflicts.unauthorized||[]).length;
   const oc = (conflicts.overCount||[]).length;
   const uc = (conflicts.underCount||[]).length;
-  const total = cn + on + un + oc + uc;
+  const gn = (conflicts.classGaps||[]).length;
+  const tn = (conflicts.timeOverlaps||[]).length;
+  const total = cn + on + un + oc + uc + gn + tn;
   if(total === 0){
     // Show OK banner শুধু যদি rtShowOK preference থাকে, না হলে hide
     if(window._rtShowOK){
@@ -15555,6 +15664,8 @@ function _updateConflictBanner(conflicts){
   if(un > 0) parts.push('<b style="color:#a855f7">'+_teBnNum(un)+'টি অননুমোদিত cell</b>');
   if(oc > 0) parts.push('<b style="color:#dc2626">'+_teBnNum(oc)+'টি অতিরিক্ত ক্লাস</b>');
   if(uc > 0) parts.push('<b style="color:#d97706">'+_teBnNum(uc)+'টি বরাদ্দ অপূর্ণ</b>');
+  if(gn > 0) parts.push('<b style="color:#0d9488">'+_teBnNum(gn)+'টি ফাঁকা ঘণ্টা</b>');
+  if(tn > 0) parts.push('<b style="color:#dc2626">'+_teBnNum(tn)+'টি সময়-ওভারল্যাপ</b>');
   txt.innerHTML = parts.join(' · ') + ' — "বিস্তারিত দেখুন" চেপে সব সমস্যা দেখুন';
 }
 
@@ -15697,6 +15808,38 @@ function _rtRenderConflictList(conflicts){
       <div class="rt-conflict-item" style="border-left-color:#d97706;background:#fffbeb">
         <div class="rt-c-title" style="color:#92400e">📉 বরাদ্দ অপূর্ণ — ${esc(uc.tname)}</div>
         <div class="rt-c-desc">শিক্ষকের <b>teaching entries</b>-এ <b>${_teBnNum(uc.expected)}</b> টি ক্লাস বরাদ্দ, রুটিনে বসেছে <b>${_teBnNum(uc.actual)}</b> টি — <b>${_teBnNum(uc.missing)}</b> টি বাকি। সমাধান: "স্বয়ংক্রিয় রুটিন" আবার চালান অথবা ম্যানুয়ালি খালি slot-এ বসান।</div>
+      </div>
+    `);
+  });
+
+  // 🆕 শ্রেণির ফাঁকা ঘণ্টা — শ্রেণি-শাখা ভিত্তিক একত্র, দিন→ঘণ্টা তালিকা
+  (function(){
+    const byClass = {}; const order = [];
+    (conflicts.classGaps||[]).forEach(g => {
+      if(!byClass[g.classKey]){ byClass[g.classKey] = {label: g.classLabel, rows: []}; order.push(g.classKey); }
+      byClass[g.classKey].rows.push({dayLabel: g.dayLabel, slots: g.slots});
+    });
+    order.forEach(ck => {
+      const grp = byClass[ck];
+      const lines = grp.rows.map(r =>
+        `<div class="rt-gap-line"><span class="rt-gap-day">${esc(r.dayLabel)}</span>${r.slots.map(s => `<span class="rt-gap-slot">${esc(s)}</span>`).join('')}</div>`
+      ).join('');
+      items.push(`
+        <div class="rt-conflict-item" style="border-left-color:#0d9488;background:#f0fdfa">
+          <div class="rt-c-title" style="color:#0f766e">🕳️ ফাঁকা ঘণ্টা — ${esc(grp.label)}</div>
+          <div class="rt-c-desc">নিচের ঘণ্টাগুলোতে এই শ্রেণি-শাখার কোনো শিক্ষক নেই (আগে-পরে ক্লাস আছে, মাঝে ফাঁকা)। সমাধান: এই ঘণ্টায় শিক্ষক বসান।</div>
+          <div class="rt-gap-list">${lines}</div>
+        </div>
+      `);
+    });
+  })();
+
+  // 🆕 সময়-ওভারল্যাপ — দুটো ঘণ্টা-কলামের সময় একে অন্যের সাথে মিলে যাচ্ছে
+  (conflicts.timeOverlaps||[]).forEach(ov => {
+    items.push(`
+      <div class="rt-conflict-item" style="border-left-color:#dc2626;background:#fef2f2">
+        <div class="rt-c-title" style="color:#b91c1c">⏰ সময়-ওভারল্যাপ</div>
+        <div class="rt-c-desc">দুটো ঘণ্টার সময় একে অন্যের সাথে overlap করছে — <b>${esc(ov.aLabel)}</b> এবং <b>${esc(ov.bLabel)}</b>। একই শিক্ষক/শ্রেণি দুটোতেই থাকলে লুকানো সংঘাত হবে। সমাধান: যেকোনো একটি ঘণ্টার সময় ঠিক করুন।</div>
       </div>
     `);
   });
