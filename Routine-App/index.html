@@ -1839,6 +1839,10 @@ input[type="range"]::-moz-range-thumb{
 .ce-chip-delbtn:hover{ background:#fee2e2; }
 .ce-chip-delitem{ border-color:#dc2626; color:#b91c1c; background:#fff5f5; font-weight:700; }
 .ce-chip-delitem:hover{ background:#fee2e2; }
+.ce-chip-editbtn{ border-style:dashed; border-color:#2563eb; color:#2563eb; background:#eff6ff; }
+.ce-chip-editbtn:hover{ background:#dbeafe; }
+.ce-chip-edititem{ border-color:#2563eb; color:#1d4ed8; background:#f5f9ff; font-weight:700; }
+.ce-chip-edititem:hover{ background:#dbeafe; }
 .ce-chip-done{ border-color:#10b981; background:#10b981; color:#fff; }
 .ce-chip-done:hover{ background:#059669; }
 /* 🆕 এই শিক্ষকের প্রস্তাবিত বিষয় — হালকা সবুজ আভা (নির্বাচিত হলে গাঢ় সবুজ জিতবে) */
@@ -5656,6 +5660,15 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
           </span>
           <span class="ce-split-arr">›</span>
         </button>
+        <!-- 🆕 দিন-ভিত্তিক রোটেশন — এক ঘণ্টায় প্রতিদিন আলাদা শ্রেণি/শাখা -->
+        <button type="button" class="ce-split-btn ce-rot-btn" id="qemRotAddBtn" onclick="_rotOpen()">
+          <span class="ce-split-ic">📅</span>
+          <span class="ce-split-main">
+            <b>দিন-ভিত্তিক ক্লাস (প্রতিদিন আলাদা শ্রেণি/শাখা)</b>
+            <span class="ce-split-sub">একই ঘণ্টায় প্রতিটি দিনে ভিন্ন শ্রেণি/শাখা — যেমন প্র্যাকটিক্যাল</span>
+          </span>
+          <span class="ce-split-arr">›</span>
+        </button>
       </div>
     </div>
   </div>
@@ -5822,6 +5835,54 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       <div style="display:flex;gap:8px;margin-top:4px">
         <button class="tool-btn" style="flex:1;justify-content:center" onclick="_qemSplitModalClose()">বাতিল</button>
         <button class="tool-btn primary" style="flex:1;justify-content:center" onclick="_qemSplitModalSave()">✓ যোগ করুন</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🆕 দিন-ভিত্তিক রোটেশন মডাল — এক ঘণ্টায় প্রতিদিন আলাদা শ্রেণি/শাখা -->
+<style>
+  #rotModal .rot-grid{ display:flex; flex-direction:column; gap:8px; }
+  #rotModal .rot-row{ display:flex; align-items:center; gap:8px; }
+  #rotModal .rot-day{ flex:0 0 46px; font-weight:800; font-size:13px; color:var(--primary,#0f766e); text-align:center; }
+  #rotModal .rot-row.is-on .rot-day{ color:#0f766e; }
+  #rotModal .rot-fields{ flex:1; display:flex; gap:6px; }
+  #rotModal .rot-fields select{
+    flex:1; min-width:0; padding:9px 8px; border:1.5px solid #d1d5db; border-radius:9px;
+    font-size:13px; font-family:inherit; background:#fff; color:var(--text,#111);
+  }
+  #rotModal .rot-fields select:focus{ outline:none; border-color:var(--primary,#0f766e); }
+  #rotModal .rot-row.is-on .rot-fields select{ border-color:#5eead4; background:#f0fdfa; }
+  #rotModal .rot-copy{
+    flex:0 0 auto; border:1.5px solid #e5e7eb; background:#fff; border-radius:9px;
+    padding:7px 9px; cursor:pointer; font-size:14px; line-height:1;
+  }
+  #rotModal .rot-copy:active{ transform:scale(.94); }
+  #rotModal .rot-hint{ font-size:11.5px; color:#6b7280; margin-top:7px; }
+  .ce-rot-btn .ce-split-ic{ background:#fff7ed; }
+</style>
+<div class="modal-overlay" id="rotModal">
+  <div class="modal narrow">
+    <div class="modal-header">
+      <h2>📅 দিন-ভিত্তিক ক্লাস</h2>
+      <div class="modal-close" onclick="_rotClose()">✕</div>
+    </div>
+    <div class="qem-split-who" id="rotWho"></div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:13px">
+      <div class="qem-shared-notice">ℹ️ প্রতিটি দিনে আলাদা শ্রেণি/শাখা — <b>শেয়ার্ড ক্লাস</b> হিসেবে যুক্ত হবে। অটো-রুটিনও এটি জানবে।</div>
+      <div class="ce-step">
+        <div class="ce-step-head"><span class="ce-step-no">🎯</span><span>বিষয় (সব দিনে একই)</span></div>
+        <input type="text" id="rotSubject" class="input" placeholder="যেমন: রসায়ন" autocomplete="off">
+        <div class="qem-split-sug" id="rotSubjectSug"></div>
+      </div>
+      <div class="ce-step">
+        <div class="ce-step-head"><span class="ce-step-no">📆</span><span>প্রতিদিনের শ্রেণি ও শাখা</span></div>
+        <div class="rot-grid" id="rotGrid"></div>
+        <div class="rot-hint">📋 = এই সারির শ্রেণি/শাখা নিচের খালি দিনগুলোতে কপি করুন। যে দিনে ক্লাস নেই — শ্রেণি খালি ("—") রাখুন।</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="tool-btn" style="flex:1;justify-content:center" onclick="_rotClose()">বাতিল</button>
+        <button class="tool-btn primary" style="flex:1;justify-content:center" onclick="_rotSave()">✓ সংরক্ষণ</button>
       </div>
     </div>
   </div>
@@ -7951,6 +8012,7 @@ let _ceDraft = null;       // {subject, class, section}
 let _ceOpenPrev = null;    // editor খোলার সময় cell-এ যা ছিল (entry sync-এ লাগে)
 let _ceTapField = null;    // কোন সারির সেলে ট্যাপ হয়েছে — শুধু scroll focus-এর জন্য
 let _ceDelMode = {subject:false, class:false, section:false}; // অপশন-তালিকা ডিলিট-মোড
+let _ceEditMode = {subject:false, class:false, section:false}; // অপশন-তালিকা এডিট(rename)-মোড
 let currentOptTab = 'class';
 let dashTimer = null;
 let saveTimer = null;
@@ -15690,6 +15752,7 @@ function openCellEditor(tid, cid, field){
     section: cell.section || ''
   };
   _ceDelMode = {subject:false, class:false, section:false};
+  _ceEditMode = {subject:false, class:false, section:false};
 
   // শিরোনাম — শিক্ষকের নাম + slot (নাম বড়, সময় পিল আকারে)
   document.getElementById('cellEditorTitle').innerHTML =
@@ -15796,6 +15859,7 @@ function ceRenderChips(kind){
   let opts = (state.options && Array.isArray(state.options[kind])) ? state.options[kind].slice() : [];
   const cur = (_ceDraft && _ceDraft[kind]) || '';
   const del = !!(_ceDelMode && _ceDelMode[kind]);
+  const edit = !!(_ceEditMode && _ceEditMode[kind]);
 
   // 🆕 শুধু বিষয় — স্মার্ট সাজানো: ১) এই শিক্ষকের বিষয় আগে, ২) বেশি-ব্যবহৃত, ৩) বর্ণানুক্রম; Free সবার শেষে
   let tset = null;
@@ -15822,14 +15886,22 @@ function ceRenderChips(kind){
       if(isFree) return `<button type="button" class="ce-chip ce-chip-free" disabled style="opacity:.45">${esc(o)}</button>`;
       return `<button type="button" class="ce-chip ce-chip-delitem" onclick="ceAskDeleteOption('${kind}','${v}')">${esc(o)} ✕</button>`;
     }
+    if(edit){
+      // এডিট(rename)-মোড — Free বাদে প্রতিটি chip নাম-বদলের টার্গেট (✏️)
+      if(isFree) return `<button type="button" class="ce-chip ce-chip-free" disabled style="opacity:.45">${esc(o)}</button>`;
+      return `<button type="button" class="ce-chip ce-chip-edititem" onclick="ceAskRenameOption('${kind}','${v}')">${esc(o)} ✏️</button>`;
+    }
     const sel = (o === cur);
     const sug = (kind === 'subject' && tset && !isFree && tset.has(o));  // এই শিক্ষকের প্রস্তাবিত বিষয়
     return `<button type="button" class="ce-chip ${sel?'sel':''} ${isFree?'ce-chip-free':''} ${sug?'ce-chip-sug':''}" onclick="cePick('${kind}','${v}')">${esc(o)}</button>`;
   }).join('');
   if(del){
     html += `<button type="button" class="ce-chip ce-chip-done" onclick="ceToggleDelMode('${kind}')">✓ সম্পন্ন</button>`;
+  } else if(edit){
+    html += `<button type="button" class="ce-chip ce-chip-done" onclick="ceToggleEditMode('${kind}')">✓ সম্পন্ন</button>`;
   } else {
     html += `<button type="button" class="ce-chip ce-chip-add" onclick="ceShowAddNew('${kind}')">+ নতুন</button>`;
+    if(opts.length) html += `<button type="button" class="ce-chip ce-chip-editbtn" onclick="ceToggleEditMode('${kind}')">✏️ এডিট</button>`;
     if(opts.length) html += `<button type="button" class="ce-chip ce-chip-delbtn" onclick="ceToggleDelMode('${kind}')">🗑 মুছুন</button>`;
   }
   host.innerHTML = html;
@@ -15838,10 +15910,42 @@ function ceRenderChips(kind){
 /* ডিলিট-মোড টগল */
 function ceToggleDelMode(kind){
   if(!_ceDelMode) _ceDelMode = {subject:false, class:false, section:false};
+  if(!_ceEditMode) _ceEditMode = {subject:false, class:false, section:false};
   _ceDelMode[kind] = !_ceDelMode[kind];
+  if(_ceDelMode[kind]) _ceEditMode[kind] = false;          // দুটো মোড একসাথে নয়
   // ডিলিট-মোডে গেলে add-box বন্ধ
   const box = document.getElementById(_ceAddBoxId(kind)); if(box) box.style.display = 'none';
   ceRenderChips(kind);
+}
+
+/* এডিট(rename)-মোড টগল */
+function ceToggleEditMode(kind){
+  if(!_ceEditMode) _ceEditMode = {subject:false, class:false, section:false};
+  if(!_ceDelMode) _ceDelMode = {subject:false, class:false, section:false};
+  _ceEditMode[kind] = !_ceEditMode[kind];
+  if(_ceEditMode[kind]) _ceDelMode[kind] = false;          // দুটো মোড একসাথে নয়
+  const box = document.getElementById(_ceAddBoxId(kind)); if(box) box.style.display = 'none';
+  ceRenderChips(kind);
+}
+
+/* একটি অপশনের নাম বদলাই (মডালের চিপ থেকে) — কেন্দ্রীয় optionsRename ব্যবহার করে।
+   রুটিনে replace হয় (মুছে যায় না), তাই নতুন নাম সাথে সাথে রুটিনে দেখায়। */
+function ceAskRenameOption(kind, value){
+  if(!value) return;
+  if(kind === 'subject' && value === 'Free'){
+    try{ showToast('“Free” নাম বদলানো যাবে না','info',2000); }catch(_){}
+    return;
+  }
+  let nv = null;
+  try{ nv = prompt('নতুন নাম দিন:', value); }catch(_){ nv = null; }
+  if(nv === null) return;                       // বাতিল
+  nv = String(nv).trim();
+  if(!nv || nv === value) return;               // ফাঁকা বা অপরিবর্তিত
+  try{ snapshot(); }catch(_){}                  // undo
+  const ok = optionsRename(kind, value, nv);    // 🔗 কেন্দ্রীয় rename + রুটিন replace
+  if(ok){
+    try{ showToast(`✏️ “${value}” → “${nv}” নাম বদলে গেছে`,'success',2000); }catch(_){}
+  }
 }
 
 /* একটি অপশন রুটিনে কতবার ব্যবহৃত — সতর্কবার্তার জন্য */
@@ -16014,6 +16118,67 @@ function _optRoutineUsage(kind, val){
     });
   }catch(_){}
   return n;
+}
+
+/* একটি অপশনের নাম বদলাই (RENAME) — তালিকায় জায়গায় বসেই + রুটিনে replace (delete নয়)।
+   collision হলে আটকায় (warning)। ⚠ call-site-এ snapshot() রাখুন (undo-র জন্য)। */
+function optionsRename(kind, oldVal, newVal){
+  if(_OPT_KINDS.indexOf(kind) < 0) return false;
+  oldVal = (oldVal == null ? '' : String(oldVal)).trim();
+  newVal = (newVal == null ? '' : String(newVal)).trim();
+  if(!oldVal || !newVal) return false;
+  if(newVal === oldVal) return false;
+  if(kind === 'subject' && oldVal === 'Free'){
+    try{ showToast('“Free” নাম বদলানো যাবে না','info',2200); }catch(_){}
+    return false;
+  }
+  const list = (state.options && Array.isArray(state.options[kind])) ? state.options[kind] : null;
+  if(!list){ return false; }
+  const idx = list.indexOf(oldVal);
+  if(idx < 0) return false;                                   // পুরোনো নাম তালিকায় নেই
+  // collision — নতুন নাম আগে থেকেই আছে → আটকাই
+  if(list.indexOf(newVal) >= 0){
+    try{ showToast(`⚠ “${newVal}” নামটি আগে থেকেই আছে — অন্য নাম দিন`,'warning',2800); }catch(_){}
+    return false;
+  }
+  // 1) তালিকায় জায়গায় বসেই বদলাই (ক্রম অক্ষত)
+  list[idx] = newVal;
+  // 2) রুটিনে replace (teachingEntries + single cell + parts)
+  _optRenameInRoutine(kind, oldVal, newVal);
+  // 3) এডিটর draft-এও থাকলে আপডেট
+  try{ if(_ceDraft && _ceDraft[kind] === oldVal) _ceDraft[kind] = newVal; }catch(_){}
+  try{ saveState(); }catch(_){}
+  // 4) সব জায়গা রিফ্রেশ
+  refreshAllOptionPickers();
+  try{ renderTable(); }catch(_){}
+  try{ refreshRealtimeConflicts(true); }catch(_){}
+  try{ if(typeof ceRefreshSelections === 'function') ceRefreshSelections(); }catch(_){}
+  try{ if(typeof _qemRenderSplitList === 'function') _qemRenderSplitList(); }catch(_){}
+  return true;
+}
+
+/* রুটিনে পুরোনো নাম → নতুন নাম replace (কিছু মুছি না)।
+   teachingEntries (raw), সব single সেল ও সব split/রোটেশন part — সর্বত্র। */
+function _optRenameInRoutine(kind, oldVal, newVal){
+  if(!state || !Array.isArray(state.teachers)) return;
+  state.teachers.forEach(t => {
+    // (ক) teachingEntries — raw object সরাসরি আপডেট
+    if(Array.isArray(t.teachingEntries)){
+      t.teachingEntries.forEach(e => {
+        if(e && (e[kind] || '') === oldVal) e[kind] = newVal;
+      });
+    }
+    // (খ) cells — single ও parts
+    const cells = t.cells || {};
+    Object.keys(cells).forEach(cid => {
+      const cell = cells[cid];
+      if(!cell) return;
+      if((cell[kind] || '') === oldVal) cell[kind] = newVal;
+      if(Array.isArray(cell.parts)){
+        cell.parts.forEach(p => { if(p && (p[kind] || '') === oldVal) p[kind] = newVal; });
+      }
+    });
+  });
 }
 
 /* স্ক্রিনে খোলা সব অপশন-পিকার একসাথে রি-রেন্ডার — লাইভ সিঙ্কের কেন্দ্র */
@@ -16706,6 +16871,284 @@ function _qemSplitRemovePart(index){
   try{ renderTable(); }catch(_){}
   try{ refreshRealtimeConflicts(true); }catch(_){}
   try{ showToast('✓ অংশটি মুছে ফেলা হলো', 'info', 1800); }catch(_){}
+}
+
+/* ===========================================================
+   📅 দিন-ভিত্তিক রোটেশন — এক ঘণ্টায় প্রতিদিন আলাদা শ্রেণি/শাখা
+   ───────────────────────────────────────────────────────────
+   এটি শুধুই একটি নতুন ইনপুট সারফেস। আউটপুট = বিদ্যমান cell.parts[]
+   (split-এর হুবহু কাঠামো) + teachingEntries (preferredSlots+fixed+shared)।
+   তাই কনফ্লিক্ট-ডিটেকশন, গ্রিড/প্রিন্ট-ডিসপ্লে ও অটো-জেনারেটর সব
+   স্বাভাবিক নিয়মেই কাজ করে — নতুন কোনো ডেটা-মডেল নেই।
+═══════════════════════════════════════════════════════════ */
+var _rotTarget = null;
+var _ROT_DAY_BN = {Sat:'শনি', Sun:'রবি', Mon:'সোম', Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ'};
+
+function _rotOptionsList(kind){
+  return (state.options && Array.isArray(state.options[kind])) ? state.options[kind] : [];
+}
+
+function _rotOpen(){
+  if(!currentEditCell) return;
+  const {tid, cid} = currentEditCell;
+  // 🛡 শিক্ষক স্ব-ইনপুট প্রতিরক্ষা (split modal-এর মতোই)
+  if(currentUser && currentUser.role === 'teacher' && !canFullEdit()){
+    const _ok = !!(state.settings && state.settings.teacherSelfInput)
+             && String(currentUser.teacherId) === String(tid) && !routineLocked();
+    if(!_ok){ try{ showToast('অনুমতি নেই','error'); }catch(_){} return; }
+  }
+  _rotTarget = {tid, cid};
+  const t = state.teachers.find(x => x.id === tid);
+  const cell = t && t.cells && t.cells[cid];
+
+  // শিক্ষক + সময় ব্যানার
+  try{
+    const who = document.getElementById('rotWho');
+    if(who && t){
+      const col = state.columns.find(c => c.id === cid);
+      const slot = col ? col.label : '';
+      who.innerHTML = '<span class="qsw-name">' + esc(t.name) + '</span>' +
+        (slot ? '<span class="qsw-time">' + esc(slot) + '</span>' : '');
+    }
+  }catch(_){}
+
+  // বিদ্যমান parts/single থেকে দিন→{class,section,subject} প্রি-লোড
+  const days = _qemAllDays();
+  const preload = {};
+  let commonSub = '';
+  if(cell){
+    if(Array.isArray(cell.parts) && cell.parts.length){
+      cell.parts.forEach(p => {
+        if(!p) return;
+        (Array.isArray(p.days) ? p.days : []).forEach(d => {
+          preload[d] = {class:p.class||'', section:p.section||'', subject:p.subject||''};
+        });
+        if(!commonSub && p.subject) commonSub = p.subject;
+      });
+    } else if(cell.subject || cell.class || cell.section){
+      const cd = Array.isArray(cell.days) && cell.days.length ? cell.days : days;
+      cd.forEach(d => { preload[d] = {class:cell.class||'', section:cell.section||'', subject:cell.subject||''}; });
+      commonSub = cell.subject || '';
+    }
+  }
+
+  const subInp = document.getElementById('rotSubject');
+  if(subInp) subInp.value = commonSub || '';
+  _rotFillSubjectSug();
+  _rotRenderGrid(days, preload);
+
+  const m = document.getElementById('rotModal');
+  if(m){
+    try{ const bd = document.getElementById('cellEditorBackdrop'); if(bd) bd.classList.remove('show'); }catch(_){}
+    m.classList.add('show');
+  }
+}
+
+function _rotClose(){
+  const m = document.getElementById('rotModal');
+  if(m) m.classList.remove('show');
+  try{
+    const ce = document.getElementById('cellEditor');
+    if(ce && ce.classList.contains('show')){
+      const bd = document.getElementById('cellEditorBackdrop');
+      if(bd) bd.classList.add('show');
+    }
+  }catch(_){}
+}
+
+/* একটি kind-এর জন্য <select> options HTML (blank = "—" = ঐ দিন বাদ) */
+function _rotSelectHTML(kind, cur){
+  const opts = _rotOptionsList(kind);
+  const seen = new Set();
+  let html = '<option value="">—</option>';
+  opts.forEach(o => {
+    o = (o||'').trim(); if(!o || seen.has(o)) return; seen.add(o);
+    html += `<option value="${esc(o)}"${o===cur?' selected':''}>${esc(o)}</option>`;
+  });
+  if(cur && !seen.has(cur)) html += `<option value="${esc(cur)}" selected>${esc(cur)}</option>`;
+  return html;
+}
+
+function _rotRenderGrid(days, preload){
+  const grid = document.getElementById('rotGrid');
+  if(!grid) return;
+  grid.innerHTML = days.map(d => {
+    const pv = preload[d] || {};
+    const on = !!(pv.class || pv.section);
+    return `<div class="rot-row${on?' is-on':''}" data-day="${d}">
+      <div class="rot-day">${_ROT_DAY_BN[d]||d}</div>
+      <div class="rot-fields">
+        <select class="rot-cls">${_rotSelectHTML('class', pv.class||'')}</select>
+        <select class="rot-sec">${_rotSelectHTML('section', pv.section||'')}</select>
+      </div>
+      <button type="button" class="rot-copy" title="নিচের খালি দিনে কপি করুন" onclick="_rotCopyDown('${d}')">📋</button>
+    </div>`;
+  }).join('');
+  if(!grid.dataset.bound){
+    grid.dataset.bound = '1';
+    grid.addEventListener('change', (e) => {
+      const row = e.target.closest('.rot-row'); if(!row) return;
+      const c = row.querySelector('.rot-cls'), s = row.querySelector('.rot-sec');
+      row.classList.toggle('is-on', !!((c&&c.value) || (s&&s.value)));
+    });
+  }
+}
+
+function _rotFillSubjectSug(){
+  const host = document.getElementById('rotSubjectSug');
+  const inp = document.getElementById('rotSubject');
+  if(!host || !inp) return;
+  const list = _rotOptionsList('subject').slice(0, 16);
+  const cur = (inp.value||'').trim();
+  host.innerHTML = list.map(o => `<span class="ss-chip${o===cur?' selected':''}" data-v="${esc(o)}">${esc(o)}</span>`).join('');
+  if(!host.dataset.bound){
+    host.dataset.bound = '1';
+    host.addEventListener('click', (e) => {
+      const chip = e.target.closest('.ss-chip'); if(!chip) return;
+      inp.value = chip.getAttribute('data-v') || '';
+      host.querySelectorAll('.ss-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    });
+  }
+}
+
+/* এক সারির শ্রেণি/শাখা নিচের খালি দিনগুলোতে কপি */
+function _rotCopyDown(fromDay){
+  const grid = document.getElementById('rotGrid'); if(!grid) return;
+  const rows = Array.from(grid.querySelectorAll('.rot-row'));
+  const idx = rows.findIndex(r => r.getAttribute('data-day') === fromDay);
+  if(idx < 0) return;
+  const cls = rows[idx].querySelector('.rot-cls').value;
+  const sec = rows[idx].querySelector('.rot-sec').value;
+  if(!cls && !sec){ try{ showToast('আগে এই দিনের শ্রেণি/শাখা বেছে নিন','info',1800); }catch(_){} return; }
+  let n = 0;
+  for(let i = idx+1; i < rows.length; i++){
+    const rc = rows[i].querySelector('.rot-cls'), rs = rows[i].querySelector('.rot-sec');
+    if(!rc.value && !rs.value){ rc.value = cls; rs.value = sec; rows[i].classList.add('is-on'); n++; }
+  }
+  try{ showToast(n ? `📋 ${(typeof toBnNum==='function')?toBnNum(n):n} দিনে কপি হলো` : 'নিচে কোনো খালি দিন নেই','success',1600); }catch(_){}
+}
+
+/* সংরক্ষণ — গ্রিড → cell.parts[] (split-এর কাঠামো) + teachingEntries সিঙ্ক */
+function _rotSave(){
+  const tgt = _rotTarget || currentEditCell;
+  if(!tgt){ _rotClose(); return; }
+  const {tid, cid} = tgt;
+  const t = state.teachers.find(x => x.id === tid);
+  if(!t){ _rotClose(); return; }
+
+  const commonSub = ((document.getElementById('rotSubject')||{}).value||'').trim();
+  const grid = document.getElementById('rotGrid');
+  const rows = grid ? Array.from(grid.querySelectorAll('.rot-row')) : [];
+
+  // গ্রিড → প্রতি দিনের assignment
+  const dayAssign = [];
+  rows.forEach(r => {
+    const day = r.getAttribute('data-day');
+    const cls = (r.querySelector('.rot-cls').value||'').trim();
+    const sec = (r.querySelector('.rot-sec').value||'').trim();
+    if(!cls && !sec) return;            // খালি দিন বাদ
+    dayAssign.push({day, class:cls, section:sec, subject:commonSub});
+  });
+
+  // বৈধতা
+  if(!commonSub){ try{ showToast('⚠ বিষয় নির্বাচন করুন','warning',2200); }catch(_){} return; }
+  if(!dayAssign.length){ try{ showToast('⚠ অন্তত একটি দিনে শ্রেণি/শাখা দিন','warning',2200); }catch(_){} return; }
+  const incomplete = dayAssign.filter(a => !a.class || !a.section);
+  if(incomplete.length){
+    const ds = incomplete.map(a => _ROT_DAY_BN[a.day]||a.day).join(', ');
+    try{ showToast(`⚠ শ্রেণি ও শাখা দুটোই দরকার: ${ds}`,'warning',3000); }catch(_){}
+    return;
+  }
+
+  snapshot();   // undo
+
+  // টাইপ-করা/নির্বাচিত মান global options-এ সিঙ্ক (কেন্দ্রীয় স্তর)
+  try{ optionsAdd('subject', commonSub); }catch(_){}
+  dayAssign.forEach(a => { try{ optionsAdd('class', a.class); optionsAdd('section', a.section); }catch(_){} });
+
+  // একই (subject,class,section)-এর একাধিক দিন এক part-এ merge (পরিষ্কার ডিসপ্লে)
+  const merged = {};
+  dayAssign.forEach(a => {
+    const k = a.subject+'||'+a.class+'||'+a.section;
+    if(!merged[k]) merged[k] = {subject:a.subject, class:a.class, section:a.section, days:[], shared:true};
+    if(merged[k].days.indexOf(a.day) < 0) merged[k].days.push(a.day);
+  });
+  const newParts = Object.keys(merged).map(k => merged[k]);
+
+  // পুরোনো parts (entry reconcile-এর জন্য)
+  const oldCell = (t.cells && t.cells[cid]) || {};
+  const oldParts = Array.isArray(oldCell.parts) ? oldCell.parts.slice() : [];
+
+  // cell সেট — multi-part; split-এর মতোই top-level ফিল্ড মুছি (parts[] একমাত্র master)
+  if(!t.cells) t.cells = {};
+  const cell = t.cells[cid] || {};
+  cell.parts = newParts;
+  delete cell.subject; delete cell.class; delete cell.section; delete cell.days; delete cell.shared; delete cell.fixed;
+  t.cells[cid] = cell;
+
+  // teachingEntries সিঙ্ক (অটো-রুটিন/ডিমান্ড জানবে)
+  _rotSyncEntries(t, cid, oldParts, newParts);
+
+  try{ saveState(); }catch(_){}
+  try{ renderTable(); }catch(_){}
+  try{ refreshRealtimeConflicts(true); }catch(_){}
+  try{ if(typeof _qemRenderSplitList === 'function') _qemRenderSplitList(); }catch(_){}
+  try{ if(typeof ceRefreshSelections === 'function') ceRefreshSelections(); }catch(_){}
+  try{ const col = state.columns.find(c=>c.id===cid); audit('দিন-ভিত্তিক ক্লাস', t.name + (col?(' — '+col.label):'')); }catch(_){}
+  const dn = (typeof toBnNum==='function')?toBnNum(dayAssign.length):dayAssign.length;
+  try{ showToast(`✅ ${dn} দিনের দিন-ভিত্তিক ক্লাস সংরক্ষিত`,'success',2400); }catch(_){}
+  _rotClose();
+}
+
+/* teachingEntries reconcile — শুধু এই slot-এর rotation-entry টার্গেট করে
+   (fixed && shared && preferredSlots-এ এই cid)। অন্য entry অক্ষত। */
+function _rotSyncEntries(t, cid, oldParts, newParts){
+  if(!Array.isArray(t.teachingEntries)) t.teachingEntries = [];
+  const keyOf = (o) => (o.subject||'')+'||'+(o.class||'')+'||'+(o.section||'');
+  const newKeys = new Set(newParts.map(keyOf));
+  const oldKeys = new Set(oldParts.map(keyOf));
+  const _isThisSlotRot = (e) => e && e.fixed && e.shared &&
+        Array.isArray(e.preferredSlots) && e.preferredSlots.indexOf(cid) >= 0;
+
+  // 1) বাদ-পড়া combo (পুরোনোতে ছিল, নতুনে নেই) → এই slot-এর matching rotation-entry সরাই
+  const removedKeys = [...oldKeys].filter(k => !newKeys.has(k));
+  if(removedKeys.length){
+    t.teachingEntries = t.teachingEntries.filter(raw => {
+      const e = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : (raw||{});
+      const k = keyOf(e);
+      // এই slot-এর rotation-entry এবং বাদ-পড়া combo হলেই সরাই; নইলে রাখি
+      return !(removedKeys.indexOf(k) >= 0 && _isThisSlotRot(e) &&
+               Array.isArray(e.preferredSlots) && e.preferredSlots.length === 1);
+    });
+  }
+
+  // 2) নতুন combo upsert
+  newParts.forEach(p => {
+    const k = keyOf(p);
+    let found = null;
+    for(const raw of t.teachingEntries){
+      const e = (typeof _teSanitizeEntry === 'function') ? _teSanitizeEntry(raw) : (raw||{});
+      if(keyOf(e) === k && _isThisSlotRot(e)){ found = raw; break; }
+    }
+    if(found){
+      if(!Array.isArray(found.days)) found.days = [];
+      p.days.forEach(d => { if(found.days.indexOf(d) < 0) found.days.push(d); });
+      found.daysPerWeek = found.days.length;
+      found.shared = true; found.fixed = true;
+      if(!Array.isArray(found.preferredSlots)) found.preferredSlots = [];
+      if(found.preferredSlots.indexOf(cid) < 0) found.preferredSlots.push(cid);
+    } else {
+      const ne = (typeof _teNewEntry === 'function') ? _teNewEntry()
+               : {id:'te_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), notes:''};
+      ne.subject = p.subject; ne.class = p.class; ne.section = p.section;
+      ne.days = p.days.slice();
+      ne.daysPerWeek = ne.days.length;
+      ne.preferredSlots = [cid];
+      ne.shared = true; ne.fixed = true;
+      t.teachingEntries.push(ne);
+    }
+  });
 }
 
 function _qemPrepEditor(tid, cid, field){
@@ -19750,9 +20193,10 @@ function renderOptionList(){
   const list = document.getElementById('optionList');
   if(!list) return;
   const opts = (state.options && state.options[currentOptTab]) || [];
+  // data-orig = সারির আসল নাম → সংরক্ষণে rename/add/delete নির্ভুলভাবে চেনা যায়
   list.innerHTML = opts.map((o) => `
     <div class="option-row">
-      <input type="text" value="${esc(o)}" oninput="this.dataset.changed=1">
+      <input type="text" value="${esc(o)}" data-orig="${esc(o)}" oninput="this.dataset.changed=1">
       <button class="del-btn" onclick="removeOption(this)">×</button>
     </div>
   `).join('');
@@ -19786,22 +20230,34 @@ function saveOptions(){
   if(!requirePerm('manageOptions')) return;
   const tab = currentOptTab;
   const before = (state.options && Array.isArray(state.options[tab])) ? state.options[tab].slice() : [];
-  // DOM থেকে বর্তমান তালিকা — ফাঁকা বাদ, ডুপ্লিকেট বাদ, ক্রম রক্ষিত
-  const rawList = Array.from(document.querySelectorAll('#optionList .option-row input'))
-                       .map(i => i.value.trim()).filter(Boolean);
-  const seen = new Set();
-  const after = rawList.filter(v => seen.has(v) ? false : (seen.add(v), true));
-  // diff — নাম এডিট = পুরনো removed + নতুন added (আপনার সিদ্ধান্ত মতো রুটিন প্রভাবিত হবে)
-  const removed = before.filter(x => after.indexOf(x) < 0);
-  const added   = after.filter(x => before.indexOf(x) < 0);
 
-  // ডেস্ট্রাক্টিভ removed থাকলে রুটিন-প্রভাব দেখিয়ে confirm
-  if(removed.length){
+  // DOM সারি পড়ি — প্রতিটির আসল নাম (data-orig) ও বর্তমান মান থেকে
+  // rename (জায়গায় বসে এডিট), add (নতুন সারি), delete (× বা ফাঁকা) আলাদা করে চিনি
+  const inputs = Array.from(document.querySelectorAll('#optionList .option-row input'));
+  const renamePairs = [];   // {from, to} — in-place এডিট
+  const adds = [];          // নতুন নাম
+  const keptOrigs = new Set();
+  inputs.forEach(inp => {
+    const orig = (inp.dataset && inp.dataset.orig != null) ? String(inp.dataset.orig).trim() : '';
+    const val = (inp.value || '').trim();
+    if(orig){
+      if(val && val !== orig){ renamePairs.push({from:orig, to:val}); keptOrigs.add(orig); }
+      else if(val === orig){ keptOrigs.add(orig); }
+      // val ফাঁকা → keptOrigs-এ যোগ করি না → delete হিসেবে গণ্য
+    } else if(val){
+      adds.push(val);
+    }
+  });
+  // deletes = আগের যেসব মান কোনো সারিতে আর টেকেনি (× বা ফাঁকা করা হয়েছে)
+  const deletes = before.filter(o => !keptOrigs.has(o));
+
+  // ডেস্ট্রাক্টিভ delete থাকলে রুটিন-প্রভাব দেখিয়ে confirm (rename ডেস্ট্রাক্টিভ নয়, replace হয়)
+  if(deletes.length){
     let usedTotal = 0;
-    removed.forEach(v => { usedTotal += _optRoutineUsage(tab, v); });
+    deletes.forEach(v => { usedTotal += _optRoutineUsage(tab, v); });
     const lbl = _optLabel(tab);
-    const cnt = (typeof toBnNum === 'function') ? toBnNum(removed.length) : removed.length;
-    let m = `${cnt} টি ${lbl} মুছে ফেলা হচ্ছে:\n• ${removed.join('\n• ')}`;
+    const cnt = (typeof toBnNum === 'function') ? toBnNum(deletes.length) : deletes.length;
+    let m = `${cnt} টি ${lbl} মুছে ফেলা হচ্ছে:\n• ${deletes.join('\n• ')}`;
     if(usedTotal > 0){
       const bn = (typeof toBnNum === 'function') ? toBnNum(usedTotal) : usedTotal;
       m += `\n\n⚠ এগুলো রুটিনে ${bn} জায়গায় ব্যবহৃত — অকেজো ক্লাসগুলোও সরে যাবে। আনডু দিয়ে ফেরানো যাবে।`;
@@ -19809,10 +20265,13 @@ function saveOptions(){
     if(!confirm(m)) return;   // বাতিল → মডাল খোলা থাকবে, কিছুই বদলাবে না
   }
 
-  snapshot();                                        // undo-র জন্য (একবার)
-  removed.forEach(v => optionsRemove(tab, v));        // তালিকা + রুটিন ক্লিনআপ
-  state.options[tab] = after.slice();                // চূড়ান্ত তালিকা ও ক্রম (added + পুনর্বিন্যাস)
-  saveState();
+  snapshot();   // undo (একবার)
+  // নিরাপদ ক্রম — আগে delete (রুটিন ক্লিনআপ), পরে rename (রুটিনে replace), শেষে add
+  deletes.forEach(v => optionsRemove(tab, v));
+  renamePairs.forEach(p => optionsRename(tab, p.from, p.to));   // collision হলে optionsRename নিজেই আটকাবে
+  adds.forEach(v => optionsAdd(tab, v));
+
+  try{ saveState(); }catch(_){}
   refreshAllOptionPickers();
   try{ renderFilters(); }catch(_){}
   try{ populateBulk(); }catch(_){}
