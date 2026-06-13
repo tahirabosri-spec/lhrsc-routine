@@ -2109,6 +2109,57 @@ body[data-qem="on"] .table-wrap::before{
   height:0;border-top:1px dashed #c084fc;
   margin:1px 0;width:100%;                         /* কম ফাঁকা */
 }
+/* 🆕 অপশন ক — কম্প্যাক্ট সারাংশ ঘর + 👁 বিস্তারিত পপ-আপ; ছাপায় পূর্ণ */
+.mp-summary{display:flex;flex-direction:column;gap:3px;width:100%}
+.mp-sum-line{display:flex;align-items:center;gap:3px;flex-wrap:wrap;justify-content:center}
+.mp-sum-subj{font-weight:800;color:var(--text);font-size:12.5px;line-height:1.25}
+.mp-sum-subj.mp-sum-split{color:#7c3aed;font-size:11.5px}
+.mp-sum-line .mp-rot-badge{font-size:10px}
+.mp-sum-days{display:flex;flex-wrap:wrap;gap:2px;align-items:center;justify-content:center}
+.mp-day-chip{
+  font-size:8.5px;font-weight:800;color:#b91c1c;background:#fff1f2;
+  border:1px solid #fecdd3;border-radius:5px;padding:0 3px;line-height:1.55;
+}
+.mp-detail-btn{
+  font-size:8.5px;font-weight:700;color:#2563eb;background:#eff6ff;
+  border:1px solid #bfdbfe;border-radius:6px;padding:1px 6px;margin-left:2px;
+  cursor:pointer;white-space:nowrap;
+}
+.mp-detail-btn:active{transform:scale(.95)}
+/* বিস্তারিত পপ-আপ তালিকা */
+.mpd-list{display:flex;flex-direction:column;gap:6px}
+.mpd-row{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--border,#e5e7eb);border-radius:9px;background:var(--surface-2,#f9fafb)}
+.mpd-day{flex:0 0 70px;font-weight:800;color:#b91c1c;font-size:12px}
+.mpd-info{flex:1;font-size:12.5px;font-weight:700;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.mpd-cls{color:var(--text)}
+.mpd-sec{color:#7c3aed}
+.mpd-subj{color:#0d9488}
+.mpd-dot{color:#9ca3af}
+/* ছাপার জন্য পূর্ণ দিন-ভিত্তিক লাইন — স্ক্রিনে লুকানো, ছাপায় দৃশ্যমান */
+.mp-print-full{display:none}
+.mpf-line{font-size:10px;line-height:1.3;white-space:normal;word-break:break-word}
+.mpf-day{font-weight:800;color:#dc2626}
+.mpf-arrow{margin:0 2px;color:#0d9488}
+.mpf-sep{margin:0 1px;color:#9ca3af}
+.mpf-cls{font-weight:700;color:var(--text)}
+.mpf-sec{font-weight:700;color:#7c3aed}
+.mpf-subj{font-weight:700;color:#0d9488}
+@media print{
+  .mp-summary{display:none !important}
+  .mp-print-full{display:block !important}
+  .mp-detail-btn{display:none !important}
+}
+/* 🆕 multipart শ্রেণি/শাখা সারির ছোট চিপ — সেল স্বাভাবিক রাখতে */
+.mp-cs-chips{
+  display:flex;flex-wrap:wrap;gap:2px;justify-content:center;align-items:center;
+  width:100%;cursor:pointer;line-height:1.4;
+}
+.mp-cs-chip{
+  font-size:9px;font-weight:700;border-radius:5px;
+  padding:0 4px;line-height:1.55;white-space:nowrap;
+}
+.mp-cs-cls{color:var(--text);background:#eef2ff;border:1px solid #c7d2fe}  /* শ্রেণি — হালকা নীল */
+.mp-cs-sec{color:#7c3aed;background:#f5f3ff;border:1px solid #e9d5ff}      /* শাখা — হালকা বেগুনি */
 td.is-multipart .cell-content{align-items:stretch !important;padding:2px 4px !important}
 td.is-multipart{vertical-align:top}
 .qem-smart-suggest{
@@ -5861,6 +5912,18 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
   #rotModal .rot-hint{ font-size:11.5px; color:#6b7280; margin-top:7px; }
   .ce-rot-btn .ce-split-ic{ background:#fff7ed; }
 </style>
+<!-- 🆕 multi-part বিস্তারিত পপ-আপ — দিন → শ্রেণি · শাখা পূর্ণ তালিকা -->
+<div class="modal-overlay" id="mpDetailModal">
+  <div class="modal narrow">
+    <div class="modal-header">
+      <h2 id="mpDetailTitle">📋 দিন-ভিত্তিক বিস্তারিত</h2>
+      <button class="modal-close" onclick="closeModal('mpDetailModal')">×</button>
+    </div>
+    <div class="qem-split-who" id="mpDetailWho"></div>
+    <div class="modal-body"><div id="mpDetailBody" class="mpd-list"></div></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="rotModal">
   <div class="modal narrow">
     <div class="modal-header">
@@ -10770,12 +10833,24 @@ function renderTable(){
       // Class cell — show value or just dropdown arrow icon (NO "Free" text here)
       // 🆕 multi-part হলে প্রথম part-এর class দেখাই (বা "একাধিক")
       let classDisplay = cell.class;
+      let classVal, classCls = '';
       if(_hasParts){
         const uniqueClasses = [...new Set(cell.parts.map(p => (p.class||'').trim()).filter(Boolean))];
-        classDisplay = uniqueClasses.length === 1 ? uniqueClasses[0] : (uniqueClasses.join(' / ') || '');
+        if(uniqueClasses.length > 1){
+          // একাধিক শ্রেণি → ছোট চিপ (সেল স্বাভাবিক রাখতে); ট্যাপে/👁-এ পূর্ণ বিস্তারিত
+          classDisplay = uniqueClasses.join(' / ');
+          classVal = `<span class="mp-cs-chips" title="${esc(classDisplay)}" onclick="event.stopPropagation(); mpShowDetail('${t.id}','${c.id}')">`
+                   + uniqueClasses.map(cv => `<span class="mp-cs-chip mp-cs-cls">${esc(cv)}</span>`).join('')
+                   + `</span>`;
+        } else {
+          classDisplay = uniqueClasses.length === 1 ? uniqueClasses[0] : '';
+          classVal = classDisplay ? esc(classDisplay) : '<span class="cell-arrow ce-mirror" title="বিষয় ঘরে ক্লিক করে নির্বাচন করুন">–</span>';
+          classCls = classDisplay ? '' : 'is-empty-arrow';
+        }
+      } else {
+        classVal = classDisplay ? esc(classDisplay) : '<span class="cell-arrow ce-mirror" title="বিষয় ঘরে ক্লিক করে নির্বাচন করুন">–</span>';
+        classCls = classDisplay ? '' : 'is-empty-arrow';
       }
-      const classVal = classDisplay ? esc(classDisplay) : '<span class="cell-arrow ce-mirror" title="বিষয় ঘরে ক্লিক করে নির্বাচন করুন">–</span>';
-      const classCls = classDisplay ? '' : 'is-empty-arrow';
       body += `<td class="cell-class${lockedCellCls} ${conflict?'has-conflict':''} ${isFree?'is-free':''} ${classCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="class"${styleAttr}>
         <div class="cell-content">
           <span class="row-label">শ্রেণি</span>${classVal}
@@ -10836,14 +10911,28 @@ function renderTable(){
           cell.parts.forEach(p => (Array.isArray(p.days)?p.days:[]).forEach(d => allCovered.add(d)));
           const covN = allCovered.size;
           const sharedCovCls = covN >= 6 ? ' is-shared-full' : (covN > 0 ? ' is-shared-half' : '');
-          const partsHTML = cell.parts.map((p, idx) => {
-            const dnames = _compressDays(Array.isArray(p.days) ? p.days : []);
-            const sep = idx > 0 ? '<div class="mp-divider"></div>' : '';
-            // দিন(ছোট লাল) -বিষয়-শাখা, হাইফেন স্পেস ছাড়া
-            return `${sep}<div class="cell-mpart">
-              <span class="mp-days">${esc(dnames)}</span><span class="mp-arrow">-</span><span class="mp-subj">${esc(p.subject||'—')}</span><span class="mp-arrow">-</span><span class="mp-sect">${esc(p.section||'—')}</span>${p.shared?'<span class="mp-share">🔄</span>':''}
-            </div>`;
+          // 🆕 অপশন ক: পরিচ্ছন্ন সারাংশ (বিষয় একবার + দিন-স্ট্রিপ) + 👁 বিস্তারিত পপ-আপ; ছাপায় পূর্ণ
+          const _mpSubjSet = [...new Set(cell.parts.map(p => (p.subject||'').trim()).filter(Boolean))];
+          const _mpCommonSubj = (_mpSubjSet.length === 1) ? _mpSubjSet[0] : '';
+          // ঢাকা দিনগুলো সপ্তাহ-ক্রমে ছোট চিপ
+          const _mpDayChips = orderRef.filter(d => allCovered.has(d))
+            .map(d => `<span class="mp-day-chip">${esc(dayShortBn[d]||d)}</span>`).join('');
+          // স্ক্রিন সারাংশ শিরোনাম
+          const _mpHead = _mpCommonSubj
+            ? `<span class="mp-sum-subj">${esc(_mpCommonSubj)}</span><span class="mp-rot-badge">🔄</span>`
+            : `<span class="mp-sum-subj mp-sum-split">🔀 বিভক্ত ক্লাস</span>`;
+          // ছাপা/বিস্তারিতের জন্য পূর্ণ লাইন (দিন → শ্রেণি · [বিষয় যদি ভিন্ন ·] শাখা)
+          const _mpFull = cell.parts.map(p => {
+            const dn = _compressDays(Array.isArray(p.days) ? p.days : []);
+            const sj = _mpCommonSubj ? '' : `<span class="mpf-subj">${esc(p.subject||'—')}</span><span class="mpf-sep">·</span>`;
+            return `<div class="mpf-line"><span class="mpf-day">${esc(dn)}</span><span class="mpf-arrow">→</span><span class="mpf-cls">${esc(p.class||'—')}</span><span class="mpf-sep">·</span>${sj}<span class="mpf-sec">${esc(p.section||'—')}</span>${p.shared?'<span class="mp-share">🔄</span>':''}</div>`;
           }).join('');
+          const partsHTML =
+            `<div class="mp-summary">`+
+              `<div class="mp-sum-line">${_mpHead}</div>`+
+              `<div class="mp-sum-days">${_mpDayChips}<button type="button" class="mp-detail-btn" onclick="event.stopPropagation(); mpShowDetail('${t.id}','${c.id}')">👁 বিস্তারিত</button></div>`+
+            `</div>`+
+            `<div class="mp-print-full">${_mpFull}</div>`;
           body += `<td class="cell-subject${lockedCellCls} ${conflict?'has-conflict':''} is-shared-cell is-multipart${sharedCovCls}" data-tid="${t.id}" data-cid="${c.id}" data-field="subject"${styleAttr} title="🔀 স্প্লিট স্লট — ${toBnNum(covN)}/৬ দিন, ${cell.parts.length} অংশ">
             <div class="cell-content" onclick="${cellEditable?`openCellEditor('${t.id}','${c.id}','subject')`:''}">
               <span class="row-label">বিষয়</span>
@@ -10948,12 +11037,24 @@ function renderTable(){
         const cellEditable = teacherCanEdit && !c.locked;
         // 🆕 multi-part হলে section row-এ "একাধিক শাখা" দেখাই (বিস্তারিত subject row-এ)
         let sectionDisplay = cell.section;
+        let sectionVal, secCls = '';
         if(_hasParts){
           const uniqueSecs = [...new Set(cell.parts.map(p => (p.section||'').trim()).filter(Boolean))];
-          sectionDisplay = uniqueSecs.length === 1 ? uniqueSecs[0] : (uniqueSecs.join(' / ') || '');
+          if(uniqueSecs.length > 1){
+            // একাধিক শাখা → ছোট চিপ; ট্যাপে/👁-এ পূর্ণ বিস্তারিত
+            sectionDisplay = uniqueSecs.join(' / ');
+            sectionVal = `<span class="mp-cs-chips" title="${esc(sectionDisplay)}" onclick="event.stopPropagation(); mpShowDetail('${t.id}','${c.id}')">`
+                       + uniqueSecs.map(sv => `<span class="mp-cs-chip mp-cs-sec">${esc(sv)}</span>`).join('')
+                       + `</span>`;
+          } else {
+            sectionDisplay = uniqueSecs.length === 1 ? uniqueSecs[0] : '';
+            sectionVal = sectionDisplay ? esc(sectionDisplay) : '<span class="cell-arrow ce-mirror" title="বিষয় ঘরে ক্লিক করে নির্বাচন করুন">–</span>';
+            secCls = sectionDisplay ? '' : 'is-empty-arrow';
+          }
+        } else {
+          sectionVal = sectionDisplay ? esc(sectionDisplay) : '<span class="cell-arrow ce-mirror" title="বিষয় ঘরে ক্লিক করে নির্বাচন করুন">–</span>';
+          secCls = sectionDisplay ? '' : 'is-empty-arrow';
         }
-        const sectionVal = sectionDisplay ? esc(sectionDisplay) : '<span class="cell-arrow ce-mirror" title="বিষয় ঘরে ক্লিক করে নির্বাচন করুন">–</span>';
-        const secCls = sectionDisplay ? '' : 'is-empty-arrow';
         const colW = (c.width && c.width > 0) ? c.width : 0;
         const widthCss = colW > 0 ? `width:${colW}px;min-width:${colW}px;max-width:${colW}px;` : '';
         const cellBg = rowBg || c.color || '';
@@ -12005,7 +12106,7 @@ function editTeacher(tid){
         <div class="weekly-day">${d.bn}<span class="weekly-day-en">${d.short}</span></div>
         <select class="weekly-subject" data-day="${d.key}">
           <option value="">— কোনো বিষয় না —</option>
-          ${SUBJECT_LIST.map(s=>`<option value="${esc(s)}" ${cur===s?'selected':''}>${esc(s)}</option>`).join('')}
+          ${subList.map(s=>`<option value="${esc(s)}" ${cur===s?'selected':''}>${esc(s)}</option>`).join('')}
         </select>
       </div>`;
     }).join('');
@@ -16712,7 +16813,7 @@ function _qemSplitFillSuggestions(){
     const host = document.getElementById(sugId);
     const inp = document.getElementById(inputId);
     if(!host || !inp) return;
-    const list = (opts||[]).slice(0, 16);
+    const list = (opts||[]);   // 🆕 সম্পূর্ণ তালিকা — কোনো সীমা নয় (রুটিনের সব বিষয়/শ্রেণি/শাখা)
     const curVal = (inp.value||'').trim();
     host.innerHTML = list.map(o =>
       `<span class="ss-chip${o===curVal?' selected':''}" data-v="${esc(o)}">${esc(o)}</span>`
@@ -16888,6 +16989,46 @@ function _rotOptionsList(kind){
   return (state.options && Array.isArray(state.options[kind])) ? state.options[kind] : [];
 }
 
+/* multi-part ঘরের পূর্ণ দিন-ভিত্তিক বিস্তারিত পপ-আপে দেখাই (অপশন ক) */
+function mpShowDetail(tid, cid){
+  const t = (state.teachers || []).find(x => x.id === tid);
+  const cell = t && t.cells && t.cells[cid];
+  if(!t || !cell || !Array.isArray(cell.parts) || !cell.parts.length) return;
+  const dayBn = {Sat:'শনি',Sun:'রবি',Mon:'সোম',Tue:'মঙ্গল',Wed:'বুধ',Thu:'বৃহঃ',Fri:'শুক্র'};
+  const orderRef = (typeof WEEK_DAYS !== 'undefined' && Array.isArray(WEEK_DAYS)) ? WEEK_DAYS.map(d=>d.key) : ['Sat','Sun','Mon','Tue','Wed','Thu'];
+  const subjSet = [...new Set(cell.parts.map(p => (p.subject||'').trim()).filter(Boolean))];
+  const common = subjSet.length === 1 ? subjSet[0] : '';
+  // শিরোনাম + শিক্ষক/সময় ব্যানার
+  try{
+    const col = (state.columns || []).find(c => c.id === cid);
+    const slot = col ? col.label : '';
+    const who = document.getElementById('mpDetailWho');
+    if(who) who.innerHTML = '<span class="qsw-name">' + esc(t.name) + '</span>' + (slot ? '<span class="qsw-time">' + esc(slot) + '</span>' : '');
+    const title = document.getElementById('mpDetailTitle');
+    if(title) title.innerHTML = common ? ('📋 ' + esc(common) + ' — দিন-ভিত্তিক') : '📋 বিভক্ত ক্লাস — বিস্তারিত';
+  }catch(_){}
+  // অংশগুলো প্রথম দিন অনুযায়ী সপ্তাহ-ক্রমে সাজাই
+  const idxOf = (p) => {
+    const ds = (Array.isArray(p.days) && p.days.length) ? p.days : [];
+    let m = 99; ds.forEach(d => { const i = orderRef.indexOf(d); if(i >= 0 && i < m) m = i; });
+    return m;
+  };
+  const sorted = cell.parts.slice().sort((a,b) => idxOf(a) - idxOf(b));
+  const rows = sorted.map(p => {
+    const days = (Array.isArray(p.days) ? p.days.slice() : [])
+                  .sort((x,y) => orderRef.indexOf(x) - orderRef.indexOf(y))
+                  .map(d => dayBn[d] || d).join(', ');
+    const subj = common ? '' : `<span class="mpd-subj">${esc(p.subject||'—')}</span><span class="mpd-dot">·</span>`;
+    return `<div class="mpd-row">
+      <div class="mpd-day">${esc(days || '—')}</div>
+      <div class="mpd-info"><span class="mpd-cls">${esc(p.class||'—')}</span><span class="mpd-dot">·</span>${subj}<span class="mpd-sec">${esc(p.section||'—')}</span>${p.shared?'<span class="mpd-share">🔄</span>':''}</div>
+    </div>`;
+  }).join('');
+  const body = document.getElementById('mpDetailBody');
+  if(body) body.innerHTML = rows || '<div style="color:#888;text-align:center;padding:10px">কোনো তথ্য নেই</div>';
+  try{ openModal('mpDetailModal'); }catch(_){}
+}
+
 function _rotOpen(){
   if(!currentEditCell) return;
   const {tid, cid} = currentEditCell;
@@ -16998,7 +17139,7 @@ function _rotFillSubjectSug(){
   const host = document.getElementById('rotSubjectSug');
   const inp = document.getElementById('rotSubject');
   if(!host || !inp) return;
-  const list = _rotOptionsList('subject').slice(0, 16);
+  const list = _rotOptionsList('subject');   // 🆕 সম্পূর্ণ বিষয় তালিকা — কোনো সীমা নয়
   const cur = (inp.value||'').trim();
   host.innerHTML = list.map(o => `<span class="ss-chip${o===cur?' selected':''}" data-v="${esc(o)}">${esc(o)}</span>`).join('');
   if(!host.dataset.bound){
