@@ -1325,6 +1325,34 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .rt-conflict-item.overload .rt-c-teachers .rt-t-chip{
   border-color:#fdba74;color:#9a3412;
 }
+/* 🆕 গ্রুপ-করা সংঘাত — দিন চিপ, "স্লটে যান" সারি, ঘর হাইলাইট */
+.rt-conflict-item .rt-c-days{
+  display:flex;flex-wrap:wrap;gap:3px;margin:4px 0 2px;
+}
+.rt-conflict-item .rt-c-day{
+  font-size:9.5px;font-weight:800;color:#b91c1c;background:#fff1f2;
+  border:1px solid #fecdd3;border-radius:5px;padding:0 5px;line-height:1.6;
+}
+.rt-conflict-item .rt-c-trows{flex-direction:column;align-items:stretch;gap:6px}
+.rt-c-trow{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:#fff;border:1px solid #fca5a5;border-radius:9px;padding:5px 8px;
+}
+.rt-c-trow .rt-t-chip{border:none;background:transparent;padding:0;font-size:12.5px}
+.rt-goto-btn{
+  flex:0 0 auto;font-size:11.5px;font-weight:700;white-space:nowrap;
+  color:#fff;background:var(--primary,#0f766e);border:none;border-radius:8px;
+  padding:5px 11px;cursor:pointer;
+}
+.rt-goto-btn:active{transform:scale(.96)}
+.routine-table td.rt-goto-flash{
+  animation: rtGotoFlash .8s ease-in-out 0s 4;
+  position:relative;z-index:3;
+}
+@keyframes rtGotoFlash{
+  0%,100%{ box-shadow: inset 0 0 0 0 rgba(37,99,235,0); }
+  50%{ box-shadow: inset 0 0 0 3px #2563eb, 0 0 16px rgba(37,99,235,.6); }
+}
 
 .routine-table td .cell-content{
   padding:var(--cell-pad);
@@ -15482,6 +15510,13 @@ function _applyConflictMarkers(){
 
   // Banner update
   _updateConflictBanner(conflicts);
+  // 🆕 সংঘাত মডাল খোলা থাকলে লাইভ পুনঃরেন্ডার — সমাধান-হওয়া কার্ড নিজে থেকেই গায়েব হবে
+  try{
+    const cm = document.getElementById('rtConflictModal');
+    if(cm && cm.classList.contains('show') && typeof _rtRenderConflictList === 'function'){
+      _rtRenderConflictList(conflicts);
+    }
+  }catch(_){}
   return conflicts;
 }
 
@@ -15491,7 +15526,9 @@ function _updateConflictBanner(conflicts){
   const txt = document.getElementById('rtConflictText');
   if(!banner || !txt) return;
   if(!conflicts) conflicts = _detectRealtimeConflicts();
-  const cn = conflicts.cellConflicts.length;
+  const cn = (typeof _rtGroupConflicts === 'function')
+    ? _rtGroupConflicts(conflicts.cellConflicts).length    // 🆕 গ্রুপ-করা প্রকৃত সংখ্যা
+    : conflicts.cellConflicts.length;
   const on = conflicts.overloads.length;
   const un = (conflicts.unauthorized||[]).length;
   const oc = (conflicts.overCount||[]).length;
@@ -15522,35 +15559,100 @@ function _updateConflictBanner(conflicts){
 }
 
 /* Modal-এ সংঘাতের পূর্ণাঙ্গ তালিকা দেখাও */
-function _rtOpenConflictModal(){
-  const conflicts = _detectRealtimeConflicts();
+/* 🆕 সংঘাত গ্রুপিং — ঘণ্টা + শ্রেণি + শাখা ভিত্তিক; দিন merge করে এক যৌক্তিক সংঘাত = এক কার্ড */
+function _rtGroupConflicts(cellConflicts){
+  const groups = {}; const order = [];
+  (cellConflicts||[]).forEach(cf => {
+    const isShared = (cf.reason === 'shared-incomplete' || cf.reason === 'shared-overlap');
+    const key = (isShared?'S¦':'C¦') + cf.cid + '¦' + cf.classKey;
+    if(!groups[key]){
+      groups[key] = {
+        kind: isShared ? cf.reason : 'overlap',
+        cid: cf.cid, classKey: cf.classKey,
+        colLabel: cf.colLabel, classLabel: cf.classLabel,
+        sharedDetail: cf.sharedDetail || '',
+        teachers: [], _tids: new Set(), dayMap: {}
+      };
+      order.push(key);
+    }
+    const g = groups[key];
+    if(cf.day && cf.day !== '*' && cf.dayLabel && cf.dayLabel !== 'shared') g.dayMap[cf.day] = cf.dayLabel;
+    (cf.teachers||[]).forEach(tt => {
+      if(!g._tids.has(tt.tid)){
+        g._tids.add(tt.tid);
+        g.teachers.push({tid: tt.tid, tname: tt.tname, subject: tt.subject || '', isShared: !!tt.isShared});
+      } else if(tt.subject){
+        const ex = g.teachers.find(x => x.tid === tt.tid);
+        if(ex){ if(!ex.subject) ex.subject = tt.subject; else if(ex.subject.split(', ').indexOf(tt.subject) < 0) ex.subject += ', ' + tt.subject; }
+      }
+    });
+  });
+  return order.map(k => groups[k]);
+}
+
+/* 🆕 সংঘাত কার্ড থেকে রুটিনের নির্দিষ্ট ঘরে স্ক্রল + কয়েক সেকেন্ড হাইলাইট */
+function _rtGoToSlot(tid, cid){
+  try{ closeModal('rtConflictModal'); }catch(_){}
+  setTimeout(() => {
+    const tds = document.querySelectorAll('.routine-table td[data-tid][data-cid]');
+    const matches = []; let target = null;
+    for(let i=0;i<tds.length;i++){
+      const td = tds[i];
+      if(td.getAttribute('data-tid')===tid && td.getAttribute('data-cid')===cid){
+        matches.push(td);
+        if(td.getAttribute('data-field')==='subject') target = td;
+      }
+    }
+    if(!target && matches.length) target = matches[0];
+    if(target){
+      try{ target.scrollIntoView({behavior:'smooth', block:'center', inline:'center'}); }
+      catch(_){ try{ target.scrollIntoView(); }catch(__){} }
+    }
+    matches.forEach(td => {
+      td.classList.remove('rt-goto-flash');
+      void td.offsetWidth;                       // animation restart
+      td.classList.add('rt-goto-flash');
+      setTimeout(() => td.classList.remove('rt-goto-flash'), 3400);
+    });
+  }, 260);
+}
+
+/* 🆕 সংঘাত তালিকা রেন্ডার (গ্রুপ-করা) — modal খোলা থাকলে লাইভ রিফ্রেশেও কল হয় */
+function _rtRenderConflictList(conflicts){
   const host = document.getElementById('rtConflictListHost');
   if(!host) return;
   const items = [];
+  const _dayOrder = (typeof _teActiveDays === 'function') ? _teActiveDays().map(d => d.key) : [];
 
-  conflicts.cellConflicts.forEach(cf => {
-    const tchips = cf.teachers.map(tt =>
-      '<span class="rt-t-chip">'+esc(tt.tname || tt.tid)+(tt.subject?' · '+esc(tt.subject):'')+(tt.isShared?' · 🔄':'')+'</span>'
-    ).join('');
-    // reason-specific description
+  // ── CELL সংঘাত — ঘণ্টা+শ্রেণি+শাখা ভিত্তিক এক কার্ড, শিক্ষকদের পাশে "স্লটে যান" ──
+  _rtGroupConflicts(conflicts.cellConflicts).forEach(g => {
+    const trows = g.teachers.map(tt => {
+      const lbl = esc(tt.tname || tt.tid) + (tt.subject ? ' (' + esc(tt.subject) + ')' : '') + (tt.isShared ? ' 🔄' : '');
+      return `<div class="rt-c-trow">
+        <span class="rt-t-chip">${lbl}</span>
+        <button type="button" class="rt-goto-btn" onclick="_rtGoToSlot('${tt.tid}','${g.cid}')">📍 স্লটে যান</button>
+      </div>`;
+    }).join('');
+    const dayKeys = _dayOrder.filter(k => g.dayMap[k]);
+    const restKeys = Object.keys(g.dayMap).filter(k => dayKeys.indexOf(k) < 0);
+    const allDayKeys = dayKeys.concat(restKeys);
+    const dayChips = allDayKeys.length
+      ? `<div class="rt-c-days">${allDayKeys.map(k => `<span class="rt-c-day">${esc(g.dayMap[k])}</span>`).join('')}</div>`
+      : '';
     let title, desc;
-    if(cf.reason === 'shared-incomplete'){
-      title = '⚠️ Invalid Shared — ' + esc(cf.classLabel) + ' · ' + esc(cf.colLabel);
-      desc = esc(cf.sharedDetail || 'Shared class-এর combined days ৬ পূর্ণ নয়') +
-             '। সমাধান: বাকি দিনগুলোর জন্য আরো শিক্ষক যোগ করুন, অথবা একজনের days বাড়িয়ে ৬ দিন পূর্ণ করুন।';
-    } else if(cf.reason === 'shared-overlap'){
-      title = '⚠️ Shared Overlap — ' + esc(cf.classLabel) + ' · ' + esc(cf.colLabel);
-      desc = esc(cf.sharedDetail || 'একই দিনে দুই শিক্ষক') +
-             '। সমাধান: কোনো এক শিক্ষকের days বদলান যাতে overlap না হয়।';
+    if(g.kind === 'shared-incomplete' || g.kind === 'shared-overlap'){
+      title = '⚠️ ' + esc(g.classLabel) + ' · ' + esc(g.colLabel);
+      desc = esc(g.sharedDetail || 'Shared class-এর দিন-বণ্টন অসম্পূর্ণ') + '।';
     } else {
-      title = '⚠️ ' + esc(cf.classLabel) + ' · ' + esc(cf.colLabel) + ' · ' + esc(cf.dayLabel);
-      desc = 'এই (শ্রেণি, শাখা, পিরিয়ড, দিন)-এ একাধিক শিক্ষক বসেছেন। সমাধান: যে কোনো এক শিক্ষকের cell মুছে দিন বা অন্য slot-এ সরান।';
+      title = '⚠️ ' + esc(g.classLabel) + ' · ' + esc(g.colLabel);
+      desc = 'এই (শ্রেণি · শাখা · ঘণ্টা)-এ একাধিক শিক্ষক বসেছেন। সমাধান: যে কোনো এক শিক্ষকের cell সরালেই মিটে যাবে।';
     }
     items.push(`
       <div class="rt-conflict-item">
         <div class="rt-c-title">${title}</div>
+        ${dayChips}
         <div class="rt-c-desc">${desc}</div>
-        <div class="rt-c-teachers">${tchips}</div>
+        <div class="rt-c-teachers rt-c-trows">${trows}</div>
       </div>
     `);
   });
@@ -15610,6 +15712,12 @@ function _rtOpenConflictModal(){
   } else {
     host.innerHTML = items.join('');
   }
+}
+
+/* সংঘাত মডাল খোলো — detect → render → open */
+function _rtOpenConflictModal(){
+  const conflicts = _detectRealtimeConflicts();
+  _rtRenderConflictList(conflicts);
   openModal('rtConflictModal');
 }
 
