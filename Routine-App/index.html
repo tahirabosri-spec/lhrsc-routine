@@ -1361,6 +1361,15 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   font-size:11px;font-weight:700;color:#0f766e;background:#ccfbf1;
   border:1px solid #99f6e4;border-radius:7px;padding:2px 8px;
 }
+/* 🆕 শ্রেণি-শাখার ক্লাস-সময় মডাল */
+.ch-note{font-size:12.5px;line-height:1.6;color:var(--text-2);background:var(--surface-2,#f9fafb);border:1px solid var(--border,#e5e7eb);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.ch-list{display:flex;flex-direction:column;gap:7px;max-height:55vh;overflow:auto}
+.ch-empty{font-size:13px;color:var(--text-2);text-align:center;padding:20px;font-style:italic}
+.ch-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--border,#e5e7eb);border-radius:10px;background:#fff}
+.ch-label{flex:1 1 130px;font-size:13.5px;font-weight:800;color:var(--text)}
+.ch-selects{display:flex;align-items:center;gap:6px}
+.ch-selects .filter-select{min-width:118px}
+.ch-arrow{font-weight:800;color:#0f766e}
 
 .routine-table td .cell-content{
   padding:var(--cell-pad);
@@ -5597,6 +5606,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
         <div class="tool-divider"></div>
         <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openModal('optionsModal');closeToolMenu()">📝 <span class="lbl">অপশন</span></button>
         <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openCurriculumModal();closeToolMenu()" title="প্রতি শ্রেণিতে কোন বিষয় সপ্তাহে কত পিরিয়ড — স্বয়ংক্রিয় রুটিনের ভিত্তি">📚 <span class="lbl">পাঠ্যসূচি</span></button>
+        <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openClassHoursModal();closeToolMenu()" title="প্রতি শ্রেণি-শাখার ক্লাস কখন শুরু ও শেষ — ফাঁকা ঘণ্টা নির্ণয়ের ভিত্তি">🕐 <span class="lbl">শ্রেণির ক্লাস-সময়</span></button>
         <button class="tool-btn editable-only" data-perm="bulkEdit" onclick="openModal('bulkModal');closeToolMenu()">✂️ <span class="lbl">বাল্ক এডিট</span></button>
         <div class="tool-divider"></div>
         <button class="tool-btn admin-mgr-only" id="voiceAnnounceBtn" onclick="announceNow();closeToolMenu()" title="এখনই বর্তমান পিরিয়ড ও ছুটির শিক্ষক ঘোষণা করুন">🔊 <span class="lbl">এখনই ঘোষণা</span></button>
@@ -5948,6 +5958,28 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
   #rotModal .rot-hint{ font-size:11.5px; color:#6b7280; margin-top:7px; }
   .ce-rot-btn .ce-split-ic{ background:#fff7ed; }
 </style>
+<!-- 🆕 শ্রেণি-শাখার ক্লাস-সময় (শুরু→শেষ) — ফাঁকা ঘণ্টা নির্ণয়ের ভিত্তি -->
+<div class="modal-overlay" id="classHoursModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h2>🕐 শ্রেণি-শাখার ক্লাস-সময়</h2>
+      <button class="modal-close" onclick="closeModal('classHoursModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="ch-note">
+        প্রতি শ্রেণি-শাখার ক্লাস <b>কখন শুরু</b> ও <b>কখন শেষ</b> তা নির্ধারণ করুন। এর ভিত্তিতে "ফাঁকা ঘণ্টা" ধরা হবে —
+        নির্ধারিত সীমার ভেতরে (বিরতি বাদে) যে দিনে ক্লাস আছে, সেদিন কোনো ঘণ্টা খালি থাকলেই তা ফাঁকা।
+        <br>সময় সেট না করলে স্বয়ংক্রিয় (দুই ক্লাসের মাঝের গ্যাপ) নিয়ম চলবে।
+      </div>
+      <div id="chListHost" class="ch-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="tool-btn" onclick="closeModal('classHoursModal')">বাতিল</button>
+      <button class="tool-btn primary" onclick="saveClassHours()">✓ সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
 <!-- 🆕 multi-part বিস্তারিত পপ-আপ — দিন → শ্রেণি · শাখা পূর্ণ তালিকা -->
 <div class="modal-overlay" id="mpDetailModal">
   <div class="modal narrow">
@@ -7987,6 +8019,7 @@ let state = {
   },
   columns: JSON.parse(JSON.stringify(DEFAULT_COLUMNS)),
   options: JSON.parse(JSON.stringify(DEFAULT_OPTIONS)),
+  classHours: {},
   teachers: [],
   settings: {
     theme: 'light',
@@ -8947,7 +8980,7 @@ function applyRemoteState(remoteData){
    HISTORY (UNDO/REDO)
 =========================================================== */
 function snapshot(){
-  const snap = JSON.stringify({teachers:state.teachers, columns:state.columns, options:state.options, branding:state.branding});
+  const snap = JSON.stringify({teachers:state.teachers, columns:state.columns, options:state.options, branding:state.branding, classHours:state.classHours});
   historyStack.push(snap);
   if(historyStack.length > MAX_HISTORY) historyStack.shift();
   redoStack = [];
@@ -15514,17 +15547,31 @@ function _detectRealtimeConflicts(){
       });
     });
 
+    const CH = state.classHours || {};
     Object.keys(classOcc).forEach(ck => {
+      const ch = CH[ck];
+      let useRange = false, sIdx = -1, eIdx = -1;
+      if(ch && ch.start && ch.end){
+        sIdx = slotCols.findIndex(c => c.id === ch.start);
+        eIdx = slotCols.findIndex(c => c.id === ch.end);
+        if(sIdx >= 0 && eIdx >= 0){ if(sIdx > eIdx){ const tmp = sIdx; sIdx = eIdx; eIdx = tmp; } useRange = true; }
+      }
       Object.keys(classOcc[ck]).forEach(day => {
         const filled = classOcc[ck][day];
         const gapCols = [];
-        sessions.forEach(sess => {
-          const idxFilled = [];
-          sess.forEach((c, i) => { if(filled[c.id]) idxFilled.push(i); });
-          if(idxFilled.length < 2) return;
-          const lo = idxFilled[0], hi = idxFilled[idxFilled.length - 1];
-          for(let i = lo + 1; i < hi; i++){ if(!filled[sess[i].id]) gapCols.push(sess[i]); }
-        });
+        if(useRange){
+          // নির্ধারিত সীমার ভেতরে যেকোনো খালি ঘণ্টা = ফাঁকা (slotCols-এ বিরতি নেই)
+          for(let i = sIdx; i <= eIdx; i++){ if(!filled[slotCols[i].id]) gapCols.push(slotCols[i]); }
+        } else {
+          // সীমা সেট নেই → সেশন-সচেতন "মাঝের গ্যাপ" fallback
+          sessions.forEach(sess => {
+            const idxFilled = [];
+            sess.forEach((c, i) => { if(filled[c.id]) idxFilled.push(i); });
+            if(idxFilled.length < 2) return;
+            const lo = idxFilled[0], hi = idxFilled[idxFilled.length - 1];
+            for(let i = lo + 1; i < hi; i++){ if(!filled[sess[i].id]) gapCols.push(sess[i]); }
+          });
+        }
         if(gapCols.length){
           out.classGaps.push({
             classKey: ck,
@@ -20732,6 +20779,79 @@ function getCurriculumTotal(clsName, secName){
 }
 
 /* ── modal খোলা / বন্ধ ────────────────────────────────── */
+/* 🆕 শ্রেণি-শাখার ক্লাস-সময় (শুরু→শেষ) — ফাঁকা ঘণ্টা নির্ণয়ের ভিত্তি */
+function _chCollectKeys(){
+  const set = {};
+  (state.teachers||[]).forEach(t => {
+    if(!t || !t.cells) return;
+    Object.keys(t.cells).forEach(cid => {
+      const cell = t.cells[cid];
+      if(!_rtIsLoadedCell(cell)) return;
+      if(Array.isArray(cell.parts) && cell.parts.length){
+        cell.parts.forEach(p => {
+          const ck = ((p.class||'').trim() || (cell.class||'').trim()) + '||' + ((p.section||'').trim() || (cell.section||'').trim());
+          if(ck !== '||') set[ck] = true;
+        });
+      } else {
+        const ck = (cell.class||'').trim() + '||' + (cell.section||'').trim();
+        if(ck !== '||') set[ck] = true;
+      }
+    });
+  });
+  Object.keys(state.classHours || {}).forEach(k => set[k] = true);
+  return Object.keys(set).sort((a,b) => a.localeCompare(b, 'bn'));
+}
+
+function openClassHoursModal(){
+  if(!state.classHours) state.classHours = {};
+  const host = document.getElementById('chListHost');
+  if(!host) return;
+  const slotCols = (state.columns||[]).filter(c => c && c.type === 'slot');
+  const keys = _chCollectKeys();
+  if(!keys.length){
+    host.innerHTML = '<div class="ch-empty">এখনো কোনো শ্রেণি-শাখা রুটিনে বসানো হয়নি। আগে কিছু ক্লাস বসান, তারপর এখানে সময় নির্ধারণ করুন।</div>';
+    openModal('classHoursModal');
+    return;
+  }
+  const optsHTML = (selId) => '<option value="">—</option>' + slotCols.map(c =>
+    `<option value="${esc(c.id)}" ${selId===c.id?'selected':''}>${esc(c.label||c.id)}</option>`
+  ).join('');
+  host.innerHTML = keys.map(ck => {
+    const parts = ck.split('||');
+    const label = esc(parts[0] || '—') + (parts[1] ? ' / ' + esc(parts[1]) : '');
+    const ch = state.classHours[ck] || {};
+    return `<div class="ch-row" data-ck="${esc(ck)}">
+      <div class="ch-label">${label}</div>
+      <div class="ch-selects">
+        <select class="ch-start filter-select">${optsHTML(ch.start||'')}</select>
+        <span class="ch-arrow">→</span>
+        <select class="ch-end filter-select">${optsHTML(ch.end||'')}</select>
+      </div>
+    </div>`;
+  }).join('');
+  openModal('classHoursModal');
+}
+
+function saveClassHours(){
+  if(!state.classHours) state.classHours = {};
+  try{ if(typeof snapshot === 'function') snapshot(); }catch(_){}
+  const rows = document.querySelectorAll('#chListHost .ch-row');
+  const next = {};
+  rows.forEach(r => {
+    const ck = r.getAttribute('data-ck');
+    const s = r.querySelector('.ch-start');
+    const e = r.querySelector('.ch-end');
+    const sv = s ? s.value : '';
+    const ev = e ? e.value : '';
+    if(ck && sv && ev) next[ck] = {start: sv, end: ev};   // দুটোই সেট থাকলেই গণ্য
+  });
+  state.classHours = next;
+  try{ saveState(); }catch(_){}
+  try{ closeModal('classHoursModal'); }catch(_){}
+  try{ refreshRealtimeConflicts(true); }catch(_){}
+  try{ showToast('শ্রেণির ক্লাস-সময় সংরক্ষিত','success'); }catch(_){}
+}
+
 function openCurriculumModal(){
   if(!isEditorAccount()){ showToast('অনুমতি নেই','error'); return; }
   if(!requirePerm('manageOptions')) return;
