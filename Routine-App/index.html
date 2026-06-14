@@ -10415,6 +10415,7 @@ function finishLogin(){
   // 🔊 স্বয়ংক্রিয় বাংলা ভয়েস ঘোষণা চালু
   startVoiceAnnouncer();
   // 🆕 খোলার সাথে সাথে চলমান ঘণ্টার কলামে নিয়ে যাই (টেবিল রেন্ডার শেষ হওয়ার পর)
+  try{ setTimeout(function(){ try{ scrollToCurrentSlot(); }catch(_){} }, 350); }catch(_){}
   // 🆕 অ্যাডমিন/ম্যানেজার নতুন ভার্সন খুললে control/minAppVersion বাড়িয়ে দেয়
   //    → পুরোনো ডিভাইসগুলো স্বয়ংক্রিয়ভাবে আপডেট হয়।
   try{ _maybeRaiseMinVersion(); }catch(_){}
