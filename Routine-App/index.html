@@ -778,7 +778,8 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   padding: 10px;
   -webkit-overflow-scrolling: touch;   /* iOS মসৃণ মোমেন্টাম স্ক্রোল */
   overscroll-behavior-x: contain;       /* অনুভূমিক স্ক্রোল পেজে গড়িয়ে না যাক */
-  transform: translateZ(0);             /* নিজস্ব GPU লেয়ার — sticky cell রি-পেইন্ট কমায় */
+  /* ⚠ আগে এখানে transform: translateZ(0) ছিল — স্ক্রল-কন্টেইনারে transform
+     থাকলে ভেতরের position:sticky (নাম কলাম) ভেঙে যায়, তাই সরানো হলো। */
 }
 @supports (overflow-y: clip){
   .table-wrap{overflow-y:clip}
@@ -884,9 +885,17 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .col-tool:hover{background:#fff;color:var(--primary)}
 .col-tool.active{background:var(--warning);color:#fff;border-color:var(--warning)}
 .routine-table th.col-break{background:var(--break-bg);color:var(--break-text);width:var(--break-col-w);min-width:var(--break-col-min)}
-.routine-table th.col-sl{background:var(--sl-bg);color:var(--sl-text);min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w)}
+.routine-table th.col-sl{background:var(--sl-bg);color:var(--sl-text);min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w);left:0}
 .routine-table th.col-name{background:var(--name-bg);color:var(--name-text);min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);left:var(--sl-col-w)}
-.routine-table th.sticky-left{position:sticky;z-index:25;left:0}
+.routine-table th.sticky-left{position:sticky;z-index:25}
+
+/* 🆕 ডানে স্ক্রল করলে সিরিয়াল (SL) কলাম লুকাই — স্ক্রিনে বেশি জায়গা পাওয়া যায়।
+   বাঁ-প্রান্তে ফিরলে আবার দেখায়। names-floating ক্লাসটি scrollLeft>2 হলে
+   #tableWrap-এ যোগ হয় (বিদ্যমান scroll-listener)। SL লুকালে নাম-কলাম
+   left:0-এ সরে আসে (--sl-col-w:0), তাই বাঁ-প্রান্তেই আটকে থাকে। */
+#tableWrap.names-floating{ --sl-col-w:0px; }
+#tableWrap.names-floating .routine-table td.col-sl,
+#tableWrap.names-floating .routine-table th.col-sl{ display:none; }
 /* When SL/Name are swapped, Name is at left:0 and SL is after Name */
 [data-sl-name-swapped="true"] .routine-table th.col-name{left:0}
 [data-sl-name-swapped="true"] .routine-table th.col-sl{left:var(--name-col-w)}
@@ -931,8 +940,8 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   border-left-color:var(--slot-divider-c, var(--border)) !important;
   border-left-style:solid !important;
 }
-.routine-table td.col-sl{background:var(--sl-bg);color:var(--sl-text);text-align:center;font-weight:700;position:sticky;left:0;z-index:5;min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w);font-size:var(--name-font);padding:4px 3px;will-change:transform}
-.routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:var(--sl-col-w);z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);padding:4px 8px;cursor:default;will-change:transform}
+.routine-table td.col-sl{background:var(--sl-bg);color:var(--sl-text);text-align:center;font-weight:700;position:sticky;left:0;z-index:5;min-width:var(--sl-col-w);width:var(--sl-col-w);max-width:var(--sl-col-w);font-size:var(--name-font);padding:4px 3px}
+.routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:var(--sl-col-w);z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);padding:4px 8px;cursor:default}
 .routine-table td.col-name .t-name{font-weight:700;font-size:var(--name-font);line-height:1.25}
 .routine-table td.col-name .t-meta{font-size:calc(var(--name-font) - 3px);opacity:.85;margin-top:2px;line-height:1.2}
 /* 🆕 শিক্ষকের তথ্য খোলার বাটন (নাম-সেলে) — ছোট, শুধু "তথ্য" লেখা, কালারফুল।
@@ -1422,7 +1431,8 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .routine-table td.col-name{
   /* Hard boundary: nothing may bleed in or out */
   overflow:hidden;
-  contain:layout paint;
+  /* ⚠ আগে এখানে contain:layout paint ছিল — এটাও position:sticky ভাঙছিল
+     (নাম কলাম আটকাচ্ছিল না)। overflow:hidden-ই clipping দেয়, তাই সরানো হলো। */
   /* STRONG visual separator from slot columns */
   border-right:3px solid var(--primary) !important;
   box-shadow:2px 0 0 0 var(--surface);
@@ -4672,7 +4682,7 @@ td.is-multipart{vertical-align:top}
   .routine-table td.col-sl .row-handle,.routine-table td.col-sl .row-lock{font-size:11px;padding:0 3px}
   .routine-table thead th .col-handle{font-size:11px;padding:0 3px}
   .col-tool{font-size:11px;min-width:22px;min-height:22px;padding:2px 5px}
-  :root{--row-h:34px}
+  :root{--row-h:34px;--name-col-w:120px}
   .user-chip{font-size:11px;padding:4px 8px}
   .user-chip .role-badge{padding:1px 6px;font-size:10px}
 }
@@ -7966,7 +7976,7 @@ const BACKUP_KEY = 'lhrsc_routine_backups';
 /* 🆕 অ্যাপ ভার্সন — নতুন ফাইল ডিপ্লয় করলে এই সংখ্যাটি বাড়াবেন (তারিখ-ভিত্তিক)।
    অ্যাডমিন নতুন ভার্সন একবার খুললেই Firebase-এ control/minAppVersion বাড়ে,
    ফলে পুরোনো ভার্সনে আটকে থাকা সব ডিভাইস স্বয়ংক্রিয়ভাবে আপডেট হয়। */
-const APP_VERSION = 20260621;
+const APP_VERSION = 20260622;
 
 /* ===========================================================
    🏫 SINGLE-TENANT MODE (Multi-school support removed)
