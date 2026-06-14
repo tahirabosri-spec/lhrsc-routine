@@ -1370,6 +1370,26 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .ch-selects{display:flex;align-items:center;gap:6px}
 .ch-selects .filter-select{min-width:118px}
 .ch-arrow{font-weight:800;color:#0f766e}
+/* 📲 হোম স্ক্রিনে যোগ — ব্যানার ও গাইড মডাল */
+.a2hs-banner{
+  position:fixed;left:10px;right:10px;bottom:10px;z-index:9999;
+  display:flex;align-items:center;gap:9px;
+  background:var(--primary,#0f766e);color:#fff;
+  border-radius:14px;padding:10px 12px;box-shadow:0 8px 26px rgba(0,0,0,.28);
+}
+.a2hs-banner-ic{font-size:20px}
+.a2hs-banner-txt{flex:1;font-size:12.5px;font-weight:700;line-height:1.4}
+.a2hs-banner-add{flex:0 0 auto;background:#fff;color:var(--primary,#0f766e);font-weight:800;font-size:12.5px;border:none;border-radius:9px;padding:7px 13px;cursor:pointer}
+.a2hs-banner-x{flex:0 0 auto;background:transparent;color:#fff;border:none;font-size:16px;cursor:pointer;opacity:.85;padding:2px 4px}
+.a2hs-lead{font-size:14px;font-weight:800;color:var(--text);margin-bottom:8px}
+.a2hs-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;line-height:1.55;color:var(--text)}
+.a2hs-steps li{font-weight:600}
+.a2hs-ic{font-size:15px}
+.a2hs-hint{margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--text-2);background:var(--surface-2,#f9fafb);border:1px solid var(--border,#e5e7eb);border-radius:9px;padding:8px 10px}
+.a2hs-ok{font-size:14px;font-weight:700;color:#16a34a;line-height:1.6;text-align:center;padding:14px}
+.a2hs-install-btn{display:block;width:100%;background:var(--primary,#0f766e);color:#fff;font-size:15px;font-weight:800;border:none;border-radius:12px;padding:13px;cursor:pointer;margin-bottom:4px}
+.a2hs-install-btn:active{transform:scale(.98)}
+@media print{ .a2hs-banner{display:none !important} }
 
 .routine-table td .cell-content{
   padding:var(--cell-pad);
@@ -5536,6 +5556,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
   <!-- ☰ সিস্টেম ও অ্যাকাউন্ট মেনু (position:fixed প্যানেল) -->
   <div class="tool-menu-panel sys-menu-panel" id="sysMenuPanel" role="menu">
     <div class="tool-menu-panel-header">সিস্টেম ও অ্যাকাউন্ট</div>
+    <button class="tool-btn" onclick="openInstallHelp()" title="অ্যাপটি ফোনের হোম স্ক্রিনে যোগ করুন (সব মোবাইলে)">📲 <span class="lbl">হোম স্ক্রিনে যোগ</span></button>
     <button class="tool-btn editable-only" onclick="openModal('settingsModal');closeSysMenu()" title="সেটিংস">⚙️ <span class="lbl">সেটিংস</span></button>
     <button class="tool-btn editable-only" data-perm="branding" onclick="openModal('brandingModal');closeSysMenu()" title="ব্র্যান্ডিং এডিট">🎨 <span class="lbl">ব্র্যান্ডিং</span></button>
     <button class="tool-btn" onclick="openModal('developerModal');closeSysMenu()" title="ডেভেলপার তথ্য">ℹ️ <span class="lbl">ডেভেলপার তথ্য</span></button>
@@ -5978,6 +5999,25 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       <button class="tool-btn primary" onclick="saveClassHours()">✓ সংরক্ষণ করুন</button>
     </div>
   </div>
+</div>
+
+<!-- 📲 হোম স্ক্রিনে যোগ — সর্ব-প্ল্যাটফর্ম গাইড মডাল -->
+<div class="modal-overlay" id="a2hsModal">
+  <div class="modal narrow">
+    <div class="modal-header">
+      <h2>📲 হোম স্ক্রিনে যোগ করুন</h2>
+      <button class="modal-close" onclick="closeModal('a2hsModal')">×</button>
+    </div>
+    <div class="modal-body"><div id="a2hsBody"></div></div>
+  </div>
+</div>
+
+<!-- 📲 একবারের নাজ-ব্যানার (ইনস্টল না থাকলে) -->
+<div id="a2hsBanner" class="a2hs-banner" style="display:none">
+  <span class="a2hs-banner-ic">📲</span>
+  <span class="a2hs-banner-txt">অ্যাপটি হোম স্ক্রিনে যোগ করুন — সহজে খুলবে, আর হারাবে না</span>
+  <button class="a2hs-banner-add" onclick="openInstallHelp()">যোগ করুন</button>
+  <button class="a2hs-banner-x" onclick="dismissInstallBanner()" aria-label="বন্ধ">✕</button>
 </div>
 
 <!-- 🆕 multi-part বিস্তারিত পপ-আপ — দিন → শ্রেণি · শাখা পূর্ণ তালিকা -->
@@ -8803,6 +8843,16 @@ function applyRemoteState(remoteData){
     // settings deep-merge করো যাতে নতুন ডিফল্ট হারিয়ে না যায়
     state.settings = Object.assign({}, oldSettings, remoteData.settings || {});
 
+    // 🆕 trustedDevices — লোকাল ও রিমোট union (soft-delete সহ), যাতে রিমোট
+    //   ওভাররাইটে সদ্য-যোগ করা বিশ্বস্ততা কখনো clobber না হয়। শুধু এই ফিল্ড;
+    //   teachers/columns/settings ইত্যাদি রুটিন-ডেটায় কোনো প্রভাব নেই।
+    try{
+      if(!state.accounts || typeof state.accounts !== 'object') state.accounts = {};
+      const _remoteTD = Array.isArray(state.accounts.trustedDevices) ? state.accounts.trustedDevices : [];
+      const _localTD  = (_localAccSnap && Array.isArray(_localAccSnap.trustedDevices)) ? _localAccSnap.trustedDevices : [];
+      state.accounts.trustedDevices = _mergeTrustedDevices(_localTD, _remoteTD);
+    }catch(_){}
+
     // 🆕 TOMBSTONES union-merge — লোকাল ও রিমোট দুই দিকের অপসারণই রাখি (কখনো
     //    হারায় না)। এরপর ensureStateIntegrity এগুলো দিয়ে অপসারিতদের ফিল্টার করবে।
     try{
@@ -9569,12 +9619,44 @@ function maybeShowSetupScreen(){
 }
 
 /* ---- লগইন: বিশ্বস্ত ডিভাইস যাচাই ---- */
+/* 🆕 একটি বিশ্বস্ত-এন্ট্রি এখন সক্রিয় (trusted) কিনা —
+   at (বিশ্বস্ত করার সময়) যদি removedAt (বাতিলের সময়)-এর সমান/নতুন হয় → সক্রিয়। */
+function _tdIsActive(d){
+  if(!d || !d.at) return false;
+  const at = new Date(d.at).getTime() || 0;
+  const rm = d.removedAt ? (new Date(d.removedAt).getTime() || 0) : 0;
+  return at >= rm;
+}
+
+/* 🆕 দুই উৎসের বিশ্বস্ত-তালিকা union করি — কী = deviceId::role::account।
+   একই কী-তে at ও removedAt দুটোরই সবচেয়ে নতুন সময় রাখি, তাই
+   "যোগ" (at) কখনো হারায় না, আর "বাতিল" (removedAt) সব ডিভাইসে টিকে থাকে।
+   কোনটি জিতবে তা পরে _tdIsActive ঠিক করে (যেটা নতুন)। */
+function _mergeTrustedDevices(a, b){
+  const byKey = {};
+  const _t = v => (v ? (new Date(v).getTime() || 0) : 0);
+  const consider = (d) => {
+    if(!d || !d.deviceId) return;
+    const key = d.deviceId + '::' + (d.role||'') + '::' + String(d.account||'');
+    const cur = byKey[key];
+    if(!cur){
+      byKey[key] = { deviceId:d.deviceId, role:d.role, account:d.account, at:(d.at||''), removedAt:(d.removedAt||'') };
+    } else {
+      if(_t(d.at) > _t(cur.at)) cur.at = d.at;
+      if(_t(d.removedAt) > _t(cur.removedAt)) cur.removedAt = d.removedAt;
+    }
+  };
+  (Array.isArray(a) ? a : []).forEach(consider);
+  (Array.isArray(b) ? b : []).forEach(consider);
+  return Object.keys(byKey).map(k => byKey[k]);
+}
+
 function isTrustedDevice(role, username){
   try{
     ensureAccounts();
     const did = getDeviceId();
     return state.accounts.trustedDevices.some(d =>
-      d && d.deviceId === did && d.role === role && String(d.account) === String(username));
+      d && d.deviceId === did && d.role === role && String(d.account) === String(username) && _tdIsActive(d));
   }catch(e){ return false; }
 }
 
@@ -9589,7 +9671,7 @@ function autoLoginIfTrusted(){
     try{ if(sessionStorage.getItem('routineAutoLoginDisabled') === '1') return false; }catch(_){}
     ensureAccounts();
     const did = getDeviceId();
-    const devs = (state.accounts.trustedDevices||[]).filter(d => d && d.deviceId === did);
+    const devs = (state.accounts.trustedDevices||[]).filter(d => d && d.deviceId === did && _tdIsActive(d));
     if(!devs.length) return false;
 
     // সবশেষে বিশ্বস্ত করা ডিভাইস-এন্ট্রি (at তারিখ অনুসারে) বেছে নাও
@@ -9738,9 +9820,11 @@ function renderACTrusted(){
   const box = document.getElementById('acTrustedList');
   if(!box) return;
   const list = state.accounts.trustedDevices;
-  if(!list.length){ box.innerHTML = '<div class="ac-empty">কোনো বিশ্বস্ত ডিভাইস নেই</div>'; return; }
+  const activeCount = (list||[]).filter(_tdIsActive).length;
+  if(!activeCount){ box.innerHTML = '<div class="ac-empty">কোনো বিশ্বস্ত ডিভাইস নেই</div>'; return; }
   const thisDev = getDeviceId();
   box.innerHTML = list.map((d,i)=>{
+    if(!_tdIsActive(d)) return '';   // বাতিল করা এন্ট্রি দেখাব না (index অক্ষুণ্ণ থাকে)
     let who = d.account;
     if(d.role === 'admin'){ const m=state.accounts.admins.find(x=>x.username===d.account); who = m? m.name+' (অ্যাডমিন)' : d.account+' (অ্যাডমিন)'; }
     else if(d.role === 'manager'){ const m=state.accounts.managers.find(x=>x.username===d.account); who = m? m.name+' (ম্যানেজার)' : d.account+' (ম্যানেজার)'; }
@@ -9959,9 +10043,13 @@ function acTrustThisDevice(){
   if(!sel || !sel.value){ showToast('একটি অ্যাকাউন্ট নির্বাচন করুন','warning'); return; }
   const [role, account] = sel.value.split('::');
   const did = getDeviceId();
-  const exists = state.accounts.trustedDevices.some(d=> d.deviceId===did && d.role===role && String(d.account)===String(account));
-  if(exists){ showToast('এই ডিভাইস ইতিমধ্যে বিশ্বস্ত','info'); return; }
-  state.accounts.trustedDevices.push({deviceId:did, role, account, at:new Date().toISOString()});
+  const entry = state.accounts.trustedDevices.find(d=> d && d.deviceId===did && d.role===role && String(d.account)===String(account));
+  if(entry){
+    if(_tdIsActive(entry)){ showToast('এই ডিভাইস ইতিমধ্যে বিশ্বস্ত','info'); return; }
+    entry.at = new Date().toISOString();   // আগে বাতিল করা ছিল → পুনরায় বিশ্বস্ত (at সবচেয়ে নতুন)
+  } else {
+    state.accounts.trustedDevices.push({deviceId:did, role, account, at:new Date().toISOString(), removedAt:''});
+  }
   _acPersist('বিশ্বস্ত ডিভাইস যোগ ('+role+': '+account+')');
   showToast('📱 এই ডিভাইস এখন পাসওয়ার্ড ছাড়াই প্রবেশ করতে পারবে','success');
 }
@@ -9971,7 +10059,8 @@ function acRemoveTrusted(i){
   ensureAccounts();
   const d = state.accounts.trustedDevices[i]; if(!d) return;
   if(!confirm('এই বিশ্বস্ত ডিভাইস সরিয়ে ফেলবেন? এরপর ঐ ডিভাইসে পাসওয়ার্ড লাগবে।')) return;
-  state.accounts.trustedDevices.splice(i,1);
+  // মুছে না ফেলে "বাতিল" সিল মারি — যাতে অন্য ডিভাইসের পুরোনো কপি থেকে ফিরে না আসে
+  d.removedAt = new Date().toISOString();
   _acPersist('বিশ্বস্ত ডিভাইস সরানো হয়েছে');
   showToast('🗑️ সরানো হয়েছে','info');
 }
@@ -25427,5 +25516,100 @@ window.addEventListener('beforeunload', () => {saveState()});
   </div>
 </div>
 
+<script>
+/* 📲 হোম স্ক্রিনে যোগ — সর্ব-প্ল্যাটফর্ম (Android এক-ট্যাপ, iPhone গাইড) */
+var _deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  _deferredInstallPrompt = e;          // পরে .prompt() দিয়ে দেখানোর জন্য রাখি
+  try{ _maybeShowInstallBanner(); }catch(_){}
+});
+window.addEventListener('appinstalled', function(){
+  _deferredInstallPrompt = null;
+  try{ localStorage.setItem('a2hsInstalled','1'); }catch(_){}
+  try{ var b=document.getElementById('a2hsBanner'); if(b) b.style.display='none'; }catch(_){}
+  try{ if(typeof showToast==='function') showToast('অ্যাপটি হোম স্ক্রিনে যোগ হয়েছে','success'); }catch(_){}
+});
+
+function _a2hsStandalone(){
+  try{ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
+  catch(_){ return false; }
+}
+function _a2hsPlatform(){
+  var ua = navigator.userAgent || '';
+  return {
+    isIOS: /iPad|iPhone|iPod/.test(ua) && !window.MSStream,
+    isAndroid: /Android/.test(ua),
+    isInApp: /FBAN|FBAV|Instagram|Line\//.test(ua)
+  };
+}
+function openInstallHelp(){
+  try{ if(typeof closeSysMenu==='function') closeSysMenu(); }catch(_){}
+  var host = document.getElementById('a2hsBody');
+  if(!host) return;
+  var p = _a2hsPlatform(), html = '';
+  if(_a2hsStandalone()){
+    html = '<div class="a2hs-ok">✅ অ্যাপটি ইতিমধ্যে ইনস্টল করা আছে — আপনি এখন ইনস্টল করা অ্যাপ থেকেই চলছেন। হোম স্ক্রিন / অ্যাপ ড্রয়ারে আইকনটি আছে।</div>';
+  } else if(p.isIOS){
+    html =
+      '<div class="a2hs-lead">আইফোনে (Safari) হোম স্ক্রিনে যোগ করতে:</div>'+
+      '<ol class="a2hs-steps">'+
+        '<li>নিচের <b>Share</b> বাটনে ট্যাপ করুন <span class="a2hs-ic">⬆️</span></li>'+
+        '<li>একটু নিচে স্ক্রল করে <b>“Add to Home Screen”</b> বেছে নিন <span class="a2hs-ic">➕</span></li>'+
+        '<li>উপরে ডানে <b>“Add”</b> চাপুন</li>'+
+      '</ol>'+
+      '<div class="a2hs-hint">⚠️ অবশ্যই <b>Safari</b> ব্রাউজারে খুলতে হবে — আইফোনে Chrome/অন্য ব্রাউজারে এই অপশন আসে না।</div>';
+  } else if(p.isInApp){
+    html = '<div class="a2hs-hint">আপনি একটি অ্যাপের ভেতরের ব্রাউজারে (যেমন Messenger/Facebook) আছেন। উপরের <b>⋮</b> মেনু থেকে <b>“ব্রাউজারে খুলুন”</b> (Chrome) বেছে নিন, তারপর আবার এই বাটনে চাপুন।</div>';
+  } else {
+    if(_deferredInstallPrompt){
+      html =
+        '<div class="a2hs-lead">এক ট্যাপে হোম স্ক্রিনে যোগ করুন:</div>'+
+        '<button class="a2hs-install-btn" onclick="_doInstall()">📲 এখনই ইনস্টল করুন</button>'+
+        '<div class="a2hs-hint">চাপলে ফোন একটা নিশ্চিতকরণ দেখাবে — সেখানে <b>“Install”</b>/<b>“যোগ করুন”</b> চাপুন।</div>';
+    } else {
+      html =
+        '<div class="a2hs-lead">Chrome মেনু থেকে যোগ করুন:</div>'+
+        '<ol class="a2hs-steps">'+
+          '<li>উপরে ডানে <b>⋮</b> মেনুতে ট্যাপ করুন</li>'+
+          '<li><b>“Install app”</b> বা <b>“Add to Home screen”</b> বেছে নিন</li>'+
+          '<li><b>“Install”</b>/<b>“Add”</b> চাপুন</li>'+
+        '</ol>'+
+        '<div class="a2hs-hint">টিপ: ইনস্টল করা অ্যাপ অ্যাপ-ড্রয়ারে থাকে — সহজে হারায় না।</div>';
+    }
+  }
+  host.innerHTML = html;
+  try{ openModal('a2hsModal'); }catch(_){}
+}
+function _doInstall(){
+  if(!_deferredInstallPrompt){
+    try{ if(typeof showToast==='function') showToast('এই ব্রাউজারে স্বয়ংক্রিয় ইনস্টল নেই — মেনু থেকে যোগ করুন','warning'); }catch(_){}
+    return;
+  }
+  var ev = _deferredInstallPrompt;
+  _deferredInstallPrompt = null;
+  try{ ev.prompt(); }catch(_){}
+  try{
+    ev.userChoice.then(function(res){
+      try{ closeModal('a2hsModal'); }catch(_){}
+      if(res && res.outcome === 'accepted'){ try{ showToast('অ্যাপটি হোম স্ক্রিনে যোগ হচ্ছে…','success'); }catch(_){} }
+    }).catch(function(){});
+  }catch(_){}
+}
+function _maybeShowInstallBanner(){
+  try{
+    if(_a2hsStandalone()) return;
+    if(localStorage.getItem('a2hsDismissed') === '1' || localStorage.getItem('a2hsInstalled') === '1') return;
+    var b = document.getElementById('a2hsBanner');
+    if(b) b.style.display = 'flex';
+  }catch(_){}
+}
+function dismissInstallBanner(){
+  try{ localStorage.setItem('a2hsDismissed','1'); }catch(_){}
+  var b = document.getElementById('a2hsBanner'); if(b) b.style.display='none';
+}
+// লোডের পরে একবার ব্যানার বিবেচনা (iOS-এও, যেখানে beforeinstallprompt আসে না)
+window.addEventListener('load', function(){ setTimeout(function(){ try{ _maybeShowInstallBanner(); }catch(_){} }, 2500); });
+</script>
 </body>
 </html>
