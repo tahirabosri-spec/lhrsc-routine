@@ -864,9 +864,9 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 }
 /* 🆕 পিরিয়ড টাইম লেবেল — একটু বড় ও বোল্ড, যাতে কোন ঘন্টা কোন সময় স্পষ্ট বোঝা যায় */
 .routine-table thead th:not(.col-sl):not(.col-name):not(.col-break) .col-label{
-  font-size:14.5px;
-  font-weight:800;
-  letter-spacing:.2px;
+  font-size:16px;
+  font-weight:900;
+  letter-spacing:.3px;
   line-height:1.2;
 }
 .routine-table thead th .col-label[contenteditable="true"]{
@@ -956,6 +956,17 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .routine-table td.col-name{background:var(--name-bg);color:var(--name-text);position:sticky;left:var(--sl-col-w);z-index:5;min-width:var(--name-col-w);width:var(--name-col-w);max-width:var(--name-col-w);padding:4px 8px;cursor:default}
 .routine-table td.col-name .t-name{font-weight:700;font-size:var(--name-font);line-height:1.25}
 .routine-table td.col-name .t-meta{font-size:calc(var(--name-font) - 3px);opacity:.85;margin-top:2px;line-height:1.2}
+/* 🆕 মোট ক্লাস ব্যাজ — যেকোনো ব্যাকগ্রাউন্ডে স্পষ্ট ও বোল্ড */
+.routine-table td.col-name .t-classcount{
+  display:inline-block;margin-top:4px;
+  font-size:11.5px;font-weight:800;line-height:1.25;
+  color:#0f766e;background:#fff;
+  border:1px solid rgba(15,118,110,.45);
+  border-radius:7px;padding:2px 8px;
+  box-shadow:0 1px 2px rgba(0,0,0,.06);
+}
+.routine-table td.col-name .t-classcount b{font-weight:900;font-size:13px;color:#0b5d57}
+[data-density="compact"] .routine-table td.col-name .t-classcount{font-size:10.5px;padding:1px 7px;margin-top:3px}
 /* 🆕 শিক্ষকের তথ্য খোলার বাটন (নাম-সেলে) — ছোট, শুধু "তথ্য" লেখা, কালারফুল।
    লক করা থাকলে নিষ্ক্রিয় (ক্লিক হবে না)। */
 .routine-table td.col-name .t-info-btn{
@@ -4754,7 +4765,7 @@ td.is-multipart{vertical-align:top}
   .routine-table thead th{font-size:10.5px;padding:6px 4px;min-height:56px}
   /* 🆕 মোবাইলেও পিরিয়ড টাইম স্পষ্ট — একটু বড় ও বোল্ড */
   .routine-table thead th:not(.col-sl):not(.col-name):not(.col-break) .col-label{
-    font-size:12.5px;font-weight:800;letter-spacing:.2px;
+    font-size:14.5px;font-weight:900;letter-spacing:.3px;
   }
   .routine-table th.col-name,.routine-table td.col-name{left:var(--sl-col-w)}
   .routine-table th.col-name{left:var(--sl-col-w) !important}
@@ -5075,6 +5086,14 @@ td.is-multipart{vertical-align:top}
   line-height:1.45;
 }
 #slotTeachersModal .teacher-item .busy-where .bw-label{ color:var(--text-3); font-weight:600; }
+/* 🆕 ফ্রি/ব্যস্ত মডাল — শ্রেণি/শাখা/বিষয়/মোট ক্লাস স্পষ্ট ও বোল্ড, সহজ পঠনযোগ্য */
+#slotTeachersModal .teacher-item .busy-where{ font-size:13px; line-height:1.5; }
+#slotTeachersModal .teacher-item .busy-where .bw-label{ color:var(--text-2); font-weight:700; }
+#slotTeachersModal .teacher-item .busy-where .bw-val{ color:var(--danger); font-weight:800; }
+#slotTeachersModal .teacher-item .ds{ font-size:13px; font-weight:600; color:var(--text-2); margin-top:4px; line-height:1.45; }
+#slotTeachersModal .teacher-item .ds .ds-title{ font-weight:700; color:var(--text); }
+#slotTeachersModal .teacher-item .ds .ds-cls{ color:#0f766e; font-weight:800; }
+#slotTeachersModal .teacher-item .ds .ds-cls b{ font-weight:900; }
 #slotTeachersModal .st-empty{
   grid-column:1/-1;
   text-align:center;
@@ -10891,6 +10910,45 @@ function renderBranding(){
   document.title = (b.systemName||'রুটিন') + ' — ' + (b.schoolName||'');
 }
 
+/* 🆕 একজন শিক্ষকের রুটিনে ইনপুট করা মোট ক্লাস।
+   একক: পূর্ণ সপ্তাহ (সব সক্রিয় দিন) = ১ ক্লাস। তাই কোনো স্লট n দিন নিলে
+   তার মান = n ÷ মোট সক্রিয় দিন (যেমন ৩ দিন = ০.৫, ৬ দিন = ১)। সব ভরা
+   স্লটের মান যোগ করে মোট (ভগ্নাংশ হতে পারে, যেমন ৪.৫)। পড়া-মাত্র — ডেটা অপরিবর্তিত। */
+function _teacherClassCount(t){
+  if(!t || !t.cells) return 0;
+  const slotCols = ((state && state.columns)||[]).filter(c => c && c.type === 'slot');
+  const activeN = ((typeof _teActiveDays === 'function') ? (_teActiveDays()||[]).length : 0) || 6;
+  let total = 0;
+  slotCols.forEach(c => {
+    const cell = t.cells[c.id];
+    if(!cell) return;
+    const hasParts = Array.isArray(cell.parts) && cell.parts.length > 0;
+    if(hasParts){
+      cell.parts.forEach(p => {
+        if(!p) return;
+        const subj = (p.subject || cell.subject || '').toString();
+        if(!subj || subj.toLowerCase() === 'free') return;
+        const d = (Array.isArray(p.days) && p.days.length) ? p.days.length
+                : ((Array.isArray(cell.days) && cell.days.length) ? cell.days.length : activeN);
+        total += d / activeN;
+      });
+    } else {
+      const subj = (cell.subject || '').toString();
+      const cls  = (cell.class  || '').toString();
+      if(!subj || subj === 'Free' || !cls) return;   // ফাঁকা → বাদ
+      const d = (Array.isArray(cell.days) && cell.days.length) ? cell.days.length : activeN;
+      total += d / activeN;
+    }
+  });
+  return total;
+}
+
+/* মোট ক্লাস সংখ্যা সুন্দরভাবে দেখানো — সর্বোচ্চ ২ দশমিক, অপ্রয়োজনীয় শূন্য বাদ, বাংলা সংখ্যায় */
+function _fmtClassCount(n){
+  const r = Math.round((Number(n) || 0) * 100) / 100;
+  return toBnNum(r.toString());
+}
+
 function renderTable(){
   // Header
   const tr = document.getElementById('theadRow');
@@ -11066,6 +11124,7 @@ function renderTable(){
       <div class="t-name">${esc(t.name)}</div>
       ${t.title?`<div class="t-meta">${esc(t.title)}</div>`:''}
       ${t.mainSubject?`<div class="t-meta">📚 ${esc(t.mainSubject)}</div>`:''}
+      <div class="t-classcount" title="রুটিনে ইনপুট করা মোট ক্লাস — পূর্ণ সপ্তাহ (৬ দিন) = ১ ক্লাস">📋 মোট ক্লাস: <b>${_fmtClassCount(_teacherClassCount(t))}</b></div>
       ${leaveBadgeHtml}
       ${infoBtnHtml}
     </td>`;
@@ -18608,7 +18667,7 @@ function refreshDashboardSilent(force){
     freeListEl.innerHTML = free.length ? free.map(t => `
       <div class="teacher-item free">
         <div class="nm"><span class="nm-text">${esc(t.name)}</span>${telLinksHtml(t)}</div>
-        <div class="ds">মোট ক্লাস: ${toBnNum(countTeacherClasses(t))} ${t.title?' • '+esc(t.title):''}</div>
+        <div class="ds">মোট ক্লাস: <b>${_fmtClassCount(_teacherClassCount(t))}</b> ${t.title?' • '+esc(t.title):''}</div>
       </div>`).join('') : '<div class="muted center">— সব শিক্ষক ব্যস্ত —</div>';
   }
 
@@ -18620,7 +18679,7 @@ function refreshDashboardSilent(force){
     busyListEl.innerHTML = busy.length ? busy.map(({t,cell}) => `
       <div class="teacher-item busy">
         <div class="nm"><span class="nm-text">${esc(t.name)}</span>${telLinksHtml(t)}</div>
-        <div class="ds">${esc(cell.subject)} • ${esc(cell.class||'')} ${cell.section?'• '+esc(cell.section):''} • মোট: ${toBnNum(countTeacherClasses(t))}</div>
+        <div class="ds">${esc(cell.subject)} • ${esc(cell.class||'')} ${cell.section?'• '+esc(cell.section):''} • মোট: <b>${_fmtClassCount(_teacherClassCount(t))}</b></div>
       </div>`).join('') : '<div class="muted center">— এখন কেউ ক্লাসে নেই —</div>';
   }
 
@@ -18894,7 +18953,7 @@ function openSlotTeachers(colId, mode){
       rows.push(`
         <div class="teacher-item free">
           <div class="nm"><span class="nm-text">${esc(t.name)}</span>${slotTelLinks(t)}</div>
-          <div class="ds">${t.title?esc(t.title)+' • ':''}মোট ক্লাস: ${toBnNum(countTeacherClasses(t))}</div>
+          <div class="ds">${t.title?`<span class="ds-title">${esc(t.title)}</span> • `:''}<span class="ds-cls">মোট ক্লাস: <b>${_fmtClassCount(_teacherClassCount(t))}</b></span></div>
         </div>`);
     } else if(!isFreeMode && busy){
       // আজকের দিনে কোন part active সেটা বের করি (multi-part হলে)
@@ -18913,9 +18972,9 @@ function openSlotTeachers(colId, mode){
       }
       // নামের নিচে ছোট করে — কোন ক্লাসের কোন শাখায় আছে
       const where = [
-        `<span class="bw-label">শ্রেণি:</span> ${esc(actCls||'—')}`,
-        actSec ? `<span class="bw-label">শাখা:</span> ${esc(actSec)}` : '',
-        actSub ? `<span class="bw-label">বিষয়:</span> ${esc(actSub)}` : ''
+        `<span class="bw-label">শ্রেণি:</span> <span class="bw-val">${esc(actCls||'—')}</span>`,
+        actSec ? `<span class="bw-label">শাখা:</span> <span class="bw-val">${esc(actSec)}</span>` : '',
+        actSub ? `<span class="bw-label">বিষয়:</span> <span class="bw-val">${esc(actSub)}</span>` : ''
       ].filter(Boolean).join(' &nbsp;•&nbsp; ');
       rows.push(`
         <div class="teacher-item busy">
@@ -23989,7 +24048,7 @@ function askLocalAI(){
     // Search teacher by name
     const t = state.teachers.find(x => prompt.includes(x.name.toLowerCase()));
     if(t){
-      const total = countTeacherClasses(t);
+      const total = _fmtClassCount(_teacherClassCount(t));
       const subjects = {};
       Object.values(t.cells).forEach(c=>{
         if(c.subject && c.subject!=='Free' && c.class){
