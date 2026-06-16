@@ -862,6 +862,13 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
   cursor:default;
   user-select:none;
 }
+/* 🆕 পিরিয়ড টাইম লেবেল — একটু বড় ও বোল্ড, যাতে কোন ঘন্টা কোন সময় স্পষ্ট বোঝা যায় */
+.routine-table thead th:not(.col-sl):not(.col-name):not(.col-break) .col-label{
+  font-size:14.5px;
+  font-weight:800;
+  letter-spacing:.2px;
+  line-height:1.2;
+}
 .routine-table thead th .col-label[contenteditable="true"]{
   cursor:text;
   user-select:text;
@@ -4516,12 +4523,13 @@ td.is-multipart{vertical-align:top}
   padding:8px 10px;background:var(--surface-2);border-radius:8px;
   margin-bottom:10px;
 }
-.cov-tlbl{font-size:12px;font-weight:600;color:var(--text-2)}
+.cov-tlbl{font-size:13px;font-weight:800;color:var(--text)}
 .cov-toolbar select{
-  padding:5px 9px;border:1px solid var(--border);
-  border-radius:6px;background:var(--surface);
-  font-size:12.5px;color:var(--text);min-width:130px;
+  padding:6px 10px;border:1.5px solid var(--border);
+  border-radius:7px;background:var(--surface);
+  font-size:13.5px;font-weight:800;color:var(--text);min-width:130px;
 }
+.cov-toolbar select:focus{border-color:var(--primary);outline:none}
 .cov-toggle{
   display:flex;align-items:center;gap:5px;
   font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;
@@ -4550,6 +4558,15 @@ td.is-multipart{vertical-align:top}
 .cov-grid-head .cov-pct.warn{background:#d97706}
 .cov-grid-head .cov-pct.error{background:#dc2626}
 .cov-grid-head .cov-counts{font-size:11.5px;color:var(--text-2);font-weight:500}
+/* 🆕 ব্লক-হেডার — শ্রেণি ও শাখা পরিচ্ছন্নভাবে */
+.cov-grid-head .cov-gh-icon{font-size:22px;line-height:1;flex:none}
+.cov-grid-head .cov-gh-titles{display:flex;flex-direction:column;min-width:0;flex:1 1 auto}
+.cov-grid-head .cov-gh-section{font-size:15px;font-weight:800;color:var(--text);line-height:1.25;word-break:break-word}
+.cov-grid-head .cov-gh-class{font-size:11.5px;font-weight:600;color:var(--text-2);margin-top:1px}
+.cov-grid-head .cov-gh-stats{display:flex;gap:6px;flex-wrap:wrap;flex-basis:100%;width:100%;margin-top:2px}
+.cov-gh-pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2)}
+.cov-gh-pill.ok{background:#dcfce7;border-color:#86efac;color:#166534}
+.cov-gh-pill.err{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
 .cov-table{
   width:100%;border-collapse:collapse;
   font-size:12px;table-layout:fixed;
@@ -4735,6 +4752,10 @@ td.is-multipart{vertical-align:top}
   .modal-header h2{font-size:14px}
   .routine-table{font-size:11px}
   .routine-table thead th{font-size:10.5px;padding:6px 4px;min-height:56px}
+  /* 🆕 মোবাইলেও পিরিয়ড টাইম স্পষ্ট — একটু বড় ও বোল্ড */
+  .routine-table thead th:not(.col-sl):not(.col-name):not(.col-break) .col-label{
+    font-size:12.5px;font-weight:800;letter-spacing:.2px;
+  }
   .routine-table th.col-name,.routine-table td.col-name{left:var(--sl-col-w)}
   .routine-table th.col-name{left:var(--sl-col-w) !important}
   /* 🆕 মোবাইল — ডানে scroll করে গাঢ় সবুজ হারানো শুরু হলে নামের অংশ
@@ -21368,10 +21389,46 @@ function _curSave(){
 
 /* কোন কোন (class, section) রুটিনে আছে — teachers cells এবং
    teachingEntries দুই উৎস মিলিয়ে। */
+/* 🆕 এক সেল থেকে রুটিন-সম্মত occupant রেকর্ড বের করি (পড়া-মাত্র — ডেটা অপরিবর্তিত)।
+   রুটিন টেবিল যেভাবে সেল ব্যাখ্যা করে ঠিক সেভাবেই:
+   • parts থাকলে প্রতি part-এর নিজস্ব class/section (না থাকলে cell-এর মান fallback)
+   • একক সেল "ফাঁকা" গণ্য হয়: subject নেই / 'Free' / class নেই
+   ফেরত: [{cls, sec, subject, days:[dayKey...], locked}] */
+function _covCellRecords(cell, allDayKeys){
+  const out = [];
+  if(!cell) return out;
+  const hasParts = Array.isArray(cell.parts) && cell.parts.length > 0;
+  const locked = !!(cell.locked || cell.special);
+  const fallbackDays = (Array.isArray(cell.days) && cell.days.length) ? cell.days : allDayKeys;
+  if(hasParts){
+    cell.parts.forEach(p => {
+      if(!p) return;
+      const cls  = (p.class   || cell.class   || '').toString().trim();
+      const sec  = (p.section || cell.section || '').toString().trim();
+      const subj = (p.subject || cell.subject || '').toString();
+      if(!cls || !sec) return;
+      if(!subj || subj.toLowerCase() === 'free') return;
+      const pdays = (Array.isArray(p.days) && p.days.length) ? p.days : fallbackDays;
+      out.push({cls, sec, subject:subj, days:(pdays||[]).slice(), locked});
+    });
+  } else {
+    const cls  = (cell.class   || '').toString().trim();
+    const sec  = (cell.section || '').toString().trim();
+    const subj = (cell.subject || '').toString();
+    // রুটিনের isFree নিয়ম: subject নেই / 'Free' / class নেই → ফাঁকা
+    if(!subj || subj === 'Free' || !cls) return out;
+    if(!sec) return out;   // section ছাড়া কোন শাখা-বাকেটে রাখা সম্ভব নয়
+    out.push({cls, sec, subject:subj, days:fallbackDays.slice(), locked});
+  }
+  return out;
+}
+
 function _covCollectClassSections(){
   const set = new Set();
   const slotCols = ((state && state.columns)||[]).filter(c => c && c.type === 'slot');
+  const allDayKeys = _covActiveDays().map(d => d.key);
   (state.teachers||[]).forEach(t => {
+    if(!t) return;
     // teachingEntries থেকে
     if(Array.isArray(t.teachingEntries)){
       t.teachingEntries.forEach(raw => {
@@ -21379,112 +21436,67 @@ function _covCollectClassSections(){
         if(e.class && e.section) set.add(e.class + '||' + e.section);
       });
     }
-    // cells থেকে
+    // cells থেকে — রুটিন যা দেখায় তা-ই (onLeave সহ, split parts সহ)
     if(t.cells){
       slotCols.forEach(c => {
-        const cell = t.cells[c.id];
-        if(!cell) return;
-        if(cell.locked || cell.special) return;
-        const sub = (cell.subject||'').toString().toLowerCase();
-        if(sub === 'free') return;
-        if(cell.class && cell.section) set.add(cell.class + '||' + cell.section);
+        _covCellRecords(t.cells[c.id], allDayKeys).forEach(r => set.add(r.cls + '||' + r.sec));
       });
     }
   });
-  // sort: class বর্ণমালা → section
   return Array.from(set).sort();
 }
 
-/* দিন list (Sat-Thu) — _teActiveDays থেকে */
+/* দিন list (Sat-Thu) — বাংলা ছোট লেবেলসহ স্বাভাবিকীকৃত {key,label} */
 function _covActiveDays(){
+  const bn = {Sat:'শনি', Sun:'রবি', Mon:'সোম', Tue:'মঙ্গল', Wed:'বুধ', Thu:'বৃহঃ', Fri:'শুক্র'};
+  let base = [];
   try{
     if(typeof _teActiveDays === 'function'){
       const arr = _teActiveDays();
-      if(Array.isArray(arr) && arr.length) return arr;
+      if(Array.isArray(arr) && arr.length) base = arr;
     }
   }catch(_){}
-  // fallback
-  return [
-    {key:'Sat',label:'শনি'},{key:'Sun',label:'রবি'},{key:'Mon',label:'সোম'},
-    {key:'Tue',label:'মঙ্গল'},{key:'Wed',label:'বুধ'},{key:'Thu',label:'বৃহঃ'}
-  ];
+  if(!base.length){
+    base = [{key:'Sat'},{key:'Sun'},{key:'Mon'},{key:'Tue'},{key:'Wed'},{key:'Thu'}];
+  }
+  return base.map(d => ({ key:d.key, label: d.label || bn[d.key] || d.short || d.key }));
 }
 
-/* মূল গণনা — প্রতি (class, section, slot, day)-এর জন্য occupant ফেরত
-   ফেরত: occMap[classSec][slotId][dayKey] = {tid, tname, subject, locked} | null
-*/
+/* মূল গণনা — প্রতি (class, section, slot, day)-এর occupant
+   রুটিন টেবিল যা দেখায় তা-ই ধরে: onLeave শিক্ষকসহ, এবং split parts সঠিক শাখায়।
+   ফেরত: occMap[classSec][slotId][dayKey] = {tid,tname,subject,locked} | [..] | null */
 function _covBuildOccupancy(){
   const slotCols = ((state && state.columns)||[]).filter(c => c && c.type === 'slot');
   const days = _covActiveDays();
   const dayKeys = days.map(d => d.key);
+  const dayKeySet = {}; dayKeys.forEach(k => { dayKeySet[k] = true; });
   const occ = {};
-  const classSecs = _covCollectClassSections();
-  classSecs.forEach(k => {
+  const _ensure = (k) => {
+    if(occ[k]) return;
     occ[k] = {};
-    slotCols.forEach(c => {
-      occ[k][c.id] = {};
-      dayKeys.forEach(d => { occ[k][c.id][d] = null; });
-    });
-  });
+    slotCols.forEach(cc => { occ[k][cc.id] = {}; dayKeys.forEach(d => { occ[k][cc.id][d] = null; }); });
+  };
+  _covCollectClassSections().forEach(_ensure);
 
-  // teachers cells স্ক্যান
+  const _place = (k, cid, dayKey, entry) => {
+    if(!occ[k] || !occ[k][cid]) return;
+    if(occ[k][cid][dayKey] === undefined) return;   // active দিন নয় → বাদ
+    const exist = occ[k][cid][dayKey];
+    if(!exist) occ[k][cid][dayKey] = entry;
+    else if(Array.isArray(exist)) exist.push(entry);
+    else occ[k][cid][dayKey] = [exist, entry];
+  };
+
+  // 🆕 onLeave বাদ দিই না — রুটিন তাদের ইনপুট ক্লাস দেখায়, কভারেজও দেখাবে
   (state.teachers||[]).forEach(t => {
-    if(!t || !t.cells || t.onLeave) return;
+    if(!t || !t.cells) return;
     slotCols.forEach(c => {
-      const cell = t.cells[c.id];
-      if(!cell) return;
-      if(cell.locked || cell.special){
-        // locked/special — সব (cls, sec) এর জন্য নয়, কিন্তু এই teacher এর slot
-        // আমরা শুধু track করি যদি cell-এ cls, sec থাকে
-      }
-      if(!cell.class || !cell.section) return;
-      const sub = (cell.subject||'').toString().toLowerCase();
-      if(sub === 'free') return;
-      const k = cell.class + '||' + cell.section;
-      if(!occ[k]) {
-        occ[k] = {};
-        slotCols.forEach(cc => {
-          occ[k][cc.id] = {};
-          dayKeys.forEach(d => { occ[k][cc.id][d] = null; });
-        });
-      }
-      // cell-এর days — না থাকলে সব active days
-      let cdays = (Array.isArray(cell.days) && cell.days.length) ? cell.days : dayKeys.slice();
-      // shared multi-part — parts[] থেকে আলাদা করে
-      if(Array.isArray(cell.parts) && cell.parts.length){
-        cell.parts.forEach(p => {
-          const pdays = Array.isArray(p.days) && p.days.length ? p.days : cdays;
-          pdays.forEach(d => {
-            if(!occ[k][c.id]) return;
-            if(occ[k][c.id][d] !== undefined){
-              const exist = occ[k][c.id][d];
-              const entry = {
-                tid: t.id, tname: t.name||'—',
-                subject: p.subject || cell.subject || '',
-                locked: !!(cell.locked || cell.special)
-              };
-              if(!exist) occ[k][c.id][d] = entry;
-              else if(Array.isArray(exist)) exist.push(entry);
-              else occ[k][c.id][d] = [exist, entry];
-            }
-          });
-        });
-      } else {
-        cdays.forEach(d => {
-          if(!occ[k][c.id]) return;
-          if(occ[k][c.id][d] !== undefined){
-            const exist = occ[k][c.id][d];
-            const entry = {
-              tid: t.id, tname: t.name||'—',
-              subject: cell.subject||'',
-              locked: !!(cell.locked || cell.special)
-            };
-            if(!exist) occ[k][c.id][d] = entry;
-            else if(Array.isArray(exist)) exist.push(entry);
-            else occ[k][c.id][d] = [exist, entry];
-          }
-        });
-      }
+      _covCellRecords(t.cells[c.id], dayKeys).forEach(r => {
+        const k = r.cls + '||' + r.sec;
+        _ensure(k);
+        const entry = { tid:t.id, tname:t.name||'—', subject:r.subject||'', locked:!!r.locked };
+        (r.days||[]).forEach(d => { if(dayKeySet[d]) _place(k, c.id, d, entry); });
+      });
     });
   });
 
@@ -21625,6 +21637,14 @@ function _covRender(){
   const host = document.getElementById('covGrids');
   if(!host) return;
 
+  // 🆕 নির্দিষ্ট শ্রেণি+শাখা নির্বাচিত হলে উপরের সামারি ও কালার-নোটিশ লুকাই
+  //    (নাম তো ব্লক-হেডারেই আছে; এতে জায়গা বাঁচে ও ওই শাখায় ফোকাস বাড়ে)
+  const focused = (fCls !== '__ALL__' && fSec !== '__ALL__');
+  const helpEl = document.querySelector('#coverageModal .cov-help');
+  if(sumHost) sumHost.style.display = focused ? 'none' : '';
+  if(helpEl)  helpEl.style.display  = focused ? 'none' : '';
+  host.style.maxHeight = focused ? '70vh' : '';
+
   // class-sec গুলো filter ও sort
   let pairs = sum.classSecs.map(k => {
     const [cls, sec] = k.split('||');
@@ -21651,9 +21671,8 @@ function _covRender(){
   host.innerHTML = pairs.map(p => {
     const pct = p.total ? Math.round((p.filled / p.total) * 100) : 0;
     const pctCls = pct >= 95 ? 'ok' : (pct >= 75 ? 'warn' : 'error');
-    // 🆕 হেডার সারি — পিরিয়ড লেবেল (উপরে sticky), বাঁ কোণা = শ্রেণি লেবেল (বাঁয়ে sticky)
+    // 🆕 হেডার সারি — শুধু পিরিয়ড লেবেল (উপরে sticky); বাঁ পাশের শ্রেণি কলাম বাদ
     const headRow = '<tr>' +
-      '<th class="cov-day-lbl cov-corner" title="শ্রেণি ও পিরিয়ড">শ্রেণি / পিরিয়ড</th>' +
       renderCols.map(c => `<th title="${esc(c.label||c.id)}">${esc(c.label||c.id)}</th>`).join('') +
       '</tr>';
 
@@ -21685,14 +21704,22 @@ function _covRender(){
       const warn = g.hasConflict ? `<span class="cov-rt-warn">⚠ একই দিনে একাধিক</span>` : '';
       return `<td class="${cls}" title="${esc(titleTxt)}">${warn}${groupsHTML}</td>`;
     }).join('');
-    const bodyRow = `<tr><td class="cov-day-lbl">${esc(p.cls)}<br><span class="cov-rt-seclbl">শাখা ${esc(p.sec)}</span></td>${cells}</tr>`;
+    const bodyRow = `<tr>${cells}</tr>`;
 
     return `
       <div class="cov-grid-block">
         <div class="cov-grid-head">
-          <span class="cov-class-name">🎓 ${esc(p.cls)} · শাখা ${esc(p.sec)}</span>
-          <span class="cov-counts">${toBnNum(p.filled)}/${toBnNum(p.total)} ভরা · ${toBnNum(p.empty)} ফাঁকা</span>
+          <span class="cov-gh-icon">🎓</span>
+          <span class="cov-gh-titles">
+            <span class="cov-gh-section">${esc(p.sec)}</span>
+            <span class="cov-gh-class">শ্রেণি: ${esc(p.cls)}</span>
+          </span>
           <span class="cov-pct ${pctCls}">${toBnNum(pct)}%</span>
+          <span class="cov-gh-stats">
+            <span class="cov-gh-pill ok">✓ ${toBnNum(p.filled)} ভরা</span>
+            <span class="cov-gh-pill ${p.empty>0?'err':'ok'}">${toBnNum(p.empty)} ফাঁকা</span>
+            <span class="cov-gh-pill total">মোট ${toBnNum(p.total)}</span>
+          </span>
         </div>
         <div class="cov-rt-scroll">
           <table class="cov-table cov-rt-table">
