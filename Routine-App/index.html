@@ -588,6 +588,11 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid v
 .tool-btn.primary:hover:not(:disabled){background:var(--primary-hover)}
 .tool-btn.danger{color:var(--danger)}
 .tool-btn.danger:hover:not(:disabled){background:var(--danger-soft);border-color:var(--danger)}
+/* 🆕 কভারেজ আইকন (SVG গ্রিড লোগো) */
+.cov-ico{display:inline-block;vertical-align:middle;flex:none}
+.cov-tool-btn .cov-ico{color:var(--primary)}
+.cov-tool-btn:hover:not(:disabled) .cov-ico{color:inherit}
+#coverageModal h2 .cov-ico{color:var(--primary)}
 .tool-divider{width:1px;height:24px;background:var(--border)}
 .search-box{
   display:flex;align-items:center;gap:6px;
@@ -4583,12 +4588,77 @@ td.is-multipart{vertical-align:top}
   padding:24px 12px;background:var(--surface-2);border-radius:8px;
   border:1px dashed var(--border);
 }
+/* 🆕 রুটিন-স্টাইল কভারেজ — দিন সেলের ভেতরে; মোবাইল+ডেস্কটপ মানানসই, স্টিকি হেডার */
+.cov-rt-scroll{
+  overflow-x:auto; overflow-y:visible;
+  -webkit-overflow-scrolling:touch;   /* মোবাইলে মসৃণ momentum স্ক্রল */
+  scrollbar-width:thin;
+  border-radius:0 0 10px 10px;
+}
+.cov-rt-scroll::-webkit-scrollbar{height:9px}
+.cov-rt-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+.cov-rt-table{
+  width:auto; min-width:100%;
+  table-layout:auto;                  /* fixed বাতিল — কনটেন্ট অনুযায়ী চওড়া */
+  border-collapse:separate; border-spacing:0;
+}
+.cov-rt-table thead th{
+  position:sticky; top:0; z-index:3;  /* স্ক্রলেও উপরের হেডার স্টিকি */
+  background:var(--primary); color:#fff;
+  font-size:11.5px; font-weight:800; white-space:nowrap;
+  padding:8px 9px; border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 2px 5px rgba(0,0,0,.14);
+}
+.cov-rt-table th.cov-corner{
+  left:0; z-index:6;                  /* কোণা — উপরে+বাঁয়ে দুটোতেই স্টিকি */
+  text-align:right; min-width:78px;
+}
+.cov-rt-table td.cov-day-lbl{
+  position:sticky; left:0; z-index:2; /* বাঁ পাশের শ্রেণি লেবেল স্টিকি */
+  background:var(--surface-2); color:var(--text);
+  font-weight:800; font-size:12.5px; text-align:right;
+  min-width:78px; max-width:100px; line-height:1.35; padding:6px 8px;
+  border:1px solid var(--border);
+  box-shadow:2px 0 5px rgba(0,0,0,.06);
+}
+.cov-rt-seclbl{font-size:10.5px;font-weight:600;color:var(--text-2)}
+.cov-rt-cell{
+  vertical-align:top; text-align:center;
+  min-width:108px; max-width:172px;
+  padding:7px 8px; border:1px solid var(--border);
+  white-space:normal; height:auto; line-height:1.3;
+}
+.cov-rt-cell.filled{background:#f0fdf4}
+.cov-rt-cell.empty{background:#fef2f2;color:#b91c1c;font-weight:700;font-size:11.5px}
+.cov-rt-cell.locked{background:#f3f4f6}
+.cov-rt-cell.break-col{background:#fffbeb;color:#92400e;font-style:italic;font-weight:600;font-size:11px;min-width:66px}
+.cov-rt-cell.conflict{box-shadow:inset 0 0 0 2px #fb923c}
+.cov-rt-grp{padding:3px 0}
+.cov-rt-grp + .cov-rt-grp{border-top:1px dashed var(--border);margin-top:4px;padding-top:5px}
+.cov-rt-sub{display:block;font-size:12.5px;font-weight:800;color:#166534;line-height:1.25}
+.cov-rt-cell.locked .cov-rt-sub{color:#4b5563}
+.cov-rt-teacher{display:block;font-size:11px;font-weight:600;color:var(--text);opacity:.92;margin-top:1px}
+.cov-rt-days{
+  display:inline-block;margin-top:5px;
+  font-size:10.5px;font-weight:800;line-height:1.45;
+  color:#0f766e;background:#ccfbf1;
+  padding:1px 8px;border-radius:99px;white-space:normal;
+}
+.cov-rt-days.all{color:#1d4ed8;background:#dbeafe}
+.cov-rt-warn{display:block;font-size:10px;font-weight:800;color:#c2410c;margin-bottom:3px}
+
 @media (max-width:760px){
   .cov-summary{grid-template-columns:repeat(2, 1fr)}
   .cov-table{font-size:10.5px}
   .cov-cell{height:30px}
   .cov-cell .cov-sub{font-size:9.5px}
   .cov-cell .cov-teacher{display:none}
+  /* 🆕 রুটিন-ভিউ: মোবাইলেও শিক্ষকের নাম ও দিন দেখাবে, কলাম একটু সরু */
+  .cov-rt-cell{min-width:98px;padding:6px 6px}
+  .cov-rt-table td.cov-day-lbl{min-width:68px;max-width:84px;font-size:11.5px}
+  .cov-rt-sub{font-size:11.5px}
+  .cov-rt-teacher{font-size:10.5px;display:block}
+  .cov-rt-days{font-size:10px}
 }
 
 /* =============================================================
@@ -5605,6 +5675,11 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
       <span class="icon">🌙</span> <span class="lbl">ছুটি</span>
       <span class="leave-count-badge" id="leaveCountBadge" style="display:none">0</span>
     </button>
+    <!-- 🗺 কভারেজ রিপোর্ট — সরাসরি হেডারে (editor/admin) -->
+    <button class="tool-btn cov-tool-btn editable-only" data-perm="aiRoutine" id="coverageBtn" onclick="openCoverageReport()" title="প্রতি শ্রেণি-শাখার কোন পিরিয়ড ফাঁকা — পাঠ্যসূচির সাথে মিলিয়ে কভারেজ রিপোর্ট">
+      <span class="icon"><svg class="cov-ico" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><rect x="3" y="4.5" width="5.2" height="5.2" rx="1.3"/><rect x="9.4" y="4.5" width="5.2" height="5.2" rx="1.3"/><rect x="15.8" y="4.5" width="5.2" height="5.2" rx="1.3" opacity=".32"/><rect x="3" y="13.3" width="5.2" height="5.2" rx="1.3" opacity=".32"/><rect x="9.4" y="13.3" width="5.2" height="5.2" rx="1.3"/><rect x="15.8" y="13.3" width="5.2" height="5.2" rx="1.3"/></svg></span>
+      <span class="lbl">কভারেজ</span>
+    </button>
     <!-- 📊 Live Dashboard টুলবার বাটন সরানো হয়েছে — ভাসমান FAB বাটনই ব্যবহৃত হবে -->
 
     <!-- ⋮ আরও — রুটিন তৈরির টুল -->
@@ -5633,7 +5708,6 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
         <button class="tool-btn primary editable-only" data-perm="aiRoutine" onclick="openAIGenerator();closeToolMenu()">🤖 <span class="lbl">AI রুটিন</span></button>
         <button class="tool-btn editable-only" data-perm="aiRoutine" onclick="autoGenerateRoutine();closeToolMenu()" title="API ছাড়াই ৪০–৫০ জন শিক্ষকের রুটিন স্বয়ংক্রিয়ভাবে তৈরি করুন">⚙️ <span class="lbl">স্বয়ংক্রিয় রুটিন</span></button>
         <button class="tool-btn editable-only" data-perm="aiRoutine" id="qemToggleBtn" onclick="toggleQuickEntryMode();closeToolMenu()" title="রুটিন cell-এ সরাসরি ক্লাস বসান → শিক্ষকের entries-এ auto-add">🔄 <span class="lbl">দ্রুত এন্ট্রি মোড: বন্ধ</span></button>
-        <button class="tool-btn editable-only" data-perm="aiRoutine" onclick="openCoverageReport();closeToolMenu()" title="প্রতি শ্রেণি-শাখার কোন পিরিয়ড ফাঁকা — পাঠ্যসূচির সাথে মিলিয়ে কভারেজ রিপোর্ট">🗺 <span class="lbl">কভারেজ রিপোর্ট</span></button>
         <div class="tool-divider"></div>
         <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openModal('optionsModal');closeToolMenu()">📝 <span class="lbl">অপশন</span></button>
         <button class="tool-btn editable-only" data-perm="manageOptions" onclick="openCurriculumModal();closeToolMenu()" title="প্রতি শ্রেণিতে কোন বিষয় সপ্তাহে কত পিরিয়ড — স্বয়ংক্রিয় রুটিনের ভিত্তি">📚 <span class="lbl">পাঠ্যসূচি</span></button>
@@ -7051,7 +7125,7 @@ body[data-role="teacher"] .dashboard-fab{display:none !important}
 <div class="modal-overlay" id="coverageModal">
   <div class="modal wide">
     <div class="modal-header">
-      <h2>🗺 কভারেজ রিপোর্ট</h2>
+      <h2><svg class="cov-ico" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true" style="vertical-align:-4px;margin-right:4px"><rect x="3" y="4.5" width="5.2" height="5.2" rx="1.3"/><rect x="9.4" y="4.5" width="5.2" height="5.2" rx="1.3"/><rect x="15.8" y="4.5" width="5.2" height="5.2" rx="1.3" opacity=".32"/><rect x="3" y="13.3" width="5.2" height="5.2" rx="1.3" opacity=".32"/><rect x="9.4" y="13.3" width="5.2" height="5.2" rx="1.3"/><rect x="15.8" y="13.3" width="5.2" height="5.2" rx="1.3"/></svg>কভারেজ রিপোর্ট</h2>
       <button class="modal-close" onclick="closeModal('coverageModal')">×</button>
     </div>
     <div class="modal-body">
@@ -21475,6 +21549,40 @@ function openCoverageReport(){
   openModal('coverageModal');
 }
 
+/* 🆕 এক পিরিয়ডের সব দিনের occupant-কে (শিক্ষক+সাবজেক্ট) অনুযায়ী একত্র করে
+   দিনগুলো গুছিয়ে দেয় — রুটিন-স্টাইল সেলের জন্য।
+   ইনপুট: occByDay = built.occ[classSec][slotId] (dayKey → occupant|array|null)
+   ফেরত: { groups:[{tname,subject,locked,dayKeys[],dayLabels[]}], hasConflict, isEmpty, allLocked } */
+function _covGroupPeriod(occByDay, days){
+  const order = days.map(d => d.key);
+  const labelOf = {}; days.forEach(d => { labelOf[d.key] = d.label || d.key; });
+  const map = {};
+  let hasConflict = false;
+  (order).forEach(dk => {
+    const val = occByDay ? occByDay[dk] : null;
+    if(!val) return;
+    const list = Array.isArray(val) ? val : [val];
+    if(list.length > 1) hasConflict = true;            // একই দিনে একাধিক = প্রকৃত দ্বন্দ্ব
+    list.forEach(o => {
+      if(!o) return;
+      const sub = (o.subject || '').toString();
+      const key = (o.tid || o.tname || '') + '||' + sub;
+      if(!map[key]) map[key] = { tname:o.tname||'—', subject:sub, locked:false, dayKeys:[] };
+      if(o.locked) map[key].locked = true;
+      if(map[key].dayKeys.indexOf(dk) === -1) map[key].dayKeys.push(dk);
+    });
+  });
+  const groups = Object.keys(map).map(k => {
+    const g = map[k];
+    // দিনগুলোকে সপ্তাহের ক্রমে সাজাই
+    g.dayKeys.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+    g.dayLabels = g.dayKeys.map(dk => labelOf[dk] || dk);
+    return g;
+  });
+  const allLocked = groups.length > 0 && groups.every(g => g.locked);
+  return { groups, hasConflict, isEmpty: groups.length === 0, allLocked };
+}
+
 /* ── মূল render ─────────────────────────────────────────── */
 function _covRender(){
   const built = _covBuildOccupancy();
@@ -21539,37 +21647,45 @@ function _covRender(){
   // for layout we want all cols (slot + break) in original order
   const renderCols = allCols.filter(c => c && (c.type === 'slot' || c.type === 'break'));
 
+  const totalDays = days.length;
   host.innerHTML = pairs.map(p => {
     const pct = p.total ? Math.round((p.filled / p.total) * 100) : 0;
     const pctCls = pct >= 95 ? 'ok' : (pct >= 75 ? 'warn' : 'error');
-    // table head row — period labels
+    // 🆕 হেডার সারি — পিরিয়ড লেবেল (উপরে sticky), বাঁ কোণা = শ্রেণি লেবেল (বাঁয়ে sticky)
     const headRow = '<tr>' +
-      '<th class="cov-day-lbl">দিন \\ পিরিয়ড</th>' +
+      '<th class="cov-day-lbl cov-corner" title="শ্রেণি ও পিরিয়ড">শ্রেণি / পিরিয়ড</th>' +
       renderCols.map(c => `<th title="${esc(c.label||c.id)}">${esc(c.label||c.id)}</th>`).join('') +
       '</tr>';
-    // body rows — one per day
-    const rows = days.map(d => {
-      const cells = renderCols.map(c => {
-        if(c.type === 'break'){
-          return `<td class="cov-cell break-col" title="বিরতি">— বিরতি —</td>`;
-        }
-        const occ = built.occ[p.key] && built.occ[p.key][c.id] ? built.occ[p.key][c.id][d.key] : null;
-        if(occ){
-          if(Array.isArray(occ)){
-            // multi-occupant — conflict
-            const sub = occ.map(o => esc(o.subject||'—')).join(' / ');
-            const tn = occ.map(o => esc(o.tname||'—')).join(', ');
-            return `<td class="cov-cell filled" title="⚠ একাধিক: ${tn}"><span class="cov-sub">⚠ ${sub}</span><span class="cov-teacher">${tn}</span></td>`;
-          }
-          if(occ.locked){
-            return `<td class="cov-cell locked" title="🔒 ${esc(occ.tname)}"><span class="cov-sub">🔒 ${esc(occ.subject||'—')}</span><span class="cov-teacher">${esc(occ.tname||'—')}</span></td>`;
-          }
-          return `<td class="cov-cell filled" title="${esc(occ.tname)} • ${esc(occ.subject||'—')}"><span class="cov-sub">${esc(occ.subject||'—')}</span><span class="cov-teacher">${esc(occ.tname||'—')}</span></td>`;
-        }
-        return `<td class="cov-cell empty" title="ফাঁকা — কেউ বসেননি">— ফাঁকা —</td>`;
+
+    // 🆕 প্রতি শ্রেণি-শাখার জন্য একটাই সারি; দিনগুলো সাবজেক্ট+শিক্ষকের নিচে
+    const cells = renderCols.map(c => {
+      if(c.type === 'break'){
+        return `<td class="cov-rt-cell break-col" title="বিরতি">— বিরতি —</td>`;
+      }
+      const occByDay = (built.occ[p.key] && built.occ[p.key][c.id]) ? built.occ[p.key][c.id] : null;
+      const g = _covGroupPeriod(occByDay, days);
+      if(g.isEmpty){
+        return `<td class="cov-rt-cell empty" title="ফাঁকা — কেউ বসেননি">— ফাঁকা —</td>`;
+      }
+      const groupsHTML = g.groups.map(grp => {
+        const full = totalDays > 0 && grp.dayKeys.length >= totalDays;
+        const daysTxt = full ? (toBnNum(totalDays) + ' দিন') : grp.dayLabels.join(', ');
+        const daysCls = full ? 'cov-rt-days all' : 'cov-rt-days';
+        const lock = grp.locked ? '🔒 ' : '';
+        return `<div class="cov-rt-grp">` +
+                 `<span class="cov-rt-sub">${lock}${esc(grp.subject||'—')}</span>` +
+                 `<span class="cov-rt-teacher">${esc(grp.tname||'—')}</span>` +
+                 `<span class="${daysCls}" title="${esc(grp.dayLabels.join(', '))}">${esc(daysTxt)}</span>` +
+               `</div>`;
       }).join('');
-      return `<tr><td class="cov-day-lbl">${esc(d.label||d.key)}</td>${cells}</tr>`;
+      let cls = 'cov-rt-cell filled';
+      if(g.allLocked) cls = 'cov-rt-cell locked';
+      if(g.hasConflict) cls += ' conflict';
+      const titleTxt = g.groups.map(grp => (grp.subject||'—') + ' · ' + (grp.tname||'—') + ' · ' + grp.dayLabels.join(',')).join(' | ');
+      const warn = g.hasConflict ? `<span class="cov-rt-warn">⚠ একই দিনে একাধিক</span>` : '';
+      return `<td class="${cls}" title="${esc(titleTxt)}">${warn}${groupsHTML}</td>`;
     }).join('');
+    const bodyRow = `<tr><td class="cov-day-lbl">${esc(p.cls)}<br><span class="cov-rt-seclbl">শাখা ${esc(p.sec)}</span></td>${cells}</tr>`;
 
     return `
       <div class="cov-grid-block">
@@ -21578,10 +21694,10 @@ function _covRender(){
           <span class="cov-counts">${toBnNum(p.filled)}/${toBnNum(p.total)} ভরা · ${toBnNum(p.empty)} ফাঁকা</span>
           <span class="cov-pct ${pctCls}">${toBnNum(pct)}%</span>
         </div>
-        <div style="overflow-x:auto">
-          <table class="cov-table">
+        <div class="cov-rt-scroll">
+          <table class="cov-table cov-rt-table">
             <thead>${headRow}</thead>
-            <tbody>${rows}</tbody>
+            <tbody>${bodyRow}</tbody>
           </table>
         </div>
       </div>
